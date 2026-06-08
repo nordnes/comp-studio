@@ -413,3 +413,20 @@ AA outright").
   capture artifact).
 
 **Next:** COM-43 — confirm + Undo on destructive deletes and Reset-to-baseline (M).
+
+## 2026-06-09 — COM-43 (confirm on destructive actions) DONE
+
+**COM-43 (P1, M) — DONE.** Gated all 8 destructive actions behind a frappe-ui confirm dialog (issue minimum was
+Reset+delRound/Scenario/Milestone; extended to all for consistency + safety). Added `src/confirm.ts` →
+`confirmDestroy(title, message, action)` wrapping frappe-ui `confirmDialog` (rendered by the already-mounted
+`<Dialogs/>` — socket-safe). Wrapped at the VIEW layer so the store stays a pure reducer:
+- Configure: delRound/delScenario/delObjective/delTier/delMilestone (messages state each real cascade).
+- App: Reset-to-baseline + delBoard. Board: delAdvisor (`Remove {name}?`).
+- frappe-ui ConfirmDialog API: `confirmDialog({title, message, onConfirm})`; onConfirm receives `{hideDialog}`;
+  the dialog has a single "Confirm" button + X-to-cancel.
+- Undo-toast (the issue's optional "better") DEFERRED → pairs with COM-53 (toasts); confirm fully covers the
+  accidental-destruction safety goal.
+- QA: build 0 · engine 22/22 · preview: delete-round click opened the dialog and did NOT delete (gate works);
+  Confirm then executed it (3→2 rounds). Cleared localStorage after to restore the default board.
+
+**Next:** COM-44 — text alternatives (role=img + aria-label) on screen-reader-silent charts (M).

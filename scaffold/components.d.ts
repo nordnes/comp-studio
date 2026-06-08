@@ -9,6 +9,8 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     FrappeChart: typeof import('./src/components/FrappeChart.vue')['default']
+    PageHeader: typeof import('./src/components/PageHeader.vue')['default']
+    PoolAllocation: typeof import('./src/components/PoolAllocation.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
   }

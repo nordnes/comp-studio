@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useRoute } from 'vue-router';
-import { FrappeUIProvider, Dialogs, Button, Badge, Dropdown, Dialog, Alert, TextInput } from 'frappe-ui';
+import { FrappeUIProvider, Dialogs, Button, Badge, Dropdown, Dialog, TextInput } from 'frappe-ui';
 import { useStudio } from './store';
 import { fUSD, fPct } from './engine';
 
@@ -75,12 +75,18 @@ function doSaveAs() { const n = saveAsName.value.trim(); if (n) { saveBoard(n); 
             </router-link>
           </nav>
         </div>
-        <Alert v-if="!store.storageOk" theme="orange" variant="subtle" class="rounded-none border-x-0">
-          Browser storage is unavailable — use <b>Export JSON</b> to keep your work.
-        </Alert>
-        <Alert v-else-if="board.warnings.length" theme="red" variant="subtle" class="rounded-none border-x-0">
-          <b>Budget:</b> {{ board.warnings[0] }}<span v-if="board.warnings.length > 1"> (+{{ board.warnings.length - 1 }})</span>
-        </Alert>
+        <div v-if="!store.storageOk" class="bg-surface-amber-2 border-t border-outline-amber-2 text-ink-amber-3">
+          <div class="mx-auto w-full max-w-7xl px-3 sm:px-5 py-2 flex items-center gap-2 text-xs">
+            <span class="lucide-triangle-alert size-3.5 shrink-0" aria-hidden="true" />
+            <span>Browser storage is unavailable — use <b>Export JSON</b> to keep your work.</span>
+          </div>
+        </div>
+        <div v-else-if="board.warnings.length" class="bg-surface-red-2 border-t border-outline-red-2 text-ink-red-3">
+          <div class="mx-auto w-full max-w-7xl px-3 sm:px-5 py-2 flex items-center gap-2 text-xs">
+            <span class="lucide-triangle-alert size-3.5 shrink-0" aria-hidden="true" />
+            <span><b>Budget:</b> {{ board.warnings[0] }}<span v-if="board.warnings.length > 1"> (+{{ board.warnings.length - 1 }})</span></span>
+          </div>
+        </div>
       </header>
 
       <main class="mx-auto w-full max-w-7xl px-3 sm:px-5 py-6 sm:py-8">

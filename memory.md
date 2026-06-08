@@ -136,3 +136,26 @@ Did everything verifiable without rendering (build + reasoning + typecheck). Com
 - **Reached the limit of verifiable blind polish.** Remaining (visual fidelity, UpsideCurve interactivity,
   waterfall hover-sync, colour-blind/mobile/print verification) all need the deployed app to see — gated on
   the Vercel project.
+
+## 2026-06-08 — VISUAL QA DONE via desktop static-preview. All 6 routes verified. Chart fixes.
+
+- **HOW (the unlock):** `vite dev` is killed by the harness here, but **`vite preview` (static, serves built
+  dist) STAYS UP** under the Claude Code desktop preview MCP. `.claude/launch.json` now has `comp-studio`
+  (preview, port 4173) + `comp-studio-dev` (dev, 5173). Workflow: `npm run build` → `preview_eval(location.reload())`
+  → `preview_screenshot` / `preview_click(a[href=…])` to walk routes → `preview_eval` to inspect DOM. Screenshots
+  of tall scrolled pages can come back all-black (a CAPTURE artifact, NOT a real bug — verify with `preview_eval`
+  reading computed bg / element presence; reload + screenshot near top renders clean).
+- **VERIFIED all 6 routes render + numbers reconcile:** Overview (KPI band, roster, pool, benchmark — board
+  base **$23.0M**, base path → **TGE FDV $600M** ✓), Advisors (controls + waterfall SVG + UpsideCurve +
+  PotentialStrip $7.67M→$13.0M; detail expander vesting/football/mix/dilution/instruments all present),
+  Board (staircase grouped bar + scatter SVG), Compare (matrix board row $23.0M + grouped bar), Proposition
+  (editorial hero), **Configure dark panel** (data-theme=dark tokens flip correctly).
+- **Bugs found + fixed via the preview:**
+  1. **frappe-charts first paint** — with `animate:false` it paints a degenerate 0–5 axis / 0-height bars
+     until a redraw. Fix: `FrappeChart` builds synchronously then forces a next-frame `draw(true)`. (My earlier
+     double-rAF deferred-build made it worse — reverted.)
+  2. **No y-axis tick formatter in frappe-charts** → raw-dollar axes read "100000000". Fix: plot staircase /
+     compare-bar / upside in **$M** (values /1e6, tooltip `*1e6`, "$M" axis label).
+  3. (earlier) Mgr Dialog `v-model:open` → `v-model` (would never have opened).
+- **Static preview is the visual-QA path going forward** (no Vercel needed to SEE it locally). Deploy/live URL
+  still needs the Vercel project (unchanged).

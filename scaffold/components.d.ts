@@ -10,13 +10,20 @@ declare module 'vue' {
   export interface GlobalComponents {
     AdvisorPicker: typeof import('./src/components/AdvisorPicker.vue')['default']
     ContextStrip: typeof import('./src/components/ContextStrip.vue')['default']
+    DilutionPath: typeof import('./src/components/DilutionPath.vue')['default']
+    EquityBenchmark: typeof import('./src/components/EquityBenchmark.vue')['default']
     FootballField: typeof import('./src/components/FootballField.vue')['default']
     FrappeChart: typeof import('./src/components/FrappeChart.vue')['default']
+    GrowthWaterfall: typeof import('./src/components/GrowthWaterfall.vue')['default']
+    MixBreakdown: typeof import('./src/components/MixBreakdown.vue')['default']
     NumIn: typeof import('./src/components/NumIn.vue')['default']
     PageHeader: typeof import('./src/components/PageHeader.vue')['default']
     PoolAllocation: typeof import('./src/components/PoolAllocation.vue')['default']
+    PotentialStrip: typeof import('./src/components/PotentialStrip.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     StageBadge: typeof import('./src/components/StageBadge.vue')['default']
+    UpsideCurve: typeof import('./src/components/UpsideCurve.vue')['default']
+    VestingTimeline: typeof import('./src/components/VestingTimeline.vue')['default']
   }
 }

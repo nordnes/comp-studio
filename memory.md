@@ -465,3 +465,16 @@ Reset+delRound/Scenario/Milestone; extended to all for consistency + safety). Ad
 contrast (gray-5→6, amber labels, gray-4 info text), programmatic input labels, focus rings + keyboard-operable
 rows/scatter, ≥32px touch targets, confirm-on-destructive, chart text alternatives, import validation+feedback.
 Next: M7 gate → M8 starting at COM-46 (single persistent global scenario toggle — top product lever).
+
+## 2026-06-09 — ★ M7 MILESTONE GATE — GREEN
+
+M7 (COM-37–45, 9/9) gated:
+- Build exit 0; both engine copies 22/22; src token sanity: 0 `text-ink-gray-5`, 1 `text-ink-amber-3` (hero only).
+- Visual smoke (preview, all 6 routes): all render; role=img counts correct (advisors 4, board 6, compare 1;
+  overview/proposition/configure have no charts needing it); Overview shows $23M board base; Confidential/Internal present.
+- No console errors. Prod live (comp-studio-one.vercel.app serves "Raiku · Advisory Comp Studio"). All 9 fixes
+  pushed to claude/frosty-pasteur-8cf1db (FLOW-A).
+- Pending for Robin (non-blocking): (1) one-time `chore: vp format` to make `vp check` green for M8 (pre-existing
+  34-file drift, NOT introduced by M7) — awaiting nod; (2) Vercel MCP 403 (re-auth nordnes-personal scope) blocks
+  API deploy-status checks (prod itself verified via WebFetch).
+Next: M8 (COM-46…68, 23 issues) starting COM-46 (single persistent global scenario toggle — top product lever).

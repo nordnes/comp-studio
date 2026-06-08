@@ -4,7 +4,13 @@
     {
       "name": "comp-studio",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev", "--prefix", "scaffold"],
+      "runtimeArgs": ["run", "preview", "--prefix", "scaffold", "--", "--port", "4173", "--strictPort"],
+      "port": 4173
+    },
+    {
+      "name": "comp-studio-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--prefix", "scaffold", "--", "--port", "5173", "--strictPort"],
       "port": 5173
     }
   ]

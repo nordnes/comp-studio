@@ -34,16 +34,18 @@ function build() {
     type: props.type, data: snap(props.data), height: props.height || 240,
     colors: props.colors, animate: false, ...(props.options || {}),
   }); // new Chart returns undefined for an unknown type — guarded below.
+  // frappe-charts (animate:false) can paint a degenerate axis / 0-height bars until a redraw — force one
+  // on the next frame so the FIRST paint is correct, without waiting for a resize event.
+  requestAnimationFrame(() => chart?.draw?.(true));
 }
 // update() only swaps data; type/colours changes need a full rebuild (destroy+new via build()).
 watch(() => props.data, () => { if (chart && typeof chart.update === 'function') chart.update(snap(props.data)); else build(); }, { deep: true });
 watch(() => [props.type, props.colors], build, { deep: true });
 
 onMounted(() => {
-  build();
-  // frappe-charts only listens to window resize (its ResizeObserver is disabled), so a
-  // chart built inside a hidden route/tab renders at 0 width — observe the container and
-  // redraw on size change (covers route/tab show + responsive reflow).
+  build(); // build synchronously so the chart exists; build() forces a next-frame redraw to correct it.
+  // frappe-charts only listens to window resize (its ResizeObserver is disabled), so also
+  // observe the container and redraw on size change (responsive reflow, sidebar, etc.).
   if (el.value && 'ResizeObserver' in window) {
     ro = new ResizeObserver(() => chart?.draw?.(true));
     ro.observe(el.value);

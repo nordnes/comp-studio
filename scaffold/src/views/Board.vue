@@ -25,12 +25,13 @@ function boardPack() { window.print(); }
 const stair = computed(() => {
   const w = walkScenario(S.value.plan, baseScenKey(S.value.plan));
   const labels = w.steps.map(s => s.label);
-  const datasets: any[] = [{ name: 'Raiku', values: w.steps.map(s => Math.round(s.post)) }];
-  if (S.value.plan.showBenchmarks) datasets.push({ name: 'Median', values: w.steps.map(s => Math.round(BENCH.postMoney[s.id] || 0)) });
+  // plot in $M — frappe-charts has no y-axis tick formatter, so a raw-dollar axis reads "100000000".
+  const datasets: any[] = [{ name: 'Raiku', values: w.steps.map(s => Math.round(s.post / 1e6)) }];
+  if (S.value.plan.showBenchmarks) datasets.push({ name: 'Median', values: w.steps.map(s => Math.round((BENCH.postMoney[s.id] || 0) / 1e6)) });
   return { labels, datasets };
 });
 const stairFdv = computed(() => { const w = walkScenario(S.value.plan, baseScenKey(S.value.plan)); return tgeFdvFor(S.value.plan, baseScenKey(S.value.plan), w); });
-const stairOpts = { axisOptions: { xAxisMode: 'tick' }, barOptions: { spaceRatio: 0.4 }, tooltipOptions: { formatTooltipY: (v: number) => fUSD(v) } };
+const stairOpts = { axisOptions: { xAxisMode: 'tick' }, barOptions: { spaceRatio: 0.4 }, tooltipOptions: { formatTooltipY: (v: number) => fUSD(v * 1e6) } };
 
 // --- potential scatter (custom SVG) ---
 const PAD = { l: 46, r: 16, t: 16, b: 28 }; const VW = 460; const VH = 280;
@@ -72,7 +73,7 @@ const baseTotalSum = computed(() => board.value.rows.reduce((s: number, r: any) 
       <div class="bg-surface-white rounded border border-outline-gray-1 p-5" role="img"
         :aria-label="`Valuation path base case. TGE FDV ${fUSD(stairFdv)}.`">
         <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
-          <div class="text-sm text-ink-gray-5">Valuation path · base case{{ S.plan.showBenchmarks ? ' vs market median' : '' }}</div>
+          <div class="text-sm text-ink-gray-5">Valuation path · base case{{ S.plan.showBenchmarks ? ' vs market median' : '' }} <span class="text-ink-gray-4">· post-money $M</span></div>
           <div class="text-xs tabular-nums text-ink-gray-5">TGE FDV {{ fUSD(stairFdv) }} · {{ fMult(S.plan.scenarios[baseScenKey(S.plan)].tgeMult) }} × {{ roundLabel(S.plan, S.plan.tgeAnchor) }}</div>
         </div>
         <FrappeChart type="bar" :data="stair" :height="210" :colors="['#9C4A0C', '#E7C99B']" :options="stairOpts" />

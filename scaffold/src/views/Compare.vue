@@ -18,9 +18,9 @@ function open(id: string) { select(id); router.push('/advisors'); }
 const baseEqSum = computed(() => board.value.rows.reduce((s: number, r: any) => s + r.c.baseEq, 0));
 const chart = computed(() => ({
   labels: board.value.rows.map((r: any) => r.a.name.split(' ')[0]),
-  datasets: cols.value.map(k => ({ name: S.value.plan.scenarios[k].label, values: board.value.rows.map((r: any) => Math.round(r.c.scen.find((x: any) => x.key === k)?.total || 0)) })),
-}));
-const chartOpts = { axisOptions: { xAxisMode: 'tick' }, tooltipOptions: { formatTooltipY: (v: number) => fUSD(v) } };
+  datasets: cols.value.map(k => ({ name: S.value.plan.scenarios[k].label, values: board.value.rows.map((r: any) => Math.round((r.c.scen.find((x: any) => x.key === k)?.total || 0) / 1e6)) })),
+})); // values in $M — frappe-charts has no y-axis tick formatter (raw dollars read "10000000").
+const chartOpts = { axisOptions: { xAxisMode: 'tick' }, tooltipOptions: { formatTooltipY: (v: number) => fUSD(v * 1e6) } };
 const scenColors = computed(() => cols.value.map((_, i) => SCEN_COLORS[i % SCEN_COLORS.length]));
 </script>
 
@@ -57,7 +57,7 @@ const scenColors = computed(() => cols.value.map((_, i) => SCEN_COLORS[i % SCEN_
     </div>
 
     <div>
-      <div class="text-sm text-ink-gray-5 mb-3">Net value across scenarios</div>
+      <div class="text-sm text-ink-gray-5 mb-3">Net value across scenarios <span class="text-ink-gray-4">· $M</span></div>
       <div class="bg-surface-white rounded border border-outline-gray-1 p-6">
         <FrappeChart type="bar" :data="chart" :height="300" :colors="scenColors" :options="chartOpts" />
       </div>

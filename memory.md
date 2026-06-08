@@ -395,3 +395,21 @@ dark-theme risk beyond "presentation-only a11y". aria-labels satisfy WCAG 4.1.2/
   preview MCP (no keyboard-Tab primitive), but the class is applied + the rule compiles → renders on real Tab.
 
 **Next:** COM-42 — raise icon-only/inline touch targets to >=32-44px (14px bare trash buttons first) (M).
+
+## 2026-06-09 — COM-42 (touch targets) DONE
+
+**COM-42 (P1, M) — DONE.** Fixed the AA-failing touch targets (the issue's "fix these first — only ones failing
+AA outright").
+- 6 bare trash `<button>`s (Configure rounds/scenarios/objectives/tiers/milestones + Board remove) wrapped a 14px
+  icon with no padding (~14px hit area, fails WCAG 2.5.8 AA 24px). → `inline-flex shrink-0 items-center justify-center
+  size-8 rounded` = 32×32 (+ hover:bg-surface-gray-2 + a focus-visible ring, closing a COM-41 gap). Verified all 18
+  rendered instances are 32×32.
+- Nav tabs (App.vue, ~37px) → `inline-flex items-center min-h-[44px]` = 44px touch target (verified).
+- **Gotcha:** `size-8` alone left the scenario-delete button at 32×14 — in its tight flex row (next to the long
+  exit-summary text) it shrank below the set width; `shrink-0` fixed it.
+- Deferred (AAA-comfort, already pass AA 24px): frappe-ui sm→md bump + NumIn dense-table tap area → fold into the
+  COM-31 mobile pass.
+- QA: build 0 · engine 22/22 · sizes confirmed via getBoundingClientRect (Configure screenshot = known dark-panel
+  capture artifact).
+
+**Next:** COM-43 — confirm + Undo on destructive deletes and Reset-to-baseline (M).

@@ -159,3 +159,23 @@ Did everything verifiable without rendering (build + reasoning + typecheck). Com
   3. (earlier) Mgr Dialog `v-model:open` → `v-model` (would never have opened).
 - **Static preview is the visual-QA path going forward** (no Vercel needed to SEE it locally). Deploy/live URL
   still needs the Vercel project (unchanged).
+
+## 2026-06-08 — 🚀 SHIPPED. Live in production on Vercel, verified.
+
+- **LIVE: https://comp-studio-one.vercel.app/** (deployment `comp-studio-2k82jxx60`, status Ready, public).
+  Dashboard: https://vercel.com/nordnes-personal/comp-studio
+- **Vercel project (Robin created):** team **Nordnes Personal**, name `comp-studio`, **Root Directory =
+  `scaffold`**, preset Vite, build `npm run build`, output `dist`, no env vars. Deployed from branch
+  `claude/frosty-pasteur-8cf1db` @ `8b2e286`. **Vercel set the production branch to that feature branch**
+  — pushing to `claude/frosty-pasteur-8cf1db` redeploys PROD. (Follow-up: PR/merge to `main` + point Vercel's
+  production branch at `main` for hygiene — Robin's call; one big continuous-build PR vs slicing.)
+- **Vercel CLI:** installed (`vercel` 54.10.1 at `~/.vite-plus/bin/vercel`), authed as **robin-1211** (existing
+  CLI login). Default scope `raiku-labs`; new project is under `nordnes-personal` → use `--scope nordnes-personal`.
+- **PRODUCTION VERIFIED (live, Chrome):** Overview, Board (deep-link), Configure (deep-link, dark), Advisors
+  (deep-link) all render; **SPA rewrite works for deep links** (vercel.json); all charts paint correctly on
+  the production build (staircase $M bars, scatter, waterfall, UpsideCurve area+line); numbers reconcile
+  ($23.0M board base, $600M FDV); **zero console errors**. Mobile responsive (375px) verified locally.
+- **Acceptance MET:** 6 routes live, Overview default, build green, engine 22/22, net-of-strike + legal corpus
+  + benchmark sources present, persistence (localStorage + clipboard + URL hash). Production URL reported.
+- **Remaining (minor, optional):** UpsideCurve interactivity (chip presets/markers — simplified), waterfall
+  hover-sync, colour-blind/print deep-verification. None block the live tool.

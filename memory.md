@@ -30,3 +30,35 @@
 preview). Then M1 (Configure) onward. Build views with frappe-ui components + the `frappe-ui` Skill.
 
 <!-- Append new entries below this line -->
+
+## 2026-06-08 — M0 boot verified + 5 open decisions RESOLVED (Robin)
+
+**M0 COM-8/COM-10 green.** Clean `npm install` (321 pkgs) + `npm run build` ✓ (`dist/`: Inter woff2,
+frappe-ui CSS 158 kB, JS 109 kB / 42 kB gz) + engine **22/22** (both `scaffold/engine.test.mjs` and
+`engine/engine.test.mjs`). Views are still hand-rolled hex (not yet frappe-ui) — that's the build work.
+
+- **Build gotcha (recorded):** the sandbox denies writes to npm's global cache `~/.npm/_cacache` (only
+  `~/.npm/_logs` is allowlisted) → `npm install` dies with `EPERM`. **Fix: `npm install --cache "$TMPDIR/npm-cache"`**
+  (stays sandboxed). Also `--prefix scaffold` works for *location*, but a piped `| tail` masks npm's real
+  exit code — capture `$?` before piping. Build runs fine: `npm run build --prefix scaffold`.
+
+**Robin's calls on the 5 open decisions (was blocking COM-11):**
+1. **Named multi-board `Mgr` → PORT IN FULL** (not descoped). localStorage schema is the reference's
+   `{scenarios:{name:State}, last:name}` map under `raiku-advisor-comp-v5`. COM-11 migrates old raw-`State`
+   payloads (and `#s=` raw State) into the map shape so `reconcile` never crashes.
+2. **Share = clipboard Copy/Paste + `#s=` URL hash (BOTH).**
+3. **Valuation staircase = frappe-charts grouped bar** (Raiku vs Median), not custom step-SVG.
+4. **Section numbering = frappe-ui best practice / templates** → frappe-ui page-header conventions
+   (sentence case, quiet section label by size/weight/colour — NOT uppercase roman-numeral eyebrows),
+   nav-consistent ordering (Overview … Configure). Fixes the reference's duplicate "Section I".
+
+**frappe-ui skill loaded** — using COMPONENTS/TOKENS/PATTERNS (Button/Badge/FormControl/Select/Switch/
+Dialog/Dropdown/Tooltip/Alert/Tabs, semantic tokens `bg-surface-*`/`text-ink-*`/`border-outline-*`, lucide
+CSS-class icons, page-header + body-container patterns). **Ignoring** its SETUP backend wiring
+(`app.use(FrappeUI)`, data layer, `optimizeDeps.exclude`) per the build-kit's verified backendless recipe.
+
+**Store deviation (intentional):** working board **auto-persists** into `saved[S.name]` on every mutation
+(safer than the reference's explicit-Save-only model); Mgr "Save as" forks a named snapshot. Superset of
+reference behaviour.
+
+**Next:** COM-11 store (this turn) → frappe-ui app shell (App.vue) → COM-9 first Vercel preview to gate M0.

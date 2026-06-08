@@ -292,3 +292,32 @@ tree) — fold deliberately.
 
 **Next session:** paste `ULTRACODE_M7_M8.md` into a fresh Claude Code session → it runs M7 (start COM-37/38
 token sweeps) → gate M7 → M8 (start COM-46), building COM-62 after the M7 floor.
+
+## 2026-06-08 — M7 started · COM-37 (ink-gray-5 → ink-gray-6 AA sweep) DONE
+
+**Session/worktree note:** spawned in a fresh isolated worktree (`suspicious-swartz-697371`) at the Phase-0
+commit (18 behind v1). Robin: "find the correct worktree and build from there." Re-rooted via `EnterWorktree`
+into `.claude/worktrees/frosty-pasteur-8cf1db` (the prod branch). **FLOW-A adopted** (commit → push
+`claude/frosty-pasteur-8cf1db` → prod redeploy). The preview MCP stays pinned to the *original* worktree, so
+its `.claude/launch.json` was created there pointing (abs path, `sh -c cd`) at the frosty `scaffold` dist.
+
+**COM-37 (P0) — DONE.** `ink-gray-5` appears **only** as `text-ink-gray-5`: **134 occurrences / 17 files**
+(audit said 131; actual 134), zero border/bg/fill/SVG uses, zero large/disabled cases to reserve → blanket
+`text-ink-gray-5` → `text-ink-gray-6`. Token: `--ink-gray-6 #525252` = **7.81:1** on white (was `#7C7C7C`
+4.17:1, failed AA). QA: build exit 0 · engine **22/22** (both copies) · `vp check` no lint/type errors.
+Visual (preview MCP, computed contrast/route): **0 `text-ink-gray-5` remain, 0 AA fails** on all 6 routes;
+min /overview 7.81 · /advisors,/board,/proposition 7.25 (amber-2/gray-1; was 3.88) · /compare 7.81 ·
+**/configure 4.97** (dark panel — `--ink-gray-6` remaps lighter on dark surfaces, stays legible). No console errors.
+
+**Gotchas recorded:** (1) zsh does NOT word-split an unquoted `$(rg -l …)` → first perl sweep no-op'd
+("Can't open …"); fixed with `rg -l0 … | xargs -0 perl -i -pe`. (2) BSD sed lacks `\b` → used perl.
+(3) zsh `noclobber` made `>` to an existing log return exit 1 ("file exists") — masked a build's real exit;
+`rm -f` the log first or use a fresh name.
+
+**FLAGGED to Robin (non-blocking):** `vp check` exits 1 on **pre-existing formatting drift in 34 files**
+(incl. files COM-37 never touched). NOT a COM-37 regression (diff is token-only). Did **not** run
+`vp check --fix` (would bundle 34-file churn, break atomicity). Proposal: one standalone `chore: vp format`
+commit so `vp check` is a reliable green gate for the rest of M7/M8 — **awaiting Robin's nod** before
+reformatting on the prod branch. Until then, gate = "no NEW lint/type/format issues from the issue's diff."
+
+**Next:** COM-38 — darken accent eyebrows `ink-amber-3` on `surface-amber-2` (2.93:1 → AA), ~37 usages.

@@ -31,8 +31,8 @@ const lo = (r: any) => Math.min(r.from, r.to); const hi = (r: any) => Math.max(r
 <template>
   <div class="bg-surface-white rounded border border-outline-gray-1 p-5">
     <div class="flex items-center justify-between mb-1 flex-wrap gap-2">
-      <div class="text-sm text-ink-gray-5">How the package grows · base-case net value</div>
-      <div class="text-xs text-ink-gray-5">solid earned · faded pending gate · outline available</div>
+      <div class="text-sm text-ink-gray-6">How the package grows · base-case net value</div>
+      <div class="text-xs text-ink-gray-6">solid earned · faded pending gate · outline available</div>
     </div>
     <svg :viewBox="`0 0 ${W} ${H}`" class="w-full" :style="{ height: H + 'px' }">
       <g v-for="(r, i) in model.rows" :key="r.id">
@@ -44,8 +44,8 @@ const lo = (r: any) => Math.min(r.from, r.to); const hi = (r: any) => Math.max(r
       <line :x1="x(model.current)" :y1="padT" :x2="x(model.current)" :y2="H - 22" :style="{ stroke: '#2F6E63' }" stroke-width="1.5" />
       <text :x="x(model.current)" :y="H - 10" text-anchor="middle" font-size="9" :style="{ fill: '#2F6E63' }">Current</text>
       <line :x1="x(model.ceiling)" :y1="padT" :x2="x(model.ceiling)" :y2="H - 22" class="stroke-current text-ink-gray-4" stroke-width="1" stroke-dasharray="2 3" />
-      <text :x="x(model.ceiling)" :y="H - 10" text-anchor="middle" font-size="9" class="fill-current text-ink-gray-5">Ceiling</text>
+      <text :x="x(model.ceiling)" :y="H - 10" text-anchor="middle" font-size="9" class="fill-current text-ink-gray-6">Ceiling</text>
     </svg>
-    <p class="text-p-xs mt-1 text-ink-gray-5">The band between Current and Ceiling is the remaining potential — earn it by hitting gated objectives.</p>
+    <p class="text-p-xs mt-1 text-ink-gray-6">The band between Current and Ceiling is the remaining potential — earn it by hitting gated objectives.</p>
   </div>
 </template>

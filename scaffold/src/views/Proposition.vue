@@ -47,10 +47,10 @@ const residencyLine = computed(() => sel.value?.taxResidency === 'UK'
 </script>
 
 <template>
-  <div v-if="!sel || !c" class="text-center py-24 text-ink-gray-5">Add an advisor to prepare a proposition.</div>
+  <div v-if="!sel || !c" class="text-center py-24 text-ink-gray-6">Add an advisor to prepare a proposition.</div>
   <div v-else class="space-y-8">
     <div class="flex justify-between items-center flex-wrap gap-3 no-print">
-      <div class="text-sm text-ink-gray-5">Proposition</div>
+      <div class="text-sm text-ink-gray-6">Proposition</div>
       <div class="flex items-center gap-2">
         <AdvisorPicker />
         <Button variant="subtle" theme="gray" icon-left="lucide-printer" label="Print" @click="print" />
@@ -62,14 +62,14 @@ const residencyLine = computed(() => sel.value?.taxResidency === 'UK'
       <div class="px-8 sm:px-12 py-10 border-b border-outline-gray-1">
         <div class="flex justify-between items-start flex-wrap gap-4">
           <div>
-            <div class="text-sm text-ink-gray-5">Confidential · Discussion Draft</div>
+            <div class="text-sm text-ink-gray-6">Confidential · Discussion Draft</div>
             <div class="font-display text-2xl mt-2 text-ink-gray-9">Raiku Labs</div>
             <div class="text-p-sm mt-1 text-ink-gray-6">Advisory Engagement Proposition</div>
           </div>
           <div class="text-right">
-            <div class="text-sm text-ink-gray-5">Prepared for</div>
+            <div class="text-sm text-ink-gray-6">Prepared for</div>
             <div class="font-display text-xl mt-2 text-ink-gray-9">{{ sel.name }}</div>
-            <div class="text-p-xs mt-1 max-w-xs text-ink-gray-5">{{ sel.sector }}</div>
+            <div class="text-p-xs mt-1 max-w-xs text-ink-gray-6">{{ sel.sector }}</div>
           </div>
         </div>
       </div>
@@ -88,34 +88,34 @@ const residencyLine = computed(() => sel.value?.taxResidency === 'UK'
 
         <div class="grid md:grid-cols-3 border-y border-outline-gray-2">
           <div class="p-8 border-r border-outline-gray-1">
-            <div class="flex items-baseline gap-3 mb-5"><span class="text-xs text-ink-gray-5">i</span><span class="text-sm text-ink-gray-5">Base · net</span></div>
+            <div class="flex items-baseline gap-3 mb-5"><span class="text-xs text-ink-gray-6">i</span><span class="text-sm text-ink-gray-6">Base · net</span></div>
             <div class="font-display tabular-nums text-ink-gray-9" style="font-size:2.2rem;font-weight:350;line-height:1">{{ fUSD(c.baseCaseBase) }}</div>
-            <div class="text-p-xs mt-5 text-ink-gray-5">{{ fPct(c.baseEq, 2) }} equity + {{ fPct(c.baseTk, 3) }} tokens</div>
+            <div class="text-p-xs mt-5 text-ink-gray-6">{{ fPct(c.baseEq, 2) }} equity + {{ fPct(c.baseTk, 3) }} tokens</div>
           </div>
           <div class="p-8 border-r border-outline-gray-1 bg-surface-amber-2">
             <div class="flex items-baseline gap-3 mb-5"><span class="text-xs text-ink-amber-3">ii</span><span class="text-sm text-ink-amber-3">Current · earned</span></div>
             <div class="font-display tabular-nums text-ink-gray-9" style="font-size:2.2rem;font-weight:350;line-height:1">{{ fUSD(c.baseCaseTotal) }}</div>
-            <div class="text-p-xs mt-5 text-ink-gray-5">{{ c.earnedUplift > 0 ? `+${(c.earnedUplift * 100).toFixed(0)}% earned` : 'no uplift yet' }}</div>
+            <div class="text-p-xs mt-5 text-ink-gray-6">{{ c.earnedUplift > 0 ? `+${(c.earnedUplift * 100).toFixed(0)}% earned` : 'no uplift yet' }}</div>
           </div>
           <div class="p-8">
-            <div class="flex items-baseline gap-3 mb-5"><span class="text-xs text-ink-gray-5">iii</span><span class="text-sm text-ink-gray-5">Ceiling</span></div>
+            <div class="flex items-baseline gap-3 mb-5"><span class="text-xs text-ink-gray-6">iii</span><span class="text-sm text-ink-gray-6">Ceiling</span></div>
             <div class="font-display tabular-nums text-ink-gray-9" style="font-size:2.2rem;font-weight:350;line-height:1">{{ fUSD(c.baseCaseCeil) }}</div>
-            <div class="text-p-xs mt-5 text-ink-gray-5">+{{ (c.ceilUplift * 100).toFixed(0) }}% over base</div>
+            <div class="text-p-xs mt-5 text-ink-gray-6">+{{ (c.ceilUplift * 100).toFixed(0) }}% over base</div>
           </div>
         </div>
 
         <div>
-          <div class="text-sm text-ink-gray-5 mb-2">Net value across outcomes · net of strike & dilution</div>
+          <div class="text-sm text-ink-gray-6 mb-2">Net value across outcomes · net of strike & dilution</div>
           <div class="grid grid-cols-3 gap-px bg-surface-gray-2 rounded overflow-hidden">
             <div v-for="s in c.scen" :key="s.key" class="p-6" :class="s.key === baseScenKey(S.plan) ? 'bg-surface-amber-2' : 'bg-surface-white'">
-              <div class="text-xs mb-2" :class="s.key === baseScenKey(S.plan) ? 'text-ink-amber-3' : 'text-ink-gray-5'">{{ s.label }} · {{ fPct(s.retention, 0) }} kept</div>
+              <div class="text-xs mb-2" :class="s.key === baseScenKey(S.plan) ? 'text-ink-amber-3' : 'text-ink-gray-6'">{{ s.label }} · {{ fPct(s.retention, 0) }} kept</div>
               <div class="font-display text-2xl tabular-nums text-ink-gray-9">{{ fUSD(s.total) }}</div>
-              <div class="text-p-xs mt-2 text-ink-gray-5">eq {{ s.underwater ? 'underwater' : fUSD(s.equity) }} · tok {{ fUSD(s.token) }}</div>
+              <div class="text-p-xs mt-2 text-ink-gray-6">eq {{ s.underwater ? 'underwater' : fUSD(s.equity) }} · tok {{ fUSD(s.token) }}</div>
             </div>
           </div>
         </div>
 
-        <div class="text-p-xs text-ink-gray-5 leading-relaxed border-t border-outline-gray-1 pt-4">
+        <div class="text-p-xs text-ink-gray-6 leading-relaxed border-t border-outline-gray-1 pt-4">
           Ackermann Systems Engineering Ltd (t/a Raiku), Cayman Islands. Options over ordinary non-voting shares (ESOP), strike at the {{ roundLabel(S.plan, c.grantRound) }} price; net exercise permitted. Tokens via Restricted Token Award. Equity vests {{ S.plan.equityVestYears }}yr/{{ S.plan.equityCliff }}mo annually with a 1-year cliff; exercise binds a deed of adherence. Change-of-control acceleration is at Board discretion (not contractual). {{ residencyLine }} Strike subject to an agreed HMRC SAV / 409A valuation before first grant. If no exit by the 9th anniversary, a ≥90-day exercise window opens (Option Certificate 3.6). Subject to required investor consents. Not a binding offer or legal/financial advice.
         </div>
       </div>

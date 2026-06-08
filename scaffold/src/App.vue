@@ -53,11 +53,11 @@ function doSaveAs() { const n = saveAsName.value.trim(); if (n) { saveBoard(n); 
           <div class="flex items-center justify-between gap-3 py-3 flex-wrap">
             <div class="flex items-baseline gap-3">
               <span class="font-display text-lg leading-none text-ink-gray-9">Raiku Labs</span>
-              <span class="hidden sm:inline text-p-xs text-ink-gray-5">Advisory Board · Compensation Studio</span>
+              <span class="hidden sm:inline text-p-xs text-ink-gray-6">Advisory Board · Compensation Studio</span>
               <Badge label="Internal" theme="orange" variant="subtle" size="sm" />
             </div>
             <div class="flex items-center gap-2">
-              <span v-if="store.status" class="text-xs text-ink-gray-5 mr-1">{{ store.status }}</span>
+              <span v-if="store.status" class="text-xs text-ink-gray-6 mr-1">{{ store.status }}</span>
               <Button variant="subtle" theme="gray" icon-left="lucide-folder-open"
                 :label="savedNames.length ? `Saved · ${savedNames.length}` : 'Saved'" @click="toggleMgr()" />
               <Dropdown :options="moreActions">
@@ -71,7 +71,7 @@ function doSaveAs() { const n = saveAsName.value.trim(); if (n) { saveBoard(n); 
               class="whitespace-nowrap px-3 py-2.5 text-sm no-underline border-b-2 transition-colors"
               :class="route.path === t.to
                 ? 'text-ink-gray-9 border-ink-gray-9 font-medium'
-                : 'text-ink-gray-5 border-transparent hover:text-ink-gray-7'">
+                : 'text-ink-gray-6 border-transparent hover:text-ink-gray-7'">
               {{ t.label }}
             </router-link>
           </nav>
@@ -95,7 +95,7 @@ function doSaveAs() { const n = saveAsName.value.trim(); if (n) { saveBoard(n); 
       </main>
 
       <footer class="no-print bg-surface-white border-t border-outline-gray-1">
-        <div class="mx-auto w-full max-w-7xl px-3 sm:px-5 py-8 text-p-xs text-ink-gray-5 leading-relaxed space-y-2">
+        <div class="mx-auto w-full max-w-7xl px-3 sm:px-5 py-8 text-p-xs text-ink-gray-6 leading-relaxed space-y-2">
           <div class="text-sm text-ink-gray-7">Notes · all equity values net of strike</div>
           <p>
             Every advisor starts on the same uniform base ({{ fPct(store.S.plan.baseGrant.equityPct, 2) }} equity ·
@@ -115,7 +115,7 @@ function doSaveAs() { const n = saveAsName.value.trim(); if (n) { saveBoard(n); 
             Saves are local to this browser. To share a board with the council, use <b>Copy state</b> (clipboard)
             or <b>Export JSON</b> (file) from the actions menu.
           </p>
-          <div v-if="!savedNames.length" class="text-sm text-ink-gray-5 mb-4">No saved boards yet.</div>
+          <div v-if="!savedNames.length" class="text-sm text-ink-gray-6 mb-4">No saved boards yet.</div>
           <ul v-else class="divide-y divide-outline-gray-1 mb-5 border border-outline-gray-1 rounded">
             <li v-for="n in savedNames" :key="n" class="flex items-center justify-between gap-2 px-3 py-2">
               <button class="flex items-center gap-2 text-sm text-left text-ink-gray-8 hover:text-ink-gray-9"

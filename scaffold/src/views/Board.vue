@@ -73,28 +73,28 @@ const baseTotalSum = computed(() => board.value.rows.reduce((s: number, r: any) 
       <div class="bg-surface-white rounded border border-outline-gray-1 p-5" role="img"
         :aria-label="`Valuation path base case. TGE FDV ${fUSD(stairFdv)}.`">
         <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
-          <div class="text-sm text-ink-gray-5">Valuation path · base case{{ S.plan.showBenchmarks ? ' vs market median' : '' }} <span class="text-ink-gray-4">· post-money $M</span></div>
-          <div class="text-xs tabular-nums text-ink-gray-5">TGE FDV {{ fUSD(stairFdv) }} · {{ fMult(S.plan.scenarios[baseScenKey(S.plan)].tgeMult) }} × {{ roundLabel(S.plan, S.plan.tgeAnchor) }}</div>
+          <div class="text-sm text-ink-gray-6">Valuation path · base case{{ S.plan.showBenchmarks ? ' vs market median' : '' }} <span class="text-ink-gray-4">· post-money $M</span></div>
+          <div class="text-xs tabular-nums text-ink-gray-6">TGE FDV {{ fUSD(stairFdv) }} · {{ fMult(S.plan.scenarios[baseScenKey(S.plan)].tgeMult) }} × {{ roundLabel(S.plan, S.plan.tgeAnchor) }}</div>
         </div>
         <FrappeChart type="bar" :data="stair" :height="210" :colors="['#9C4A0C', '#E7C99B']" :options="stairOpts" />
-        <p v-if="S.plan.showBenchmarks" class="text-p-xs text-ink-gray-5 mt-1">Median = 2025 market post-money by stage ({{ BENCH.postMoneySrc }}). Raiku's plan runs above median — an ambitious path.</p>
+        <p v-if="S.plan.showBenchmarks" class="text-p-xs text-ink-gray-6 mt-1">Median = 2025 market post-money by stage ({{ BENCH.postMoneySrc }}). Raiku's plan runs above median — an ambitious path.</p>
       </div>
 
       <!-- potential scatter -->
       <div class="bg-surface-white rounded border border-outline-gray-1 p-5" role="img"
         aria-label="Advisor potential: current net value (x) vs headroom to ceiling (y); bubble size is capital introduced.">
-        <div class="text-sm text-ink-gray-5 mb-3">Untapped potential · current net (x) vs headroom (y) · bubble = capital introduced</div>
+        <div class="text-sm text-ink-gray-6 mb-3">Untapped potential · current net (x) vs headroom (y) · bubble = capital introduced</div>
         <svg :viewBox="`0 0 ${VW} ${VH}`" class="w-full text-ink-gray-9" :style="{ height: '260px' }">
           <line :x1="PAD.l" :y1="VH - PAD.b" :x2="VW - PAD.r" :y2="VH - PAD.b" class="stroke-current text-ink-gray-3" stroke-width="1" />
           <line :x1="PAD.l" :y1="PAD.t" :x2="PAD.l" :y2="VH - PAD.b" class="stroke-current text-ink-gray-3" stroke-width="1" />
-          <text :x="PAD.l" :y="VH - 6" class="fill-current text-ink-gray-5" font-size="9">{{ fUSD(0) }}</text>
-          <text :x="VW - PAD.r" :y="VH - 6" text-anchor="end" class="fill-current text-ink-gray-5" font-size="9">{{ fUSD(xMax) }}</text>
+          <text :x="PAD.l" :y="VH - 6" class="fill-current text-ink-gray-6" font-size="9">{{ fUSD(0) }}</text>
+          <text :x="VW - PAD.r" :y="VH - 6" text-anchor="end" class="fill-current text-ink-gray-6" font-size="9">{{ fUSD(xMax) }}</text>
           <g v-for="d in scatter" :key="d.id" class="cursor-pointer" @click="open(d.id)">
             <circle :cx="sx(d.x)" :cy="sy(d.y)" :r="sr(d.z)" :style="{ fill: TIER_COLOR[d.tier] || '#9C4A0C', fillOpacity: 0.7 }" />
             <text :x="sx(d.x)" :y="sy(d.y) - sr(d.z) - 3" text-anchor="middle" class="fill-current text-ink-gray-7" font-size="9">{{ d.name }}</text>
           </g>
         </svg>
-        <div class="flex gap-3 text-xs mt-1 flex-wrap text-ink-gray-5">
+        <div class="flex gap-3 text-xs mt-1 flex-wrap text-ink-gray-6">
           <span v-for="(t, i) in S.tiers" :key="i" class="flex items-center gap-1"><span class="inline-block size-2 rounded-full" :style="{ background: TIER_COLOR[i] }" />{{ t.name }}</span>
           <span class="ml-auto">top-left = most headroom, modest today</span>
         </div>
@@ -106,19 +106,19 @@ const baseTotalSum = computed(() => board.value.rows.reduce((s: number, r: any) 
         <!-- roster table -->
         <div class="bg-surface-white rounded border border-outline-gray-1 overflow-x-auto">
           <table class="w-full text-sm" style="min-width:560px">
-            <thead><tr class="border-b border-outline-gray-2 text-left text-ink-gray-5">
+            <thead><tr class="border-b border-outline-gray-2 text-left text-ink-gray-6">
               <th class="px-4 py-3 font-normal">Advisor</th><th class="px-4 py-3 font-normal">Tier</th>
               <th class="px-4 py-3 font-normal">Base eq</th><th class="px-4 py-3 font-normal">Earned</th>
               <th class="px-4 py-3 font-normal">Net base-case</th><th class="px-2 py-3 no-print" />
             </tr></thead>
             <tbody>
               <tr v-for="{ a, c } in board.rows" :key="a.id" class="border-b border-outline-gray-1 cursor-pointer hover:bg-surface-gray-1" @click="open(a.id)">
-                <td class="px-4 py-3"><div class="font-medium text-ink-gray-9">{{ a.name }}</div><div class="text-xs text-ink-gray-5">{{ a.sector.split('—')[0].trim() }}</div></td>
+                <td class="px-4 py-3"><div class="font-medium text-ink-gray-9">{{ a.name }}</div><div class="text-xs text-ink-gray-6">{{ a.sector.split('—')[0].trim() }}</div></td>
                 <td class="px-4 py-3"><Badge :label="a.mode === 'value' ? '$value' : (S.tiers[a.tier]?.name || '—')" theme="orange" variant="subtle" size="sm" /></td>
                 <td class="px-4 py-3 tabular-nums text-ink-gray-8">{{ fPct(c.baseEq, 2) }}</td>
-                <td class="px-4 py-3 tabular-nums" :class="c.earnedUplift > 0 ? 'text-ink-green-3' : 'text-ink-gray-5'">+{{ (c.earnedUplift * 100).toFixed(0) }}%<span v-if="c.pendingUplift > 0" class="text-ink-amber-3"> +{{ (c.pendingUplift * 100).toFixed(0) }}⏳</span></td>
+                <td class="px-4 py-3 tabular-nums" :class="c.earnedUplift > 0 ? 'text-ink-green-3' : 'text-ink-gray-6'">+{{ (c.earnedUplift * 100).toFixed(0) }}%<span v-if="c.pendingUplift > 0" class="text-ink-amber-3"> +{{ (c.pendingUplift * 100).toFixed(0) }}⏳</span></td>
                 <td class="px-4 py-3 tabular-nums font-medium text-ink-gray-9">{{ fUSD(c.baseCaseTotal) }}</td>
-                <td class="px-2 py-3 no-print"><button aria-label="Remove advisor" class="text-ink-gray-5 hover:text-ink-red-3" @click.stop="delAdvisor(a.id)"><span class="lucide-trash-2 size-3.5" aria-hidden="true" /></button></td>
+                <td class="px-2 py-3 no-print"><button aria-label="Remove advisor" class="text-ink-gray-6 hover:text-ink-red-3" @click.stop="delAdvisor(a.id)"><span class="lucide-trash-2 size-3.5" aria-hidden="true" /></button></td>
               </tr>
               <tr class="bg-surface-amber-2">
                 <td class="px-4 py-3 font-medium text-ink-gray-9">Board · {{ board.rows.length }}</td><td />
@@ -130,7 +130,7 @@ const baseTotalSum = computed(() => board.value.rows.reduce((s: number, r: any) 
         </div>
         <!-- scenario range by advisor -->
         <div>
-          <div class="text-sm text-ink-gray-5 mb-3">Scenario range by advisor · net value</div>
+          <div class="text-sm text-ink-gray-6 mb-3">Scenario range by advisor · net value</div>
           <div class="bg-surface-white rounded border border-outline-gray-1 p-5 space-y-3">
             <FootballField v-for="r in ranges" :key="r.name" :lo="r.lo" :base="r.base" :hi="r.hi" :max="rangeMax" :label="r.name" compact />
           </div>
@@ -143,7 +143,7 @@ const baseTotalSum = computed(() => board.value.rows.reduce((s: number, r: any) 
           <div class="text-sm text-ink-amber-3 flex items-center gap-2"><span class="lucide-building-2 size-3.5" aria-hidden="true" /> Company cost · net to the board</div>
           <div class="grid grid-cols-3 gap-px bg-surface-gray-2 rounded overflow-hidden">
             <div v-for="k in Object.keys(S.plan.scenarios)" :key="k" class="p-3" :class="k === baseScenKey(S.plan) ? 'bg-surface-white' : 'bg-surface-amber-2'">
-              <div class="text-xs text-ink-gray-5 mb-1">{{ S.plan.scenarios[k].label }}</div>
+              <div class="text-xs text-ink-gray-6 mb-1">{{ S.plan.scenarios[k].label }}</div>
               <div class="font-display text-base tabular-nums text-ink-gray-9">{{ fUSD(board.cost[k] || 0) }}</div>
             </div>
           </div>

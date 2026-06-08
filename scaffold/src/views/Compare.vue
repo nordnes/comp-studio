@@ -30,7 +30,7 @@ const scenColors = computed(() => cols.value.map((_, i) => SCEN_COLORS[i % SCEN_
 
     <div class="bg-surface-white rounded border border-outline-gray-1 overflow-x-auto">
       <table class="w-full text-sm" style="min-width:760px">
-        <thead><tr class="border-b border-outline-gray-2 text-left text-ink-gray-5">
+        <thead><tr class="border-b border-outline-gray-2 text-left text-ink-gray-6">
           <th class="px-4 py-3 font-normal">Advisor</th><th class="px-4 py-3 font-normal">Tier</th>
           <th class="px-4 py-3 font-normal">Base eq</th><th class="px-4 py-3 font-normal">Earned</th><th class="px-4 py-3 font-normal">Ceiling</th>
           <th v-for="k in cols" :key="k" class="px-4 py-3 font-normal">Net {{ S.plan.scenarios[k].label.toLowerCase() }}</th>
@@ -41,8 +41,8 @@ const scenColors = computed(() => cols.value.map((_, i) => SCEN_COLORS[i % SCEN_
             <td class="px-4 py-3 font-medium text-ink-gray-9">{{ a.name }}</td>
             <td class="px-4 py-3"><Badge :label="a.mode === 'value' ? '$value' : (S.tiers[a.tier]?.name || '—')" theme="orange" variant="subtle" size="sm" /></td>
             <td class="px-4 py-3 tabular-nums text-ink-gray-8">{{ fPct(c.baseEq, 2) }}</td>
-            <td class="px-4 py-3 tabular-nums" :class="c.earnedUplift > 0 ? 'text-ink-green-3' : 'text-ink-gray-5'">+{{ (c.earnedUplift * 100).toFixed(0) }}%</td>
-            <td class="px-4 py-3 tabular-nums text-ink-gray-5">+{{ (c.ceilUplift * 100).toFixed(0) }}%</td>
+            <td class="px-4 py-3 tabular-nums" :class="c.earnedUplift > 0 ? 'text-ink-green-3' : 'text-ink-gray-6'">+{{ (c.earnedUplift * 100).toFixed(0) }}%</td>
+            <td class="px-4 py-3 tabular-nums text-ink-gray-6">+{{ (c.ceilUplift * 100).toFixed(0) }}%</td>
             <td v-for="k in cols" :key="k" class="px-4 py-3 tabular-nums text-ink-gray-9" :class="k === baseScenKey(S.plan) ? 'font-medium' : ''">{{ fUSD(c.scen.find((x: any) => x.key === k)?.total || 0) }}</td>
             <td class="px-4 py-3 tabular-nums text-ink-gray-8">{{ c.cash ? fUSD(c.cash) : '—' }}</td>
           </tr>
@@ -57,7 +57,7 @@ const scenColors = computed(() => cols.value.map((_, i) => SCEN_COLORS[i % SCEN_
     </div>
 
     <div>
-      <div class="text-sm text-ink-gray-5 mb-3">Net value across scenarios <span class="text-ink-gray-4">· $M</span></div>
+      <div class="text-sm text-ink-gray-6 mb-3">Net value across scenarios <span class="text-ink-gray-4">· $M</span></div>
       <div class="bg-surface-white rounded border border-outline-gray-1 p-6">
         <FrappeChart type="bar" :data="chart" :height="300" :colors="scenColors" :options="chartOpts" />
       </div>

@@ -19,7 +19,7 @@ const over = (s: { ceil: number; budget: number }) => s.ceil > s.budget + 1e-9;
 
 <template>
   <div class="bg-surface-white rounded border border-outline-gray-1 p-5 space-y-4">
-    <div class="text-sm text-ink-gray-5">Pool allocation</div>
+    <div class="text-sm text-ink-gray-6">Pool allocation</div>
     <div v-for="s in segments" :key="s.label">
       <div class="flex justify-between text-sm mb-1.5">
         <span class="text-ink-gray-6">{{ s.label }}</span>
@@ -32,7 +32,7 @@ const over = (s: { ceil: number; budget: number }) => s.ceil > s.budget + 1e-9;
         <div class="absolute inset-y-0 left-0 rounded-full bg-surface-gray-7" :style="{ width: w(s.used, s.budget) }" />
       </div>
     </div>
-    <p class="text-p-xs text-ink-gray-5 leading-relaxed">
+    <p class="text-p-xs text-ink-gray-6 leading-relaxed">
       Solid = earned · light = ceiling. The board's token bucket is ring-fenced and scalable, separate from
       the 5% ecosystem advisor pool (~{{ fPct(committed, 2) }} committed there).
     </p>

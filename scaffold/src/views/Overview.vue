@@ -40,9 +40,9 @@ const hasBudget = computed(() => flags.value.some(f => f.t === 'budget'));
 
 <template>
   <div v-if="!board.rows.length" class="flex flex-col items-center justify-center gap-3 py-24 text-center">
-    <div class="rounded-full bg-surface-gray-2 p-3 text-ink-gray-5"><span class="lucide-inbox size-6" aria-hidden="true" /></div>
+    <div class="rounded-full bg-surface-gray-2 p-3 text-ink-gray-6"><span class="lucide-inbox size-6" aria-hidden="true" /></div>
     <p class="text-lg text-ink-gray-8">No advisors yet.</p>
-    <p class="text-p-sm text-ink-gray-5 max-w-md">Add your first advisor to model a package — a uniform base that grows with performance, net of strike and dilution against the company plan.</p>
+    <p class="text-p-sm text-ink-gray-6 max-w-md">Add your first advisor to model a package — a uniform base that grows with performance, net of strike and dilution against the company plan.</p>
     <Button variant="solid" theme="gray" icon-left="lucide-plus" label="Add advisor" class="mt-2" route="/board" />
   </div>
 
@@ -55,15 +55,15 @@ const hasBudget = computed(() => flags.value.some(f => f.t === 'budget'));
     <!-- KPI band -->
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-px bg-surface-gray-2 rounded overflow-hidden border border-outline-gray-1">
       <div v-for="k in kpis" :key="k.l" class="p-4" :class="k.accent ? 'bg-surface-amber-2' : 'bg-surface-white'">
-        <div class="text-xs mb-1" :class="k.accent ? 'text-ink-amber-3' : 'text-ink-gray-5'">{{ k.l }}</div>
+        <div class="text-xs mb-1" :class="k.accent ? 'text-ink-amber-3' : 'text-ink-gray-6'">{{ k.l }}</div>
         <div class="font-display text-xl leading-none tabular-nums text-ink-gray-9">{{ k.v }}</div>
-        <div v-if="k.sub" class="text-xs mt-1 text-ink-gray-5">{{ k.sub }}</div>
+        <div v-if="k.sub" class="text-xs mt-1 text-ink-gray-6">{{ k.sub }}</div>
       </div>
     </div>
 
     <div class="grid lg:grid-cols-3 gap-6">
       <div class="lg:col-span-2 space-y-3">
-        <div class="text-sm text-ink-gray-5">Roster · click to open a package</div>
+        <div class="text-sm text-ink-gray-6">Roster · click to open a package</div>
         <div class="grid sm:grid-cols-2 gap-3">
           <button v-for="{ a, c } in board.rows" :key="a.id" @click="open(a.id)"
             class="text-left bg-surface-white rounded border border-outline-gray-1 p-4 hover:bg-surface-gray-1 hover:border-outline-gray-2 transition-colors">
@@ -71,23 +71,23 @@ const hasBudget = computed(() => flags.value.some(f => f.t === 'budget'));
               <div class="font-medium text-ink-gray-9">{{ a.name }}</div>
               <Badge :label="a.mode === 'value' ? '$value' : (S.tiers[a.tier]?.name || '—')" theme="orange" variant="subtle" size="sm" />
             </div>
-            <div class="text-xs mt-0.5 text-ink-gray-5">{{ a.sector.split('—')[0].trim() }}</div>
+            <div class="text-xs mt-0.5 text-ink-gray-6">{{ a.sector.split('—')[0].trim() }}</div>
             <div class="flex justify-between items-baseline mt-3">
               <div class="font-display text-xl tabular-nums text-ink-gray-9">{{ fUSD(c.baseCaseTotal) }}</div>
-              <div class="text-xs tabular-nums text-ink-gray-5">{{ fPct(c.eqPct, 2) }} eq · {{ fPct(c.tkPct, 2) }} tok</div>
+              <div class="text-xs tabular-nums text-ink-gray-6">{{ fPct(c.eqPct, 2) }} eq · {{ fPct(c.tkPct, 2) }} tok</div>
             </div>
             <div v-if="c.ceilUplift > c.earnedUplift" class="text-xs mt-1 text-ink-green-3">+{{ (c.ceilUplift * 100).toFixed(0) }}% potential at ceiling</div>
           </button>
         </div>
-        <p class="text-p-xs text-ink-gray-5">Base path: <span v-for="(s, i) in w.steps" :key="s.id">{{ i ? ' → ' : '' }}{{ s.label }} {{ fUSD(s.post) }}</span> · TGE FDV {{ fUSD(fdv) }}.</p>
+        <p class="text-p-xs text-ink-gray-6">Base path: <span v-for="(s, i) in w.steps" :key="s.id">{{ i ? ' → ' : '' }}{{ s.label }} {{ fUSD(s.post) }}</span> · TGE FDV {{ fUSD(fdv) }}.</p>
       </div>
 
       <div class="space-y-6">
         <PoolAllocation :board="board" :committed="S.plan.committedAdvisorTokenPct" />
         <div class="bg-surface-white rounded border border-outline-gray-1 p-5 space-y-2">
-          <div class="text-sm text-ink-gray-5">Benchmark</div>
+          <div class="text-sm text-ink-gray-6">Benchmark</div>
           <p class="text-p-sm text-ink-gray-7">Board base equity <b class="text-ink-gray-9">{{ fPct(baseEqSum, 2) }}</b> · FAST per-head 0.30–1.00% · advisory pool ~{{ fPct(BENCH.advisorPool, 0) }}.</p>
-          <p class="text-p-xs text-ink-gray-5">Source: {{ BENCH.advisorSrc }}.</p>
+          <p class="text-p-xs text-ink-gray-6">Source: {{ BENCH.advisorSrc }}.</p>
         </div>
         <div class="rounded border p-5 space-y-2" :class="hasBudget ? 'bg-surface-red-2 border-outline-red-2' : 'bg-surface-amber-2 border-outline-amber-2'">
           <div class="text-sm" :class="hasBudget ? 'text-ink-red-3' : 'text-ink-amber-3'">To confirm / alerts</div>

@@ -53,8 +53,8 @@ const refLines = computed(() => {
 <template>
   <div class="bg-surface-white rounded border border-outline-gray-1 p-5">
     <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
-      <div class="text-sm text-ink-gray-5">Vested value over time · base case, net of strike</div>
-      <label class="flex items-center gap-2 text-xs text-ink-gray-5">Uplift earned at (month) <span class="w-12"><NumIn :model-value="sel.upliftStartMonth ?? 6" :min="0" :max="48" aria-label="Uplift earn month" @update:model-value="(v: number) => setPath(['advisors', idx, 'upliftStartMonth'], v)" /></span></label>
+      <div class="text-sm text-ink-gray-6">Vested value over time · base case, net of strike</div>
+      <label class="flex items-center gap-2 text-xs text-ink-gray-6">Uplift earned at (month) <span class="w-12"><NumIn :model-value="sel.upliftStartMonth ?? 6" :min="0" :max="48" aria-label="Uplift earn month" @update:model-value="(v: number) => setPath(['advisors', idx, 'upliftStartMonth'], v)" /></span></label>
     </div>
     <svg :viewBox="`0 0 ${W} ${H}`" class="w-full" style="height:210px" role="img" aria-label="Vested value over 48 months: base equity, uplift, and tokens, net of strike. Cliff at 12 months, Bad-Leaver line at 24 months.">
       <line :x1="padL" :y1="H - padB" :x2="W - padR" :y2="H - padB" class="stroke-current text-ink-gray-3" stroke-width="1" />
@@ -63,16 +63,16 @@ const refLines = computed(() => {
       <path :d="stackPath('uplift')" :style="{ fill: '#2F6E63', fillOpacity: 0.3 }" />
       <template v-for="r in refLines" :key="r.label">
         <line :x1="x(r.m)" :y1="padT" :x2="x(r.m)" :y2="H - padB" :class="r.color ? '' : 'stroke-current text-ink-gray-4'" :style="r.color ? { stroke: r.color } : {}" stroke-dasharray="2 4" />
-        <text :x="x(r.m)" :y="padT + 6" text-anchor="middle" font-size="8" :class="r.color ? '' : 'fill-current text-ink-gray-5'" :style="r.color ? { fill: r.color } : {}">{{ r.label }}</text>
+        <text :x="x(r.m)" :y="padT + 6" text-anchor="middle" font-size="8" :class="r.color ? '' : 'fill-current text-ink-gray-6'" :style="r.color ? { fill: r.color } : {}">{{ r.label }}</text>
       </template>
-      <text :x="padL" :y="H - 6" font-size="8" class="fill-current text-ink-gray-5">M0</text>
-      <text :x="W - padR" :y="H - 6" text-anchor="end" font-size="8" class="fill-current text-ink-gray-5">M48</text>
+      <text :x="padL" :y="H - 6" font-size="8" class="fill-current text-ink-gray-6">M0</text>
+      <text :x="W - padR" :y="H - 6" text-anchor="end" font-size="8" class="fill-current text-ink-gray-6">M48</text>
     </svg>
     <div class="flex gap-3 text-xs mt-2 text-ink-gray-6 flex-wrap">
       <span class="flex items-center gap-1"><span class="inline-block size-2 rounded-full" style="background:#9C4A0C" />Base equity</span>
       <span class="flex items-center gap-1"><span class="inline-block size-2 rounded-full" style="background:#2F6E63" />Uplift</span>
       <span class="flex items-center gap-1"><span class="inline-block size-2 rounded-full" style="background:#C46A1F" />Tokens</span>
     </div>
-    <p class="text-p-xs mt-1 text-ink-gray-5">Equity vests 25%/yr after a 1-year cliff; uplift vests from the chosen month; tokens from TGE. Voluntary exit before the 2-year Bad-Leaver line forfeits even vested options. No exit by year 9 → a ≥90-day exercise window opens (backstop). Change-of-control acceleration is at Board discretion, not guaranteed.</p>
+    <p class="text-p-xs mt-1 text-ink-gray-6">Equity vests 25%/yr after a 1-year cliff; uplift vests from the chosen month; tokens from TGE. Voluntary exit before the 2-year Bad-Leaver line forfeits even vested options. No exit by year 9 → a ≥90-day exercise window opens (backstop). Change-of-control acceleration is at Board discretion, not guaranteed.</p>
   </div>
 </template>

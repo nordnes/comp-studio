@@ -59,6 +59,9 @@ const store = reactive<Store>(bootstrap());
 
 let flashTimer: ReturnType<typeof setTimeout> | null = null;
 function flash(m: string) { store.status = m; if (flashTimer) clearTimeout(flashTimer); flashTimer = setTimeout(() => { store.status = ''; }, 2800); }
+// COM-45: trust-boundary check before applying an imported/pasted board — JSON.parse succeeds on junk
+// ({}, arrays, a number), which would feed reconcile garbage. A valid board has a plan object + advisors array.
+function validImport(o: any): boolean { return !!o && typeof o === 'object' && !Array.isArray(o) && !!o.plan && typeof o.plan === 'object' && Array.isArray(o.advisors); }
 
 // The working board auto-saves into saved[S.name] (deviation from the reference's explicit-Save model —
 // safer for a live tool). Mgr "Save as" forks a named snapshot.
@@ -187,9 +190,9 @@ export function useStudio() {
   // ---- share / import / export ----
   function shareUrl() { try { return location.origin + location.pathname + '#s=' + encodeHash(store.S); } catch { return ''; } }
   async function copyState() { try { await navigator.clipboard.writeText(JSON.stringify(store.S)); flash('State copied — paste to share'); } catch { flash('Clipboard blocked'); } }
-  async function pasteState() { try { const t = await navigator.clipboard.readText(); loadState(JSON.parse(t)); flash('Loaded from clipboard'); } catch { flash('Paste failed — use Import'); } }
+  async function pasteState() { try { const t = await navigator.clipboard.readText(); const o = JSON.parse(t); if (!validImport(o)) { flash('Paste failed — clipboard is not a valid board'); return; } loadState(o); flash(`Pasted · ${store.S.advisors.length} advisors, ${Object.keys(store.S.plan.scenarios).length} scenarios`); } catch { flash('Paste failed — copy a board first, or use Import'); } }
   function exportJSON() { flash(download(`raiku-advisory-${store.S.name.replace(/\s+/g, '-')}.json`, JSON.stringify(store.S, null, 2), 'application/json') ? 'JSON downloaded' : 'Blocked'); }
-  function importJSON(file: File) { const r = new FileReader(); r.onload = () => { try { loadState(JSON.parse(String(r.result))); flash('Imported'); } catch { flash('Invalid JSON'); } }; r.readAsText(file); }
+  function importJSON(file: File) { const r = new FileReader(); r.onload = () => { try { const o = JSON.parse(String(r.result)); if (!validImport(o)) { flash('Import failed — not a valid board file'); return; } loadState(o); flash(`Imported · ${store.S.advisors.length} advisors, ${Object.keys(store.S.plan.scenarios).length} scenarios`); } catch { flash('Import failed — invalid JSON'); } }; r.readAsText(file); }
 
   // Board-summary CSV (roster + company-cost rows) — distinct from the roadmap CSV.
   function exportBoardCSV() {

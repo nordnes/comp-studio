@@ -430,3 +430,20 @@ Reset+delRound/Scenario/Milestone; extended to all for consistency + safety). Ad
   Confirm then executed it (3→2 rounds). Cleared localStorage after to restore the default board.
 
 **Next:** COM-44 — text alternatives (role=img + aria-label) on screen-reader-silent charts (M).
+
+## 2026-06-09 — COM-44 (chart text alternatives) DONE
+
+**COM-44 (P1, M) — DONE.** Gave the screen-reader-silent charts text alternatives.
+- FrappeChart.vue: added an optional `ariaLabel` prop → `role="img"` + aria-label on its root (frappe-charts
+  renders raw <svg> with no ARIA). Passed computed summaries to: Compare grouped bar + UpsideCurve equity & token
+  line charts. (Board staircase already covered by its container role=img → left alone to avoid nested role=img.)
+- GrowthWaterfall: role=img + aria-label on its <svg> (Current/Ceiling values in the label).
+- FootballField: role=img + aria-label on the bar div (range lo–hi + base) — fixes the per-row COMPACT Board bars
+  that were fully silent (base was only in a title tooltip).
+- DilutionPath / MixBreakdown / PotentialStrip — DELIBERATELY left WITHOUT role=img: already text-accessible
+  (per-step %s + summary / labeled legend / labeled metric cells). role=img would HIDE that readable text.
+  Principle: a text alternative only where the visual is opaque; never role=img over readable text.
+- QA: build 0 · engine 22/22 · preview: /advisors 4 role=img, /board 6 (staircase/scatter + 4 FootballField
+  "Scenario range $X to $Y, base $Z"), /compare 1 grouped bar. No console errors.
+
+**Next:** COM-45 — Import/Copy/Paste explicit success+failure feedback with counts + validate imported JSON at the boundary (M). Then GATE M7.

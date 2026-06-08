@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router';
+import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router';
 import Overview from './views/Overview.vue';
 import Advisors from './views/Advisors.vue';
 import Configure from './views/Configure.vue';
@@ -6,7 +6,7 @@ import Board from './views/Board.vue';
 import Compare from './views/Compare.vue';
 import Proposition from './views/Proposition.vue';
 
-const routes = [
+const routes: RouteRecordRaw[] = [
   { path: '/', redirect: '/overview' },
   { path: '/overview', component: Overview, meta: { title: 'Overview' } },
   { path: '/advisors', component: Advisors, meta: { title: 'Advisors' } },

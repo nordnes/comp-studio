@@ -109,7 +109,7 @@ function doSaveAs() { const n = saveAsName.value.trim(); if (n) { saveBoard(n); 
       </footer>
 
       <!-- Saved-board manager (Mgr) -->
-      <Dialog v-model:open="store.showMgr" :options="{ title: 'Saved boards', size: 'lg' }">
+      <Dialog v-model="store.showMgr" :options="{ title: 'Saved boards', size: 'lg' }">
         <template #body-content>
           <p class="text-p-sm text-ink-gray-6 mb-4">
             Saves are local to this browser. To share a board with the council, use <b>Copy state</b> (clipboard)

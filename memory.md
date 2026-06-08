@@ -447,3 +447,21 @@ Reset+delRound/Scenario/Milestone; extended to all for consistency + safety). Ad
   "Scenario range $X to $Y, base $Z"), /compare 1 grouped bar. No console errors.
 
 **Next:** COM-45 — Import/Copy/Paste explicit success+failure feedback with counts + validate imported JSON at the boundary (M). Then GATE M7.
+
+## 2026-06-09 — COM-45 (Import/Paste validation + feedback) DONE — M7 COMPLETE
+
+**COM-45 (P3, M) — DONE.** Hardened the data-IO surfaces.
+- Added a trust-boundary `validImport(o)` in store.ts: rejects junk that JSON.parse accepts (non-object, array,
+  or missing plan/advisors) BEFORE loadState/reconcile sees it. No zod dep (lightweight shape check).
+- importJSON: invalid → "Import failed — not a valid board file" / "...invalid JSON"; valid → "Imported · N
+  advisors, M scenarios". pasteState: same validation + "Pasted · N advisors, M scenarios" / clear failures.
+- copyState (App) + copyProp (Proposition) already had explicit success/failure flashes — left as-is.
+- Used the existing flash()/store.status mechanism; the full Toast swap is COM-53 (M8) per the issue.
+- QA: build 0 · engine 22/22 · preview (file-input): junk → "Import failed — not a valid board file";
+  a real 4-advisor board → "Imported · 4 advisors, 3 scenarios". Restored default board after (localStorage.clear).
+
+**★ M7 · Accessibility & user-control floor — COMPLETE (9/9: COM-37–45)**, all shipped to prod on
+`claude/frosty-pasteur-8cf1db`. The audit's two headline WCAG failures + the a11y/operability floor are cleared:
+contrast (gray-5→6, amber labels, gray-4 info text), programmatic input labels, focus rings + keyboard-operable
+rows/scatter, ≥32px touch targets, confirm-on-destructive, chart text alternatives, import validation+feedback.
+Next: M7 gate → M8 starting at COM-46 (single persistent global scenario toggle — top product lever).

@@ -358,3 +358,21 @@ Perl swap used `s/…/…/g unless /stroke-current/` to skip the SVG lines (avoi
 QA: build 0 · engine 22/22 · preview: 0 stale gray-4 text on board/compare/advisors; qualifiers now rgb(82,82,82).
 
 **Next:** COM-40 — programmatic labels on 15+ bare inputs via frappe-ui FormControl (L).
+
+## 2026-06-08 — COM-40 (programmatic input labels) DONE
+
+**COM-40 (P1, "L") — DONE via the issue's sanctioned aria-label interim** (not full FormControl). Chose
+aria-label over FormControl adoption because Configure is a `[data-theme="dark"]` panel with deliberately
+minimal underline inputs — swapping in frappe-ui FormControl's boxed fields would be a visual redesign + a
+dark-theme risk beyond "presentation-only a11y". aria-labels satisfy WCAG 4.1.2/3.3.2 while preserving the design.
+- NumIn (26 uses) + Selects already carry accessible names — the gap was the 11 hand-rolled text/date/range
+  inputs. Added context-aware `:aria-label`: Configure round/scenario/TGE-date/objective label+trigger/tier/
+  milestone (7, indexed e.g. "Round 1 name", "Scenario base name"); Advisors name/start-date/notes (3); + the
+  range slider got `aria-label="Options / tokens split"` and a dynamic `:aria-valuetext` ("65% options, 35% tokens").
+  Skipped the 2 `class="hidden"` file inputs (display:none → not in the a11y tree; visible Import/Download buttons carry the label).
+- QA: build 0 · engine 22/22 · preview: 0 unnamed visible inputs on /configure (25) + /advisors (4); slider
+  aria-label + aria-valuetext confirmed live.
+- FormControl adoption intentionally DEFERRED (would change the dark-panel input design) — candidate for a future
+  design-system pass if Robin wants the fuller frappe-ui component-adoption score.
+
+**Next:** COM-41 — visible focus rings on hand-rolled buttons/inputs + keyboard-operable clickable table rows (M).

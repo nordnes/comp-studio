@@ -35,8 +35,11 @@ offer**. Re-implementation of the single-file React artifact in `reference/advis
   alpha → **local only, never a build/deploy dependency.**
 - CI/Vercel: plain `vite` scripts — build `npm run build` → `dist`, framework preset Vite, `vercel.json` SPA
   rewrite. Deploy via the Vercel connector (`deploy_to_vercel`).
-- Per-issue DoD (≤450 LOC): `vp check` clean → functional pass (`vp dev`) → visual pass (screenshot vs the
-  reference) → `npm run build` + engine 22/22 → commit on the issue branch → Linear issue **Done**.
+- Per-issue DoD (≤450 LOC): set the issue **In Progress** → `vp check` clean → functional pass (`vp dev`) →
+  visual pass (screenshot vs the reference) → `npm run build` + engine 22/22 → **open a PR that closes the
+  issue (`Fixes COM-NNN`) and merge it, or direct-commit to the deploy branch** → mark the Linear issue
+  **Done** → append `memory.md`. **Every issue gets BOTH the merge/commit AND the Linear Done flip —
+  neither alone counts as closed.** (git/`gh` commits here need `dangerouslyDisableSandbox:true`.)
 - Milestone gate (M0→M5): `npm run build` + engine green → `deploy_to_vercel` preview → visual smoke → advance.
 
 ## Record progress to `memory.md`

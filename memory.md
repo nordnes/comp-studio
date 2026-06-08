@@ -210,3 +210,85 @@ Plus interim: **enable Vercel Deployment Protection** (COM-33) — the live URL 
 **Next (once unblocked):** re-provision (gets DATABASE_URL + Neon Auth env) → `boards` table migration →
 Vercel functions (`/api/boards` auth-gated) → Vue magic-link login gate (Stack Auth REST) → store reads/writes
 via the functions (localStorage as cache) → set Vercel env → redeploy → verify login + persistence live.
+
+## 2026-06-08 (pm) — UX/UI audit (dynamic workflow + impeccable) → 32-issue backlog on Linear
+
+**What I did:** Pulled latest Neon env vars (`vercel env pull .env.local --yes --scope nordnes-personal` —
+names confirmed, secrets never echoed). Ran a **6-agent dynamic Workflow**: 5 parallel audit/research lanes
+(impeccable design critique · impeccable technical audit · frappe-ui under-adoption · Frappe-templates/OSS
+research · cap-table-domain UX) → 1 synthesis agent → a structured 32-issue backlog. Then created it all on Linear.
+
+**Design health (verdict):** **NOT AI slop** — top ~10% on the slop axis (real Fraunces/Inter hierarchy,
+60-30-10 single-amber accent, gap-px hairline grids, genuine empty states, a Proposition that reads designed).
+Scores: Nielsen ~31.5/40 (lanes 34 + 29) · frappe-ui adoption ~14/20 (tokens 9/10 excellent, components 5/10) ·
+technical a11y 13/20. **Dominant finding:** the two most-repeated colors both fail WCAG AA — `ink-gray-5`
+(#7C7C7C, 4.17:1) on every label/caption, and `ink-amber-3` on `surface-amber-2` (2.93:1) on every accent
+eyebrow. Both token-driven → **one theme sweep clears the bulk of the a11y backlog.** Every issue is
+presentation-only; **engine stays frozen** (note: SCEN_COLORS must move OUT of engine.ts, not be edited there).
+
+**Linear (COM) created:**
+- **11 team-scoped labels** (a11y, ux, ui, forms, charts-dataviz, mobile, ia-nav, copy, design-debt,
+  empty-loading, theming). Reused the existing **workspace** `design-system` label — a team-scoped dup is
+  disallowed when a workspace label of that name exists. Team UUID `95768650-2441-48e9-acd4-2ff02c2ff2cf`.
+- **2 milestones:** **M7 · Accessibility & user-control floor** (target 2026-06-30; id `2600ca12…`) and
+  **M8 · UX/UI uplift — frappe-ui, charts, IA, decision aids** (target 2026-07-31; id `d67cd073…`).
+- **32 issues COM-37 … COM-68.** M7 = COM-37 (P0, ink-gray-5 sweep) … COM-45 (9 issues: the a11y + safety
+  floor — contrast, amber-on-amber, ink-gray-4 chart text, FormControl labels, focus rings/keyboard rows,
+  touch targets, chart ARIA, confirm+Undo, import validation). M8 = COM-46 (P1, global scenario toggle —
+  **top product lever**) … COM-68 (23 issues: charts legibility, frappe-ui Toast/Alert/TabButtons/Tooltip/
+  Avatar/Divider/Combobox adoption, palette→tokens, decision aids = exit slider / breakeven shading /
+  scannability / per-recipient print confidentiality mark, IA proposals = sidebar shell / board-switcher /
+  ⌘K, editorial polish = Proposition band / ⏳-emoji / More-menu / nav-grouping).
+- **Relations:** COM-37 & COM-51 → COM-21 (a11y / colour-blind umbrella); COM-42 & COM-59 → COM-31
+  (mobile / print); COM-47 & COM-57 → COM-28 (upside curve); COM-49 → COM-17 (waterfall). The vague
+  **COM-21** ("colour-blind+a11y+empty") and **COM-31** ("mobile+print") are now decomposed into specific
+  sized issues — Robin may close them as umbrellas.
+
+**Priority spread:** 1×P0 · 8×P1 · 14×P2 · 9×P3. **Recommended sequence:** the two token contrast sweeps
+(COM-37/38) first — biggest a11y win for the least code, ships M7's headline — then the rest of M7, then
+COM-46 (global scenario toggle) as the standout product lever, then the frappe-ui adoption cluster.
+
+**Decisions still pending (flagged in-issue):** COM-62 (left-sidebar app shell) intersects the open IA
+decision in CLAUDE.md §5 → needs a go/no-go before build. M6 auth/DB remains blocked on Robin (accept Neon
+Marketplace terms + allow-list emails + enable Deployment Protection).
+
+## 2026-06-08 (pm·2) — Ultracode prompt authored + COM-62 approved + Neon verified
+
+**Robin decisions this turn:** (1) **COM-62 (left-sidebar app shell) APPROVED — build it.** Updated the issue:
+P3→**P2**, marked approved, and noted it **absorbs COM-67** (Internal/Share nav grouping → sidebar's two
+sections) **and the board-switcher half of COM-63** (→ sidebar header); flagged a 3-PR split (shell → migrate
+views off PageHeader onto a teleported app-header → board-switcher) to honor ≤450 LOC. After it lands, COM-63
+reduces to the ⌘K palette and COM-67 closes as done-here. (2) **Neon provisioned** — confirmed via
+`vercel env ls --scope nordnes-personal` (names only): DB set (`DATABASE_URL`(+`_UNPOOLED`), `POSTGRES_URL*`,
+`PG*`) + Neon Auth (`VITE_NEON_AUTH_URL`, `NEON_AUTH_BASE_URL`, `NEON_PROJECT_ID`) on Production/Preview/
+Development, created ~49m prior. **M6's Neon-terms/provisioning blocker is CLEARED**; remaining M6 human input =
+allow-list emails + enable Deployment Protection (COM-33).
+
+**Deliverable — `ULTRACODE_M7_M8.md`** (repo root, ~29k chars / 3.4k words): the build-run prompt for the next
+session, authored via a 5-agent workflow (4 parallel research lanes — repo conventions · build/deploy+visual-QA
+mechanics · live Linear backlog · git-PR/Linear-Done mechanics → 1 synthesis). Sections: mission+shipped-v1
+state · LOCKED non-negotiables · **§3 the per-issue Definition-of-Done loop (a–g, hard/non-skippable: In
+Progress → implement → QA gate → mark Done → PR/merge-or-direct-commit → memory.md; "neither alone counts as
+closed")** · §4 branch/deploy strategy · §5 recommended sequence · §6 full M7/M8 backlog tables · §7 commands ·
+§8 blocks · §9 kickoff. Patched post-authoring for the two decisions above (COM-62 approved; Neon provisioned).
+Facts the workflow verified directly against the repo: **ink-gray-5 = 131 usages across all 17 view/component
+files; ink-amber-3 = 37; SCEN_COLORS at `scaffold/src/engine.ts:59`** (frozen → COM-56 must relocate it to
+constants.ts, not edit the engine); Linear states **Done `03cc9c60-ac0e-42b7-8e33-6b1964f57816`**, **In Progress
+`4a7e54ac-2c8d-4932-b46a-5f83685d2c1b`**; **`main` is 16 commits behind the feature branch and NOT on origin.**
+
+**Ask #1 (every issue → mark Done + PR/merge) made durable two ways:** (a) baked into the prompt as the §3
+non-skippable loop; (b) **strengthened CLAUDE.md's standing per-issue DoD** to read "…→ open a PR that closes
+the issue (`Fixes COM-NNN`) and merge it, or direct-commit to the deploy branch → mark the Linear issue Done →
+append memory.md. Every issue gets BOTH the merge/commit AND the Linear Done flip — neither alone counts as
+closed." So any future session inherits it, not just one reading the ultracode prompt.
+
+**ONE open decision for the next session — FLOW-A vs FLOW-B (prod branch).** Prod currently deploys from the
+feature branch `claude/frosty-pasteur-8cf1db` (also the GitHub default); `main` is 16 commits behind & not on
+origin. FLOW-A (default): direct-commit/push each fix onto the deploy branch → ships live (gate strictly).
+FLOW-B (recommended): do **COM-36 early** — `git push -u origin main` (after fast-forwarding it to the feature
+tip), `gh repo edit --default-branch main`, repoint Vercel's prod branch to `main` — then one-PR-per-issue into
+`main`. Confirm with Robin at kickoff. `ULTRACODE_M7_M8.md`, `CLAUDE.md`, `memory.md` are uncommitted (dirty
+tree) — fold deliberately.
+
+**Next session:** paste `ULTRACODE_M7_M8.md` into a fresh Claude Code session → it runs M7 (start COM-37/38
+token sweeps) → gate M7 → M8 (start COM-46), building COM-62 after the M7 floor.

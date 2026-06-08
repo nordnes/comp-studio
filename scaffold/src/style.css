@@ -1,0 +1,9 @@
+/* @tailwind base/components/utilities now come from frappe-ui/style.css (the Espresso preset),
+   so they are NOT repeated here (avoids double-emitting the whole utility layer). App-only rules
+   below. Under the adopted frappe-ui system Inter/Espresso is the default look; .font-display is an
+   optional Raiku brand accent for headers if a view wants it. */
+.font-display { font-family: 'Fraunces', Georgia, serif; letter-spacing: -0.02em; }
+.font-mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
+.tabular-nums { font-variant-numeric: tabular-nums; }
+.eyebrow { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: .18em; text-transform: uppercase; font-weight: 500; }
+@media print { .no-print { display: none !important; } }

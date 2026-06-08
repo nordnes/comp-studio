@@ -179,3 +179,34 @@ Did everything verifiable without rendering (build + reasoning + typecheck). Com
   + benchmark sources present, persistence (localStorage + clipboard + URL hash). Production URL reported.
 - **Remaining (minor, optional):** UpsideCurve interactivity (chip presets/markers — simplified), waterfall
   hover-sync, colour-blind/print deep-verification. None block the live tool.
+
+## 2026-06-08 — Linear synced + M6 (auth/DB) build started, blocked on Robin
+
+**Linear (COM):** 28 issues → Done (all M0–M4 leaves + epics COM-1/2/3/4/6 + COM-22 deploy). COM-5/COM-7 →
+In Progress (own the open polish COM-21/28/31, still Todo). New **M6 · Auth, persistence & hardening** +
+issues: **COM-33** (Vercel Deployment Protection — Todo/Urgent), **COM-34** (per-user login), **COM-35**
+(Supabase→**Neon** Postgres persistence), **COM-36** (merge to main). Project status update posted.
+
+**Robin's M6 decisions:** DB+login = **Neon** (Vercel Marketplace, "I drive") · **Neon Auth (Stack Auth) via
+its API** · **email allow-list + magic link** · **one shared council workspace**.
+
+**Architecture this implies:** static SPA → SPA **+ Vercel serverless functions** (`scaffold/api/*`, hold the
+Neon connection string server-side + verify the Stack Auth session + enforce the email allow-list) → Neon
+Postgres. Shared `boards` table (State as JSONB). Note: Stack Auth is React-first; Vue integration is via its
+REST API + token verify in the functions.
+
+**Provisioning progress (CLI, authed robin-1211):** linked `comp-studio` → `.vercel/project.json`
+(`prj_0UlU7VjepJ2WANYkZcmuYa40CR5w`, org `team_suZ2KN68qyboZLR89WBA28gT`). **Key find:**
+`vercel integration add neon -m auth=true` provisions **Postgres + Neon Auth together**. First attempt went to
+the wrong scope (raiku-labs, CLI default) → 404 connecting to the nordnes-personal project; cleaned that orphan
+(`vercel integration-resource remove neon-coquelicot-crystal --disconnect-all --yes --scope raiku-labs`).
+
+**BLOCKED on Robin (2 actions):**
+1. **Accept Neon Marketplace terms** (browser): https://vercel.com/nordnes-personal/~/integrations/accept-terms/neon?source=cli
+   — then retry: `vercel --scope nordnes-personal integration add neon -m auth=true --name comp-studio-db`.
+2. **Allow-list emails** (who may sign in).
+Plus interim: **enable Vercel Deployment Protection** (COM-33) — the live URL is still PUBLIC.
+
+**Next (once unblocked):** re-provision (gets DATABASE_URL + Neon Auth env) → `boards` table migration →
+Vercel functions (`/api/boards` auth-gated) → Vue magic-link login gate (Stack Auth REST) → store reads/writes
+via the functions (localStorage as cache) → set Vercel env → redeploy → verify login + persistence live.

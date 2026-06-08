@@ -376,3 +376,22 @@ dark-theme risk beyond "presentation-only a11y". aria-labels satisfy WCAG 4.1.2/
   design-system pass if Robin wants the fuller frappe-ui component-adoption score.
 
 **Next:** COM-41 — visible focus rings on hand-rolled buttons/inputs + keyboard-operable clickable table rows (M).
+
+## 2026-06-08 — COM-41 (focus rings + keyboard-operable rows) DONE
+
+**COM-41 (P1, M) — DONE.** Visible keyboard focus + keyboard operability for hand-rolled interactive elements.
+- 11 `outline-none` inputs (Configure 7, Advisors 3, NumIn 1) + 3 named hand-rolled buttons (Overview roster
+  card, Advisors tier, Configure set-base) → `focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--ink-gray-6)]`.
+- 2 navigating `<tr>` (Board, Compare) + the scatter `<g>` → `tabindex=0 role=button :aria-label @keydown.enter/space`
+  (now tab-reachable; **Enter verified navigating to /advisors**). Rows add focus-visible ring-inset + bg fallback;
+  scatter uses an SVG outline (style.css `svg g[tabindex]:focus-visible{outline:2px solid var(--ink-gray-9)}` — box-shadow
+  rings don't render on SVG <g>).
+- **Two token gotchas (recorded for the run):** (1) Espresso's `ringColor` exposes `outline-*` but NOT `ink-*`, so
+  `ring-ink-gray-5` SILENTLY did not compile (no error, no ring). (2) `ring-outline-gray-3` (#C7C7C7) ≈ 1.3:1 on white
+  — fails WCAG 2.2 §2.4.11 Focus Appearance (≥3:1). Fixed both with a Tailwind ARBITRARY theme-aware value
+  `ring-[var(--ink-gray-6)]` (compiles; light #525252 = 7:1, dark #999 ≈ 5:1 on the panel). Deliberate deviation from
+  the issue's literal "ring-outline-gray-3 matching frappe-ui" — a VISIBLE ring beats a near-invisible match.
+- QA: build 0 · engine 22/22 · no console errors. Note: programmatic `:focus-visible` can't be observed via the
+  preview MCP (no keyboard-Tab primitive), but the class is applied + the rule compiles → renders on real Tab.
+
+**Next:** COM-42 — raise icon-only/inline touch targets to >=32-44px (14px bare trash buttons first) (M).

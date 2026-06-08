@@ -67,6 +67,7 @@ function doSaveAs() { const n = saveAsName.value.trim(); if (n) { saveBoard(n); 
           </div>
           <nav class="flex gap-1 overflow-x-auto -mb-px">
             <router-link v-for="t in tabs" :key="t.to" :to="t.to"
+              :aria-current="route.path === t.to ? 'page' : undefined"
               class="whitespace-nowrap px-3 py-2.5 text-sm no-underline border-b-2 transition-colors"
               :class="route.path === t.to
                 ? 'text-ink-gray-9 border-ink-gray-9 font-medium'

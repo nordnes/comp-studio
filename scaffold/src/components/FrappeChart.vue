@@ -24,16 +24,19 @@ const el = ref<HTMLDivElement | null>(null);
 let chart: any = null;
 let ro: ResizeObserver | null = null;
 
+// COM-16 contract: pass a PLAIN snapshot to Chart/update — frappe-charts deep-clones and mutating a
+// reactive proxy in place won't update; passing the proxy can also confuse it.
+function snap(d: any) { try { return JSON.parse(JSON.stringify(d)); } catch { return d; } }
 function build() {
   if (!el.value) return;
   el.value.innerHTML = '';
   chart = new Chart(el.value, {
-    type: props.type, data: props.data, height: props.height || 240,
+    type: props.type, data: snap(props.data), height: props.height || 240,
     colors: props.colors, animate: false, ...(props.options || {}),
-  });
+  }); // new Chart returns undefined for an unknown type — guarded below.
 }
-// update() only swaps data; type/colours changes need a full rebuild.
-watch(() => props.data, () => { chart?.update ? chart.update(props.data) : build(); }, { deep: true });
+// update() only swaps data; type/colours changes need a full rebuild (destroy+new via build()).
+watch(() => props.data, () => { if (chart && typeof chart.update === 'function') chart.update(snap(props.data)); else build(); }, { deep: true });
 watch(() => [props.type, props.colors], build, { deep: true });
 
 onMounted(() => {

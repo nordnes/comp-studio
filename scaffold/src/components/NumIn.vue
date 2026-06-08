@@ -25,7 +25,8 @@ function disp(): string {
     : fNum(v);
 }
 async function start() {
-  draft.value = String(props.fmt === 'pct' ? +(props.modelValue * 100).toFixed(4) : props.modelValue);
+  const mv = props.modelValue ?? 0; // undefined scenario fields edit from 0, not "NaN"/"undefined"
+  draft.value = String(props.fmt === 'pct' ? +(mv * 100).toFixed(4) : mv);
   edit.value = true;
   await nextTick();
   inputEl.value?.focus();

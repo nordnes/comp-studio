@@ -73,13 +73,14 @@ function download(name: string, text: string, mime: string): boolean {
   try { const b = new Blob([text], { type: mime }); const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = name; a.click(); URL.revokeObjectURL(u); return true; } catch { return false; }
 }
 
-export function useStudio() {
-  const board = computed(() => computeBoard(store.S.advisors, store.S.plan, store.S.tiers, store.S.objectives));
-  const selected = computed(() => {
-    const a = store.S.advisors.find(x => x.id === store.selId) || store.S.advisors[0];
-    return a ? { a, c: computeAdvisor(a, store.S.plan, store.S.tiers, store.S.objectives) } : null;
-  });
+// Shared singletons — created once so computeBoard/computeAdvisor don't re-run per component instance.
+const board = computed(() => computeBoard(store.S.advisors, store.S.plan, store.S.tiers, store.S.objectives));
+const selected = computed(() => {
+  const a = store.S.advisors.find(x => x.id === store.selId) || store.S.advisors[0];
+  return a ? { a, c: computeAdvisor(a, store.S.plan, store.S.tiers, store.S.objectives) } : null;
+});
 
+export function useStudio() {
   // ---- core mutations (SET / LOAD / select / reset) ----
   function setPath(path: (string | number)[], value: any) {
     let o: any = store.S;

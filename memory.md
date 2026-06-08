@@ -345,3 +345,16 @@ bright #E79913 on dark and already passed (56/57 amber elements there).
   positive-capture restore of the hero: `s/(italic )text-ink-amber-strong/${1}text-ink-amber-3/`.
 
 **Next:** COM-39 — stop using ink-gray-4 (#999, 2.85:1) for chart axis labels / $M qualifiers / ContextStrip separators.
+
+## 2026-06-08 — COM-39 (ink-gray-4 info-text → AA) DONE
+
+**COM-39 (P1, S) — DONE.** Promoted the 7 info-bearing `text-ink-gray-4` (#999, 2.85:1) → `text-ink-gray-6`
+(#525252, 7.81:1): the `· $M` / `· post-money $M` unit qualifiers (Compare:60, Board:76, UpsideCurve:33/38)
+and the ContextStrip `·` separators + TGE-detail (ContextStrip:16/18/19). KEPT the 2 SVG dashed MARKER lines
+(`stroke-current text-ink-gray-4` — VestingTimeline:65, GrowthWaterfall:46) as graphical guides (the
+"decorative glyph" gray-4 is reserved for; out of the text scope). The scatter $ axis (issue cited Board:90-91)
+was already `fill-current text-ink-gray-6` from a prior commit — no action (its 9px size belongs to COM-49).
+Perl swap used `s/…/…/g unless /stroke-current/` to skip the SVG lines (avoids the zsh `\!`-lookbehind issue).
+QA: build 0 · engine 22/22 · preview: 0 stale gray-4 text on board/compare/advisors; qualifiers now rgb(82,82,82).
+
+**Next:** COM-40 — programmatic labels on 15+ bare inputs via frappe-ui FormControl (L).

@@ -59,7 +59,7 @@ const scenColors = computed(() => cols.value.map((_, i) => SCEN_COLORS[i % SCEN_
     <div>
       <div class="text-sm text-ink-gray-6 mb-3">Net value across scenarios <span class="text-ink-gray-6">· $M</span></div>
       <div class="bg-surface-white rounded border border-outline-gray-1 p-6">
-        <FrappeChart type="bar" :data="chart" :height="300" :colors="scenColors" :options="chartOpts" />
+        <FrappeChart type="bar" :data="chart" :height="300" :colors="scenColors" :options="chartOpts" aria-label="Grouped bar of each advisor net value across scenarios, in millions of dollars." />
       </div>
     </div>
   </div>

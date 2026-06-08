@@ -34,7 +34,7 @@ const lo = (r: any) => Math.min(r.from, r.to); const hi = (r: any) => Math.max(r
       <div class="text-sm text-ink-gray-6">How the package grows · base-case net value</div>
       <div class="text-xs text-ink-gray-6">solid earned · faded pending gate · outline available</div>
     </div>
-    <svg :viewBox="`0 0 ${W} ${H}`" class="w-full" :style="{ height: H + 'px' }">
+    <svg :viewBox="`0 0 ${W} ${H}`" class="w-full" :style="{ height: H + 'px' }" role="img" :aria-label="`How the package grows: base-case net value from base through capital and gated objectives. Current ${fUSD(model.current)}, ceiling ${fUSD(model.ceiling)}.`">
       <g v-for="(r, i) in model.rows" :key="r.id">
         <text :x="padL - 6" :y="padT + i * rowH + rowH / 2 + 4" text-anchor="end" class="fill-current text-ink-gray-8" font-size="11">{{ r.label }}</text>
         <rect :x="x(lo(r))" :y="padT + i * rowH + 6" :width="Math.max(1, x(hi(r)) - x(lo(r)))" :height="rowH - 14" rx="2"

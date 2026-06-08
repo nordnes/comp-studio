@@ -18,6 +18,7 @@ const props = defineProps<{
   height?: number;
   colors?: string[];
   options?: Record<string, any>;
+  ariaLabel?: string; // COM-44: text alternative — frappe-charts renders raw <svg> with no ARIA
 }>();
 
 const el = ref<HTMLDivElement | null>(null);
@@ -54,4 +55,4 @@ onMounted(() => {
 onBeforeUnmount(() => { ro?.disconnect(); ro = null; chart?.destroy?.(); chart = null; });
 </script>
 
-<template><div ref="el" /></template>
+<template><div ref="el" :role="ariaLabel ? 'img' : undefined" :aria-label="ariaLabel" /></template>

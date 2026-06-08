@@ -55,7 +55,7 @@ const hasBudget = computed(() => flags.value.some(f => f.t === 'budget'));
     <!-- KPI band -->
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-px bg-surface-gray-2 rounded overflow-hidden border border-outline-gray-1">
       <div v-for="k in kpis" :key="k.l" class="p-4" :class="k.accent ? 'bg-surface-amber-2' : 'bg-surface-white'">
-        <div class="text-xs mb-1" :class="k.accent ? 'text-ink-amber-3' : 'text-ink-gray-6'">{{ k.l }}</div>
+        <div class="text-xs mb-1" :class="k.accent ? 'text-ink-amber-strong' : 'text-ink-gray-6'">{{ k.l }}</div>
         <div class="font-display text-xl leading-none tabular-nums text-ink-gray-9">{{ k.v }}</div>
         <div v-if="k.sub" class="text-xs mt-1 text-ink-gray-6">{{ k.sub }}</div>
       </div>
@@ -90,7 +90,7 @@ const hasBudget = computed(() => flags.value.some(f => f.t === 'budget'));
           <p class="text-p-xs text-ink-gray-6">Source: {{ BENCH.advisorSrc }}.</p>
         </div>
         <div class="rounded border p-5 space-y-2" :class="hasBudget ? 'bg-surface-red-2 border-outline-red-2' : 'bg-surface-amber-2 border-outline-amber-2'">
-          <div class="text-sm" :class="hasBudget ? 'text-ink-red-3' : 'text-ink-amber-3'">To confirm / alerts</div>
+          <div class="text-sm" :class="hasBudget ? 'text-ink-red-3' : 'text-ink-amber-strong'">To confirm / alerts</div>
           <div v-for="(f, i) in flags" :key="i" class="text-p-xs flex items-start gap-1.5 leading-relaxed" :class="f.t === 'budget' ? 'text-ink-red-3' : 'text-ink-gray-7'">
             <span class="lucide-triangle-alert size-3.5 shrink-0 mt-0.5" aria-hidden="true" />{{ f.m }}
           </div>

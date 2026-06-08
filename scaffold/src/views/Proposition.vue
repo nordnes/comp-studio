@@ -76,13 +76,13 @@ const residencyLine = computed(() => sel.value?.taxResidency === 'UK'
 
       <div class="px-8 sm:px-12 py-12 space-y-12">
         <div class="max-w-3xl">
-          <div class="text-sm text-ink-amber-3 mb-6">An invitation to the founding advisory board</div>
+          <div class="text-sm text-ink-amber-strong mb-6">An invitation to the founding advisory board</div>
           <h1 class="font-display leading-tight text-ink-gray-9" style="font-size:clamp(2rem,4vw,3.2rem);font-weight:350">A {{ sel.years }}-year engagement,<br /><span class="font-display italic text-ink-amber-3">a base that grows</span><br />with what you build.</h1>
           <p class="mt-8 text-p-base max-w-2xl text-ink-gray-6 leading-relaxed">Every founding advisor starts on the same guaranteed base in options and protocol tokens{{ sel.hasCash ? ', with a cash retainer post-Series A' : '' }}. On top of that base, the package grows as you help Raiku hit its objectives — capital, customers, partnerships, governance — reviewed at six and twelve months.</p>
         </div>
 
         <div class="p-5 text-p-sm max-w-3xl rounded bg-surface-amber-2 border border-outline-amber-2 text-ink-gray-7 leading-relaxed">
-          <div class="text-sm text-ink-amber-3 mb-2">How to read this</div>
+          <div class="text-sm text-ink-amber-strong mb-2">How to read this</div>
           Your options are priced at today's share value, so their <b>net</b> worth is the upside <i>above</i> that price — at a modest exit they can be worth little, which is normal for options; the value is in the climb. Tokens are a fixed share of supply with no exercise cost. Equity dilutes as Raiku raises later rounds (tokens don't). The package <b>grows</b> as you hit objectives — each counts once its milestone is reached. The three scenarios are a deliberately wide range, not a forecast.
         </div>
 
@@ -93,7 +93,7 @@ const residencyLine = computed(() => sel.value?.taxResidency === 'UK'
             <div class="text-p-xs mt-5 text-ink-gray-6">{{ fPct(c.baseEq, 2) }} equity + {{ fPct(c.baseTk, 3) }} tokens</div>
           </div>
           <div class="p-8 border-r border-outline-gray-1 bg-surface-amber-2">
-            <div class="flex items-baseline gap-3 mb-5"><span class="text-xs text-ink-amber-3">ii</span><span class="text-sm text-ink-amber-3">Current · earned</span></div>
+            <div class="flex items-baseline gap-3 mb-5"><span class="text-xs text-ink-amber-strong">ii</span><span class="text-sm text-ink-amber-strong">Current · earned</span></div>
             <div class="font-display tabular-nums text-ink-gray-9" style="font-size:2.2rem;font-weight:350;line-height:1">{{ fUSD(c.baseCaseTotal) }}</div>
             <div class="text-p-xs mt-5 text-ink-gray-6">{{ c.earnedUplift > 0 ? `+${(c.earnedUplift * 100).toFixed(0)}% earned` : 'no uplift yet' }}</div>
           </div>
@@ -108,7 +108,7 @@ const residencyLine = computed(() => sel.value?.taxResidency === 'UK'
           <div class="text-sm text-ink-gray-6 mb-2">Net value across outcomes · net of strike & dilution</div>
           <div class="grid grid-cols-3 gap-px bg-surface-gray-2 rounded overflow-hidden">
             <div v-for="s in c.scen" :key="s.key" class="p-6" :class="s.key === baseScenKey(S.plan) ? 'bg-surface-amber-2' : 'bg-surface-white'">
-              <div class="text-xs mb-2" :class="s.key === baseScenKey(S.plan) ? 'text-ink-amber-3' : 'text-ink-gray-6'">{{ s.label }} · {{ fPct(s.retention, 0) }} kept</div>
+              <div class="text-xs mb-2" :class="s.key === baseScenKey(S.plan) ? 'text-ink-amber-strong' : 'text-ink-gray-6'">{{ s.label }} · {{ fPct(s.retention, 0) }} kept</div>
               <div class="font-display text-2xl tabular-nums text-ink-gray-9">{{ fUSD(s.total) }}</div>
               <div class="text-p-xs mt-2 text-ink-gray-6">eq {{ s.underwater ? 'underwater' : fUSD(s.equity) }} · tok {{ fUSD(s.token) }}</div>
             </div>

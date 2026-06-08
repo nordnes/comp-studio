@@ -14,6 +14,13 @@ export default {
   theme: {
     extend: {
       // Optional Raiku brand accents layered on top of the Espresso palette.
+      colors: {
+        // COM-38 (a11y): accessible darker amber for accent LABELS/eyebrows. Espresso's amber
+        // ink-scale stops at ink-amber-3 (#DB7706 = 2.93:1 on surface-amber-2, fails AA). The
+        // value is a theme-aware CSS var defined in src/style.css (dark mode keeps it bright).
+        // Bright ink-amber-3 stays for the hero italic + graphical fills/bars/icons.
+        'ink-amber-strong': 'var(--ink-amber-strong)',
+      },
       fontFamily: {
         display: ['Fraunces', 'Georgia', 'serif'],
       },

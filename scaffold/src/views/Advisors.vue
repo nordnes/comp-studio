@@ -80,10 +80,10 @@ function toProp() { router.push('/proposition'); }
             </div>
           </div>
           <template v-if="sel.mode === 'tier'">
-            <div class="flex items-center gap-2 text-xs px-3 py-2 rounded bg-surface-amber-2 text-ink-amber-3"><span class="lucide-layers size-3.5" aria-hidden="true" /> Uniform base {{ fPct(S.plan.baseGrant.equityPct, 2) }} eq · {{ fPct(S.plan.baseGrant.tokenPct, 2) }} tok, ×tier</div>
+            <div class="flex items-center gap-2 text-xs px-3 py-2 rounded bg-surface-amber-2 text-ink-amber-strong"><span class="lucide-layers size-3.5" aria-hidden="true" /> Uniform base {{ fPct(S.plan.baseGrant.equityPct, 2) }} eq · {{ fPct(S.plan.baseGrant.tokenPct, 2) }} tok, ×tier</div>
             <div class="grid grid-cols-3 gap-2">
               <button v-for="(t, ti) in S.tiers" :key="ti" class="p-3 text-left rounded border" :class="sel.tier === ti ? 'bg-surface-amber-2 border-outline-amber-2' : 'border-outline-gray-2 hover:bg-surface-gray-1'" @click="setField('tier', ti)">
-                <div class="flex items-baseline justify-between"><div class="font-display text-base text-ink-gray-9">{{ t.name }}</div><div class="text-xs text-ink-amber-3">{{ fMult(t.mult) }}</div></div>
+                <div class="flex items-baseline justify-between"><div class="font-display text-base text-ink-gray-9">{{ t.name }}</div><div class="text-xs text-ink-amber-strong">{{ fMult(t.mult) }}</div></div>
                 <div class="text-xs mt-1 tabular-nums text-ink-gray-6">{{ fPct(S.plan.baseGrant.equityPct * t.mult, 1) }} eq · {{ fPct(S.plan.baseGrant.tokenPct * t.mult, 1) }} tok</div>
               </button>
             </div>
@@ -98,9 +98,9 @@ function toProp() { router.push('/proposition'); }
         </div>
 
         <div class="rounded border border-outline-amber-2 bg-surface-amber-2 p-5 space-y-4">
-          <div class="flex items-center gap-2"><span class="lucide-trending-up size-4 text-ink-amber-3" aria-hidden="true" /><div class="text-sm text-ink-amber-3">Performance uplift</div></div>
+          <div class="flex items-center gap-2"><span class="lucide-trending-up size-4 text-ink-amber-strong" aria-hidden="true" /><div class="text-sm text-ink-amber-strong">Performance uplift</div></div>
           <div>
-            <div class="flex justify-between text-sm mb-1"><span class="text-ink-gray-7">Capital introduced · by channel</span><span class="font-display tabular-nums" :class="c.capEarned > 0 ? 'text-ink-green-3' : 'text-ink-amber-3'">+{{ (c.capRaw * 100).toFixed(0) }}%{{ c.capEarned < c.capRaw ? ' ⏳' : '' }}</span></div>
+            <div class="flex justify-between text-sm mb-1"><span class="text-ink-gray-7">Capital introduced · by channel</span><span class="font-display tabular-nums" :class="c.capEarned > 0 ? 'text-ink-green-3' : 'text-ink-amber-strong'">+{{ (c.capRaw * 100).toFixed(0) }}%{{ c.capEarned < c.capRaw ? ' ⏳' : '' }}</span></div>
             <div class="grid grid-cols-2 gap-3">
               <div><div class="text-xs text-ink-gray-6 mb-1">Equity round</div><NumIn :model-value="sel.performance?.capitalEquity || 0" fmt="usd" :min="0" aria-label="Capital equity round" @update:model-value="v => setPerfField('capitalEquity', v)" /></div>
               <div><div class="text-xs text-ink-gray-6 mb-1">Token OTC (Foundation)</div><NumIn :model-value="sel.performance?.capitalToken || 0" fmt="usd" :min="0" aria-label="Capital token OTC" @update:model-value="v => setPerfField('capitalToken', v)" /></div>
@@ -112,10 +112,10 @@ function toProp() { router.push('/proposition'); }
             <div v-for="o in S.objectives" :key="o.id" class="p-3 rounded border bg-surface-white"
               :class="objState(o.id) === 'earned' && !stageReached(S.plan, o.gate) ? 'border-outline-amber-2' : objState(o.id) === 'earned' ? 'border-outline-green-2' : objState(o.id) === 'targeted' ? 'border-outline-amber-2' : 'border-outline-gray-1'">
               <div class="flex items-center gap-2"><span class="inline-block size-2 rounded-full" :style="{ background: CAT[o.category]?.color }" /><span class="text-sm font-medium text-ink-gray-9">{{ o.label }}</span><span class="text-xs tabular-nums text-ink-green-3">+{{ (o.uplift * 100).toFixed(0) }}%</span></div>
-              <div class="text-p-xs mt-1 text-ink-gray-6 leading-snug">{{ o.trigger }} · gate: {{ ms[o.gate] }}<span v-if="objState(o.id) === 'earned' && !stageReached(S.plan, o.gate)" class="text-ink-amber-3"> · ⏳ awaiting gate</span></div>
+              <div class="text-p-xs mt-1 text-ink-gray-6 leading-snug">{{ o.trigger }} · gate: {{ ms[o.gate] }}<span v-if="objState(o.id) === 'earned' && !stageReached(S.plan, o.gate)" class="text-ink-amber-strong"> · ⏳ awaiting gate</span></div>
               <div class="flex gap-1 mt-2"><Button v-for="[k, l] in [['off', 'Off'], ['targeted', 'Target'], ['earned', 'Earned']]" :key="k" :variant="objState(o.id) === k ? 'solid' : 'subtle'" :theme="objState(o.id) === k ? (k === 'earned' ? 'green' : 'gray') : 'gray'" size="sm" :label="l" @click="setObjState(o.id, k)" /></div>
             </div>
-            <p class="text-p-xs pt-1 text-ink-gray-6">Earned: <span class="text-ink-green-3">+{{ (c.earnedUplift * 100).toFixed(0) }}%</span><span v-if="c.pendingUplift > 0"> · pending gate: <span class="text-ink-amber-3">+{{ (c.pendingUplift * 100).toFixed(0) }}%</span></span> · ceiling +{{ (c.ceilUplift * 100).toFixed(0) }}%</p>
+            <p class="text-p-xs pt-1 text-ink-gray-6">Earned: <span class="text-ink-green-3">+{{ (c.earnedUplift * 100).toFixed(0) }}%</span><span v-if="c.pendingUplift > 0"> · pending gate: <span class="text-ink-amber-strong">+{{ (c.pendingUplift * 100).toFixed(0) }}%</span></span> · ceiling +{{ (c.ceilUplift * 100).toFixed(0) }}%</p>
           </div>
         </div>
       </div>
@@ -131,7 +131,7 @@ function toProp() { router.push('/proposition'); }
           <div class="bg-surface-white rounded border border-outline-gray-1 p-5">
             <div class="text-sm text-ink-gray-6 mb-3">Scenario range · net value (low → high)</div>
             <FootballField :lo="ff.lo" :base="ff.base" :hi="ff.hi" :max="ff.hi" />
-            <div class="flex justify-between text-xs mt-2 tabular-nums text-ink-gray-6"><span>Low {{ fUSD(ff.lo) }}</span><span class="text-ink-amber-3">Base {{ fUSD(ff.base) }}</span><span>High {{ fUSD(ff.hi) }}</span></div>
+            <div class="flex justify-between text-xs mt-2 tabular-nums text-ink-gray-6"><span>Low {{ fUSD(ff.lo) }}</span><span class="text-ink-amber-strong">Base {{ fUSD(ff.base) }}</span><span>High {{ fUSD(ff.hi) }}</span></div>
           </div>
           <MixBreakdown :c="c" />
           <div class="grid sm:grid-cols-2 gap-6">

@@ -35,7 +35,7 @@ const msOpts = () => S.S.plan.milestones.map(m => ({ label: m.label, value: m.id
       <!-- header -->
       <div class="flex justify-between items-center gap-3 flex-wrap">
         <div>
-          <div class="text-sm text-ink-amber-3">Configure</div>
+          <div class="text-sm text-ink-amber-strong">Configure</div>
           <h1 class="font-display text-2xl mt-1 text-ink-gray-9">Plan basis &amp; controls</h1>
         </div>
         <Button variant="solid" theme="gray" icon-left="lucide-check" label="Done" route="/overview" />
@@ -43,7 +43,7 @@ const msOpts = () => S.S.plan.milestones.map(m => ({ label: m.label, value: m.id
 
       <!-- roadmap CSV -->
       <div class="rounded border border-outline-gray-2 bg-surface-gray-2 p-3 flex items-center gap-2 flex-wrap">
-        <span class="text-sm text-ink-amber-3">Roadmap CSV</span>
+        <span class="text-sm text-ink-amber-strong">Roadmap CSV</span>
         <input ref="csvRef" type="file" accept=".csv,text/csv" class="hidden" @change="onCsv" />
         <Button variant="subtle" theme="gray" size="sm" icon-left="lucide-upload" label="Import" @click="csvRef?.click()" />
         <Button variant="subtle" theme="gray" size="sm" icon-left="lucide-file-text" label="Download" @click="downloadRoadmap" />
@@ -52,7 +52,7 @@ const msOpts = () => S.S.plan.milestones.map(m => ({ label: m.label, value: m.id
 
       <!-- bridge -->
       <div class="rounded border border-outline-gray-2 bg-surface-gray-2 p-4">
-        <div class="text-sm text-ink-amber-3 mb-3">Bridge (fixed grant event) · cap table {{ fNum(S.S.plan.fdPreESOP) }} FD pre-ESOP</div>
+        <div class="text-sm text-ink-amber-strong mb-3">Bridge (fixed grant event) · cap table {{ fNum(S.S.plan.fdPreESOP) }} FD pre-ESOP</div>
         <div class="grid sm:grid-cols-4 gap-4">
           <div><div class="text-xs text-ink-gray-6 mb-1">Bridge post-money</div><NumIn :model-value="S.S.plan.bridge.post" fmt="usd" aria-label="Bridge post" @update:model-value="v => setPath(['plan','bridge','post'], v)" /></div>
           <div><div class="text-xs text-ink-gray-6 mb-1">Bridge raise</div><NumIn :model-value="S.S.plan.bridge.raise" fmt="usd" aria-label="Bridge raise" @update:model-value="v => setPath(['plan','bridge','raise'], v)" /></div>
@@ -64,7 +64,7 @@ const msOpts = () => S.S.plan.milestones.map(m => ({ label: m.label, value: m.id
       <!-- rounds -->
       <div>
         <div class="flex items-center justify-between mb-3">
-          <div class="text-sm text-ink-amber-3">Rounds · priced events after the bridge (order matters)</div>
+          <div class="text-sm text-ink-amber-strong">Rounds · priced events after the bridge (order matters)</div>
           <Button variant="subtle" theme="gray" size="sm" icon-left="lucide-plus" label="Add round" @click="addRound" />
         </div>
         <div class="grid sm:grid-cols-4 gap-2 mb-5">
@@ -77,7 +77,7 @@ const msOpts = () => S.S.plan.milestones.map(m => ({ label: m.label, value: m.id
 
         <!-- scenarios -->
         <div class="flex items-center justify-between mb-3">
-          <div class="text-sm text-ink-amber-3">Scenario paths · per-round post-money / ESOP &amp; TGE multiple</div>
+          <div class="text-sm text-ink-amber-strong">Scenario paths · per-round post-money / ESOP &amp; TGE multiple</div>
           <Button variant="subtle" theme="gray" size="sm" icon-left="lucide-plus" label="Add scenario" @click="addScenario" />
         </div>
         <div class="space-y-2">
@@ -86,7 +86,7 @@ const msOpts = () => S.S.plan.milestones.map(m => ({ label: m.label, value: m.id
             <div class="flex items-center justify-between mb-2 gap-2 flex-wrap">
               <div class="flex items-center gap-2">
                 <input :value="S.S.plan.scenarios[sk].label" class="bg-transparent border-b border-outline-gray-3 text-ink-gray-9 font-display outline-none py-0.5 w-40" @input="e => setPath(['plan','scenarios', sk, 'label'], (e.target as HTMLInputElement).value)" />
-                <button class="text-xs px-2 py-0.5 rounded border" :class="sk === baseScenKey(S.S.plan) ? 'border-outline-amber-2 text-ink-amber-3' : 'border-outline-gray-3 text-ink-gray-6'" @click="setP('baseScenario', sk)">{{ sk === baseScenKey(S.S.plan) ? '★ base' : 'set base' }}</button>
+                <button class="text-xs px-2 py-0.5 rounded border" :class="sk === baseScenKey(S.S.plan) ? 'border-outline-amber-2 text-ink-amber-strong' : 'border-outline-gray-3 text-ink-gray-6'" @click="setP('baseScenario', sk)">{{ sk === baseScenKey(S.S.plan) ? '★ base' : 'set base' }}</button>
               </div>
               <div class="flex items-center gap-2">
                 <span class="text-xs tabular-nums text-ink-gray-6">exit {{ fUSD(walkScenario(S.S.plan, sk).exit.post) }} · {{ fPct(safeDiv(walkScenario(S.S.plan, sk).byId.bridge.N, walkScenario(S.S.plan, sk).exit.N), 0) }} kept · FDV {{ fUSD(tgeFdvFor(S.S.plan, sk, walkScenario(S.S.plan, sk))) }}</span>
@@ -107,12 +107,12 @@ const msOpts = () => S.S.plan.milestones.map(m => ({ label: m.label, value: m.id
           <div><div class="text-xs text-ink-gray-6 mb-1">Upside exit multiple</div><NumIn :model-value="S.S.plan.exitMultiple" fmt="mult" aria-label="Exit multiple" @update:model-value="v => setP('exitMultiple', v)" /></div>
           <label class="flex items-end gap-2 text-sm pb-1 text-ink-gray-7"><Checkbox :model-value="S.S.plan.showBenchmarks" @update:model-value="v => setP('showBenchmarks', v)" /> Show industry benchmarks ($1B FDV caution)</label>
         </div>
-        <div class="text-p-xs mt-2 flex items-center gap-1 text-ink-amber-3"><span class="lucide-triangle-alert size-3" aria-hidden="true" /> TGE multipliers are working assumptions — validate against tokenomics before sharing externally.</div>
+        <div class="text-p-xs mt-2 flex items-center gap-1 text-ink-amber-strong"><span class="lucide-triangle-alert size-3" aria-hidden="true" /> TGE multipliers are working assumptions — validate against tokenomics before sharing externally.</div>
       </div>
 
       <!-- uniform base + pools -->
       <div class="rounded border border-outline-gray-2 bg-surface-gray-2 p-4">
-        <div class="text-sm text-ink-amber-3 mb-3">Uniform base · tokens &amp; pools</div>
+        <div class="text-sm text-ink-amber-strong mb-3">Uniform base · tokens &amp; pools</div>
         <div class="grid sm:grid-cols-4 gap-4">
           <div><div class="text-xs text-ink-gray-6 mb-1">Base equity %</div><NumIn :model-value="S.S.plan.baseGrant.equityPct" fmt="pct" aria-label="Base equity" @update:model-value="v => setPath(['plan','baseGrant','equityPct'], v)" /></div>
           <div><div class="text-xs text-ink-gray-6 mb-1">Base token %</div><NumIn :model-value="S.S.plan.baseGrant.tokenPct" fmt="pct" aria-label="Base token" @update:model-value="v => setPath(['plan','baseGrant','tokenPct'], v)" /></div>
@@ -128,7 +128,7 @@ const msOpts = () => S.S.plan.milestones.map(m => ({ label: m.label, value: m.id
 
       <!-- capital schedule -->
       <div class="rounded border border-outline-gray-2 bg-surface-gray-2 p-4">
-        <div class="text-sm text-ink-amber-3 mb-3">Capital-introduced schedule</div>
+        <div class="text-sm text-ink-amber-strong mb-3">Capital-introduced schedule</div>
         <div class="grid sm:grid-cols-4 gap-4">
           <div><div class="text-xs text-ink-gray-6 mb-1">Per (USD)</div><NumIn :model-value="S.S.plan.capitalUplift.per" fmt="usd" aria-label="Per" @update:model-value="v => setPath(['plan','capitalUplift','per'], v)" /></div>
           <div><div class="text-xs text-ink-gray-6 mb-1">Adds %base</div><NumIn :model-value="S.S.plan.capitalUplift.pct" fmt="pct" aria-label="Adds" @update:model-value="v => setPath(['plan','capitalUplift','pct'], v)" /></div>
@@ -139,7 +139,7 @@ const msOpts = () => S.S.plan.milestones.map(m => ({ label: m.label, value: m.id
 
       <!-- objectives -->
       <div>
-        <div class="flex items-center justify-between mb-3"><div class="text-sm text-ink-amber-3">Objectives</div><Button variant="subtle" theme="gray" size="sm" icon-left="lucide-plus" label="Add" @click="addObjective" /></div>
+        <div class="flex items-center justify-between mb-3"><div class="text-sm text-ink-amber-strong">Objectives</div><Button variant="subtle" theme="gray" size="sm" icon-left="lucide-plus" label="Add" @click="addObjective" /></div>
         <div class="space-y-2">
           <div v-for="(o, i) in S.S.objectives" :key="o.id" class="rounded border border-outline-gray-2 bg-surface-gray-2 p-3 grid sm:grid-cols-12 gap-3 items-center">
             <input :value="o.label" class="sm:col-span-3 bg-surface-white border border-outline-gray-3 rounded px-2 py-1 text-sm text-ink-gray-9 outline-none" @input="e => setPath(['objectives', i, 'label'], (e.target as HTMLInputElement).value)" />
@@ -154,7 +154,7 @@ const msOpts = () => S.S.plan.milestones.map(m => ({ label: m.label, value: m.id
 
       <!-- tiers -->
       <div>
-        <div class="flex items-center justify-between mb-3"><div class="text-sm text-ink-amber-3">Tiers · multiplier on the uniform base</div><Button variant="subtle" theme="gray" size="sm" icon-left="lucide-plus" label="Add tier" @click="addTier" /></div>
+        <div class="flex items-center justify-between mb-3"><div class="text-sm text-ink-amber-strong">Tiers · multiplier on the uniform base</div><Button variant="subtle" theme="gray" size="sm" icon-left="lucide-plus" label="Add tier" @click="addTier" /></div>
         <div class="grid sm:grid-cols-3 gap-4">
           <div v-for="(t, i) in S.S.tiers" :key="i" class="rounded border border-outline-gray-2 bg-surface-gray-2 p-4">
             <div class="flex items-center justify-between mb-3 gap-2">
@@ -171,7 +171,7 @@ const msOpts = () => S.S.plan.milestones.map(m => ({ label: m.label, value: m.id
 
       <!-- milestones -->
       <div>
-        <div class="flex items-center justify-between mb-3"><div class="text-sm text-ink-amber-3">Milestones · gates for performance uplift (in order)</div><Button variant="subtle" theme="gray" size="sm" icon-left="lucide-plus" label="Add milestone" @click="addMilestone" /></div>
+        <div class="flex items-center justify-between mb-3"><div class="text-sm text-ink-amber-strong">Milestones · gates for performance uplift (in order)</div><Button variant="subtle" theme="gray" size="sm" icon-left="lucide-plus" label="Add milestone" @click="addMilestone" /></div>
         <div class="grid sm:grid-cols-4 gap-2">
           <div v-for="(m, i) in S.S.plan.milestones" :key="m.id" class="rounded border border-outline-gray-2 bg-surface-gray-2 p-2 flex items-center gap-2">
             <span class="text-xs text-ink-gray-6 tabular-nums">{{ i + 1 }}</span>

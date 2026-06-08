@@ -19,7 +19,7 @@ const max = computed(() => Math.max(1, ...cells.value.map(c => c.v)));
   <div class="rounded border border-outline-gray-1 overflow-hidden">
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-px bg-surface-gray-2">
       <div v-for="cell in cells" :key="cell.k" class="p-4" :class="cell.accent ? 'bg-surface-amber-2' : 'bg-surface-white'">
-        <div class="text-xs mb-1" :class="cell.accent ? 'text-ink-amber-3' : 'text-ink-gray-6'">{{ cell.k }}</div>
+        <div class="text-xs mb-1" :class="cell.accent ? 'text-ink-amber-strong' : 'text-ink-gray-6'">{{ cell.k }}</div>
         <div class="font-display tabular-nums text-ink-gray-9" style="font-size:1.5rem;font-weight:350;line-height:1">{{ fUSD(cell.v) }}</div>
         <div class="text-xs mt-1.5 text-ink-gray-6">{{ cell.s }}</div>
         <div class="h-[3px] mt-2 bg-surface-gray-2 rounded-full overflow-hidden"><div class="h-full rounded-full" :class="cell.accent ? 'bg-surface-amber-3' : 'bg-surface-gray-5'" :style="{ width: clamp(cell.v / max, 0, 1) * 100 + '%' }" /></div>

@@ -14,7 +14,7 @@ const pctOfGrant = (sN: number) => props.c.baseEq * (w.value.steps[0].N / sN);
     <div class="flex items-center gap-2 mb-3"><span class="lucide-trending-down size-3.5 text-ink-gray-6" aria-hidden="true" /><div class="text-sm text-ink-gray-6">Equity dilution · base path</div></div>
     <div class="flex items-end gap-1 h-20">
       <div v-for="(s, i) in w.steps" :key="s.id" class="flex-1 flex flex-col items-center justify-end">
-        <div class="text-xs tabular-nums" :class="i === w.steps.length - 1 ? 'text-ink-amber-3' : 'text-ink-gray-6'">{{ fPct(pctOfGrant(s.N), 2) }}</div>
+        <div class="text-xs tabular-nums" :class="i === w.steps.length - 1 ? 'text-ink-amber-strong' : 'text-ink-gray-6'">{{ fPct(pctOfGrant(s.N), 2) }}</div>
         <div class="w-[70%] rounded-t" :style="{ height: clamp(pctOfGrant(s.N) / (c.baseEq || 1), 0, 1) * 70 + 6 + 'px', background: i === 0 ? '#9C4A0C' : i === w.steps.length - 1 ? '#C46A1F' : '#E7C99B' }" />
         <div class="text-ink-gray-6 mt-1" style="font-size:8px">{{ s.label }}</div>
       </div>

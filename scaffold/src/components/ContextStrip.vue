@@ -11,7 +11,7 @@ const fdv = computed(() => tgeFdvFor(plan.value, baseScenKey(plan.value), w.valu
 
 <template>
   <div class="no-print flex items-center gap-x-4 gap-y-1 flex-wrap text-xs px-4 py-2 rounded border border-outline-gray-1 bg-surface-gray-1 text-ink-gray-6">
-    <span class="text-ink-amber-3">Base path</span>
+    <span class="text-ink-amber-strong">Base path</span>
     <span v-for="s in w.steps" :key="s.id" class="tabular-nums text-ink-gray-7">{{ s.label }} {{ fUSD(s.post) }}</span>
     <span class="text-ink-gray-4">·</span>
     <span class="tabular-nums text-ink-gray-7">TGE FDV {{ fUSD(fdv) }}

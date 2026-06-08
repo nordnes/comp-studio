@@ -76,7 +76,7 @@ function doSaveAs() { const n = saveAsName.value.trim(); if (n) { saveBoard(n); 
             </router-link>
           </nav>
         </div>
-        <div v-if="!store.storageOk" class="bg-surface-amber-2 border-t border-outline-amber-2 text-ink-amber-3">
+        <div v-if="!store.storageOk" class="bg-surface-amber-2 border-t border-outline-amber-2 text-ink-amber-strong">
           <div class="mx-auto w-full max-w-7xl px-3 sm:px-5 py-2 flex items-center gap-2 text-xs">
             <span class="lucide-triangle-alert size-3.5 shrink-0" aria-hidden="true" />
             <span>Browser storage is unavailable — use <b>Export JSON</b> to keep your work.</span>

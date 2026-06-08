@@ -7,7 +7,7 @@ const band = computed(() => BENCH.advisorEquity[benchLevelForTier(props.sel.tier
 const eq = computed(() => props.c.baseEq);
 const MAX = 0.012;
 const verdict = computed(() => eq.value > band.value.hi + 1e-9 ? 'above market' : eq.value < band.value.lo - 1e-9 ? 'below market' : 'in market range');
-const vcol = computed(() => verdict.value === 'above market' ? 'text-ink-amber-3' : verdict.value === 'below market' ? 'text-ink-blue-3' : 'text-ink-green-3');
+const vcol = computed(() => verdict.value === 'above market' ? 'text-ink-amber-strong' : verdict.value === 'below market' ? 'text-ink-blue-3' : 'text-ink-green-3');
 </script>
 
 <template>

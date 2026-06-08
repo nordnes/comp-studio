@@ -116,7 +116,7 @@ const baseTotalSum = computed(() => board.value.rows.reduce((s: number, r: any) 
                 <td class="px-4 py-3"><div class="font-medium text-ink-gray-9">{{ a.name }}</div><div class="text-xs text-ink-gray-6">{{ a.sector.split('—')[0].trim() }}</div></td>
                 <td class="px-4 py-3"><Badge :label="a.mode === 'value' ? '$value' : (S.tiers[a.tier]?.name || '—')" theme="orange" variant="subtle" size="sm" /></td>
                 <td class="px-4 py-3 tabular-nums text-ink-gray-8">{{ fPct(c.baseEq, 2) }}</td>
-                <td class="px-4 py-3 tabular-nums" :class="c.earnedUplift > 0 ? 'text-ink-green-3' : 'text-ink-gray-6'">+{{ (c.earnedUplift * 100).toFixed(0) }}%<span v-if="c.pendingUplift > 0" class="text-ink-amber-3"> +{{ (c.pendingUplift * 100).toFixed(0) }}⏳</span></td>
+                <td class="px-4 py-3 tabular-nums" :class="c.earnedUplift > 0 ? 'text-ink-green-3' : 'text-ink-gray-6'">+{{ (c.earnedUplift * 100).toFixed(0) }}%<span v-if="c.pendingUplift > 0" class="text-ink-amber-strong"> +{{ (c.pendingUplift * 100).toFixed(0) }}⏳</span></td>
                 <td class="px-4 py-3 tabular-nums font-medium text-ink-gray-9">{{ fUSD(c.baseCaseTotal) }}</td>
                 <td class="px-2 py-3 no-print"><button aria-label="Remove advisor" class="text-ink-gray-6 hover:text-ink-red-3" @click.stop="delAdvisor(a.id)"><span class="lucide-trash-2 size-3.5" aria-hidden="true" /></button></td>
               </tr>
@@ -140,7 +140,7 @@ const baseTotalSum = computed(() => board.value.rows.reduce((s: number, r: any) 
       <div class="lg:col-span-4 space-y-6">
         <PoolAllocation :board="board" :committed="S.plan.committedAdvisorTokenPct" />
         <div class="rounded border border-outline-amber-2 bg-surface-amber-2 p-5 space-y-3">
-          <div class="text-sm text-ink-amber-3 flex items-center gap-2"><span class="lucide-building-2 size-3.5" aria-hidden="true" /> Company cost · net to the board</div>
+          <div class="text-sm text-ink-amber-strong flex items-center gap-2"><span class="lucide-building-2 size-3.5" aria-hidden="true" /> Company cost · net to the board</div>
           <div class="grid grid-cols-3 gap-px bg-surface-gray-2 rounded overflow-hidden">
             <div v-for="k in Object.keys(S.plan.scenarios)" :key="k" class="p-3" :class="k === baseScenKey(S.plan) ? 'bg-surface-white' : 'bg-surface-amber-2'">
               <div class="text-xs text-ink-gray-6 mb-1">{{ S.plan.scenarios[k].label }}</div>

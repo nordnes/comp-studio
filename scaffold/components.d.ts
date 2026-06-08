@@ -8,11 +8,15 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AdvisorPicker: typeof import('./src/components/AdvisorPicker.vue')['default']
+    ContextStrip: typeof import('./src/components/ContextStrip.vue')['default']
+    FootballField: typeof import('./src/components/FootballField.vue')['default']
     FrappeChart: typeof import('./src/components/FrappeChart.vue')['default']
     NumIn: typeof import('./src/components/NumIn.vue')['default']
     PageHeader: typeof import('./src/components/PageHeader.vue')['default']
     PoolAllocation: typeof import('./src/components/PoolAllocation.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    StageBadge: typeof import('./src/components/StageBadge.vue')['default']
   }
 }

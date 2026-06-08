@@ -117,3 +117,22 @@ when showBenchmarks toggles dataset count. confirmDialog not used for structural
 **Next session:** once the Vercel project exists → deploy preview → screenshot all 6 routes → fix visual/
 layout drift, dark-mode + colour-blind/a11y pass (COM-21), mobile pass (COM-31) → restore the UpsideCurve/
 waterfall interactivity → production deploy (COM-22) + report URL.
+
+## 2026-06-08 — Blind polish round (Robin: "keep polishing without a deploy")
+
+Did everything verifiable without rendering (build + reasoning + typecheck). Commits through `38ed535`, pushed.
+- **COM-16 chart contract:** FrappeChart now passes a plain JSON snapshot to Chart/update (reactive proxies
+  don't update) + guards undefined return.
+- **NumIn:** edits undefined fields from 0 (no "NaN"/"undefined" in the input box).
+- **a11y:** nav `aria-current=page`.
+- **store:** `board`/`selected` hoisted to shared singletons (no per-component recompute).
+- **Compare:** guarded `.find().total` (defensive).
+- **TYPECHECK (vue-tsc) — important gotcha + a REAL bug:** `vue-tsc` over the whole graph is NOT a usable
+  gate — frappe-ui ships raw TS/Vue source whose `~icons/*` virtual imports + internal types throw hundreds
+  of errors (resolved only by its Vite plugin). **Gate stays `vite build`.** Filter to `scaffold/src/**` for
+  a real check. Doing so caught a **functional bug: the Mgr Dialog used `v-model:open` but this frappe-ui
+  version's v-model is `modelValue` → the Saved-boards dialog never opened.** Fixed to `v-model`. Also typed
+  `routes: RouteRecordRaw[]`. **After fixes, scaffold/src is type-clean.** THIRD-PARTY-NOTICES verified accurate.
+- **Reached the limit of verifiable blind polish.** Remaining (visual fidelity, UpsideCurve interactivity,
+  waterfall hover-sync, colour-blind/mobile/print verification) all need the deployed app to see — gated on
+  the Vercel project.

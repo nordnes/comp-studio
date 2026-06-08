@@ -73,7 +73,7 @@ const baseTotalSum = computed(() => board.value.rows.reduce((s: number, r: any) 
       <div class="bg-surface-white rounded border border-outline-gray-1 p-5" role="img"
         :aria-label="`Valuation path base case. TGE FDV ${fUSD(stairFdv)}.`">
         <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
-          <div class="text-sm text-ink-gray-6">Valuation path · base case{{ S.plan.showBenchmarks ? ' vs market median' : '' }} <span class="text-ink-gray-4">· post-money $M</span></div>
+          <div class="text-sm text-ink-gray-6">Valuation path · base case{{ S.plan.showBenchmarks ? ' vs market median' : '' }} <span class="text-ink-gray-6">· post-money $M</span></div>
           <div class="text-xs tabular-nums text-ink-gray-6">TGE FDV {{ fUSD(stairFdv) }} · {{ fMult(S.plan.scenarios[baseScenKey(S.plan)].tgeMult) }} × {{ roundLabel(S.plan, S.plan.tgeAnchor) }}</div>
         </div>
         <FrappeChart type="bar" :data="stair" :height="210" :colors="['#9C4A0C', '#E7C99B']" :options="stairOpts" />

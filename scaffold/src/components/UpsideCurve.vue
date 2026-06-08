@@ -30,12 +30,12 @@ const lineOpts = { lineOptions: { hideDots: 1 }, tooltipOptions: { formatTooltip
     <div class="text-sm text-ink-gray-6 mb-3">Upside · what an outcome is worth (net of strike)</div>
     <div class="grid lg:grid-cols-2 gap-4">
       <div>
-        <div class="text-xs text-ink-amber-strong mb-2">Equity · net vs exit company value <span class="text-ink-gray-4">· $M</span></div>
+        <div class="text-xs text-ink-amber-strong mb-2">Equity · net vs exit company value <span class="text-ink-gray-6">· $M</span></div>
         <FrappeChart type="line" :data="eqChart" :height="190" :colors="['#9C4A0C']" :options="areaOpts" />
         <p class="text-p-xs mt-1 text-ink-gray-6">Below {{ fUSD(breakeven) }} exit, equity is underwater (net $0). Base-case {{ (sb.retention * 100).toFixed(0) }}% retained after dilution.</p>
       </div>
       <div>
-        <div class="text-xs text-ink-amber-strong mb-2">Tokens · value vs TGE FDV <span class="text-ink-gray-4">· $M</span></div>
+        <div class="text-xs text-ink-amber-strong mb-2">Tokens · value vs TGE FDV <span class="text-ink-gray-6">· $M</span></div>
         <FrappeChart type="line" :data="tkChart" :height="190" :colors="['#C46A1F']" :options="lineOpts" />
         <p class="text-p-xs mt-1 text-ink-gray-6">TGE FDV = multiple × {{ roundLabel(plan, plan.tgeAnchor) }} post-money.<span v-if="plan.showBenchmarks"> 2025 launches above $1B FDV mostly traded down.</span></p>
       </div>

@@ -82,3 +82,38 @@ reference behaviour.
   Building continues regardless; deploy is the final gate.
 - **Decision:** `NumIn` and `DField` consolidated into ONE theme-aware `NumIn.vue` (semantic tokens flip under
   `[data-theme=dark]`), used in both light Advisors and the dark Configure panel.
+
+## 2026-06-08 — ALL 6 VIEWS BUILT on frappe-ui; build-green; pushed. Deploy + visual QA pend Robin.
+
+**Status: feature-complete across all 6 routes; `npm run build` ✓; engine 22/22; pushed to GitHub.**
+Commits `39b97d3`→`<m5>` on branch `claude/frosty-pasteur-8cf1db` (pushed to origin). Views:
+- **Overview** (KPI band, roster, PoolAllocation, benchmark+source, alerts incl. /confirm/ regex, empty state)
+- **Advisors** (profile/base-tier/performance controls, objectives tri-state, PotentialStrip, GrowthWaterfall
+  [SVG], UpsideCurve [FC area+line], detail expander: VestingTimeline [SVG], FootballField, MixBreakdown,
+  DilutionPath, Instruments+HMRC SAV)
+- **Board** (table, per-advisor ranges, PoolAllocation, company cost, ValuationStaircase [FC grouped bar],
+  PotentialScatter [SVG])
+- **Compare** (matrix + FC grouped bar, SCEN_COLORS)
+- **Proposition** (print doc + propText clipboard + full legal corpus verbatim)
+- **Configure** (dark [data-theme=dark] panel; all structural lists via store cascade actions)
+Shared: PageHeader, PoolAllocation, ContextStrip, StageBadge, AdvisorPicker, FootballField, NumIn, +chart kit.
+Store: full reducer parity + cascades + Mgr {scenarios,last} + clipboard/URL/JSON/CSV. App shell: header
+(Saved/Mgr dialog + actions dropdown), token nav, banners, footer, FrappeUIProvider+Dialogs. Print CSS done.
+
+**KNOWN SIMPLIFICATIONS (vs reference — for a later pass):** UpsideCurve omits the interactive ChipRow
+presets / gross-toggle / breakeven-shading / per-scenario+selected reference markers (shows the two curves +
+captions). GrowthWaterfall omits hover-sync with the objectives list. Staircase rebuilds (not smooth-updates)
+when showBenchmarks toggles dataset count. confirmDialog not used for structural deletes (immediate = ref parity).
+
+**⚠️ NOT YET DONE — both need Robin / the Vercel project:**
+1. **Visual QA:** could NOT render locally — this environment blocks port-bind for `vite dev` (sandbox-on dies;
+   sandbox-off also unstable; `curl`/preview-MCP blocked). Build is the only local gate. **Every view is
+   UNVERIFIED visually.** First real screenshots must come from the Vercel deploy.
+2. **Deploy / live URL:** **no Vercel project exists for `nordnes/comp-studio`.** Robin must create one:
+   Vercel → Add New → Import `nordnes/comp-studio` → **Root Directory `scaffold`**, Framework **Vite**,
+   Build `npm run build`, Output `dist` (SPA rewrite already in `scaffold/vercel.json`). Then it auto-deploys
+   from the pushed branch / `main`. (Can't be done headlessly: no Vercel CLI/token; MCP has no create-project.)
+
+**Next session:** once the Vercel project exists → deploy preview → screenshot all 6 routes → fix visual/
+layout drift, dark-mode + colour-blind/a11y pass (COM-21), mobile pass (COM-31) → restore the UpsideCurve/
+waterfall interactivity → production deploy (COM-22) + report URL.

@@ -16,6 +16,10 @@
    light amber-1 surface (3.02:1, fails AA). Re-point just the pill badges to the accessible amber —
    .rounded-full never matches the non-pill hero italic, which intentionally keeps bright amber-3. */
 .rounded-full.text-ink-amber-3 { color: var(--ink-amber-strong); }
+/* COM-41 (a11y): keyboard focus for the SVG scatter bubbles — box-shadow rings (focus-visible:ring)
+   don't render on SVG <g>, so use an outline (SVG groups support outline around their bbox). */
+svg g[tabindex]:focus-visible { outline: 2px solid var(--ink-gray-9); outline-offset: 2px; }
+svg g[tabindex]:focus { outline: none; }
 /* Print paths: Advisors "Print", Board "Board pack", Proposition "Print". Ported from the reference's
    @media print (the dead .print-only rule is intentionally dropped). */
 @media print {

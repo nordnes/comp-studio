@@ -59,17 +59,17 @@ function toProp() { router.push('/proposition'); }
       <div class="lg:col-span-5 space-y-6 no-print">
         <div class="bg-surface-white rounded border border-outline-gray-1 p-5 space-y-4">
           <div class="text-sm text-ink-gray-6">Profile</div>
-          <div><div class="text-xs text-ink-gray-6 mb-1">Name</div><input :value="sel.name" aria-label="Advisor name" class="w-full bg-transparent border-b border-outline-gray-2 text-sm text-ink-gray-9 outline-none py-1 focus:border-outline-gray-3" @input="e => setField('name', (e.target as HTMLInputElement).value)" /></div>
+          <div><div class="text-xs text-ink-gray-6 mb-1">Name</div><input :value="sel.name" aria-label="Advisor name" class="w-full bg-transparent border-b border-outline-gray-2 text-sm text-ink-gray-9 outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--ink-gray-6)] py-1 focus:border-outline-gray-3" @input="e => setField('name', (e.target as HTMLInputElement).value)" /></div>
           <div><div class="text-xs text-ink-gray-6 mb-1">Sector</div><Select :model-value="sel.sector" :options="SECTORS.map(s => ({ label: s, value: s }))" @update:model-value="v => setField('sector', v)" /></div>
           <div class="grid grid-cols-2 gap-4">
             <div><div class="text-xs text-ink-gray-6 mb-1">Engagement (yrs)</div><NumIn :model-value="sel.years" :min="1" :max="10" aria-label="Years" @update:model-value="v => setField('years', v)" /></div>
-            <div><div class="text-xs text-ink-gray-6 mb-1">Start date</div><input type="date" :value="sel.startDate || todayISO()" aria-label="Start date" class="w-full bg-transparent border-b border-outline-gray-2 text-sm text-ink-gray-9 outline-none py-1" @input="e => setField('startDate', (e.target as HTMLInputElement).value)" /></div>
+            <div><div class="text-xs text-ink-gray-6 mb-1">Start date</div><input type="date" :value="sel.startDate || todayISO()" aria-label="Start date" class="w-full bg-transparent border-b border-outline-gray-2 text-sm text-ink-gray-9 outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--ink-gray-6)] py-1" @input="e => setField('startDate', (e.target as HTMLInputElement).value)" /></div>
           </div>
           <div class="grid grid-cols-2 gap-4">
             <div><div class="text-xs text-ink-gray-6 mb-1">Granted at</div><Select :model-value="sel.grantRound || 'bridge'" :options="roundList(S.plan).map(r => ({ label: roundLabel(S.plan, r), value: r }))" @update:model-value="v => setField('grantRound', v)" /></div>
             <div><div class="text-xs text-ink-gray-6 mb-1">Tax residency</div><Select :model-value="sel.taxResidency || 'Other'" :options="['UK', 'US', 'Other'].map(t => ({ label: t, value: t }))" @update:model-value="v => setField('taxResidency', v)" /></div>
           </div>
-          <div><div class="text-xs text-ink-gray-6 mb-1">Notes</div><input :value="sel.notes" aria-label="Notes" class="w-full bg-transparent border-b border-outline-gray-2 text-sm text-ink-gray-9 outline-none py-1" @input="e => setField('notes', (e.target as HTMLInputElement).value)" /></div>
+          <div><div class="text-xs text-ink-gray-6 mb-1">Notes</div><input :value="sel.notes" aria-label="Notes" class="w-full bg-transparent border-b border-outline-gray-2 text-sm text-ink-gray-9 outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--ink-gray-6)] py-1" @input="e => setField('notes', (e.target as HTMLInputElement).value)" /></div>
         </div>
 
         <div class="bg-surface-white rounded border border-outline-gray-1 p-5 space-y-4">
@@ -82,7 +82,7 @@ function toProp() { router.push('/proposition'); }
           <template v-if="sel.mode === 'tier'">
             <div class="flex items-center gap-2 text-xs px-3 py-2 rounded bg-surface-amber-2 text-ink-amber-strong"><span class="lucide-layers size-3.5" aria-hidden="true" /> Uniform base {{ fPct(S.plan.baseGrant.equityPct, 2) }} eq · {{ fPct(S.plan.baseGrant.tokenPct, 2) }} tok, ×tier</div>
             <div class="grid grid-cols-3 gap-2">
-              <button v-for="(t, ti) in S.tiers" :key="ti" class="p-3 text-left rounded border" :class="sel.tier === ti ? 'bg-surface-amber-2 border-outline-amber-2' : 'border-outline-gray-2 hover:bg-surface-gray-1'" @click="setField('tier', ti)">
+              <button v-for="(t, ti) in S.tiers" :key="ti" class="p-3 text-left rounded border focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--ink-gray-6)]" :class="sel.tier === ti ? 'bg-surface-amber-2 border-outline-amber-2' : 'border-outline-gray-2 hover:bg-surface-gray-1'" @click="setField('tier', ti)">
                 <div class="flex items-baseline justify-between"><div class="font-display text-base text-ink-gray-9">{{ t.name }}</div><div class="text-xs text-ink-amber-strong">{{ fMult(t.mult) }}</div></div>
                 <div class="text-xs mt-1 tabular-nums text-ink-gray-6">{{ fPct(S.plan.baseGrant.equityPct * t.mult, 1) }} eq · {{ fPct(S.plan.baseGrant.tokenPct * t.mult, 1) }} tok</div>
               </button>

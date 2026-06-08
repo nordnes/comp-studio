@@ -70,7 +70,7 @@ const msOpts = () => S.S.plan.milestones.map(m => ({ label: m.label, value: m.id
         <div class="grid sm:grid-cols-4 gap-2 mb-5">
           <div v-for="(rd, i) in S.S.plan.rounds" :key="rd.id" class="rounded border border-outline-gray-2 bg-surface-gray-2 p-2 flex items-center gap-2">
             <span class="text-xs text-ink-gray-6 tabular-nums">{{ i + 1 }}</span>
-            <input :value="rd.label" :aria-label="`Round ${i + 1} name`" class="flex-1 min-w-0 bg-transparent border-b border-outline-gray-3 text-sm text-ink-gray-9 outline-none py-1" @input="e => setPath(['plan','rounds', i, 'label'], (e.target as HTMLInputElement).value)" />
+            <input :value="rd.label" :aria-label="`Round ${i + 1} name`" class="flex-1 min-w-0 bg-transparent border-b border-outline-gray-3 text-sm text-ink-gray-9 outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--ink-gray-6)] py-1" @input="e => setPath(['plan','rounds', i, 'label'], (e.target as HTMLInputElement).value)" />
             <button v-if="S.S.plan.rounds.length > 1" aria-label="Delete round" class="text-ink-gray-6 hover:text-ink-red-3" @click="delRound(rd.id)"><span class="lucide-trash-2 size-3.5" aria-hidden="true" /></button>
           </div>
         </div>
@@ -85,8 +85,8 @@ const msOpts = () => S.S.plan.milestones.map(m => ({ label: m.label, value: m.id
             :class="sk === baseScenKey(S.S.plan) ? 'border-outline-amber-2 bg-surface-gray-2' : 'border-outline-gray-2 bg-surface-gray-2'">
             <div class="flex items-center justify-between mb-2 gap-2 flex-wrap">
               <div class="flex items-center gap-2">
-                <input :value="S.S.plan.scenarios[sk].label" :aria-label="`Scenario ${sk} name`" class="bg-transparent border-b border-outline-gray-3 text-ink-gray-9 font-display outline-none py-0.5 w-40" @input="e => setPath(['plan','scenarios', sk, 'label'], (e.target as HTMLInputElement).value)" />
-                <button class="text-xs px-2 py-0.5 rounded border" :class="sk === baseScenKey(S.S.plan) ? 'border-outline-amber-2 text-ink-amber-strong' : 'border-outline-gray-3 text-ink-gray-6'" @click="setP('baseScenario', sk)">{{ sk === baseScenKey(S.S.plan) ? '★ base' : 'set base' }}</button>
+                <input :value="S.S.plan.scenarios[sk].label" :aria-label="`Scenario ${sk} name`" class="bg-transparent border-b border-outline-gray-3 text-ink-gray-9 font-display outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--ink-gray-6)] py-0.5 w-40" @input="e => setPath(['plan','scenarios', sk, 'label'], (e.target as HTMLInputElement).value)" />
+                <button class="text-xs px-2 py-0.5 rounded border focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--ink-gray-6)]" :class="sk === baseScenKey(S.S.plan) ? 'border-outline-amber-2 text-ink-amber-strong' : 'border-outline-gray-3 text-ink-gray-6'" @click="setP('baseScenario', sk)">{{ sk === baseScenKey(S.S.plan) ? '★ base' : 'set base' }}</button>
               </div>
               <div class="flex items-center gap-2">
                 <span class="text-xs tabular-nums text-ink-gray-6">exit {{ fUSD(walkScenario(S.S.plan, sk).exit.post) }} · {{ fPct(safeDiv(walkScenario(S.S.plan, sk).byId.bridge.N, walkScenario(S.S.plan, sk).exit.N), 0) }} kept · FDV {{ fUSD(tgeFdvFor(S.S.plan, sk, walkScenario(S.S.plan, sk))) }}</span>
@@ -122,7 +122,7 @@ const msOpts = () => S.S.plan.milestones.map(m => ({ label: m.label, value: m.id
           <div><div class="text-xs text-ink-gray-6 mb-1">Token supply</div><NumIn :model-value="S.S.plan.tokenSupply" aria-label="Token supply" @update:model-value="v => setP('tokenSupply', v)" /></div>
           <div><div class="text-xs text-ink-gray-6 mb-1">CoC acceleration</div><NumIn :model-value="S.S.plan.cocAccelPct" fmt="pct" aria-label="CoC acceleration" @update:model-value="v => setP('cocAccelPct', v)" /></div>
           <div><div class="text-xs text-ink-gray-6 mb-1">Equity vest yrs</div><NumIn :model-value="S.S.plan.equityVestYears" aria-label="Equity vest years" @update:model-value="v => setP('equityVestYears', v)" /></div>
-          <div><div class="text-xs text-ink-gray-6 mb-1">TGE date</div><input type="date" :value="S.S.plan.tgeDate" aria-label="TGE date" class="w-full bg-surface-white border border-outline-gray-3 rounded px-2 py-1 text-sm text-ink-gray-9 outline-none" @input="e => setP('tgeDate', (e.target as HTMLInputElement).value)" /></div>
+          <div><div class="text-xs text-ink-gray-6 mb-1">TGE date</div><input type="date" :value="S.S.plan.tgeDate" aria-label="TGE date" class="w-full bg-surface-white border border-outline-gray-3 rounded px-2 py-1 text-sm text-ink-gray-9 outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--ink-gray-6)]" @input="e => setP('tgeDate', (e.target as HTMLInputElement).value)" /></div>
         </div>
       </div>
 
@@ -142,9 +142,9 @@ const msOpts = () => S.S.plan.milestones.map(m => ({ label: m.label, value: m.id
         <div class="flex items-center justify-between mb-3"><div class="text-sm text-ink-amber-strong">Objectives</div><Button variant="subtle" theme="gray" size="sm" icon-left="lucide-plus" label="Add" @click="addObjective" /></div>
         <div class="space-y-2">
           <div v-for="(o, i) in S.S.objectives" :key="o.id" class="rounded border border-outline-gray-2 bg-surface-gray-2 p-3 grid sm:grid-cols-12 gap-3 items-center">
-            <input :value="o.label" :aria-label="`Objective ${i + 1} label`" class="sm:col-span-3 bg-surface-white border border-outline-gray-3 rounded px-2 py-1 text-sm text-ink-gray-9 outline-none" @input="e => setPath(['objectives', i, 'label'], (e.target as HTMLInputElement).value)" />
+            <input :value="o.label" :aria-label="`Objective ${i + 1} label`" class="sm:col-span-3 bg-surface-white border border-outline-gray-3 rounded px-2 py-1 text-sm text-ink-gray-9 outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--ink-gray-6)]" @input="e => setPath(['objectives', i, 'label'], (e.target as HTMLInputElement).value)" />
             <div class="sm:col-span-2"><Select :model-value="o.category" :options="CAT_OPTIONS" @update:model-value="v => setPath(['objectives', i, 'category'], v)" /></div>
-            <input :value="o.trigger" :aria-label="`Objective ${i + 1} trigger`" class="sm:col-span-4 bg-surface-white border border-outline-gray-3 rounded px-2 py-1 text-xs text-ink-gray-7 outline-none" @input="e => setPath(['objectives', i, 'trigger'], (e.target as HTMLInputElement).value)" />
+            <input :value="o.trigger" :aria-label="`Objective ${i + 1} trigger`" class="sm:col-span-4 bg-surface-white border border-outline-gray-3 rounded px-2 py-1 text-xs text-ink-gray-7 outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--ink-gray-6)]" @input="e => setPath(['objectives', i, 'trigger'], (e.target as HTMLInputElement).value)" />
             <div class="sm:col-span-1"><div class="text-xs text-ink-gray-6 mb-1">Uplift</div><NumIn :model-value="o.uplift" fmt="pct" aria-label="Uplift" @update:model-value="v => setPath(['objectives', i, 'uplift'], v)" /></div>
             <div class="sm:col-span-1"><Select :model-value="o.gate" :options="msOpts()" @update:model-value="v => setPath(['objectives', i, 'gate'], v)" /></div>
             <button aria-label="Delete objective" class="sm:col-span-1 justify-self-end text-ink-gray-6 hover:text-ink-red-3" @click="delObjective(o.id)"><span class="lucide-trash-2 size-3.5" aria-hidden="true" /></button>
@@ -158,7 +158,7 @@ const msOpts = () => S.S.plan.milestones.map(m => ({ label: m.label, value: m.id
         <div class="grid sm:grid-cols-3 gap-4">
           <div v-for="(t, i) in S.S.tiers" :key="i" class="rounded border border-outline-gray-2 bg-surface-gray-2 p-4">
             <div class="flex items-center justify-between mb-3 gap-2">
-              <input :value="t.name" :aria-label="`Tier ${i + 1} name`" class="flex-1 min-w-0 bg-transparent border-b border-outline-gray-3 font-display text-lg text-ink-gray-9 outline-none" @input="e => setPath(['tiers', i, 'name'], (e.target as HTMLInputElement).value)" />
+              <input :value="t.name" :aria-label="`Tier ${i + 1} name`" class="flex-1 min-w-0 bg-transparent border-b border-outline-gray-3 font-display text-lg text-ink-gray-9 outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--ink-gray-6)]" @input="e => setPath(['tiers', i, 'name'], (e.target as HTMLInputElement).value)" />
               <button v-if="S.S.tiers.length > 1" aria-label="Delete tier" class="text-ink-gray-6 hover:text-ink-red-3" @click="delTier(i)"><span class="lucide-trash-2 size-3.5" aria-hidden="true" /></button>
             </div>
             <div class="grid grid-cols-2 gap-2">
@@ -175,7 +175,7 @@ const msOpts = () => S.S.plan.milestones.map(m => ({ label: m.label, value: m.id
         <div class="grid sm:grid-cols-4 gap-2">
           <div v-for="(m, i) in S.S.plan.milestones" :key="m.id" class="rounded border border-outline-gray-2 bg-surface-gray-2 p-2 flex items-center gap-2">
             <span class="text-xs text-ink-gray-6 tabular-nums">{{ i + 1 }}</span>
-            <input :value="m.label" :aria-label="`Milestone ${i + 1} name`" class="flex-1 min-w-0 bg-transparent border-b border-outline-gray-3 text-sm text-ink-gray-9 outline-none py-1" @input="e => setPath(['plan','milestones', i, 'label'], (e.target as HTMLInputElement).value)" />
+            <input :value="m.label" :aria-label="`Milestone ${i + 1} name`" class="flex-1 min-w-0 bg-transparent border-b border-outline-gray-3 text-sm text-ink-gray-9 outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--ink-gray-6)] py-1" @input="e => setPath(['plan','milestones', i, 'label'], (e.target as HTMLInputElement).value)" />
             <button v-if="S.S.plan.milestones.length > 1" aria-label="Delete milestone" class="text-ink-gray-6 hover:text-ink-red-3" @click="delMilestone(m.id)"><span class="lucide-trash-2 size-3.5" aria-hidden="true" /></button>
           </div>
         </div>

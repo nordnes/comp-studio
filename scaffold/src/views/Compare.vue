@@ -37,7 +37,7 @@ const scenColors = computed(() => cols.value.map((_, i) => SCEN_COLORS[i % SCEN_
           <th class="px-4 py-3 font-normal">Cash/yr</th>
         </tr></thead>
         <tbody>
-          <tr v-for="{ a, c } in board.rows" :key="a.id" class="border-b border-outline-gray-1 cursor-pointer hover:bg-surface-gray-1" @click="open(a.id)">
+          <tr v-for="{ a, c } in board.rows" :key="a.id" tabindex="0" role="button" :aria-label="`Open ${a.name}`" class="border-b border-outline-gray-1 cursor-pointer hover:bg-surface-gray-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--ink-gray-6)] focus-visible:bg-surface-gray-1" @click="open(a.id)" @keydown.enter="open(a.id)" @keydown.space.prevent="open(a.id)">
             <td class="px-4 py-3 font-medium text-ink-gray-9">{{ a.name }}</td>
             <td class="px-4 py-3"><Badge :label="a.mode === 'value' ? '$value' : (S.tiers[a.tier]?.name || '—')" theme="orange" variant="subtle" size="sm" /></td>
             <td class="px-4 py-3 tabular-nums text-ink-gray-8">{{ fPct(c.baseEq, 2) }}</td>

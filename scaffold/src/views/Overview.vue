@@ -66,7 +66,7 @@ const hasBudget = computed(() => flags.value.some(f => f.t === 'budget'));
         <div class="text-sm text-ink-gray-6">Roster · click to open a package</div>
         <div class="grid sm:grid-cols-2 gap-3">
           <button v-for="{ a, c } in board.rows" :key="a.id" @click="open(a.id)"
-            class="text-left bg-surface-white rounded border border-outline-gray-1 p-4 hover:bg-surface-gray-1 hover:border-outline-gray-2 transition-colors">
+            class="text-left bg-surface-white rounded border border-outline-gray-1 p-4 hover:bg-surface-gray-1 hover:border-outline-gray-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--ink-gray-6)]">
             <div class="flex items-center justify-between gap-2">
               <div class="font-medium text-ink-gray-9">{{ a.name }}</div>
               <Badge :label="a.mode === 'value' ? '$value' : (S.tiers[a.tier]?.name || '—')" theme="orange" variant="subtle" size="sm" />

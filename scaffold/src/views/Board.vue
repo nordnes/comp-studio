@@ -89,7 +89,7 @@ const baseTotalSum = computed(() => board.value.rows.reduce((s: number, r: any) 
           <line :x1="PAD.l" :y1="PAD.t" :x2="PAD.l" :y2="VH - PAD.b" class="stroke-current text-ink-gray-3" stroke-width="1" />
           <text :x="PAD.l" :y="VH - 6" class="fill-current text-ink-gray-6" font-size="9">{{ fUSD(0) }}</text>
           <text :x="VW - PAD.r" :y="VH - 6" text-anchor="end" class="fill-current text-ink-gray-6" font-size="9">{{ fUSD(xMax) }}</text>
-          <g v-for="d in scatter" :key="d.id" class="cursor-pointer" @click="open(d.id)">
+          <g v-for="d in scatter" :key="d.id" tabindex="0" role="button" :aria-label="`Open ${d.name}`" class="cursor-pointer focus:outline-none" @click="open(d.id)" @keydown.enter="open(d.id)" @keydown.space.prevent="open(d.id)">
             <circle :cx="sx(d.x)" :cy="sy(d.y)" :r="sr(d.z)" :style="{ fill: TIER_COLOR[d.tier] || '#9C4A0C', fillOpacity: 0.7 }" />
             <text :x="sx(d.x)" :y="sy(d.y) - sr(d.z) - 3" text-anchor="middle" class="fill-current text-ink-gray-7" font-size="9">{{ d.name }}</text>
           </g>
@@ -112,7 +112,7 @@ const baseTotalSum = computed(() => board.value.rows.reduce((s: number, r: any) 
               <th class="px-4 py-3 font-normal">Net base-case</th><th class="px-2 py-3 no-print" />
             </tr></thead>
             <tbody>
-              <tr v-for="{ a, c } in board.rows" :key="a.id" class="border-b border-outline-gray-1 cursor-pointer hover:bg-surface-gray-1" @click="open(a.id)">
+              <tr v-for="{ a, c } in board.rows" :key="a.id" tabindex="0" role="button" :aria-label="`Open ${a.name}`" class="border-b border-outline-gray-1 cursor-pointer hover:bg-surface-gray-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--ink-gray-6)] focus-visible:bg-surface-gray-1" @click="open(a.id)" @keydown.enter="open(a.id)" @keydown.space.prevent="open(a.id)">
                 <td class="px-4 py-3"><div class="font-medium text-ink-gray-9">{{ a.name }}</div><div class="text-xs text-ink-gray-6">{{ a.sector.split('—')[0].trim() }}</div></td>
                 <td class="px-4 py-3"><Badge :label="a.mode === 'value' ? '$value' : (S.tiers[a.tier]?.name || '—')" theme="orange" variant="subtle" size="sm" /></td>
                 <td class="px-4 py-3 tabular-nums text-ink-gray-8">{{ fPct(c.baseEq, 2) }}</td>

@@ -41,7 +41,7 @@ function commit() {
 
 <template>
   <input v-if="edit" ref="inputEl" v-model="draft" :aria-label="ariaLabel"
-    class="w-full min-w-0 bg-surface-white border border-outline-gray-3 rounded px-2 py-1 text-sm tabular-nums text-ink-gray-9 outline-none focus:border-outline-gray-3"
+    class="w-full min-w-0 bg-surface-white border border-outline-gray-3 rounded px-2 py-1 text-sm tabular-nums text-ink-gray-9 outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--ink-gray-6)] focus:border-outline-gray-3"
     @blur="commit" @keydown.enter.prevent="commit" @keydown.escape="edit = false" />
   <button v-else type="button" :aria-label="ariaLabel"
     class="text-left tabular-nums text-ink-gray-9 border-b border-dashed border-transparent hover:border-outline-gray-3 hover:text-ink-amber-strong transition-colors"

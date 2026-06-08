@@ -3,6 +3,7 @@ import { ref, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { FrappeUIProvider, Dialogs, Button, Badge, Dropdown, Dialog, TextInput } from 'frappe-ui';
 import { useStudio } from './store';
+import { confirmDestroy } from './confirm';
 import { fUSD, fPct } from './engine';
 
 // Nav is the IA from the reference (sentence case, frappe-ui best practice — no uppercase roman eyebrows).
@@ -37,7 +38,7 @@ const moreActions = computed(() => [
   { label: 'Export JSON', icon: 'lucide-file-json', onClick: () => exportJSON() },
   { label: 'Export board CSV', icon: 'lucide-file-text', onClick: () => exportBoardCSV() },
   { label: 'Import JSON', icon: 'lucide-upload', onClick: () => fileRef.value?.click() },
-  { label: 'Reset to baseline', icon: 'lucide-rotate-ccw', onClick: () => reset() },
+  { label: 'Reset to baseline', icon: 'lucide-rotate-ccw', onClick: () => confirmDestroy('Reset to baseline', 'This discards all edits to the current board and restores the defaults.', reset) },
 ]);
 
 function doSaveAs() { const n = saveAsName.value.trim(); if (n) { saveBoard(n); saveAsName.value = ''; } }
@@ -125,7 +126,7 @@ function doSaveAs() { const n = saveAsName.value.trim(); if (n) { saveBoard(n); 
                 {{ n }}
               </button>
               <Button variant="ghost" theme="red" size="sm" icon="lucide-trash-2" aria-label="Delete board"
-                @click="delBoard(n)" />
+                @click="confirmDestroy('Delete board', `Delete saved board ${n}? This cannot be undone.`, () => delBoard(n))" />
             </li>
           </ul>
           <div class="flex items-end gap-2">

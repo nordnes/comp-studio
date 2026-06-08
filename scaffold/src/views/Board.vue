@@ -7,6 +7,7 @@ import { Button, Badge } from 'frappe-ui';
 import { useStudio } from '../store';
 import { fUSD, fPct, walkScenario, baseScenKey, tgeFdvFor, roundLabel, fMult, BENCH } from '../engine';
 import { TIER_COLOR } from '../constants';
+import { confirmDestroy } from '../confirm';
 import PageHeader from '../components/PageHeader.vue';
 import PoolAllocation from '../components/PoolAllocation.vue';
 import ContextStrip from '../components/ContextStrip.vue';
@@ -118,7 +119,7 @@ const baseTotalSum = computed(() => board.value.rows.reduce((s: number, r: any) 
                 <td class="px-4 py-3 tabular-nums text-ink-gray-8">{{ fPct(c.baseEq, 2) }}</td>
                 <td class="px-4 py-3 tabular-nums" :class="c.earnedUplift > 0 ? 'text-ink-green-3' : 'text-ink-gray-6'">+{{ (c.earnedUplift * 100).toFixed(0) }}%<span v-if="c.pendingUplift > 0" class="text-ink-amber-strong"> +{{ (c.pendingUplift * 100).toFixed(0) }}⏳</span></td>
                 <td class="px-4 py-3 tabular-nums font-medium text-ink-gray-9">{{ fUSD(c.baseCaseTotal) }}</td>
-                <td class="px-2 py-3 no-print"><button aria-label="Remove advisor" class="inline-flex shrink-0 items-center justify-center size-8 rounded hover:bg-surface-gray-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-gray-6)] text-ink-gray-6 hover:text-ink-red-3" @click.stop="delAdvisor(a.id)"><span class="lucide-trash-2 size-3.5" aria-hidden="true" /></button></td>
+                <td class="px-2 py-3 no-print"><button aria-label="Remove advisor" class="inline-flex shrink-0 items-center justify-center size-8 rounded hover:bg-surface-gray-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-gray-6)] text-ink-gray-6 hover:text-ink-red-3" @click.stop="confirmDestroy('Remove advisor', `Remove ${a.name} from the board?`, () => delAdvisor(a.id))"><span class="lucide-trash-2 size-3.5" aria-hidden="true" /></button></td>
               </tr>
               <tr class="bg-surface-amber-2">
                 <td class="px-4 py-3 font-medium text-ink-gray-9">Board · {{ board.rows.length }}</td><td />

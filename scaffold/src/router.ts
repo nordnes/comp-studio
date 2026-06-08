@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Overview from './views/Overview.vue';
+import Configure from './views/Configure.vue';
 import Stub from './views/Stub.vue';
 
 const routes = [
@@ -9,7 +10,7 @@ const routes = [
   { path: '/board', component: Stub, meta: { title: 'Board' } },
   { path: '/compare', component: Stub, meta: { title: 'Compare' } },
   { path: '/proposition', component: Stub, meta: { title: 'Proposition' } },
-  { path: '/configure', component: Stub, meta: { title: 'Configure' } },
+  { path: '/configure', component: Configure, meta: { title: 'Configure' } },
 ];
 
 export default createRouter({ history: createWebHistory(), routes });

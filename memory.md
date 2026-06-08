@@ -62,3 +62,23 @@ CSS-class icons, page-header + body-container patterns). **Ignoring** its SETUP 
 reference behaviour.
 
 **Next:** COM-11 store (this turn) → frappe-ui app shell (App.vue) → COM-9 first Vercel preview to gate M0.
+
+## 2026-06-08 — M0 store+shell+Overview built green; DEPLOY PIPELINE GAP found
+
+- **Built & build-green:** `store.ts` (COM-11, full parity), `App.vue` shell, `Overview.vue` on frappe-ui,
+  shared `PageHeader.vue` + `PoolAllocation.vue`. Commits `39b97d3`, `ff50175`. `npm run build` ✓.
+- **frappe-ui API gotchas (recorded):** `Alert` has NO default slot and themes are `yellow|blue|red|green`
+  (NOT orange) → header banners are token `<div>`s, not `<Alert>`. `Badge` DOES support `theme="orange"`
+  (amber). `Dialog` uses `:options="{title,size}"` + `#body-content` slot (not `title` prop). `FrappeUIProvider`
+  is just `ToastProvider` (socket-safe) — mounted with `<Dialogs/>` for `confirmDialog`/`toast`.
+- **Local dev server can't run here:** the sandbox blocks port-bind → `vite dev` exits; `curl`/preview MCP
+  blocked. **Visual passes must go via a deployed URL.** Build (`npm run build`) is the local correctness gate.
+- **⚠️ DEPLOY BLOCKER (needs Robin):** there is **NO Vercel project for `nordnes/comp-studio`** (checked both
+  Raiku Labs + Nordnes Personal teams). The `raiku-advisor` Vercel project is a **different** app
+  (repo `nordnes/raiku-advisor`, a Next.js/Turborepo monorepo). The `deploy_to_vercel` connector only prints
+  instructions (run `vercel deploy` — CLI not installed — or push to a git-integrated repo). **To deploy,
+  Robin must create a Vercel project linked to `nordnes/comp-studio` with Root Directory = `scaffold`,
+  framework Vite, build `npm run build`, output `dist`** (SPA rewrite already in `scaffold/vercel.json`).
+  Building continues regardless; deploy is the final gate.
+- **Decision:** `NumIn` and `DField` consolidated into ONE theme-aware `NumIn.vue` (semantic tokens flip under
+  `[data-theme=dark]`), used in both light Advisors and the dark Configure panel.

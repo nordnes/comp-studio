@@ -43,7 +43,7 @@ const scenColors = computed(() => cols.value.map((_, i) => SCEN_COLORS[i % SCEN_
             <td class="px-4 py-3 tabular-nums text-ink-gray-8">{{ fPct(c.baseEq, 2) }}</td>
             <td class="px-4 py-3 tabular-nums" :class="c.earnedUplift > 0 ? 'text-ink-green-3' : 'text-ink-gray-5'">+{{ (c.earnedUplift * 100).toFixed(0) }}%</td>
             <td class="px-4 py-3 tabular-nums text-ink-gray-5">+{{ (c.ceilUplift * 100).toFixed(0) }}%</td>
-            <td v-for="k in cols" :key="k" class="px-4 py-3 tabular-nums text-ink-gray-9" :class="k === baseScenKey(S.plan) ? 'font-medium' : ''">{{ fUSD(c.scen.find((x: any) => x.key === k).total) }}</td>
+            <td v-for="k in cols" :key="k" class="px-4 py-3 tabular-nums text-ink-gray-9" :class="k === baseScenKey(S.plan) ? 'font-medium' : ''">{{ fUSD(c.scen.find((x: any) => x.key === k)?.total || 0) }}</td>
             <td class="px-4 py-3 tabular-nums text-ink-gray-8">{{ c.cash ? fUSD(c.cash) : '—' }}</td>
           </tr>
           <tr class="bg-surface-amber-2">

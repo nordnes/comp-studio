@@ -59,17 +59,17 @@ function toProp() { router.push('/proposition'); }
       <div class="lg:col-span-5 space-y-6 no-print">
         <div class="bg-surface-white rounded border border-outline-gray-1 p-5 space-y-4">
           <div class="text-sm text-ink-gray-6">Profile</div>
-          <div><div class="text-xs text-ink-gray-6 mb-1">Name</div><input :value="sel.name" class="w-full bg-transparent border-b border-outline-gray-2 text-sm text-ink-gray-9 outline-none py-1 focus:border-outline-gray-3" @input="e => setField('name', (e.target as HTMLInputElement).value)" /></div>
+          <div><div class="text-xs text-ink-gray-6 mb-1">Name</div><input :value="sel.name" aria-label="Advisor name" class="w-full bg-transparent border-b border-outline-gray-2 text-sm text-ink-gray-9 outline-none py-1 focus:border-outline-gray-3" @input="e => setField('name', (e.target as HTMLInputElement).value)" /></div>
           <div><div class="text-xs text-ink-gray-6 mb-1">Sector</div><Select :model-value="sel.sector" :options="SECTORS.map(s => ({ label: s, value: s }))" @update:model-value="v => setField('sector', v)" /></div>
           <div class="grid grid-cols-2 gap-4">
             <div><div class="text-xs text-ink-gray-6 mb-1">Engagement (yrs)</div><NumIn :model-value="sel.years" :min="1" :max="10" aria-label="Years" @update:model-value="v => setField('years', v)" /></div>
-            <div><div class="text-xs text-ink-gray-6 mb-1">Start date</div><input type="date" :value="sel.startDate || todayISO()" class="w-full bg-transparent border-b border-outline-gray-2 text-sm text-ink-gray-9 outline-none py-1" @input="e => setField('startDate', (e.target as HTMLInputElement).value)" /></div>
+            <div><div class="text-xs text-ink-gray-6 mb-1">Start date</div><input type="date" :value="sel.startDate || todayISO()" aria-label="Start date" class="w-full bg-transparent border-b border-outline-gray-2 text-sm text-ink-gray-9 outline-none py-1" @input="e => setField('startDate', (e.target as HTMLInputElement).value)" /></div>
           </div>
           <div class="grid grid-cols-2 gap-4">
             <div><div class="text-xs text-ink-gray-6 mb-1">Granted at</div><Select :model-value="sel.grantRound || 'bridge'" :options="roundList(S.plan).map(r => ({ label: roundLabel(S.plan, r), value: r }))" @update:model-value="v => setField('grantRound', v)" /></div>
             <div><div class="text-xs text-ink-gray-6 mb-1">Tax residency</div><Select :model-value="sel.taxResidency || 'Other'" :options="['UK', 'US', 'Other'].map(t => ({ label: t, value: t }))" @update:model-value="v => setField('taxResidency', v)" /></div>
           </div>
-          <div><div class="text-xs text-ink-gray-6 mb-1">Notes</div><input :value="sel.notes" class="w-full bg-transparent border-b border-outline-gray-2 text-sm text-ink-gray-9 outline-none py-1" @input="e => setField('notes', (e.target as HTMLInputElement).value)" /></div>
+          <div><div class="text-xs text-ink-gray-6 mb-1">Notes</div><input :value="sel.notes" aria-label="Notes" class="w-full bg-transparent border-b border-outline-gray-2 text-sm text-ink-gray-9 outline-none py-1" @input="e => setField('notes', (e.target as HTMLInputElement).value)" /></div>
         </div>
 
         <div class="bg-surface-white rounded border border-outline-gray-1 p-5 space-y-4">
@@ -91,7 +91,7 @@ function toProp() { router.push('/proposition'); }
           </template>
           <template v-else>
             <div><div class="text-xs text-ink-gray-6 mb-1">Annual value (USD)</div><NumIn :model-value="sel.annualValue" fmt="usd" :min="0" aria-label="Annual value" @update:model-value="v => setField('annualValue', v)" /></div>
-            <div><div class="flex justify-between text-sm mb-1"><span class="text-ink-gray-7">Options / tokens split</span><span class="tabular-nums text-ink-gray-9">{{ fPct(sel.splitOptions, 0) }} / {{ fPct(1 - sel.splitOptions, 0) }}</span></div><input type="range" min="0" max="1" step="0.05" :value="sel.splitOptions" class="w-full" style="accent-color:#9C4A0C" @input="e => setField('splitOptions', Number((e.target as HTMLInputElement).value))" /></div>
+            <div><div class="flex justify-between text-sm mb-1"><span class="text-ink-gray-7">Options / tokens split</span><span class="tabular-nums text-ink-gray-9">{{ fPct(sel.splitOptions, 0) }} / {{ fPct(1 - sel.splitOptions, 0) }}</span></div><input type="range" min="0" max="1" step="0.05" :value="sel.splitOptions" aria-label="Options / tokens split" :aria-valuetext="`${fPct(sel.splitOptions, 0)} options, ${fPct(1 - sel.splitOptions, 0)} tokens`" class="w-full" style="accent-color:#9C4A0C" @input="e => setField('splitOptions', Number((e.target as HTMLInputElement).value))" /></div>
           </template>
           <label class="flex items-center gap-2 text-sm pt-2 border-t border-outline-gray-1 text-ink-gray-7"><Checkbox :model-value="sel.hasCash" @update:model-value="v => setField('hasCash', v)" /> Cash retainer (post-Series A)</label>
           <div v-if="sel.hasCash"><div class="text-xs text-ink-gray-6 mb-1">Annual cash (USD)</div><NumIn :model-value="sel.cashAnnual" fmt="usd" :min="0" aria-label="Cash" @update:model-value="v => setField('cashAnnual', v)" /></div>

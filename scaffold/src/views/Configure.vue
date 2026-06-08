@@ -71,7 +71,7 @@ const msOpts = () => S.S.plan.milestones.map(m => ({ label: m.label, value: m.id
           <div v-for="(rd, i) in S.S.plan.rounds" :key="rd.id" class="rounded border border-outline-gray-2 bg-surface-gray-2 p-2 flex items-center gap-2">
             <span class="text-xs text-ink-gray-6 tabular-nums">{{ i + 1 }}</span>
             <input :value="rd.label" :aria-label="`Round ${i + 1} name`" class="flex-1 min-w-0 bg-transparent border-b border-outline-gray-3 text-sm text-ink-gray-9 outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--ink-gray-6)] py-1" @input="e => setPath(['plan','rounds', i, 'label'], (e.target as HTMLInputElement).value)" />
-            <button v-if="S.S.plan.rounds.length > 1" aria-label="Delete round" class="text-ink-gray-6 hover:text-ink-red-3" @click="delRound(rd.id)"><span class="lucide-trash-2 size-3.5" aria-hidden="true" /></button>
+            <button v-if="S.S.plan.rounds.length > 1" aria-label="Delete round" class="inline-flex shrink-0 items-center justify-center size-8 rounded hover:bg-surface-gray-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-gray-6)] text-ink-gray-6 hover:text-ink-red-3" @click="delRound(rd.id)"><span class="lucide-trash-2 size-3.5" aria-hidden="true" /></button>
           </div>
         </div>
 
@@ -90,7 +90,7 @@ const msOpts = () => S.S.plan.milestones.map(m => ({ label: m.label, value: m.id
               </div>
               <div class="flex items-center gap-2">
                 <span class="text-xs tabular-nums text-ink-gray-6">exit {{ fUSD(walkScenario(S.S.plan, sk).exit.post) }} · {{ fPct(safeDiv(walkScenario(S.S.plan, sk).byId.bridge.N, walkScenario(S.S.plan, sk).exit.N), 0) }} kept · FDV {{ fUSD(tgeFdvFor(S.S.plan, sk, walkScenario(S.S.plan, sk))) }}</span>
-                <button v-if="Object.keys(S.S.plan.scenarios).length > 1" aria-label="Delete scenario" class="text-ink-gray-6 hover:text-ink-red-3" @click="delScenario(sk)"><span class="lucide-trash-2 size-3.5" aria-hidden="true" /></button>
+                <button v-if="Object.keys(S.S.plan.scenarios).length > 1" aria-label="Delete scenario" class="inline-flex shrink-0 items-center justify-center size-8 rounded hover:bg-surface-gray-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-gray-6)] text-ink-gray-6 hover:text-ink-red-3" @click="delScenario(sk)"><span class="lucide-trash-2 size-3.5" aria-hidden="true" /></button>
               </div>
             </div>
             <div class="grid sm:grid-cols-4 gap-3">
@@ -147,7 +147,7 @@ const msOpts = () => S.S.plan.milestones.map(m => ({ label: m.label, value: m.id
             <input :value="o.trigger" :aria-label="`Objective ${i + 1} trigger`" class="sm:col-span-4 bg-surface-white border border-outline-gray-3 rounded px-2 py-1 text-xs text-ink-gray-7 outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--ink-gray-6)]" @input="e => setPath(['objectives', i, 'trigger'], (e.target as HTMLInputElement).value)" />
             <div class="sm:col-span-1"><div class="text-xs text-ink-gray-6 mb-1">Uplift</div><NumIn :model-value="o.uplift" fmt="pct" aria-label="Uplift" @update:model-value="v => setPath(['objectives', i, 'uplift'], v)" /></div>
             <div class="sm:col-span-1"><Select :model-value="o.gate" :options="msOpts()" @update:model-value="v => setPath(['objectives', i, 'gate'], v)" /></div>
-            <button aria-label="Delete objective" class="sm:col-span-1 justify-self-end text-ink-gray-6 hover:text-ink-red-3" @click="delObjective(o.id)"><span class="lucide-trash-2 size-3.5" aria-hidden="true" /></button>
+            <button aria-label="Delete objective" class="sm:col-span-1 justify-self-end inline-flex shrink-0 items-center justify-center size-8 rounded hover:bg-surface-gray-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-gray-6)] text-ink-gray-6 hover:text-ink-red-3" @click="delObjective(o.id)"><span class="lucide-trash-2 size-3.5" aria-hidden="true" /></button>
           </div>
         </div>
       </div>
@@ -159,7 +159,7 @@ const msOpts = () => S.S.plan.milestones.map(m => ({ label: m.label, value: m.id
           <div v-for="(t, i) in S.S.tiers" :key="i" class="rounded border border-outline-gray-2 bg-surface-gray-2 p-4">
             <div class="flex items-center justify-between mb-3 gap-2">
               <input :value="t.name" :aria-label="`Tier ${i + 1} name`" class="flex-1 min-w-0 bg-transparent border-b border-outline-gray-3 font-display text-lg text-ink-gray-9 outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--ink-gray-6)]" @input="e => setPath(['tiers', i, 'name'], (e.target as HTMLInputElement).value)" />
-              <button v-if="S.S.tiers.length > 1" aria-label="Delete tier" class="text-ink-gray-6 hover:text-ink-red-3" @click="delTier(i)"><span class="lucide-trash-2 size-3.5" aria-hidden="true" /></button>
+              <button v-if="S.S.tiers.length > 1" aria-label="Delete tier" class="inline-flex shrink-0 items-center justify-center size-8 rounded hover:bg-surface-gray-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-gray-6)] text-ink-gray-6 hover:text-ink-red-3" @click="delTier(i)"><span class="lucide-trash-2 size-3.5" aria-hidden="true" /></button>
             </div>
             <div class="grid grid-cols-2 gap-2">
               <div><div class="text-xs text-ink-gray-6 mb-1">Multiplier</div><NumIn :model-value="t.mult" fmt="mult" aria-label="Multiplier" @update:model-value="v => setPath(['tiers', i, 'mult'], v)" /></div>
@@ -176,7 +176,7 @@ const msOpts = () => S.S.plan.milestones.map(m => ({ label: m.label, value: m.id
           <div v-for="(m, i) in S.S.plan.milestones" :key="m.id" class="rounded border border-outline-gray-2 bg-surface-gray-2 p-2 flex items-center gap-2">
             <span class="text-xs text-ink-gray-6 tabular-nums">{{ i + 1 }}</span>
             <input :value="m.label" :aria-label="`Milestone ${i + 1} name`" class="flex-1 min-w-0 bg-transparent border-b border-outline-gray-3 text-sm text-ink-gray-9 outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--ink-gray-6)] py-1" @input="e => setPath(['plan','milestones', i, 'label'], (e.target as HTMLInputElement).value)" />
-            <button v-if="S.S.plan.milestones.length > 1" aria-label="Delete milestone" class="text-ink-gray-6 hover:text-ink-red-3" @click="delMilestone(m.id)"><span class="lucide-trash-2 size-3.5" aria-hidden="true" /></button>
+            <button v-if="S.S.plan.milestones.length > 1" aria-label="Delete milestone" class="inline-flex shrink-0 items-center justify-center size-8 rounded hover:bg-surface-gray-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-gray-6)] text-ink-gray-6 hover:text-ink-red-3" @click="delMilestone(m.id)"><span class="lucide-trash-2 size-3.5" aria-hidden="true" /></button>
           </div>
         </div>
         <div class="text-p-xs mt-2 text-ink-gray-6">Order sets gating: an objective counts once the company stage reaches its gate. Deleting a milestone reassigns dependent gates to the first.</div>

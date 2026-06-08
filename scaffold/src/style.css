@@ -6,4 +6,12 @@
 .font-mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
 .tabular-nums { font-variant-numeric: tabular-nums; }
 .eyebrow { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: .18em; text-transform: uppercase; font-weight: 500; }
-@media print { .no-print { display: none !important; } }
+/* Print paths: Advisors "Print", Board "Board pack", Proposition "Print". Ported from the reference's
+   @media print (the dead .print-only rule is intentionally dropped). */
+@media print {
+  body { background: #fff !important; }
+  .no-print { display: none !important; }
+  .print-area { box-shadow: none !important; border: none !important; }
+  main { padding: 0 !important; max-width: none !important; }
+  @page { margin: 14mm; }
+}

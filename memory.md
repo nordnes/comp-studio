@@ -321,3 +321,27 @@ commit so `vp check` is a reliable green gate for the rest of M7/M8 — **awaiti
 reformatting on the prod branch. Until then, gate = "no NEW lint/type/format issues from the issue's diff."
 
 **Next:** COM-38 — darken accent eyebrows `ink-amber-3` on `surface-amber-2` (2.93:1 → AA), ~37 usages.
+
+## 2026-06-08 — COM-38 (accent-label amber → AA) DONE
+
+**COM-38 (P1) — DONE.** Darkened the amber accent-LABEL pattern to clear AA; kept bright amber-3 for the hero
++ chart fills. Findings: Espresso's amber INK scale stops at **ink-amber-3 (#DB7706)** — no darker amber token
+exists — and amber-3 fails AA as small text (2.93:1 on surface-amber-2 #FFF7D3 · 3.16:1 on white · 3.02:1 on
+the frappe-ui Badge's amber-1 #FDFAED). Inside the Configure `[data-theme="dark"]` panel amber-3 remaps to
+bright #E79913 on dark and already passed (56/57 amber elements there).
+- **New theme-aware token `text-ink-amber-strong`**: tailwind.config.js `colors:{'ink-amber-strong':'var(--ink-amber-strong)'}`
+  + style.css `:root{--ink-amber-strong:#8A4B08}` / `[data-theme="dark"]{--ink-amber-strong:#E79913}` (= amber-3
+  dark, so the Configure panel is visually unchanged). #8A4B08 = 6.3:1 on amber-2, 6.8:1 on white.
+- **Swept 38 source `text-ink-amber-3` → `text-ink-amber-strong`** (13 .vue), KEEPING the 1 hero italic
+  (Proposition.vue:80 — large, 3.16:1 ≥ large-AA 3:1, the brand moment) as bright amber-3.
+- **frappe-ui orange-subtle Badge** ("Internal" + tier pills) colors its text via the component's own
+  `text-ink-amber-3` on amber-1. Fixed with a scoped `.rounded-full.text-ink-amber-3{color:var(--ink-amber-strong)}`
+  override in style.css — pills only; the non-pill hero keeps bright amber-3.
+- QA: build exit 0 · engine 22/22 · vp check no lint/type errors (same pre-existing 34-file format drift,
+  count unchanged → no new format issues from this diff). Visual (preview, computed contrast): 0 real AA fails
+  on all 6 routes (min 6.04–6.5; proposition 3.16 = hero/large/pass); Internal badge + eyebrows now rgb(138,75,8),
+  hero rgb(219,119,6). No console errors. (1 audit "fail" was a lucide mask-icon artifact: bg=currentColor.)
+- Gotcha: zsh mangles `\!` in a perl `(?<\!…)` lookbehind even single-quoted → did a global .vue swap then a
+  positive-capture restore of the hero: `s/(italic )text-ink-amber-strong/${1}text-ink-amber-3/`.
+
+**Next:** COM-39 — stop using ink-gray-4 (#999, 2.85:1) for chart axis labels / $M qualifiers / ContextStrip separators.

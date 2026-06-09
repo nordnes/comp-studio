@@ -541,3 +541,17 @@ copyProp now toast (success/error styled). QA: build 0 · engine 22/22 · no con
 import shows an error toast (bottom-right, icon + close); old span gone.
 
 **Next M8:** COM-54 (Alert for storage/budget banners) → COM-55 (TabButtons) → COM-52 (Tooltips) → COM-68 → chart cluster → COM-62 app-shell → P3.
+
+## 2026-06-09 — COM-54 (frappe-ui Alert) DONE [M8]
+
+**COM-54 (P2, S) — DONE.** Replaced hand-built colored banners/panels with frappe-ui <Alert>.
+- Alert API (confirmed installed): title (req); theme 'yellow'|'blue'|'red'|'green' (NO amber — used 'yellow'
+  for warnings); variant subtle/outline; description prop + #description/#icon/#footer slots; themed default icon.
+- App.vue: storage banner → <Alert theme="yellow" title="Browser storage is unavailable">; budget banner →
+  <Alert theme="red" title="Budget warning"> (detail in #description). Contained in max-w-7xl under the header.
+- Overview "To confirm / alerts" panel → <Alert :theme="hasBudget?'red':'yellow'" title="To confirm / alerts">
+  with the flag list in #description — renders perfectly (themed icon + title + flags + dismiss X).
+- QA: build 0 · engine 22/22 · no console errors · Overview Alert verified visually. App banners are conditional
+  (rare states) — same Alert pattern, API-correct + build-verified.
+
+**Next M8:** COM-55 (TabButtons) → COM-52 (Tooltips) → COM-68, then chart cluster, COM-62 app-shell, P3.

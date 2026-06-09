@@ -7,6 +7,7 @@ import { ref, computed, watch, nextTick, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import { useStudio } from "../store";
 import { confirmDestroy } from "../confirm";
+import { NAV } from "../nav";
 
 const router = useRouter();
 const { store, select, loadBoard, copyState, exportJSON, exportBoardCSV, importJSON, reset } =
@@ -18,21 +19,20 @@ const idx = ref(0);
 const inputRef = ref<HTMLInputElement | null>(null);
 const fileRef = ref<HTMLInputElement | null>(null);
 
-const ROUTES = [
-  { to: "/overview", label: "Overview" },
-  { to: "/board", label: "Board" },
-  { to: "/compare", label: "Compare" },
-  { to: "/advisors", label: "Advisors" },
-  { to: "/proposition", label: "Proposition" },
-  { to: "/configure", label: "Configure" },
-];
-
 type Cmd = { id: string; group: string; label: string; hint?: string; run: () => void };
 
 const commands = computed<Cmd[]>(() => {
   const list: Cmd[] = [];
-  ROUTES.forEach((r) =>
-    list.push({ id: "go:" + r.to, group: "Go to", label: r.label, run: () => router.push(r.to) }),
+  // COM-93: routes come from the shared nav model; the workflow group shows as the hint
+  // (skipped where it would just repeat the label, e.g. Configure).
+  NAV.forEach((r) =>
+    list.push({
+      id: "go:" + r.to,
+      group: "Go to",
+      label: r.label,
+      hint: r.group !== r.label ? r.group : undefined,
+      run: () => router.push(r.to),
+    }),
   );
   (store.S.advisors || []).forEach((a: any) =>
     list.push({

@@ -77,7 +77,7 @@ const tkChart = computed(() => {
     </div>
     <div class="grid lg:grid-cols-2 gap-4">
       <div>
-        <div class="text-xs text-ink-amber-strong mb-2">
+        <div class="text-xs text-ink-gray-7 mb-2">
           Equity · net vs exit company value <span class="text-ink-gray-6">· $M</span>
         </div>
         <svg
@@ -196,7 +196,7 @@ const tkChart = computed(() => {
         </p>
       </div>
       <div>
-        <div class="text-xs text-ink-amber-strong mb-2">
+        <div class="text-xs text-ink-gray-7 mb-2">
           Tokens · value vs <Term k="tgeFdv">TGE FDV</Term>
           <span class="text-ink-gray-6">· $M</span>
         </div>

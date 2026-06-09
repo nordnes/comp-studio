@@ -179,10 +179,11 @@ const targetLine = computed(
           </p>
         </div>
 
+        <!-- COM-118: explainer is structure, not the current case — quiet neutral panel -->
         <div
-          class="p-5 text-p-sm max-w-3xl rounded bg-surface-amber-2 border border-outline-amber-2 text-ink-gray-7 leading-relaxed"
+          class="p-5 text-p-sm max-w-3xl rounded bg-surface-gray-1 border border-outline-gray-1 text-ink-gray-7 leading-relaxed"
         >
-          <div class="text-sm text-ink-amber-strong mb-2">How to read this</div>
+          <div class="text-sm text-ink-gray-7 mb-2">How to read this</div>
           Your options are priced at today's share value, so their <b>net</b> worth is the upside
           <i>above</i> that price — at a modest exit they can be worth little, which is normal for
           options; the value is in the climb. Tokens are a fixed share of supply with no exercise

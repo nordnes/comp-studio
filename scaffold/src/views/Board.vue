@@ -322,7 +322,9 @@ const caseTotalSum = computed(() =>
                   </Dropdown>
                 </td>
               </tr>
-              <tr class="bg-surface-amber-2">
+              <!-- COM-118: the total is a sum, not the current case — neutral band, amber stays
+                   reserved for the company-cost conclusion below -->
+              <tr class="bg-surface-gray-1 border-t border-outline-gray-2">
                 <td class="px-4 py-3 font-medium text-ink-gray-9">
                   Board · {{ board.rows.length }}
                 </td>

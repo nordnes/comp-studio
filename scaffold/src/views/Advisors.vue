@@ -2,9 +2,9 @@
 // Advisors (Section II) — the hero / live-edit view. Left: profile, base/tier, performance controls.
 // Right (print-area): potential strip, growth waterfall, upside curve, and a detail expander
 // (vesting, scenario range, mix, dilution, instruments). All money from the engine via the store.
-import { ref, computed } from "vue";
+import { ref, reactive, computed } from "vue";
 import { useRouter } from "vue-router";
-import { Button, Badge, Checkbox, TabButtons, Divider, FormControl } from "frappe-ui";
+import { Button, Badge, Checkbox, TabButtons, Divider, FormControl, FormLabel } from "frappe-ui";
 import { useStudio } from "../store";
 import {
   fUSD,
@@ -47,6 +47,15 @@ const exitMarker = ref<number | null>(null);
 
 function setField(k: string, v: any) {
   setPath(["advisors", i.value, k], v);
+}
+// COM-77: surface a NumIn clamp as a transient red helper under the field. FormControl has no
+// :error slot, so this mirrors its description line (text-p-xs) in red; cleared after a few seconds.
+const clampMsgs = reactive<Record<string, string>>({});
+const clampTimers: Record<string, ReturnType<typeof setTimeout>> = {};
+function onClamp(key: string, message: string) {
+  clampMsgs[key] = message;
+  clearTimeout(clampTimers[key]);
+  clampTimers[key] = setTimeout(() => delete clampMsgs[key], 4000);
 }
 function setPerfField(k: string, v: any) {
   const perf: any = { ...sel.value.performance };
@@ -124,19 +133,24 @@ function toProp() {
             @update:model-value="(v) => setField('sector', v)"
           />
           <div class="grid grid-cols-2 gap-4">
-            <div>
-              <div class="text-xs text-ink-gray-6 mb-1">Engagement (yrs)</div>
+            <div class="space-y-1.5">
+              <FormLabel label="Engagement (yrs)" />
               <NumIn
                 :model-value="sel.years"
                 :min="1"
                 :max="10"
                 aria-label="Years"
                 @update:model-value="(v) => setField('years', v)"
+                @clamp="(m) => onClamp('years', m)"
               />
+              <p v-if="clampMsgs.years" role="alert" class="text-p-xs text-ink-red-3">
+                {{ clampMsgs.years }}
+              </p>
             </div>
             <FormControl
               type="date"
               label="Start date"
+              description="Anchors vesting & TGE offset"
               size="sm"
               :model-value="sel.startDate || todayISO()"
               @update:model-value="(v) => setField('startDate', v)"
@@ -146,6 +160,7 @@ function toProp() {
             <FormControl
               type="select"
               label="Granted at"
+              description="Sets the strike basis & dilution path"
               size="sm"
               :model-value="sel.grantRound || 'bridge'"
               :options="roundList(S.plan).map((r) => ({ label: roundLabel(S.plan, r), value: r }))"
@@ -154,6 +169,7 @@ function toProp() {
             <FormControl
               type="select"
               label="Tax residency"
+              description="Recorded for the offer; not modelled"
               size="sm"
               :model-value="sel.taxResidency || 'Other'"
               :options="['UK', 'US', 'Other'].map((t) => ({ label: t, value: t }))"
@@ -217,15 +233,19 @@ function toProp() {
             <EquityBenchmark :sel="sel" :c="c" />
           </template>
           <template v-else>
-            <div>
-              <div class="text-xs text-ink-gray-6 mb-1">Annual value (USD)</div>
+            <div class="space-y-1.5">
+              <FormLabel label="Annual value (USD)" />
               <NumIn
                 :model-value="sel.annualValue"
                 fmt="usd"
                 :min="0"
                 aria-label="Annual value"
                 @update:model-value="(v) => setField('annualValue', v)"
+                @clamp="(m) => onClamp('annualValue', m)"
               />
+              <p v-if="clampMsgs.annualValue" role="alert" class="text-p-xs text-ink-red-3">
+                {{ clampMsgs.annualValue }}
+              </p>
             </div>
             <div>
               <div class="flex justify-between text-sm mb-1">
@@ -258,15 +278,19 @@ function toProp() {
             />
             Cash retainer (post-Series A)</label
           >
-          <div v-if="sel.hasCash">
-            <div class="text-xs text-ink-gray-6 mb-1">Annual cash (USD)</div>
+          <div v-if="sel.hasCash" class="space-y-1.5">
+            <FormLabel label="Annual cash (USD)" />
             <NumIn
               :model-value="sel.cashAnnual"
               fmt="usd"
               :min="0"
               aria-label="Cash"
               @update:model-value="(v) => setField('cashAnnual', v)"
+              @clamp="(m) => onClamp('cashAnnual', m)"
             />
+            <p v-if="clampMsgs.cashAnnual" role="alert" class="text-p-xs text-ink-red-3">
+              {{ clampMsgs.cashAnnual }}
+            </p>
           </div>
         </div>
 

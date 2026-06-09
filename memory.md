@@ -1246,3 +1246,33 @@ bare-label idiom so **COM-77** can FormControl-wrap it next.
 **Next PD1:** COM-77 (FormControl `:description` + clamp `:error` on load-bearing fields) → COM-74 (dirty/Saved
 + per-advisor Revert) → COM-75 (Board roster kebab: tier select + edit) → COM-76 (promote package editing into
 a Dialog/drawer; watch the 450 cap). Then PD2 (COM-82→81→85→83→84→86), clean-layout, the adopt cluster.
+
+## 2026-06-09 — COM-77 (FormControl :description + transient clamp :error feedback) DONE [M9 PD1 #2]
+
+**COM-77 (P3 Med, ~37 net LOC) — DONE.** Stacked on COM-73. Teach + validate at the package input boundary.
+- **API finding (matters for COM-76):** frappe-ui **FormControl has NO `error` prop/slot and NO default slot
+  for a custom control** — it renders its own input by `type`, exposing only `label` + `description` (prop or
+  `#description` slot, rendered `text-p-xs text-ink-gray-5`). So COM-77's literal "wrap NumIn in FormControl /
+  FormControl `:error`" is NOT achievable; implemented the **intent** instead. `FormLabel` IS exported from
+  frappe-ui (renders `<label class="block text-xs text-ink-gray-5">`).
+- **`:description`** on the 3 load-bearing FormControls — Granted at → "Sets the strike basis & dilution path";
+  Start date → "Anchors vesting & TGE offset"; Tax residency → "Recorded for the offer; not modelled". Native
+  FormControl support.
+- **NumIn `clamp` emit** added to `commit()` (presentation-only; `clamp` stays imported from the engine): when
+  a value is coerced (`c !== v`) it emits a teaching message — "Adjusted to {val} (allowed {min}–{max})", or
+  one-sided "(min …)"/"(max …)" for unbounded ends. Refactored `disp()` to share a `fmtVal()` formatter.
+- **Transient red helper** `<p role="alert" class="text-p-xs text-ink-red-3">` under the field (Advisors holds
+  `clampMsgs` reactive + per-key 4s `clampTimers`). `role="alert"` → screen readers announce the coercion
+  (issue's a11y label). The 3 bare-label NumIn rows (Engagement yrs / Annual value / Annual cash) converted to
+  a **FormLabel + `space-y-1.5` + error `<p>`** stack so the card reads as one consistent FormControl stack.
+  2 files, +49/−12 (`Advisors.vue`, `NumIn.vue`).
+- **Verified:** engine **22/22** both · build **0** · `vp check` **0 errors** for my files. :4173 /advisors: 3
+  descriptions render ✓; Engagement label now FormLabel (`label.text-ink-gray-5`) ✓; clamp 99→10 → "Adjusted to
+  10 (allowed 1–10)", 0→1 → "Adjusted to 1 (allowed 1–10)", `<p role="alert">` ✓ (captured on rAF to beat the
+  4s transient timer — the message is correctly short-lived); no console errors. Reverted `components.d.ts`.
+- /code-review clean (presentation-only; no auth/tenancy/money/legal → no /security-review). Branch
+  `robinandre/com-77-…` **stacked on COM-73**; PR **`Fixes COM-77`** (base = COM-73 branch; GitHub
+  auto-retargets to frosty when COM-73 merges). **STOPPED at the merge gate.**
+
+**Carry into COM-76:** when extracting `PackageEditor`, move the FormLabel+description/error stack AND the
+`clampMsgs`/`onClamp` helper with it. **Next:** COM-74 (dirty/Saved + per-advisor Revert).

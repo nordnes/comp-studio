@@ -19,27 +19,8 @@ import CommandPalette from "./components/CommandPalette.vue";
 import PackageEditor from "./components/PackageEditor.vue";
 import { fUSD, fPct, scenKeys, baseScenKey } from "./engine";
 import { CONFIDENTIAL_EYEBROW } from "./constants";
-
-// COM-62: left-sidebar IA (replaces the 6 horizontal top-tabs). Workflow groups (Robin's call):
-// Board (analyse) · Advisor (package & share); Configure is a footer item. Icons from the bundled set.
-const navGroups: { label: string; items: { to: string; label: string; icon: string }[] }[] = [
-  {
-    label: "Board",
-    items: [
-      { to: "/overview", label: "Overview", icon: "lucide-layout-grid" },
-      { to: "/board", label: "Board", icon: "lucide-users" },
-      { to: "/compare", label: "Compare", icon: "lucide-layers" },
-    ],
-  },
-  {
-    label: "Advisor",
-    items: [
-      { to: "/advisors", label: "Advisors", icon: "lucide-user" },
-      { to: "/proposition", label: "Proposition", icon: "lucide-file-text" },
-    ],
-  },
-];
-const configureItem = { to: "/configure", label: "Configure", icon: "lucide-settings" };
+// COM-62 workflow groups, COM-93 single-sourced from src/nav.ts (shared with palette + router).
+import { navGroups, configureItem } from "./nav";
 
 const route = useRoute();
 const navOpen = ref(false);

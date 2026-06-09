@@ -1720,3 +1720,21 @@ inline as the documented override). Migrated: PotentialStrip + ScenarioTable (sm
 (letterhead/recipient/PageHeader/Configure h1) untouched. Verified by computed style on :4173: sm 24px ·
 md 30px · lg 40px, all weight 350 tabular; h1 47.72px/59.65px at 1193w; Proposition screenshot — reads
 identical. vp 0 · 22/22 both · build 0. Gates COM-113/114/117.
+
+## 2026-06-10 — COM-118 (amber = ONE meaning) DONE [M9 finish-loop W1 #4]
+
+**COM-118 (P3 Med, 31/28 LOC, 7 files) — DONE + MERGED.** Amber now = current/active case + status only.
+- **Demoted:** 10 Configure headers → ink-gray-7 (one bulk replace on `text-sm text-ink-amber-strong` —
+  exactly the 10; the ★ base toggle :281 + TGE caution :379 are conditionals/text-p-xs so untouched);
+  Board + Compare total rows → surface-gray-1 + border-t (sticky td bg matched); PackageEditor
+  Performance card → gray-1 surface w/ amber icon as the warmth accent, Uniform-base chip → gray,
+  per-tier ×mult ink → gray-6; Proposition "How to read this" → gray panel; UpsideCurve's 2 chart
+  eyebrows → gray-7.
+- **Kept (one meaning):** accent/base cells everywhere, tier-selected, base ★, TGE caution,
+  pending/awaiting-gate/Edited status inks, EquityBenchmark offer band, Board company-cost panel +
+  Proposition hero as each page's single amber moment. **Objective state borders kept** — amber=pending
+  is the documented status color, not decoration (flagged in PR). FootballField band left for COM-119.
+- DESIGN_SYSTEM §2.5 updated (ink-gray-7 group headers; amber never a heading color).
+- Verified on :4173 by computed color sweep per page: Configure cap+perf groups → zero amber text but
+  the caution; Proposition → only current-case markers; PackageEditor card gray-1/icon-amber. Board
+  screenshot: total row neutral, cost panel pops. vp 0 · 22/22 both · build 0. Gates COM-114/115/117.

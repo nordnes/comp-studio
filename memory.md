@@ -1764,3 +1764,14 @@ new package immediately); Overview keeps its route-to-/board CTA (pure refactor 
   restore): all four views show the teaching state, Board screenshot clean, CTA on Proposition created
   "New advisor" + rendered the letter; original 4-advisor board restored after. Zero console errors.
   vp 0 · 22/22 both · build 0.
+
+## 2026-06-10 — COM-134 (print hardening) DONE [M9 finish-loop W2 #2]
+
+**COM-134 (P2 HIGH, 23/4 LOC, 2 files) — DONE + MERGED.** (1) `.print-area{padding-bottom:10mm}` in
+@media print (the running band is ~7mm — the final page's legal corpus clears it); (2) Board's four
+print wrappers (roster table overflow div, range stack, staircase card, scatter card) carry `print-area`;
+(3) `break-inside:avoid` on `.print-area, table, tr, .ff-row` + `thead{display:table-header-group}`;
+`ff-row` class added on Board's FootballField rows (attr-inherits to the component root); sr-only
+`<caption>` on the roster table. **Spec-faithful CSS — no real print dialog under the preview MCP
+(COM-59 caveat): Robin should eyeball one Board-pack + one Proposition PDF.** Verified in-DOM on :4173
+(4 print-areas, 4 ff-rows, caption hidden) + rules present in the built css. vp 0 · 22/22 both · build 0.

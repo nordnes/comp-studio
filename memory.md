@@ -915,3 +915,18 @@ $5.11M so bubbles + name labels overprinted into a smear.
 
 **Next M8:** COM-57 (breakeven/underwater shading on UpsideCurve) → COM-58 (scannability) → COM-47 (exit
 slider) → COM-66 (More-menu) → COM-62 (app-shell, design call) → COM-63 → COM-72 (design call) → COM-69.
+
+## 2026-06-09 — COM-57 (UpsideCurve breakeven shading) DONE [M8 #17]
+
+**COM-57 (P2, M) — DONE.** Rewrote the UpsideCurve EQUITY chart frappe-charts → custom SVG (token chart stays
+frappe-charts) so it can show the breakeven crossover (frappe-charts has no vertical marker/x-region). Added:
+faint `--chart-warning` underwater band over x∈[0,breakeven]; dashed labelled "breakeven" vertical at the exit
+where strike is covered (`beClamped`=clamp(strikeBasis/retention,0,topEq)); net-equity area (`--chart-capital`,
+flat $0 then climbing); x-ticks ($0/topEq÷2/topEq) + y-ticks (eqYMax/$0). Caption gained "tokens still carry
+value". From engine values (eqPct/retention/strikeBasis); engine untouched. Removed dead eqChart/eqColors/
+areaOpts. Did NOT touch the Proposition "How to read this" (already conveys it verbatim).
+- Preview-verified (Iraj): underwater band + "breakeven" at $186.7M exit, area→$5.88M at $1B, ticks render,
+  no console errors. build 0 · engine 22/22 · committed 2150671, pushed; Linear Done.
+
+**Next M8:** COM-58 (Compare/Board scannability) → COM-47 (exit slider) → COM-66 (More-menu) → COM-62
+(app-shell, design call) → COM-63 → COM-72 (design call) → COM-69. Then M8 gate.

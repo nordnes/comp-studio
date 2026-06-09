@@ -105,7 +105,7 @@ function toProp() {
       <!-- LEFT CONTROLS -->
       <div class="lg:col-span-5 space-y-6 no-print">
         <div class="bg-surface-white rounded border border-outline-gray-1 p-5 space-y-4">
-          <div class="text-sm text-ink-gray-6">Profile</div>
+          <div class="text-sm text-ink-gray-6">Identity</div>
           <!-- COM-72: bare inputs / Selects → frappe-ui FormControl (label association replaces aria-label;
                helper text would go in #description). NumIn (the click-to-edit numeric primitive) stays. -->
           <FormControl
@@ -172,7 +172,7 @@ function toProp() {
 
         <div class="bg-surface-white rounded border border-outline-gray-1 p-5 space-y-4">
           <div class="flex items-center justify-between">
-            <div class="text-sm text-ink-gray-6">Base — denomination</div>
+            <div class="text-sm text-ink-gray-6">Base grant</div>
             <TabButtons
               :model-value="sel.mode"
               :buttons="[
@@ -273,7 +273,7 @@ function toProp() {
         <div class="rounded border border-outline-amber-2 bg-surface-amber-2 p-5 space-y-4">
           <div class="flex items-center gap-2">
             <span class="lucide-trending-up size-4 text-ink-amber-strong" aria-hidden="true" />
-            <div class="text-sm text-ink-amber-strong">Performance uplift</div>
+            <div class="text-sm text-ink-amber-strong">Performance</div>
           </div>
           <div>
             <div class="flex justify-between text-sm mb-1">
@@ -316,6 +316,18 @@ function toProp() {
               }}% of base, cap +{{ (S.plan.capitalUplift.cap * 100).toFixed(0) }}% · gate
               {{ ms[S.plan.capitalUplift.gate] }} · counts both channels
             </p>
+          </div>
+          <div>
+            <div class="text-xs text-ink-gray-6 mb-1">Uplift earned at (month)</div>
+            <div class="w-16">
+              <NumIn
+                :model-value="sel.upliftStartMonth ?? 6"
+                :min="0"
+                :max="48"
+                aria-label="Uplift earn month"
+                @update:model-value="(v) => setField('upliftStartMonth', v)"
+              />
+            </div>
           </div>
           <div class="space-y-2 pt-2 border-t border-outline-amber-2">
             <div class="text-xs text-ink-gray-6">Objectives · off / target / earned</div>

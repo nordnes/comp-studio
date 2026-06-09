@@ -4,10 +4,8 @@
 import { computed } from "vue";
 import { useStudio } from "../store";
 import { vestedFrac, monthsBetween, todayISO, clamp } from "../engine";
-import NumIn from "./NumIn.vue";
 const props = defineProps<{ c: any; sel: any }>();
-const { store, setPath } = useStudio();
-const idx = computed(() => store.S.advisors.findIndex((a: any) => a.id === props.sel.id));
+const { store } = useStudio();
 
 const model = computed(() => {
   const c = props.c,
@@ -70,18 +68,9 @@ const refLines = computed(() => {
   <div class="bg-surface-white rounded border border-outline-gray-1 p-5">
     <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
       <div class="text-sm text-ink-gray-6">Vested value over time · base case, net of strike</div>
-      <label class="flex items-center gap-2 text-xs text-ink-gray-6"
-        >Uplift earned at (month)
-        <span class="w-12"
-          ><NumIn
-            :model-value="sel.upliftStartMonth ?? 6"
-            :min="0"
-            :max="48"
-            aria-label="Uplift earn month"
-            @update:model-value="
-              (v: number) => setPath(['advisors', idx, 'upliftStartMonth'], v)
-            " /></span
-      ></label>
+      <div class="text-xs text-ink-gray-6">
+        Uplift earned · month {{ sel.upliftStartMonth ?? 6 }}
+      </div>
     </div>
     <svg
       :viewBox="`0 0 ${W} ${H}`"

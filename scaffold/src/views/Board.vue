@@ -241,7 +241,8 @@ const caseTotalSum = computed(() =>
     <div class="grid lg:grid-cols-12 gap-8">
       <div class="lg:col-span-8 space-y-6">
         <!-- roster table -->
-        <div class="bg-surface-white rounded border border-outline-gray-1 overflow-x-auto">
+        <!-- COM-88: the roster de-boxes — row border-b + the amber total row do the separating -->
+        <div class="overflow-x-auto">
           <table class="w-full text-sm" style="min-width: 560px">
             <thead>
               <tr class="border-b border-outline-gray-2 text-left text-ink-gray-6">
@@ -341,7 +342,8 @@ const caseTotalSum = computed(() =>
         <!-- scenario range by advisor -->
         <div>
           <div class="text-sm text-ink-gray-6 mb-3">Scenario range by advisor · net value</div>
-          <div class="bg-surface-white rounded border border-outline-gray-1 p-5 space-y-3">
+          <!-- COM-88: static list — the section label gives context; no frame -->
+          <div class="space-y-3">
             <FootballField
               v-for="r in ranges"
               :key="r.name"

@@ -65,7 +65,8 @@ const refLines = computed(() => {
 </script>
 
 <template>
-  <div class="bg-surface-white rounded border border-outline-gray-1 p-5">
+  <!-- COM-88: static read-out — the section label carries it; no frame -->
+  <div>
     <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
       <div class="text-sm text-ink-gray-6">Vested value over time · base case, net of strike</div>
       <div class="text-xs text-ink-gray-6">

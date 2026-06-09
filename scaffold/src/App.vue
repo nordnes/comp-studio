@@ -291,9 +291,7 @@ const openCmdK = () => window.dispatchEvent(new Event("open-command-palette"));
                 <span
                   class="truncate"
                   :class="
-                    i === breadcrumb.length - 1
-                      ? 'text-ink-gray-9 font-medium'
-                      : 'text-ink-gray-6'
+                    i === breadcrumb.length - 1 ? 'text-ink-gray-9 font-medium' : 'text-ink-gray-6'
                   "
                   >{{ b }}</span
                 >
@@ -336,10 +334,10 @@ const openCmdK = () => window.dispatchEvent(new Event("open-command-palette"));
               }}
               equity · {{ fPct(store.S.plan.baseGrant.tokenPct, 2) }} tokens), scaled by tier.
               Performance uplift grows the grant once its milestone gate is reached. Equity is
-              options struck at the bridge price; value shown is net of exercise cost and of dilution
-              through the cap-table walk (scenario-specific). Tokens are a fixed % of supply valued at
-              TGE FDV. Above $1B TGE FDV, 2025 launches mostly traded down — shown as a caution band.
-              A discussion draft, not a binding offer or legal/financial advice.
+              options struck at the bridge price; value shown is net of exercise cost and of
+              dilution through the cap-table walk (scenario-specific). Tokens are a fixed % of
+              supply valued at TGE FDV. Above $1B TGE FDV, 2025 launches mostly traded down — shown
+              as a caution band. A discussion draft, not a binding offer or legal/financial advice.
             </p>
           </div>
         </footer>

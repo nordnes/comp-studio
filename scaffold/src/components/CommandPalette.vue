@@ -55,7 +55,12 @@ const commands = computed<Cmd[]>(() => {
       run: () => loadBoard(n),
     }),
   );
-  list.push({ id: "act:copy", group: "Actions", label: "Copy to clipboard", run: () => copyState() });
+  list.push({
+    id: "act:copy",
+    group: "Actions",
+    label: "Copy to clipboard",
+    run: () => copyState(),
+  });
   list.push({ id: "act:json", group: "Actions", label: "Export JSON", run: () => exportJSON() });
   list.push({
     id: "act:csv",

@@ -960,3 +960,18 @@ dep). Emits `@exit` (lerped exitVal).
 
 **M8 19/23 (8 this session).** Remaining: COM-66 (More-menu tidy) · COM-62 (app-shell, **DESIGN CALL**) · COM-63
 (⌘K) · COM-72 (FormControl, **DESIGN CALL**) · COM-69 (vp lint). Next: COM-66, then surface the 62/72 design calls.
+
+## 2026-06-09 — COM-66 (More-menu tidy + Share button) DONE [M8 #20]
+
+**COM-66 (P3, S) — DONE.** App.vue header. Split the flat 6-item ellipsis menu: (1) new labeled "Share"
+Dropdown next to Saved (lucide-share-2) surfacing Copy to clipboard + Export JSON; (2) overflow ⋯ keeps
+Paste/Export CSV/Import as a group + destructive "Reset to baseline" ISOLATED in its own frappe-ui Dropdown
+group (renders a divider between groups — confirmed). Native `title` tooltips on Share + ellipsis (ellipsis
+keeps aria-label). Engine untouched.
+- **frappe-ui Dropdown groups (reusable):** `:options="[{group, hideLabel:true, items:[...]}, {...}]"` renders
+  a divider between groups (verified on preview — Reset sits below a divider).
+- Preview-verified: Share in header, More-menu Reset divided/isolated, no console errors. build 0 · engine
+  22/22 · committed d058b21; Linear Done.
+
+**M8 20/23 (9 this session).** Remaining: COM-69 (vp lint) · COM-62 (app-shell, **DESIGN CALL**) · COM-63 (⌘K)
+· COM-72 (FormControl, **DESIGN CALL**). Next: try COM-69 (vp), then surface the 62/72 design calls to Robin.

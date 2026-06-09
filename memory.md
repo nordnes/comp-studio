@@ -651,3 +651,35 @@ build-verified only; final visual confirmation happens on the prod URL at the mi
 **Next M8:** chart cluster — COM-48 (scatter overlap/gridlines) · 49 (text floor ≥11px) · 50 (visible median) ·
 51 (non-color channel) · **56 (move SCEN_COLORS out of engine → constants.ts, re-point Compare import)** · 57
 (breakeven shading) · + 47 (exit slider) / 58 (scannability). Then COM-62 app-shell (3 PRs), P3, COM-70/69/72.
+
+## 2026-06-09 — Robin's calls (AskUserQuestion) + COM-56 DONE [M8 #7]
+
+**Two decisions surfaced to Robin this session (no live preview here ⇒ pixel work needs his steer):**
+1. **Chart cluster = OBJECTIVE-SPEC ONLY.** Do the ones with an objective target: COM-49 (text ≥11px), 50
+   (visible median), 51 (non-color channel), + 56 (colors). **DEFER to a preview-equipped session:** COM-48
+   (scatter declutter), 58 (scannability) — and by extension 57 (breakeven shading) / 47 (exit slider), which
+   are visual-judgment, not objective. Don't tune pixels blind.
+2. **COM-56 = FULL CSS-custom-property + dark.** Build the whole :root + [data-theme=dark] token palette now,
+   not just the SCEN_COLORS move.
+
+**COM-56 (P2, M) — DONE (full scope).** One source of truth for the chart/category/scenario/tier palette.
+- **style.css:** 9 named tokens (`--chart-capital/customer/partnership/governance/uplift/alt/tint/cash/warning`)
+  under `:root` (light = the verified v1 hexes, zero visual change) + `[data-theme="dark"]` (forward-looking
+  lightened values; charts are light-only in v1 so these are untuned-but-present).
+- **constants.ts:** CAT + TIER_COLOR now emit `var(--chart-*)`; added `SCEN_TOKENS` (the moved scenario palette)
+  + `chartHex(token)` — resolves a token to concrete hex via `getComputedStyle(document.documentElement)` with a
+  **light-literal fallback** (CHART_HEX) so frappe-charts NEVER loses color even pre-paint. (Renamed the
+  CAT_OPTIONS destructure var `v`→`val` to free `v=()=>var(...)` helper.)
+- **engine.ts:** SCEN_COLORS export REMOVED (sanctioned COM-56 engine edit — presentation constant, not money;
+  both engine tests stay 22/22). Compare re-pointed to SCEN_TOKENS+chartHex.
+- **Split by render path:** custom-SVG/DOM fills (Growth/Vesting/Mix/Dilution/EquityBenchmark/Board scatter/
+  slider/CAT dots) use `var(--chart-*)` directly in `:style`/`style` (native theme flip — verified every site is
+  a CSS style context, never an SVG presentation attribute where var() wouldn't resolve). frappe-charts arrays
+  (Board staircase, UpsideCurve eq/tk, Compare scen) use `chartHex()` computeds (lib needs hex values).
+- All 22 inline .vue hexes swapped (0 remain). QA: build 0 · engine 22/22 both · vue-tsc 0 new src errors.
+- **Verification caveat:** light-mode colors are exact (literals preserved → no regression by construction). The
+  runtime `chartHex` resolution + dark-flip are build-verified only (no preview); worst case = light fallback =
+  current behavior. Dark values need a tuning pass when dark-chart work starts.
+
+**Next M8 (objective-spec chart subset):** COM-49 (chart text floor ≥11px) → 50 (visible median) → 51 (non-color
+channel). Then COM-62 app-shell (3 PRs), P3 (59/60/61/63/64/65/66), COM-70/69/72. DEFERRED for preview: 48,57,58,47.

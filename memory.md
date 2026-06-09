@@ -1549,3 +1549,20 @@ docs PR #15).** Merge order #15 → #16 → … → #21; GitHub auto-retargets e
 Engine frozen + 22/22 throughout; every issue preview-verified on :4173; Linear issues sit In Progress and
 flip Done at merge (Robin is the merge actor). **Next after merge: ③ clean layout & IA (COM-88/89/90/95) →
 ④ the frappe-ui adopt cluster (§6 decisions) — or COM-139 (the Δ4 legal fix, GC wording sign-off) any time.**
+
+## 2026-06-09 — ★ SPEC-v2 DOCS + PD2 MERGED TO PROD (#15–#21) · design phase begins
+
+**Robin lifted the merge gate ("merge all the PRs once you are happy with them and that they are meeting your
+QAs") and asked for the design skills (/design-critique · /frontend-skill · /design-handoff · /design-system)
+to drive the next implementation work.** Pre-merge QA re-proven at the stack tip (both engine suites 22/22,
+build 0, tree clean), then merged **#15 → #16 → #17 → #18 → #19 → #20 → #21** in stacked order (retarget →
+`gh pr merge --merge`). **frosty HEAD = `cb22e7d`** (Merge #21). Post-merge verified: `git diff origin/frosty
+<tip> -- scaffold/src` **empty** (byte-identical to the verified stack tip) — the tip's engine 22/22 + build 0
+therefore hold on frosty. Prod redeploys from frosty. Flipped **COM-82/81/85/83/84/86 → Done** (M9 now
+17 Done / 49 open). 0 open PRs.
+
+**Robin's standing authorization for THIS session:** merge each subsequent PR once it passes the full QA gate
+(no per-PR gate stop). **NEXT: design phase** — /design-critique over the merged app on :4173, then the
+clean-layout & IA cluster (COM-88 de-box · COM-89 ~940px reading column · COM-90 Board roster-first ·
+COM-95 Configure two-column) under the /frontend-skill + /design-system lenses, one PR per issue, merged
+when green; /design-handoff artifact at the end.

@@ -43,10 +43,7 @@ const prog = computed(() => {
         >
           {{ cell.k }}
         </div>
-        <div
-          class="font-display tabular-nums text-ink-gray-9"
-          style="font-size: 1.5rem; font-weight: 350; line-height: 1"
-        >
+        <div class="figure-sm text-ink-gray-9">
           {{ fUSD(cell.v) }}
         </div>
         <div class="text-xs mt-1.5 text-ink-gray-6">{{ cell.s }}</div>

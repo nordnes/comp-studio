@@ -42,7 +42,8 @@ and feel*. Standing rules (engine frozen, pins, confidentiality) live in `CLAUDE
    `lg:w-44`; horizontal scroll strip below `lg` with descriptions hidden) + the active group's form on the
    right. Active rail item = `bg-surface-gray-3 text-ink-gray-9 font-medium` (the sidebar idiom).
 5. **Rhythm:** `space-y-8` between de-boxed groups, `space-y-6` inside form columns; section labels are
-   sentence case, `text-sm text-ink-gray-6` (amber-strong for Configure's editable-group headers).
+   sentence case, `text-sm text-ink-gray-6` (`ink-gray-7` for editable-group headers — COM-118 demoted
+   the Configure amber headers; amber is never a heading color).
 
 ## 3 · Component idioms (verified against frappe-ui 0.1.278 — trust these over docs)
 

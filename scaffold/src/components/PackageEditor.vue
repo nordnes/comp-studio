@@ -181,7 +181,7 @@ function setObjState(id: string, st: string) {
           </div>
           <template v-if="sel.mode === 'tier'">
             <div
-              class="flex items-center gap-2 text-xs px-3 py-2 rounded bg-surface-amber-2 text-ink-amber-strong"
+              class="flex items-center gap-2 text-xs px-3 py-2 rounded bg-surface-gray-2 text-ink-gray-7"
             >
               <span class="lucide-layers size-3.5" aria-hidden="true" /> Uniform base
               {{ fPct(S.plan.baseGrant.equityPct, 2) }} eq ·
@@ -201,7 +201,7 @@ function setObjState(id: string, st: string) {
               >
                 <div class="flex items-baseline justify-between">
                   <div class="font-display text-base text-ink-gray-9">{{ t.name }}</div>
-                  <div class="text-xs text-ink-amber-strong">
+                  <div class="text-xs text-ink-gray-6">
                     <Term k="tierMultiplier">{{ fMult(t.mult) }}</Term>
                   </div>
                 </div>
@@ -277,11 +277,12 @@ function setObjState(id: string, st: string) {
 
         <Divider />
 
-        <!-- Performance -->
-        <div class="rounded border border-outline-amber-2 bg-surface-amber-2 p-5 space-y-4">
+        <!-- Performance — COM-118: neutral surface (the amber wash said "important", not "current");
+             the small amber icon keeps the warmth, state colors below carry the meaning -->
+        <div class="rounded border border-outline-gray-1 bg-surface-gray-1 p-5 space-y-4">
           <div class="flex items-center gap-2">
             <span class="lucide-trending-up size-4 text-ink-amber-strong" aria-hidden="true" />
-            <div class="text-sm text-ink-amber-strong">Performance</div>
+            <div class="text-sm text-ink-gray-7">Performance</div>
           </div>
           <div>
             <div class="flex justify-between text-sm mb-1">
@@ -337,7 +338,7 @@ function setObjState(id: string, st: string) {
               />
             </div>
           </div>
-          <div class="space-y-2 pt-2 border-t border-outline-amber-2">
+          <div class="space-y-2 pt-2 border-t border-outline-gray-2">
             <div class="text-xs text-ink-gray-6">Objectives · off / target / earned</div>
             <div
               v-for="o in S.objectives"

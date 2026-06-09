@@ -289,9 +289,11 @@ const scenColors = computed(() =>
               />
             </td>
           </tr>
-          <tr class="bg-surface-amber-2">
+          <!-- COM-118: total row off amber — amber means the current case, and Compare's is the
+               base-scenario row cells -->
+          <tr class="bg-surface-gray-1 border-t border-outline-gray-2">
             <td
-              class="px-4 py-3 font-medium text-ink-gray-9 sticky left-0 z-[2] bg-surface-amber-2 border-r border-outline-gray-1"
+              class="px-4 py-3 font-medium text-ink-gray-9 sticky left-0 z-[2] bg-surface-gray-1 border-r border-outline-gray-1"
             >
               Board
             </td>

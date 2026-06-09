@@ -48,6 +48,7 @@ function propText(): string {
     `  Earned: +${(cc.earnedUplift * 100).toFixed(0)}% · ceiling +${(cc.ceilUplift * 100).toFixed(0)}%.`,
     "",
     `Net value by scenario: ${cc.scen.map((s: any) => `${s.label} ${fUSD(s.total)}`).join(" · ")}.`,
+    targetLine.value,
     `Equity is options struck at the bridge price; values net of exercise cost and dilution through future rounds. A discussion draft, not a binding offer.`,
   ]
     .filter(Boolean)
@@ -71,6 +72,33 @@ const residencyLine = computed(() =>
     : sel.value?.taxResidency === "US"
       ? "As a US grantee, s83(b)/409A treatment applies."
       : "Tax treatment depends on residency.",
+);
+
+// COM-84: the advisor's target outcome for the printed doc — mirrors ExitSlider's lerp over the
+// engine's per-scenario exports (no new money math); defaults to the base case when no target is set.
+const targetView = computed(() => {
+  const s = [...(c.value?.scen || [])].sort((a: any, b: any) => a.exitVal - b.exitVal);
+  const base = c.value?.base;
+  if (!s.length || !base) return { exitVal: 0, total: 0 };
+  const t = (sel.value as any)?.targetExit;
+  if (t == null) {
+    const row = s.find((x: any) => x.key === base.key) || s[0];
+    return { exitVal: row.exitVal, total: row.total };
+  }
+  if (t <= s[0].exitVal) return { exitVal: s[0].exitVal, total: s[0].total };
+  for (let i = 0; i < s.length - 1; i++) {
+    const a = s[i],
+      b = s[i + 1];
+    if (t <= b.exitVal) {
+      const f = b.exitVal > a.exitVal ? (t - a.exitVal) / (b.exitVal - a.exitVal) : 0;
+      return { exitVal: t, total: a.total + (b.total - a.total) * f };
+    }
+  }
+  return { exitVal: s[s.length - 1].exitVal, total: s[s.length - 1].total };
+});
+const targetLine = computed(
+  () =>
+    `At a ~${fUSD(targetView.value.exitVal)} exit, this package is worth ~${fUSD(targetView.value.total)} net — net of strike & dilution · not a forecast.`,
 );
 </script>
 
@@ -100,9 +128,10 @@ const residencyLine = computed(() =>
       </div>
     </div>
 
-    <!-- COM-47: exit-valuation explorer (no-print) — lets the recipient feel the upside on screen;
-         the printed document keeps its static Base/Current/Ceiling figures. -->
-    <ExitSlider :c="c" />
+    <!-- COM-47: exit-valuation explorer (no-print) — lets the recipient feel the upside on screen.
+         COM-84: it now persists the chosen exit (sel.targetExit); the DOCUMENT carries its own
+         target-outcome sentence below, so the component's print line is suppressed here. -->
+    <ExitSlider :c="c" :sel="sel" :print-line="false" />
 
     <div class="print-area bg-surface-white rounded border border-outline-gray-2">
       <div class="px-8 sm:px-12 py-10 border-b border-outline-gray-1">
@@ -237,6 +266,8 @@ const residencyLine = computed(() =>
               </div>
             </div>
           </div>
+          <!-- COM-84: the explored target outcome survives into the document the advisor keeps -->
+          <p class="text-p-sm mt-3 text-ink-gray-7">{{ targetLine }}</p>
         </div>
 
         <Divider class="my-4" />

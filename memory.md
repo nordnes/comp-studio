@@ -1498,3 +1498,28 @@ PotentialStrip restatements ("impeccable distill").
   range card sits above the expander; expander label updated. Screenshot. No new console errors.
 - QA: engine 22/22 · `vp check` 0 errors on both files · build 0. Branch `robinandre/com-83-…` stacked on
   COM-85; PR `Fixes COM-83`. **STOPPED at the merge gate.** Next: COM-84 (target outcome that prints).
+
+## 2026-06-09 — COM-84 (per-advisor target outcome that survives to print) DONE [M9 PD2 #5]
+
+**COM-84 (P3 Med, 85 net LOC) — DONE.** Stacked on COM-83. The ExitSlider what-if is no longer ephemeral.
+- **ExitSlider.vue:** new `sel` prop → thumb initialises from `sel.targetExit` (`posFromExit` inverse-lerp over
+  the sorted scen exitVals; re-inits on advisor/scen-set change, NOT on every drag) and the `change` event
+  (release, not per-frame) persists `view.exitVal` via `setAdvisorTargetExit` (COM-82). A **print-only**
+  sentence ("At a ~$X exit, this package is worth ~$Y net — net of strike & dilution · not a forecast",
+  qualifier VERBATIM) renders as a second fragment root; the slider control stays `no-print`.
+- **style.css:** revived the reference's `.print-only` utility (display:none on screen; block in @media print).
+- **Proposition.vue:** in-document target line after the scenario band (mirror lerp over `c.scen` exports,
+  defaults to base when no target) + appended to `propText()`; its ExitSlider passes `:print-line="false"` so
+  the doc doesn't print the sentence twice. Advisors passes `:sel="sel"`.
+- **⚠️ VUE GOTCHA (cost a debug loop — record):** Vue casts an **ABSENT Boolean-typed prop to `false`**
+  (HTML boolean-attribute semantics), so `printLine?: boolean` + `v-if="printLine !== false"` silently never
+  rendered. Fix: `withDefaults(..., { printLine: true })`. Symptom: compiled vnode correct in the bundle, DOM
+  missing the node — check prop CASTING before suspecting the build.
+- **Preview-verified on :4173:** drag to pos 1.6 → `targetExit: 650000000` persisted (lerp $500M→$750M ✓);
+  reload → thumb restored to 1.6; print-only sentence in DOM (display:none on screen) reading "~$650.0M exit
+  … ~$15.9M net"; /proposition: slider inits 1.6, **in-doc line shows the identical $650M/$15.9M** (mirror
+  lerp agrees), component print-line suppressed (0 .print-only). localStorage cleared after (pristine default).
+  Print-media flip is CSS-deterministic (`display:block !important` in @media print) — same spec-faithful
+  caveat as COM-59 (no real print dialog in the preview); Robin eyeballs an actual print at the gate.
+- QA: engine 22/22 · `vp check` 0 errors on the 4 files · build 0. Branch `robinandre/com-84-…` stacked on
+  COM-83; PR `Fixes COM-84`. **STOPPED at the merge gate.** Next: COM-86 (Compare Spread + pin-to-compare).

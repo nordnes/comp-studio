@@ -185,7 +185,7 @@ function toProp() {
         </div>
       </div>
       <GrowthWaterfall :c="c" :sel="sel" />
-      <ExitSlider :c="c" @exit="(v) => (exitMarker = v)" />
+      <ExitSlider :c="c" :sel="sel" @exit="(v) => (exitMarker = v)" />
       <UpsideCurve :c="c" :marker-exit="exitMarker ?? undefined" />
       <Button
         class="w-full no-print"

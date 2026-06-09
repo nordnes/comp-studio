@@ -1058,3 +1058,41 @@ throughout; every issue preview-verified on the live `comp-studio` :4173.
 **GATE (next):** confirm build 0 + both engine copies 22/22 + `vp check` exit 0 → mark PR #2 ready + request
 Copilot review → **Robin reviews the Vercel preview, THEN the merge to frosty deploys prod (NOT auto-merged —
 outward-facing, Robin's explicit call).**
+
+## 2026-06-09 — ★ M8 MERGED to prod + NEXT TASK: app-wide UX/UI review (run after /clear)
+
+**M8 SHIPPED.** Robin authorized the merge → PR #2 merged into `claude/frosty-pasteur-8cf1db` (merge **5e5e3ec**,
+10:06Z) → Vercel deploys prod from frosty. All 23 M8 issues now live. v1 + M7 + M8 COMPLETE. Gate was green
+(build 0 · engine 22/22 both · vp check 0). (Vercel connector may be 403 per COM-71 — verify the live URL
+manually.)
+
+**NEXT TASK (Robin — run in a FRESH /clear'd context; he will re-issue the request):** app-wide UX/UI review.
+- **Use dynamic workflows** (the Workflow tool — Robin explicitly opted in) **+ /impeccable** (`anthropic-skills:
+  impeccable` — load it FIRST for the rubric) to review ALL UX/UI **vertically** (per surface: Overview ·
+  Advisors · Board · Compare · Proposition · Configure · the sidebar shell / app-header / ⌘K palette) AND
+  **horizontally** (cross-app: IA/flows, component & visual consistency, editorial/anti-slop, clean info density).
+- **Output: CREATE new Linear issues in a NEW milestone** (COM project, team `95768650-2441-48e9-acd4-2ff02c2ff2cf`;
+  states Backlog `2a8311ca-…` / In Progress `4a7e54ac-…` / Done `03cc9c60-…`). The improvement backlog.
+- **Factor in 3 product directions Robin named:** (1) **edit the comp package per advisor** (Advisors view already
+  edits profile/base-tier/objectives/capital; extend/clarify the editing model), (2) **project different scenarios
+  PER ADVISOR** — today the scenario "Case" is GLOBAL (`plan.baseScenario`, COM-46) and the ExitSlider (COM-47)
+  interpolates per-advisor across the global scenarios; Robin wants richer per-advisor scenario projection
+  (per-advisor overrides / what-ifs), (3) adopt a **clean layout** for displaying information.
+- **Proposed workflow shape:** `pipeline()`/`parallel()` review agents — one per surface + cross-cutting lenses —
+  read `scaffold/src/views/*.vue` + `scaffold/src/components/*.vue`, each apply the impeccable rubric + the 3
+  directions → structured findings `{surface, severity, title, problem, fix, theme, effort}` → synthesis agent
+  dedups/prioritizes/groups into milestone themes → main loop creates the Linear milestone + issues.
+- **Impeccable rubric essentials (from the skill, so the fresh session needn't re-derive):** ABSOLUTE BANS — no
+  side-stripe `border-left/right >1px` on cards/alerts/callouts; no gradient `background-clip:text`. Typography:
+  modular scale ≥1.25 ratio, fewer sizes/more contrast, ≤75ch body; **reflex fonts to reject INCLUDE the app's
+  Fraunces (font-display) + IBM Plex Mono (font-mono)** — deliberate Raiku brand accents, but impeccable flags
+  them as trained defaults → surface as a considered tension, not a blind "replace." Color: OKLCH, tint neutrals
+  to brand hue, 60-30-10, NO gray-on-colored-bg / pure #000/#fff / AI gradients. Spacing: 4pt scale, `gap` not
+  margins, vary for rhythm. Layout DON'Ts: wrap-everything-in-cards; identical icon+heading+text card grids; the
+  hero-metric template (big number / tiny label / stat row) — **note Overview KPI band + the Proposition/Advisors
+  bands use exactly this**; centering everything. Motion: transform/opacity only, ease-out, no bounce. Run the
+  **AI-Slop Test** ("would someone instantly say an AI made this?").
+- **Known design debt to fold into the backlog:** `color-scheme:light` not set on :root (dark-OS native chrome
+  renders dark); dark `[data-theme=dark]` chart tokens untuned (charts light-only); COM-50 `--chart-tint`
+  DilutionPath mid bars; COM-51 tier-ramp luminance + VestingTimeline band hatch (deferred-visual).
+- Engine FROZEN remains (presentation-only). New milestone work = same per-issue DoD + gates.

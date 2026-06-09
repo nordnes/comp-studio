@@ -67,13 +67,13 @@ const scenColors = computed(() =>
           <tr class="border-b border-outline-gray-2 text-left text-ink-gray-6">
             <th class="px-4 py-3 font-normal">Advisor</th>
             <th class="px-4 py-3 font-normal">Tier</th>
-            <th class="px-4 py-3 font-normal">Base eq</th>
-            <th class="px-4 py-3 font-normal">Earned</th>
-            <th class="px-4 py-3 font-normal">Ceiling</th>
-            <th v-for="k in cols" :key="k" class="px-4 py-3 font-normal">
+            <th class="px-4 py-3 font-normal text-right">Base eq</th>
+            <th class="px-4 py-3 font-normal text-right">Earned</th>
+            <th class="px-4 py-3 font-normal text-right">Ceiling</th>
+            <th v-for="k in cols" :key="k" class="px-4 py-3 font-normal text-right">
               Net {{ S.plan.scenarios[k].label.toLowerCase() }}
             </th>
-            <th class="px-4 py-3 font-normal">Cash/yr</th>
+            <th class="px-4 py-3 font-normal text-right">Cash/yr</th>
           </tr>
         </thead>
         <tbody>
@@ -97,20 +97,22 @@ const scenColors = computed(() =>
                 size="sm"
               />
             </td>
-            <td class="px-4 py-3 tabular-nums text-ink-gray-8">{{ fPct(c.baseEq, 2) }}</td>
+            <td class="px-4 py-3 tabular-nums text-right text-ink-gray-8">
+              {{ fPct(c.baseEq, 2) }}
+            </td>
             <td
-              class="px-4 py-3 tabular-nums"
+              class="px-4 py-3 tabular-nums text-right"
               :class="c.earnedUplift > 0 ? 'text-ink-green-3' : 'text-ink-gray-6'"
             >
               +{{ (c.earnedUplift * 100).toFixed(0) }}%
             </td>
-            <td class="px-4 py-3 tabular-nums text-ink-gray-6">
+            <td class="px-4 py-3 tabular-nums text-right text-ink-gray-6">
               +{{ (c.ceilUplift * 100).toFixed(0) }}%
             </td>
             <td
               v-for="cell in cells"
               :key="cell.k"
-              class="px-4 py-3 tabular-nums text-ink-gray-9"
+              class="px-4 py-3 tabular-nums text-right text-ink-gray-9"
               :class="cell.isBase ? 'font-medium' : ''"
             >
               {{ fUSD(cell.total) }}
@@ -129,14 +131,14 @@ const scenColors = computed(() =>
                 }}{{ Math.abs(cell.delta) }}%</span
               >
             </td>
-            <td class="px-4 py-3 tabular-nums text-ink-gray-8">
+            <td class="px-4 py-3 tabular-nums text-right text-ink-gray-8">
               {{ c.cash ? fUSD(c.cash) : "—" }}
             </td>
           </tr>
           <tr class="bg-surface-amber-2">
             <td class="px-4 py-3 font-medium text-ink-gray-9">Board</td>
             <td />
-            <td class="px-4 py-3 tabular-nums font-medium text-ink-gray-9">
+            <td class="px-4 py-3 tabular-nums text-right font-medium text-ink-gray-9">
               {{ fPct(baseEqSum, 2) }}
             </td>
             <td />
@@ -144,11 +146,11 @@ const scenColors = computed(() =>
             <td
               v-for="k in cols"
               :key="k"
-              class="px-4 py-3 tabular-nums font-medium text-ink-gray-9"
+              class="px-4 py-3 tabular-nums text-right font-medium text-ink-gray-9"
             >
               {{ fUSD(board.cost[k] || 0) }}
             </td>
-            <td class="px-4 py-3 tabular-nums font-medium text-ink-gray-9">
+            <td class="px-4 py-3 tabular-nums text-right font-medium text-ink-gray-9">
               {{ fUSD(board.sumCash) }}
             </td>
           </tr>

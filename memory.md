@@ -1595,3 +1595,19 @@ a wider viewBox would scale its text BELOW the COM-49 ≥11px floor. Reading ord
 - **Gotcha (2nd occurrence — now a rule):** zsh heredocs (even `<<'EOF'` to python) escape `!` → `\!` in
   generated text. NEVER emit `!` through Bash heredocs; use the Write/Edit tools for content with bangs.
 - QA: vp 0 errors on Board.vue · engine 22/22 · build 0 · no new console errors.
+
+## 2026-06-09 — COM-88 (de-box static sections) DONE [M9 design #3]
+
+**COM-88 (P3 Med, 18 net LOC across 6 files) — DONE + MERGED.** Borders now earn their place.
+- **De-boxed** (label + content on the white canvas — App bg is `bg-surface-white`, so row hovers stay
+  visible): Board roster (row `border-b` + amber total row separate it; wrapper keeps only
+  `overflow-x-auto`), both scenario-range lists, the Instruments read-out (label + `divide-y`),
+  `MixBreakdown`/`DilutionPath`/`VestingTimeline` roots, and `ContextStrip` (frame+gray bg dropped → a
+  quiet metadata line; affects every route consistently).
+- **Kept framed** (interactive/conclusion surfaces): staircase + scatter chart cards, the amber
+  company-cost panel, `ScenarioTable` (the hero tabulation, post-dates the issue), the package-summary
+  card (carries the Edit action), ExitSlider/UpsideCurve/GrowthWaterfall.
+- Advisors projection rhythm `space-y-6` → `space-y-8` per the issue.
+- **Verified by computed style on :4173** (borders are sub-pixel in screenshots): vesting/mix/instruments/
+  ranges/ContextStrip = `border 0 / transparent bg`; ScenarioTable + both charts + cost panel = `1px`.
+  vp clean (one fmt round on ContextStrip) · engine 22/22 · build 0.

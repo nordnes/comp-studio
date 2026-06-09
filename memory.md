@@ -975,3 +975,25 @@ keeps aria-label). Engine untouched.
 
 **M8 20/23 (9 this session).** Remaining: COM-69 (vp lint) · COM-62 (app-shell, **DESIGN CALL**) · COM-63 (⌘K)
 · COM-72 (FormControl, **DESIGN CALL**). Next: try COM-69 (vp), then surface the 62/72 design calls to Robin.
+
+## 2026-06-09 — COM-69 (vp check green gate) DONE [M8 #21]
+
+**COM-69 (P3, S) — DONE.** `vp check` now EXITS 0. The only thing failing it was vp's formatter wanting to
+reformat the FROZEN engine.ts (616-line expansion) + the generated *.d.ts. Fix: `scaffold/.prettierignore`
+(`src/engine.ts` + `*.d.ts`) — **vp's formatter HONORS .prettierignore** (key finding). Also vp-formatted this
+session's touched source (ExitSlider/FrappeChart/UpsideCurve/VestingTimeline/Board — small wrap-only diffs) +
+removed 2 unused imports (fUSD/fPct) from store.ts.
+- **vp 0.1.24 config findings (REUSABLE):** formatter honors `.prettierignore`; oxlint does NOT honor
+  `.oxlintrc.json` ignorePatterns (tried `src/engine.ts` + broader `**/engine.ts` — engine.ts lint warnings
+  persisted) → removed the dead .oxlintrc.json. `vp check --no-fmt`/`--no-lint` flags exist; NO per-file
+  format-ignore flag (use .prettierignore). vp config hint: `lint.options.typeCheck` (location unconfirmed).
+- **Residual:** ~10 ADVISORY warnings (no-unused-vars/no-useless-escape) on the FROZEN engine.ts +
+  engine.test.mjs — vp check still EXITS 0 (warnings don't fail). Can't clear (frozen). Documented.
+- **PROCESS NOTE:** this session's per-issue gate was build-only (followed the handoff's no-vp assumption) so
+  source format-drift accumulated; COM-69 cleaned it. FUTURE local sessions: run `vp check --fix` per issue
+  (revert engine.ts + .d.ts after) to avoid drift.
+- QA: vp check EXIT=0 · build 0 · engine 22/22 both · committed 4442c58, pushed; Linear Done.
+
+**M8 21/23 (10 this session: 65,60,64,59,48,57,58,47,66,69).** Remaining (ALL gated): COM-62 (app-shell, 3 PRs
+— **DESIGN CALL**: sidebar IA / nav grouping; absorbs COM-67 + COM-63 board-switcher) · COM-63 (⌘K palette
+remainder) · COM-72 (FormControl — **DESIGN CALL**: dark Configure panel). Surfacing the 62/72 design calls.

@@ -2,7 +2,7 @@
 // Advisors (Section II) — the hero / live-edit view. Left: profile, base/tier, performance controls.
 // Right (print-area): potential strip, growth waterfall, upside curve, and a detail expander
 // (vesting, scenario range, mix, dilution, instruments). All money from the engine via the store.
-import { ref, reactive, computed } from "vue";
+import { ref, reactive, computed, watch } from "vue";
 import { useRouter } from "vue-router";
 import { Button, Badge, Checkbox, TabButtons, Divider, FormControl, FormLabel } from "frappe-ui";
 import { useStudio } from "../store";
@@ -35,7 +35,7 @@ import MixBreakdown from "../components/MixBreakdown.vue";
 import DilutionPath from "../components/DilutionPath.vue";
 import Term from "../components/Term.vue";
 
-const { store, selected, setPath } = useStudio();
+const { store, selected, setPath, flash } = useStudio();
 const router = useRouter();
 const S = computed(() => store.S);
 const sel = computed(() => selected.value?.a as any);
@@ -45,7 +45,49 @@ const showDetail = ref(false);
 // COM-47: the exit slider publishes the selected exit value; UpsideCurve marks it on the equity curve.
 const exitMarker = ref<number | null>(null);
 
+// COM-74: per-advisor edit checkpoint — snapshot the advisor on its first edit (component-local;
+// pushUndo is module-private in store.ts), expose Edited · Revert, and a transient "Saved" tick.
+// Pure presentation/state over the frozen engine; store.ts stays a pure reducer.
+const snapshot = ref<any>(null);
+const savedTick = ref(false);
+let saveTimer: ReturnType<typeof setTimeout> | undefined;
+let hideTimer: ReturnType<typeof setTimeout> | undefined;
+const isDirty = computed(
+  () =>
+    !!snapshot.value && !!sel.value && JSON.stringify(sel.value) !== JSON.stringify(snapshot.value),
+);
+// Deep clone via JSON (the advisor is JSON-safe data) — structuredClone throws on Vue's reactive proxy.
+const cloneAdv = (a: any) => JSON.parse(JSON.stringify(a));
+function markEdited() {
+  if (!snapshot.value && sel.value) snapshot.value = cloneAdv(sel.value);
+  savedTick.value = false;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    savedTick.value = true;
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(() => (savedTick.value = false), 1500);
+  }, 450);
+}
+function revert() {
+  if (!snapshot.value) return;
+  setPath(["advisors", i.value], cloneAdv(snapshot.value));
+  snapshot.value = null;
+  savedTick.value = false;
+  flash("Reverted");
+}
+// Switching advisors discards the previous one's in-progress checkpoint.
+watch(
+  () => sel.value?.id,
+  () => {
+    snapshot.value = null;
+    savedTick.value = false;
+    clearTimeout(saveTimer);
+    clearTimeout(hideTimer);
+  },
+);
+
 function setField(k: string, v: any) {
+  markEdited();
   setPath(["advisors", i.value, k], v);
 }
 // COM-77: surface a NumIn clamp as a transient red helper under the field. FormControl has no
@@ -58,6 +100,7 @@ function onClamp(key: string, message: string) {
   clampTimers[key] = setTimeout(() => delete clampMsgs[key], 4000);
 }
 function setPerfField(k: string, v: any) {
+  markEdited();
   const perf: any = { ...sel.value.performance };
   perf[k] = v;
   setPath(["advisors", i.value, "performance"], perf);
@@ -67,6 +110,7 @@ function objState(id: string) {
   return p.achieved?.includes(id) ? "earned" : p.targeted?.includes(id) ? "targeted" : "off";
 }
 function setObjState(id: string, st: string) {
+  markEdited();
   const p: any = sel.value.performance || { achieved: [], targeted: [] };
   const a = new Set<string>(p.achieved || []);
   const t = new Set<string>(p.targeted || []);
@@ -99,6 +143,24 @@ function toProp() {
     <div class="flex justify-between items-center flex-wrap gap-3 no-print">
       <PageHeader title="Base, then performance." />
       <div class="flex items-center gap-2 flex-wrap">
+        <span
+          v-if="savedTick"
+          class="inline-flex items-center gap-1 text-xs text-ink-green-3"
+          aria-live="polite"
+        >
+          <span class="lucide-check size-3.5" aria-hidden="true" />Saved
+        </span>
+        <template v-if="isDirty">
+          <span class="text-xs text-ink-amber-strong">Edited</span>
+          <Button
+            variant="subtle"
+            theme="gray"
+            size="sm"
+            icon-left="lucide-rotate-ccw"
+            label="Revert"
+            @click="revert"
+          />
+        </template>
         <StageBadge /><AdvisorPicker /><Button
           variant="subtle"
           theme="gray"

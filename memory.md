@@ -582,3 +582,44 @@ views. Tooltip API confirmed: `<Tooltip text="…" placement hoverDelay>` + trig
 **M8 remaining (19):** COM-52 (tooltips) · COM-68 (Divider/Avatar/Combobox + text-scale) · chart cluster
 (COM-48,49,50,51,56,57 + decision aids 47,58) · **COM-62** app-shell (L, 3 ≤450-LOC PRs; absorbs COM-67 + COM-63
 board-switcher) · P3 (COM-59,60,61,63,64,66,65). Resume at COM-52.
+
+## 2026-06-09 — New session: branch + deploy flow CHANGED (Robin's call) + COM-52 DONE [M8 #5]
+
+**⚠️ FLOW CHANGE for this session (Robin chose via AskUserQuestion):** the harness assigned a NEW dev branch
+`claude/comp-studio-m8-continuation-xqi95l` (forked from frosty-pasteur @ b801376) and forbids pushing elsewhere
+without permission. Robin's call: **work issue-by-issue on the continuation branch; batch-merge into
+`claude/frosty-pasteur-8cf1db` (prod) at MILESTONE GATES only — NOT per issue.** So per-issue pushes no longer
+redeploy prod; prod updates at the next M8 gate merge. A draft PR (continuation → frosty) tracks the batch.
+
+**Environment deltas this session (remote, not the original local worktree):**
+- `vp` CLI is NOT available remotely (local-only, as documented). Gate = `npm run build` (exit 0, compiles all
+  templates incl. new ones) + both engine copies 22/22 + `npx vue-tsc --noEmit` for src-error triage.
+- `vue-tsc` here is NOISY: it can't resolve frappe-ui's `~icons/lucide/*` virtual modules (provided by
+  unplugin-icons at vite build time, not raw tsc) → ~120 node_modules errors + the pre-existing COM-55
+  `Advisors.vue TabButtons TabButtonValue→string` error. Verified via `git stash` that these are ALL pre-existing;
+  my changes add ZERO new src errors. **Build is the authoritative gate; vue-tsc is advisory only here.**
+- No preview MCP / port-bind blocked (as before) → no live visual pass remotely; visual verify happens on the
+  prod URL at the milestone merge.
+- `npm install` rewrites package-lock.json cosmetically (strips `libc` fields — npm 10.9.7 churn) and the build
+  re-emits `components.d.ts` (adds the new Term registration). Both REVERTED before commit — source-only commits.
+
+**COM-52 (P2, M) — DONE.** Glossary tooltips on load-bearing finance jargon.
+- New `src/components/Term.vue`: thin wrapper over frappe-ui `<Tooltip :text :hover-delay>`; trigger is a
+  `<span>` with dotted-underline (`border-b border-dotted border-current`, inherits context color), `cursor-help`,
+  `tabindex=0` (keyboard-focusable; reka-ui wires aria-describedby on focus). Default slot overrides displayed text.
+- New `GLOSSARY` map in constants.ts: netOfStrike · tgeFdv · tierMultiplier · headroom · awaitingGate — plain-
+  language definitions (NEW presentation copy; the verbatim legal corpus was NOT touched/fragmented).
+- 14 wraps across 7 files: TGE FDV (ContextStrip/Board staircase caption/Overview base-path/UpsideCurve) · net of
+  strike (Advisors instruments/Proposition net-value caption/App footer note/UpsideCurve) · tier multiplier
+  (Advisors ×tier label + 4 tier-card badges) · headroom (Board scatter caption) · ⏳ awaiting gate (Advisors cap
+  + objectives, Board uplift cell).
+- **Scope decisions:** (1) kept the ⏳ EMOJI (added tooltip + aria only); the emoji→glyph swap stays COM-65 per
+  the plan — avoids double-editing the glyph. (2) RTA / deed-of-adherence live only inside verbatim legal
+  paragraphs / generated draft strings → NOT wrapped (would fragment the legal corpus); the issue's "Fix" targets
+  labels/captions, which are fully covered. GLOSSARY can gain them later if a standalone caption appears.
+- Per-Term TooltipProvider (frappe-ui's built-in) + 0.3s hoverDelay handles flicker — no separate cluster provider.
+- QA: build exit 0 · engine 22/22 (both copies) · vue-tsc adds 0 new src errors (stash-verified) · diff source-only
+  (~78 insertions). Pushed to continuation branch; NOT yet on prod (milestone-gate merge per the flow change above).
+
+**Next M8:** COM-68 (Divider/Avatar/Combobox + text-scale fixes) → chart cluster (48,49,50,51,56,57 + 47,58) →
+COM-62 app-shell (3 PRs) → P3 (59,60,61,63,64,65,66) → COM-70/69/72. Engine frozen throughout.

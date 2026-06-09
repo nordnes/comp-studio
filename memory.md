@@ -1187,3 +1187,33 @@ Sidebar/CommandPalette/ListView adopt-vs-custom + mobile-drawer behaviour), COM-
 typography), COM-110 (dead [data-theme=dark] branch keep/delete), COM-87 (per-advisor engine RFC — recommend
 DEFER, keep engine frozen). Also still open: COM-71 (Vercel MCP personal-scope re-auth) blocks my seeing PR
 previews; Robin reviews Vercel previews directly.
+
+## 2026-06-09 — ★ M9 FIRST-WINS MERGED TO PROD + gated decisions resolved + PD1 queued
+
+**Robin lifted the merge gate for this batch and instructed "merge all open PRs."** Merged all 6 first-win PRs
+(#3→#8) into `frosty` (prod) via the GitHub API, stacked-retarget order: #3 COM-97 (9af2935) → #4 COM-98
+(4ae4d07) → #5 COM-123 (8a36a9b) → #6 COM-109 (57457e1) → #7 COM-132 (14e4297) → #8 COM-126 (c3e602d). frosty
+HEAD = **c3e602d**. **Post-merge verified** (ultracode sweep): all 6 merges present, frosty content byte-identical
+to the stack tip, `node scaffold/engine.test.mjs` + `node engine/engine.test.mjs` both **22/22**, `npm run build`
+exit **0** — prod green. **Note:** the `Fixes COM-NNN` keywords did NOT auto-flip Linear (its automation keys off
+`main`/lag), so I set all 6 issues **Done** manually via save_issue. M9 milestone now **6 Done / 60 Backlog**.
+NO merge-gate hook was ever installed (settings.json denies only force-push + engine.ts-read) — the gate has been
+process discipline all along.
+
+**Gated-cluster decisions (Robin, all = my recommendation) — now recorded here + in ~/.claude memory
+[[m9-gated-decisions]]:** COM-87 = **DEFER** (engine frozen) · COM-104 = **adopt frappe-ui Sidebar, keep
+scrim-drawer on mobile** · COM-105 = **full rebuild** on CommandPalette + KeyboardShortcut · COM-96 = **local
+RosterTable** (option B, not ListView) · COM-121 = **remove dead IBM Plex Mono + sentence-case group labels**
+(keep Fraunces) · COM-110 = **delete** the dead [data-theme=dark] block + fix NumIn comment · COM-71 previews =
+**Robin reviews** (verify on :4173). Next work = **PD1 spine**.
+
+**Wrote the new-session run-prompt `ULTRACODE_M9_PD1.md`** (complete: post-merge state, the 8 decisions,
+non-negotiables, per-issue DoD, the full PD1 detail with files/plans + the engine-boundary tripwire, gotchas,
+branch/deploy). Committed with this entry to frosty.
+
+**NEXT (new session): PD1 spine, build order 73 → 77 → 74 → 75 → 76.** COM-73 (consolidate the per-advisor
+package; move `upliftStartMonth`'s editor out of VestingTimeline into Advisors) needs **NO engine edit** —
+`upliftStartMonth` is already a first-class field on the Advisor interface (engine.ts:18). All PD1 is
+presentation/state over the frozen engine via `setPath`; snapshot locally (pushUndo is module-private). Then PD2
+(COM-82→81→85→83→84→86), clean-layout (88/89/90/95), the adopt cluster (per decisions above), then
+visual/charts/editorial/hardening. STOP at the merge gate unless Robin says merge.

@@ -260,8 +260,12 @@ const caseTotalSum = computed(() =>
       <div class="lg:col-span-8 space-y-6">
         <!-- roster table -->
         <!-- COM-88: the roster de-boxes — row border-b + the amber total row do the separating -->
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto print-area">
           <table class="w-full text-sm" style="min-width: 560px">
+            <caption class="sr-only">
+              Advisory board roster — base equity, earned uplift and net value per advisor, with the
+              board total.
+            </caption>
             <thead>
               <tr class="border-b border-outline-gray-2 text-left text-ink-gray-6">
                 <th class="px-4 py-3 font-normal">Advisor</th>
@@ -360,7 +364,7 @@ const caseTotalSum = computed(() =>
           </table>
         </div>
         <!-- scenario range by advisor -->
-        <div>
+        <div class="print-area">
           <div class="text-sm text-ink-gray-6 mb-3">Scenario range by advisor · net value</div>
           <!-- COM-88: static list — the section label gives context; no frame -->
           <div class="space-y-3">
@@ -373,6 +377,7 @@ const caseTotalSum = computed(() =>
               :max="rangeMax"
               :label="r.name"
               compact
+              class="ff-row"
             />
           </div>
         </div>
@@ -414,7 +419,7 @@ const caseTotalSum = computed(() =>
     <div class="grid lg:grid-cols-2 gap-6">
       <!-- valuation staircase -->
       <div
-        class="bg-surface-white rounded border border-outline-gray-1 p-5"
+        class="bg-surface-white rounded border border-outline-gray-1 p-5 print-area"
         role="img"
         :aria-label="`Valuation path base case. TGE FDV ${fUSD(stairFdv)}.`"
       >
@@ -444,7 +449,7 @@ const caseTotalSum = computed(() =>
 
       <!-- potential scatter -->
       <div
-        class="bg-surface-white rounded border border-outline-gray-1 p-5"
+        class="bg-surface-white rounded border border-outline-gray-1 p-5 print-area"
         role="img"
         :aria-label="`Advisor potential under ${S.plan.scenarios[bc].label}: net value (x) vs headroom to ceiling (y); bubble size is capital introduced.`"
       >

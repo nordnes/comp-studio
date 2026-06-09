@@ -566,3 +566,19 @@ earned=green per-segment theme is gone (TabButtons has no per-button theme) — 
 click/keyboard-functional; 15 tri-state segments render. QA: build 0 · engine 22/22 · vp clean · no console errors.
 
 **Next M8:** COM-52 (Tooltips on finance jargon) → COM-68 (Divider/Avatar/Combobox + text-scale), then chart cluster, COM-62 app-shell, P3.
+
+## 2026-06-09 — Session pause (M8: 4/23 done, clean boundary)
+
+Shipped this session (all on prod claude/frosty-pasteur-8cf1db, engine frozen 22/22 throughout):
+- **M7 COMPLETE (9/9, gated)** — COM-37…45.
+- **chore: vp format** (Robin-requested; engine.ts reverted/frozen).
+- **M8: COM-46** (global scenario toggle, top lever) · **COM-53** (Toast) · **COM-54** (Alert) · **COM-55** (TabButtons).
+
+COM-52 (term Tooltips) was reverted to Backlog — NOT started in code (reads only). It's content-heavy: accurate
+finance definitions (net of strike, TGE FDV, RTA, deed of adherence, ⏳ gate glyph, tier ×, headroom) across many
+views. Tooltip API confirmed: `<Tooltip text="…" placement hoverDelay>` + trigger slot. Suggested approach: a small
+`<Term k>` glossary-tooltip component + GLOSSARY map in constants.ts; the ⏳ tooltip pairs with COM-65 (emoji→icon).
+
+**M8 remaining (19):** COM-52 (tooltips) · COM-68 (Divider/Avatar/Combobox + text-scale) · chart cluster
+(COM-48,49,50,51,56,57 + decision aids 47,58) · **COM-62** app-shell (L, 3 ≤450-LOC PRs; absorbs COM-67 + COM-63
+board-switcher) · P3 (COM-59,60,61,63,64,66,65). Resume at COM-52.

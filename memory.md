@@ -478,3 +478,19 @@ M7 (COM-37–45, 9/9) gated:
   34-file drift, NOT introduced by M7) — awaiting nod; (2) Vercel MCP 403 (re-auth nordnes-personal scope) blocks
   API deploy-status checks (prod itself verified via WebFetch).
 Next: M8 (COM-46…68, 23 issues) starting COM-46 (single persistent global scenario toggle — top product lever).
+
+## 2026-06-09 — chore: vp format (Robin: land before M8) + M8 START
+
+Ran `vp check --fix` across scaffold/src. Decisions:
+- Formatted 32 tracked files (src .vue/.ts/.css + index.html, package.json, tailwind.config.js, vite.config.ts,
+  engine.test.mjs). No logic changes — build 0, both engine copies 22/22.
+- **REVERTED scaffold/src/engine.ts**: --fix wanted a 616-line reformat of the FROZEN engine (dense→expanded).
+  Logic identical (tests passed) but the engine is a hard non-negotiable → kept byte-frozen (git checkout).
+- The 2 generated `.d.ts` (auto-imports/components) are re-emitted UNFORMATTED by the build plugins every build →
+  they perpetually appear in `vp check`; build artifacts, not committed drift.
+- **M8 vp-check gate interpretation:** `vp check` now flags ONLY engine.ts (frozen) + the 2 generated .d.ts.
+  Any NEW src file flagged = real drift to fix. (A vp/oxc ignore for engine.ts+*.d.ts would make it fully green —
+  deferred; vp is alpha/local-only, not a build/deploy dep.)
+
+**M8 STARTING** (COM-46…68, 23 issues) autonomously per Robin, prompt order: COM-46 global scenario toggle →
+frappe-ui cluster → chart legibility → COM-62 app-shell (3 PRs) → P3 polish.

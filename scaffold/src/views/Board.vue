@@ -3,7 +3,7 @@
 // grouped bar, Robin's call) and potential scatter (custom SVG — frappe-charts has no scatter in 1.6.2).
 import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
-import { Avatar, Button, Badge, Dropdown } from "frappe-ui";
+import { Avatar, Button, Badge, Dropdown, TabButtons } from "frappe-ui";
 import { useStudio } from "../store";
 import { useEditor } from "../composables/useEditor";
 import {
@@ -11,6 +11,7 @@ import {
   fPct,
   walkScenario,
   baseScenKey,
+  scenKeys,
   tgeFdvFor,
   roundLabel,
   fMult,
@@ -66,6 +67,29 @@ function boardPack() {
   window.print();
 }
 
+// COM-85: Board-LOCAL scenario projection — a presentation ref, NOT a store mutation, so the
+// global Case lens and every other route stay untouched. '' = follow the board's base case.
+const boardCase = ref("");
+const bc = computed(() =>
+  boardCase.value && S.value.plan.scenarios[boardCase.value]
+    ? boardCase.value
+    : baseScenKey(S.value.plan),
+);
+const caseButtons = computed(() =>
+  scenKeys(S.value.plan).map((k) => ({
+    label: S.value.plan.scenarios[k].label || k,
+    value: k,
+  })),
+);
+// The chosen scenario row for an advisor (falls back to the engine's base case).
+const sFor = (c: any) => c.scen.find((x: any) => x.key === bc.value) || c.base;
+// Per-scenario ceiling has no engine export — mirror engine.ts baseCaseCeil exactly
+// (netEqAt(eqPctCeil, exitVal) + tkPctCeil × fdv) over already-exported fields (PD2 §2 rule 3).
+const ceilFor = (c: any) => {
+  const s = sFor(c);
+  return s.netEqAt(c.eqPctCeil, s.exitVal) + c.tkPctCeil * s.fdv;
+};
+
 // --- valuation staircase (grouped bar: Raiku vs market median per stage) ---
 const stair = computed(() => {
   const w = walkScenario(S.value.plan, baseScenKey(S.value.plan));
@@ -96,14 +120,17 @@ const PAD = { l: 52, r: 16, t: 16, b: 28 };
 const VW = 460;
 const VH = 280;
 const scatter = computed(() =>
-  board.value.rows.map(({ a, c }: any) => ({
-    name: a.name.split(" ")[0],
-    x: c.baseCaseTotal,
-    y: Math.max(0, c.baseCaseCeil - c.baseCaseTotal),
-    z: Math.max(c.capTotal || 0, 1),
-    tier: a.tier || 0,
-    id: a.id,
-  })),
+  board.value.rows.map(({ a, c }: any) => {
+    const s = sFor(c); // COM-85: scatter re-keys to the board-local case
+    return {
+      name: a.name.split(" ")[0],
+      x: s.total,
+      y: Math.max(0, ceilFor(c) - s.total),
+      z: Math.max(c.capTotal || 0, 1),
+      tier: a.tier || 0,
+      id: a.id,
+    };
+  }),
 );
 const xMax = computed(() => Math.max(1, ...scatter.value.map((d) => d.x)));
 const yMax = computed(() => Math.max(1, ...scatter.value.map((d) => d.y)));
@@ -165,8 +192,9 @@ const ranges = computed(() =>
 );
 const rangeMax = computed(() => Math.max(1, ...ranges.value.map((r) => r.hi)));
 const baseEqSum = computed(() => board.value.rows.reduce((s: number, r: any) => s + r.c.baseEq, 0));
-const baseTotalSum = computed(() =>
-  board.value.rows.reduce((s: number, r: any) => s + r.c.baseCaseTotal, 0),
+// COM-85: roster value column + board total follow the local case (s.total per advisor).
+const caseTotalSum = computed(() =>
+  board.value.rows.reduce((s: number, r: any) => s + sFor(r.c).total, 0),
 );
 </script>
 
@@ -195,6 +223,19 @@ const baseTotalSum = computed(() =>
       </template>
     </PageHeader>
     <ContextStrip />
+
+    <!-- COM-85: board-local scenario projection (presentation-only; the global Case is untouched) -->
+    <div class="flex items-center gap-2.5 flex-wrap no-print">
+      <span class="text-xs text-ink-gray-6">Project the board under</span>
+      <TabButtons
+        :buttons="caseButtons"
+        :model-value="bc"
+        @update:model-value="boardCase = $event"
+      />
+      <Badge v-if="bc !== baseScenKey(S.plan)" theme="orange" variant="subtle"
+        >Projected: {{ S.plan.scenarios[bc].label }}</Badge
+      >
+    </div>
 
     <div class="grid lg:grid-cols-2 gap-6">
       <!-- valuation staircase -->
@@ -231,7 +272,7 @@ const baseTotalSum = computed(() =>
       <div
         class="bg-surface-white rounded border border-outline-gray-1 p-5"
         role="img"
-        aria-label="Advisor potential: current net value (x) vs headroom to ceiling (y); bubble size is capital introduced."
+        :aria-label="`Advisor potential under ${S.plan.scenarios[bc].label}: net value (x) vs headroom to ceiling (y); bubble size is capital introduced.`"
       >
         <div class="text-sm text-ink-gray-6 mb-3">
           Untapped potential · current net (x) vs <Term k="headroom">headroom</Term> (y) · bubble =
@@ -377,7 +418,9 @@ const baseTotalSum = computed(() =>
                 <th class="px-4 py-3 font-normal">Tier</th>
                 <th class="px-4 py-3 font-normal text-right">Base eq</th>
                 <th class="px-4 py-3 font-normal text-right">Earned</th>
-                <th class="px-4 py-3 font-normal text-right">Net base-case</th>
+                <th class="px-4 py-3 font-normal text-right">
+                  Net · {{ S.plan.scenarios[bc].label }}
+                </th>
                 <th class="px-2 py-3 no-print" />
               </tr>
             </thead>
@@ -430,7 +473,7 @@ const baseTotalSum = computed(() =>
                   >
                 </td>
                 <td class="px-4 py-3 tabular-nums text-right font-medium text-ink-gray-9">
-                  {{ fUSD(c.baseCaseTotal) }}
+                  {{ fUSD(sFor(c).total) }}
                 </td>
                 <td class="px-2 py-3 no-print">
                   <Dropdown :options="rowMenu(a)" placement="right">
@@ -457,7 +500,7 @@ const baseTotalSum = computed(() =>
                 </td>
                 <td />
                 <td class="px-4 py-3 tabular-nums text-right font-medium text-ink-gray-9">
-                  {{ fUSD(baseTotalSum) }}
+                  {{ fUSD(caseTotalSum) }}
                 </td>
                 <td class="no-print" />
               </tr>
@@ -494,7 +537,7 @@ const baseTotalSum = computed(() =>
               v-for="k in Object.keys(S.plan.scenarios)"
               :key="k"
               class="p-3"
-              :class="k === baseScenKey(S.plan) ? 'bg-surface-white' : 'bg-surface-amber-2'"
+              :class="k === bc ? 'bg-surface-white' : 'bg-surface-amber-2'"
             >
               <div class="text-xs text-ink-gray-6 mb-1">{{ S.plan.scenarios[k].label }}</div>
               <div class="font-display text-base tabular-nums text-ink-gray-9">

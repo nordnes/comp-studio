@@ -1145,3 +1145,18 @@ Remaining first-wins (Low/Med, un-gated): COM-132 (glossary reword, constants.ts
 eyebrow constant; constants.ts + Proposition.vue + App.vue). Then the GATED cluster needs Robin's calls:
 COM-104/105/96 (frappe-ui Sidebar/CommandPalette/ListView adopt-vs-custom), COM-121 (typography),
 COM-110 (dead dark branch keep/delete), COM-87 (engine RFC — recommend defer).
+
+## 2026-06-09 — COM-132 (glossary "awaiting gate" fix) DONE [M9 #5]
+
+**COM-132 (P4 Low, S ~1 LOC) — DONE.** The `awaitingGate` glossary entry defined the term using another
+undefined term ("vested value") and conflated milestone GATING with time-based vesting. Reworded
+`constants.ts:82` to: "Earned, but its milestone gate hasn't been reached yet — so the uplift doesn't count
+toward the package's current value until the company hits that milestone." Presentation glossary copy (NOT the
+legal corpus). 1 file, 1 line (constants.ts). **Stacked on COM-109** (kept the whole M9 run a single linear
+stack so memory.md never conflicts at merge — I'd briefly branched it off frosty, then re-based onto COM-109).
+- **Verified:** engine **22/22** both · build exit **0**. Verified via production-bundle grep (the tooltip
+  text doesn't screenshot well): new string present in `dist/assets/*.js`, old "toward vested value" phrasing
+  gone. `vp check` clean for constants.ts.
+- Branch `robinandre/com-132-…` off COM-109; PR **stacked** (`Fixes COM-132`). **STOPPED at the merge gate.**
+
+**Last first-win:** COM-126 (confidentiality eyebrow constant — constants.ts + Proposition.vue + App.vue).

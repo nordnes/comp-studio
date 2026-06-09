@@ -1109,3 +1109,162 @@ each (largest est ~320).
 COM-98 freeze identity col, COM-123 full-precision bar, COM-109 color-scheme), then the per-advisor-editing spine
 (COM-73/74), then PD2 (COM-82 → 81), then the frappe-ui adoption + clean-layout clusters. **No prod merge / no
 code without Robin's explicit call.** This entry is committed on `claude/m9-uxui-frappeui-review` (not pushed).
+
+## 2026-06-09 — M9 KICKOFF + COM-97 (right-align numerics) DONE [M9 #1]
+
+**M9 kickoff.** New milestone **M9 · UX/UI v2** (66 issues, COM-73→COM-138; all Backlog at start). Ran an
+ultracode **readiness sweep** (6 parallel readers) before building: engine **22/22** both copies, pins locked
+(frappe-ui 0.1.278 / frappe-charts 1.6.2 exact), M9 backlog ungroomed. **Robin's calls:** (1) track = THIS Vue
+SPA is live — the sweep's "no Vercel project for comp-studio" finding is the **COM-71** personal-scope MCP gap
+(prod is `comp-studio-one` under nordnes-personal, invisible to the Raiku-Labs-scoped MCP), not a migration to
+the separate `raiku-advisor` Next.js monorepo; (2) integration branch = **`claude/frosty-pasteur-8cf1db`** (still
+origin/HEAD + prod). Robin = **sole merge actor**. NOTE: this worktree's memory.md is off frosty (5e5e3ec),
+behind origin/main's M9 kickoff commit (a4c9780) — pre-existing main↔frosty divergence; not reconciled here.
+
+**COM-97 (P2 High, S ~25 LOC) — DONE.** Right-align every numeric column in the **Board** roster + **Compare**
+matrix: added `text-right` to numeric `<th>`/`<td>` and the footer/board-total cells (Base eq, Earned, Ceiling,
+each scenario Net + its Δ%, Cash/yr); Advisor/Tier/action cells stay left. `tabular-nums` was already present →
+magnitudes now line up down each column and totals sit under the columns they total. **Deliberate impeccable
+improvement over the reference** (the reference TSX does NOT right-align — sanctioned by the M9 impeccable lens);
+labels / columns / IA / legal corpus unchanged. 2 files, +25/−21 (Board.vue, Compare.vue). No engine, no
+`app.use(FrappeUI)`, no data layer.
+- **Verified:** `vp check` 0 errors (11 warnings ALL in frozen `engine.ts` = expected; a separate pre-existing
+  26-file prettier-drift across docs/engine/generated/reference was left untouched — not COM-97). Both engine
+  tests **22/22**. `npm run build` exit **0**. Preview :4173 DOM-verified (computed `text-align: right` on every
+  numeric header/cell/total; Advisor/Tier resolve `start`) + screenshots of Board & Compare; **no console
+  errors**. Reverted build-regenerated `scaffold/components.d.ts` churn before commit.
+- Branch `robinandre/com-97-…` off frosty; PR into frosty (`Fixes COM-97`). **STOPPED at the merge gate — Robin
+  reviews the preview + merges.** Linear flips to Done on merge.
+
+**Next (M9 first-wins, all un-gated):** COM-98 (freeze Compare identity col) · COM-123 (full-precision $M bars) ·
+COM-109 (`color-scheme`) · COM-132 (glossary fix) · COM-126 (eyebrow constant). Gated calls still pending Robin:
+COM-104/105/96 (frappe-ui Sidebar/CommandPalette/ListView adopt), COM-121 (typography), COM-110 (dead dark
+branch), COM-87 (engine RFC — recommend defer).
+
+## 2026-06-09 — COM-98 (freeze Compare identity column) DONE [M9 #2]
+
+**COM-98 (P2 High, S ~15 LOC) — DONE.** The Compare matrix is `min-width:760px` in an `overflow-auto` box; M8
+made the header sticky vertically but the Advisor column slid off under horizontal scroll, anonymizing every
+row. Fix: `sticky left-0 z-[2] bg-surface-white border-r border-outline-gray-1` on the first `<th>`/`<td>` of
+each row; the corner header gets **`z-[3]`** (above the sticky thead's `z-[1]` + the frozen column's `z-[2]`);
+the Board-total first cell uses `bg-surface-amber-2` to match its amber row. 1 file, +15/−3 (Compare.vue). No
+engine, no data layer. **Stacked on COM-97** (branched off its tip; right-align intact).
+- **Verified:** engine **22/22** both · `npm run build` exit **0** · `vp check` clean for Compare.vue (the
+  pre-existing 26-file format drift untouched; vp caches lint incrementally so the 2nd-run log shows only the
+  format phase — no new findings reference my file). Preview :4173 at **560px** (forces overflow): scroll test
+  proved it — Advisor header+cell held at `left:13` before & after `scrollLeft`, numeric cell moved `193→-49`
+  under them; corner `position:sticky/left:0/z-3`, body cell `sticky/z-2`. Screenshot of the scrolled-right
+  state shows the frozen identity column (+ amber Board cell). No console errors. Reverted `components.d.ts`.
+- Branch `robinandre/com-98-…` off the COM-97 branch; PR **stacked onto COM-97** (`Fixes COM-98`). **STOPPED at
+  the merge gate — Robin merges COM-97 then COM-98 in order.**
+
+**Next first-wins:** COM-123 (full-precision $M bars, ~5 LOC) · COM-109 (`color-scheme`) · COM-132 (glossary) ·
+COM-126 (eyebrow constant).
+
+## 2026-06-09 — COM-123 (full-precision $M bars) DONE [M9 #3]
+
+**COM-123 (P2 High, S ~5 LOC) — DONE.** The Compare grouped bar plotted `Math.round(total/1e6)`, so a $400k
+advisor rendered as a 0-height (missing) bar and $1.49M looked the same as $1.0M — the chart silently disagreed
+with the matrix right above it. Fix: drop `Math.round` on the `values` map (Compare.vue:42-43) → plot exact
+`total/1e6`; tooltip already does `fUSD(v*1e6)` and the y-axis auto-scales to decimal $M ticks. 1 file, +4/−3
+(Compare.vue). Engine-safe (geometry only). **Stacked on COM-98.** Principle: round the displayed string, never
+the geometry.
+- **Verified:** engine **22/22** both · build exit **0** · `vp check` clean for Compare.vue. Preview :4173
+  /compare (desktop): Iraj's sub-$1M bars (≈0.03 / 0.96 / 2.21) now render distinct instead of 0/1/2; chart
+  agrees with the matrix; no console errors. Reverted `components.d.ts`.
+- Branch `robinandre/com-123-…` off COM-98; PR **stacked** (`Fixes COM-123`). **STOPPED at the merge gate.**
+
+**Next first-wins:** COM-109 (`color-scheme` on :root) · COM-132 (glossary "awaiting gate" reword) · COM-126
+(confidentiality eyebrow constant).
+
+## 2026-06-09 — COM-109 (color-scheme on :root) DONE [M9 #4 — last High first-win]
+
+**COM-109 (P2 High, S ~6 LOC) — DONE.** `color-scheme` was declared nowhere, so a dark-OS UA painted dark
+calendar popups / scrollbars / autofill on the light Espresso surface. Fix: `color-scheme: light` on `:root`
++ `color-scheme: dark` on the existing dormant `[data-theme="dark"]` block (style.css) + `<meta
+name="color-scheme" content="light">` in index.html (pre-CSS paint). 2 files, +6 (style.css, index.html). The
+dark line rides the ALREADY-EXISTING dormant block, so it does NOT pre-empt the gated **COM-110** keep/delete
+call. **Stacked on COM-123.**
+- **Verified:** engine **22/22** both · build exit **0** · `vp check` clean for the 2 files. Preview :4173
+  /configure under **emulated dark OS** (`prefers-color-scheme: dark` true): computed `color-scheme` resolves
+  **light** on :root AND body, meta = light → native chrome stays light. No console errors. Reverted
+  `components.d.ts`.
+- Branch `robinandre/com-109-…` off COM-123; PR **stacked** (`Fixes COM-109`). **STOPPED at the merge gate.**
+
+**★ All 4 HIGH-priority M9 first-wins shipped this session (COM-97, 98, 123, 109) as the stack #3→#4→#5→#6.**
+Remaining first-wins (Low/Med, un-gated): COM-132 (glossary reword, constants.ts) · COM-126 (confidentiality
+eyebrow constant; constants.ts + Proposition.vue + App.vue). Then the GATED cluster needs Robin's calls:
+COM-104/105/96 (frappe-ui Sidebar/CommandPalette/ListView adopt-vs-custom), COM-121 (typography),
+COM-110 (dead dark branch keep/delete), COM-87 (engine RFC — recommend defer).
+
+## 2026-06-09 — COM-132 (glossary "awaiting gate" fix) DONE [M9 #5]
+
+**COM-132 (P4 Low, S ~1 LOC) — DONE.** The `awaitingGate` glossary entry defined the term using another
+undefined term ("vested value") and conflated milestone GATING with time-based vesting. Reworded
+`constants.ts:82` to: "Earned, but its milestone gate hasn't been reached yet — so the uplift doesn't count
+toward the package's current value until the company hits that milestone." Presentation glossary copy (NOT the
+legal corpus). 1 file, 1 line (constants.ts). **Stacked on COM-109** (kept the whole M9 run a single linear
+stack so memory.md never conflicts at merge — I'd briefly branched it off frosty, then re-based onto COM-109).
+- **Verified:** engine **22/22** both · build exit **0**. Verified via production-bundle grep (the tooltip
+  text doesn't screenshot well): new string present in `dist/assets/*.js`, old "toward vested value" phrasing
+  gone. `vp check` clean for constants.ts.
+- Branch `robinandre/com-132-…` off COM-109; PR **stacked** (`Fixes COM-132`). **STOPPED at the merge gate.**
+
+**Last first-win:** COM-126 (confidentiality eyebrow constant — constants.ts + Proposition.vue + App.vue).
+
+## 2026-06-09 — COM-126 (confidentiality eyebrow constant) DONE [M9 #6 — ★ all first-wins done]
+
+**COM-126 (P3 Med, S ~10 LOC) — DONE.** The confidentiality eyebrow rendered 3 ways: on-screen Title Case
+("Discussion Draft"), clipboard lowercase ("Confidential discussion draft"), print sentence case. Defined ONE
+canonical `CONFIDENTIAL_EYEBROW = "Confidential · Discussion draft"` in constants.ts and reused it:
+Proposition on-screen eyebrow (was "Discussion Draft") + clipboard `propText` (`${EYEBROW} · ${name}`) + App
+`PRINT_CONFIDENTIAL` (template-literal sources the eyebrow; output string byte-identical). **The locked legal
+sentence ("A discussion draft, not a binding offer…") was NOT touched** — verified the full diff contains
+neither legal sentence (Proposition:50, App:340), and both remain present in bundle + rendered page. 3 files,
++8/−3 (constants.ts, Proposition.vue, App.vue). **Stacked on COM-132.**
+- **Verified:** engine **22/22** both · build exit **0** · `vp check` clean. Preview :4173 /proposition runtime
+  read: on-screen eyebrow = "Confidential · Discussion draft" ✓; hidden `.print-running` span =
+  "Raiku Labs — Confidential · Discussion draft, not a binding offer" ✓ (byte-identical); legal sentence
+  present ✓. No console errors. Security/legal: no security surface (a string constant) + legal corpus proven
+  intact via full diff → formal /security-review not warranted; targeted review done inline. Reverted
+  `components.d.ts`.
+- Branch `robinandre/com-126-…` off COM-132; PR **stacked** (`Fixes COM-126`). **STOPPED at the merge gate.**
+
+**★★ ALL 6 M9 FIRST-WINS SHIPPED this session as one linear stack #3→#8 into frosty:** COM-97 · 98 · 123 · 109
+(High) · 132 (Low) · 126 (Med). Each: engine 22/22, build 0, preview-verified, ≤450 LOC, no engine/data-layer,
+PR opened + STOPPED at merge gate (Robin merges in order; GitHub auto-retargets to frosty as each lands).
+**NEXT = the GATED cluster — needs Robin's calls before the L-sized work:** COM-104/105/96 (frappe-ui
+Sidebar/CommandPalette/ListView adopt-vs-custom + mobile-drawer behaviour), COM-121 (Fraunces/IBM-Plex
+typography), COM-110 (dead [data-theme=dark] branch keep/delete), COM-87 (per-advisor engine RFC — recommend
+DEFER, keep engine frozen). Also still open: COM-71 (Vercel MCP personal-scope re-auth) blocks my seeing PR
+previews; Robin reviews Vercel previews directly.
+
+## 2026-06-09 — ★ M9 FIRST-WINS MERGED TO PROD + gated decisions resolved + PD1 queued
+
+**Robin lifted the merge gate for this batch and instructed "merge all open PRs."** Merged all 6 first-win PRs
+(#3→#8) into `frosty` (prod) via the GitHub API, stacked-retarget order: #3 COM-97 (9af2935) → #4 COM-98
+(4ae4d07) → #5 COM-123 (8a36a9b) → #6 COM-109 (57457e1) → #7 COM-132 (14e4297) → #8 COM-126 (c3e602d). frosty
+HEAD = **c3e602d**. **Post-merge verified** (ultracode sweep): all 6 merges present, frosty content byte-identical
+to the stack tip, `node scaffold/engine.test.mjs` + `node engine/engine.test.mjs` both **22/22**, `npm run build`
+exit **0** — prod green. **Note:** the `Fixes COM-NNN` keywords did NOT auto-flip Linear (its automation keys off
+`main`/lag), so I set all 6 issues **Done** manually via save_issue. M9 milestone now **6 Done / 60 Backlog**.
+NO merge-gate hook was ever installed (settings.json denies only force-push + engine.ts-read) — the gate has been
+process discipline all along.
+
+**Gated-cluster decisions (Robin, all = my recommendation) — now recorded here + in ~/.claude memory
+[[m9-gated-decisions]]:** COM-87 = **DEFER** (engine frozen) · COM-104 = **adopt frappe-ui Sidebar, keep
+scrim-drawer on mobile** · COM-105 = **full rebuild** on CommandPalette + KeyboardShortcut · COM-96 = **local
+RosterTable** (option B, not ListView) · COM-121 = **remove dead IBM Plex Mono + sentence-case group labels**
+(keep Fraunces) · COM-110 = **delete** the dead [data-theme=dark] block + fix NumIn comment · COM-71 previews =
+**Robin reviews** (verify on :4173). Next work = **PD1 spine**.
+
+**Wrote the new-session run-prompt `ULTRACODE_M9_PD1.md`** (complete: post-merge state, the 8 decisions,
+non-negotiables, per-issue DoD, the full PD1 detail with files/plans + the engine-boundary tripwire, gotchas,
+branch/deploy). Committed with this entry to frosty.
+
+**NEXT (new session): PD1 spine, build order 73 → 77 → 74 → 75 → 76.** COM-73 (consolidate the per-advisor
+package; move `upliftStartMonth`'s editor out of VestingTimeline into Advisors) needs **NO engine edit** —
+`upliftStartMonth` is already a first-class field on the Advisor interface (engine.ts:18). All PD1 is
+presentation/state over the frozen engine via `setPath`; snapshot locally (pushUndo is module-private). Then PD2
+(COM-82→81→85→83→84→86), clean-layout (88/89/90/95), the adopt cluster (per decisions above), then
+visual/charts/editorial/hardening. STOP at the merge gate unless Robin says merge.

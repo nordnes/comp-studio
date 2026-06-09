@@ -8,6 +8,11 @@
 // the frozen engine.ts to here (engine logic unchanged).
 const v = (token: string) => `var(${token})`;
 
+// COM-126: the confidentiality eyebrow — ONE canonical casing, reused on screen, in the clipboard, and in
+// the print running mark, so a recipient comparing copy / screen / print never sees it drift. The locked
+// legal sentence ("…discussion draft, not a binding offer") is separate and stays verbatim.
+export const CONFIDENTIAL_EYEBROW = "Confidential · Discussion draft";
+
 export const CAT: Record<string, { label: string; color: string }> = {
   capital: { label: "Capital", color: v("--chart-capital") },
   customer: { label: "Customer", color: v("--chart-customer") },
@@ -79,6 +84,6 @@ export const GLOSSARY = {
   },
   awaitingGate: {
     term: "awaiting gate",
-    text: "Earned but awaiting its milestone gate — it doesn't count toward vested value until the gate is reached.",
+    text: "Earned, but its milestone gate hasn't been reached yet — so the uplift doesn't count toward the package's current value until the company hits that milestone.",
   },
 } as const;

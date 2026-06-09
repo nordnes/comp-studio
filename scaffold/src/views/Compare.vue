@@ -39,11 +39,12 @@ const chart = computed(() => ({
   labels: board.value.rows.map((r: any) => r.a.name.split(" ")[0]),
   datasets: cols.value.map((k) => ({
     name: S.value.plan.scenarios[k].label,
-    values: board.value.rows.map((r: any) =>
-      Math.round((r.c.scen.find((x: any) => x.key === k)?.total || 0) / 1e6),
+    values: board.value.rows.map(
+      (r: any) => (r.c.scen.find((x: any) => x.key === k)?.total || 0) / 1e6,
     ),
   })),
-})); // values in $M — frappe-charts has no y-axis tick formatter (raw dollars read "10000000").
+})); // values in full-precision $M (COM-123: never Math.round the geometry — sub-$1M bars must stay accurate;
+// frappe-charts has no y-axis tick formatter so raw dollars would read "10000000", hence $M not $).
 const chartOpts = {
   axisOptions: { xAxisMode: "tick" },
   tooltipOptions: { formatTooltipY: (v: number) => fUSD(v * 1e6) },
@@ -65,15 +66,19 @@ const scenColors = computed(() =>
         <!-- COM-58: sticky header keeps the column labels readable on a tall/wide scroll -->
         <thead class="sticky top-0 z-[1] bg-surface-white">
           <tr class="border-b border-outline-gray-2 text-left text-ink-gray-6">
-            <th class="px-4 py-3 font-normal">Advisor</th>
+            <th
+              class="px-4 py-3 font-normal sticky left-0 z-[3] bg-surface-white border-r border-outline-gray-1"
+            >
+              Advisor
+            </th>
             <th class="px-4 py-3 font-normal">Tier</th>
-            <th class="px-4 py-3 font-normal">Base eq</th>
-            <th class="px-4 py-3 font-normal">Earned</th>
-            <th class="px-4 py-3 font-normal">Ceiling</th>
-            <th v-for="k in cols" :key="k" class="px-4 py-3 font-normal">
+            <th class="px-4 py-3 font-normal text-right">Base eq</th>
+            <th class="px-4 py-3 font-normal text-right">Earned</th>
+            <th class="px-4 py-3 font-normal text-right">Ceiling</th>
+            <th v-for="k in cols" :key="k" class="px-4 py-3 font-normal text-right">
               Net {{ S.plan.scenarios[k].label.toLowerCase() }}
             </th>
-            <th class="px-4 py-3 font-normal">Cash/yr</th>
+            <th class="px-4 py-3 font-normal text-right">Cash/yr</th>
           </tr>
         </thead>
         <tbody>
@@ -88,7 +93,11 @@ const scenColors = computed(() =>
             @keydown.enter="open(a.id)"
             @keydown.space.prevent="open(a.id)"
           >
-            <td class="px-4 py-3 font-medium text-ink-gray-9">{{ a.name }}</td>
+            <td
+              class="px-4 py-3 font-medium text-ink-gray-9 sticky left-0 z-[2] bg-surface-white border-r border-outline-gray-1"
+            >
+              {{ a.name }}
+            </td>
             <td class="px-4 py-3">
               <Badge
                 :label="a.mode === 'value' ? '$value' : S.tiers[a.tier]?.name || '—'"
@@ -97,20 +106,22 @@ const scenColors = computed(() =>
                 size="sm"
               />
             </td>
-            <td class="px-4 py-3 tabular-nums text-ink-gray-8">{{ fPct(c.baseEq, 2) }}</td>
+            <td class="px-4 py-3 tabular-nums text-right text-ink-gray-8">
+              {{ fPct(c.baseEq, 2) }}
+            </td>
             <td
-              class="px-4 py-3 tabular-nums"
+              class="px-4 py-3 tabular-nums text-right"
               :class="c.earnedUplift > 0 ? 'text-ink-green-3' : 'text-ink-gray-6'"
             >
               +{{ (c.earnedUplift * 100).toFixed(0) }}%
             </td>
-            <td class="px-4 py-3 tabular-nums text-ink-gray-6">
+            <td class="px-4 py-3 tabular-nums text-right text-ink-gray-6">
               +{{ (c.ceilUplift * 100).toFixed(0) }}%
             </td>
             <td
               v-for="cell in cells"
               :key="cell.k"
-              class="px-4 py-3 tabular-nums text-ink-gray-9"
+              class="px-4 py-3 tabular-nums text-right text-ink-gray-9"
               :class="cell.isBase ? 'font-medium' : ''"
             >
               {{ fUSD(cell.total) }}
@@ -129,14 +140,18 @@ const scenColors = computed(() =>
                 }}{{ Math.abs(cell.delta) }}%</span
               >
             </td>
-            <td class="px-4 py-3 tabular-nums text-ink-gray-8">
+            <td class="px-4 py-3 tabular-nums text-right text-ink-gray-8">
               {{ c.cash ? fUSD(c.cash) : "—" }}
             </td>
           </tr>
           <tr class="bg-surface-amber-2">
-            <td class="px-4 py-3 font-medium text-ink-gray-9">Board</td>
+            <td
+              class="px-4 py-3 font-medium text-ink-gray-9 sticky left-0 z-[2] bg-surface-amber-2 border-r border-outline-gray-1"
+            >
+              Board
+            </td>
             <td />
-            <td class="px-4 py-3 tabular-nums font-medium text-ink-gray-9">
+            <td class="px-4 py-3 tabular-nums text-right font-medium text-ink-gray-9">
               {{ fPct(baseEqSum, 2) }}
             </td>
             <td />
@@ -144,11 +159,11 @@ const scenColors = computed(() =>
             <td
               v-for="k in cols"
               :key="k"
-              class="px-4 py-3 tabular-nums font-medium text-ink-gray-9"
+              class="px-4 py-3 tabular-nums text-right font-medium text-ink-gray-9"
             >
               {{ fUSD(board.cost[k] || 0) }}
             </td>
-            <td class="px-4 py-3 tabular-nums font-medium text-ink-gray-9">
+            <td class="px-4 py-3 tabular-nums text-right font-medium text-ink-gray-9">
               {{ fUSD(board.sumCash) }}
             </td>
           </tr>

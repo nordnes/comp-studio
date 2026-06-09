@@ -1,10 +1,19 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import { useRoute } from "vue-router";
-import { FrappeUIProvider, Dialogs, Button, Badge, Dropdown, Dialog, TextInput } from "frappe-ui";
+import {
+  FrappeUIProvider,
+  Dialogs,
+  Button,
+  Badge,
+  Dropdown,
+  Dialog,
+  TextInput,
+  Select,
+} from "frappe-ui";
 import { useStudio } from "./store";
 import { confirmDestroy } from "./confirm";
-import { fUSD, fPct } from "./engine";
+import { fUSD, fPct, scenKeys, baseScenKey } from "./engine";
 
 // Nav is the IA from the reference (sentence case, frappe-ui best practice — no uppercase roman eyebrows).
 const tabs: { to: string; label: string }[] = [
@@ -30,6 +39,7 @@ const {
   copyState,
   pasteState,
   reset,
+  setPath,
 } = useStudio();
 
 const fileRef = ref<HTMLInputElement | null>(null);
@@ -67,6 +77,16 @@ function doSaveAs() {
     saveAsName.value = "";
   }
 }
+
+// COM-46: global scenario lens. Robin's call — the toggle drives plan.baseScenario (reuse the base
+// designation) so every view that reads baseScenKey speaks the same case; persisted with the board.
+const activeScenario = computed({
+  get: () => baseScenKey(store.S.plan),
+  set: (k: string) => setPath(["plan", "baseScenario"], k),
+});
+const scenarioOptions = computed(() =>
+  scenKeys(store.S.plan).map((k) => ({ label: store.S.plan.scenarios[k].label, value: k })),
+);
 </script>
 
 <template>
@@ -91,6 +111,18 @@ function doSaveAs() {
               <Badge label="Internal" theme="orange" variant="subtle" size="sm" />
             </div>
             <div class="flex items-center gap-2">
+              <label
+                v-if="scenarioOptions.length > 1"
+                class="flex items-center gap-1.5"
+                title="The scenario case shown across every view"
+              >
+                <span class="hidden sm:inline text-p-xs text-ink-gray-6">Case</span>
+                <Select
+                  v-model="activeScenario"
+                  :options="scenarioOptions"
+                  aria-label="Scenario case"
+                />
+              </label>
               <span v-if="store.status" class="text-xs text-ink-gray-6 mr-1">{{
                 store.status
               }}</span>

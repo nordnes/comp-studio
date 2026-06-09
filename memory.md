@@ -1058,3 +1058,54 @@ throughout; every issue preview-verified on the live `comp-studio` :4173.
 **GATE (next):** confirm build 0 + both engine copies 22/22 + `vp check` exit 0 → mark PR #2 ready + request
 Copilot review → **Robin reviews the Vercel preview, THEN the merge to frosty deploys prod (NOT auto-merged —
 outward-facing, Robin's explicit call).**
+
+## 2026-06-09 — M9 review: app-wide dual-lens (impeccable + frappe-ui) audit → 66-issue milestone
+
+**What I did.** Ran the M9 app-wide UX/UI review (the dual-lens ULTRACODE prompt) against the TRUE M8-complete
+prod tip. **Corrected the base first:** local `claude/frosty-pasteur-8cf1db` was STALE at PR #1 (`9ba086d`, 11 M8
+issues, top-nav shell); `git fetch` → real prod tip is **`5e5e3ec` (PR #2, "M8 merged to prod")** with the
+left-sidebar shell + ⌘K + ExitSlider + breakeven curve. Worked on a fresh branch
+**`claude/m9-uxui-frappeui-review`** off `5e5e3ec`. **This run produced the BACKLOG ONLY — no code.**
+
+**Method (dynamic Workflow, opted in).** 15 reviewers (7 vertical surfaces + 8 horizontal lenses) each applied
+BOTH lenses — (A) `/impeccable` design rubric + (B) the `frappe-ui` Skill catalog/tokens/templates — plus the 3
+product directions, with the full M7/M8 done-list as a dedup guard → adversarial verify (sonnet) on every sev≥3
+finding (real? fix correct & ≤450 LOC? data-layer-free? engine-frozen/pins/verbatim-legal respected?) → 1
+synthesis (Opus). **167 raw findings → 66 deduped, prioritized, ≤450-LOC issues.** 77 agents, ~20 min,
+~4.7M subagent tokens. Static data-layer-leak scan over every fix = CLEAN (no createResource/useList/app.use).
+
+**Linear.** New milestone **M9 · UX/UI v2 — frappe-ui depth, per-advisor edit & scenarios, clean IA**
+(id `308fd627-11a5-4893-a19f-28104bc001de`, target 2026-08-31). **66 issues COM-73 … COM-138**, all Backlog,
+themed / prioritized / labelled (reused the M7/M8 label set).
+- **Priority:** 0×P1 (M7 already cleared the a11y floor — nothing ship-blocking) · 12×P2 · 34×P3 · 20×P4.
+- **Lens balance:** 20 impeccable · 20 frappe-ui · 19 product · 7 domain (cap-table).
+- **Themes (count):** Per-advisor package editing 8 · Per-advisor scenario projection 7 · Clean layout & IA 8 ·
+  frappe-ui component adoption 12 · Design tokens & theming 5 · Visual-system consistency & anti-slop 9 ·
+  Charts & dataviz 4 · Editorial & copy 7 · Responsive/print/empty hardening 6.
+
+**Three product directions — each got dedicated issues.** (1) Edit the package: COM-73 (consolidate the field
+set; move `upliftStartMonth` out of the VestingTimeline header) → 74 (dirty/Saved + per-advisor Revert) → 75
+(inline tier/kebab from the roster) → 76 (dedicated Edit-package Dialog). (2) Per-advisor scenarios: COM-82
+(additive state spine — TYPE-ONLY on engine + reconcile cascades) → 81 (per-advisor case override) → 83/85/86
+(across-scenarios table, Board-local case, Compare spread+pin) → 84 (persist target exit into the printed doc);
+**COM-87 = ENGINE RFC, flagged "do NOT assume" / recommend defer** — a bespoke per-advisor cap-table walk is the
+one ask that genuinely can't be done over the frozen engine. (3) Clean layout: de-box (88), ~940px reading
+column (89), Board roster-first (90), Configure two-column settings (95).
+
+**Notable flags for Robin.** COM-87 engine RFC (above). **COM-121** Fraunces + IBM-Plex tension = a decision
+pack, NOT a blind swap (IBM Plex Mono is fetched as a blocking webfont but has ZERO component usages — dead CSS).
+**COM-109** `color-scheme` missing on `:root` (dark-OS paints dark native date-picker/scrollbars on the light
+surface). **COM-110** the `[data-theme=dark]` branch is now unreachable (COM-72 lightened Configure) — keep
+dormant-and-documented vs descope. **COM-96 / COM-104 / COM-105** are the big "adopt the canonical frappe-ui
+primitive vs keep custom" calls (ListView / Sidebar / CommandPalette) — each documents the trade-off rather than
+assuming the swap.
+
+**Constraints respected throughout.** Every issue presentation-only (engine FROZEN; the only two engine touches,
+in PD2, are TYPE-ONLY optional-field additions, which CLAUDE.md permits) · frontend-only (no frappe-ui data
+layer; verify pass confirmed) · stack pinned · confidential / net-of-strike / verbatim legal corpus · ≤450 LOC
+each (largest est ~320).
+
+**Next.** Robin triages M9. Suggested sequence: the cheap high-value table/token fixes first (COM-97 right-align,
+COM-98 freeze identity col, COM-123 full-precision bar, COM-109 color-scheme), then the per-advisor-editing spine
+(COM-73/74), then PD2 (COM-82 → 81), then the frappe-ui adoption + clean-layout clusters. **No prod merge / no
+code without Robin's explicit call.** This entry is committed on `claude/m9-uxui-frappeui-review` (not pushed).

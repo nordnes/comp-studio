@@ -943,3 +943,20 @@ short default table). Board summary row left delta-free (aggregate). Engine unto
 
 **Next M8:** COM-47 (exit-valuation slider) → COM-66 (More-menu) → COM-62 (app-shell, design call) → COM-63
 → COM-72 (design call) → COM-69. Then M8 gate.
+
+## 2026-06-09 — COM-47 (exit-valuation slider, Ledgy pattern) DONE [M8 #19]
+
+**COM-47 (P2, M) — DONE.** New `ExitSlider.vue` (no-print): range slider across the deliberate scenario range +
+Conservative/Base/Aggressive ticks + live readout (net total · net at ~$X exit · eq/tok). PRESENTATION-ONLY —
+linearly interpolates the engine's per-scenario values (equity/token/total/exitVal from `c.scen`); EXACT at each
+tick (aggressive = $21.4M = the Best-case cell). Default thumb = base scenario (`c.base.key` index; no store
+dep). Emits `@exit` (lerped exitVal).
+- /advisors: above UpsideCurve; `exitMarker` ref ← @exit → `:marker-exit` → UpsideCurve draws a teal
+  (`--chart-uplift`) vertical+dot at that exit on the COM-57 equity SVG.
+- /proposition: no-print explorer ABOVE the print-area card (not inside) — recipient explores on screen; the
+  printed doc keeps its static PCells (COM-64 doc untouched).
+- Preview-verified both views: default Base $7.67M/$500M; drag→Aggressive $21.4M/$750M, marker tracks; no console
+  errors. build 0 · engine 22/22 · committed 993a30d; Linear Done.
+
+**M8 19/23 (8 this session).** Remaining: COM-66 (More-menu tidy) · COM-62 (app-shell, **DESIGN CALL**) · COM-63
+(⌘K) · COM-72 (FormControl, **DESIGN CALL**) · COM-69 (vp lint). Next: COM-66, then surface the 62/72 design calls.

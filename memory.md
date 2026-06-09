@@ -1480,3 +1480,21 @@ the Board surface — presentation ref only, NO store mutation, global Case unto
   Screenshot captured. TabButtons select via plain `.click()` (real buttons — no reka dance needed).
 - QA: engine 22/22 · `vp check` 0 errors on Board.vue · build 0. Branch `robinandre/com-85-…` stacked on
   COM-81; PR `Fixes COM-85`. **STOPPED at the merge gate.** Next: COM-83 (ScenarioTable small-multiples).
+
+## 2026-06-09 — COM-83 ("Across scenarios" small-multiples on the Advisors hero) DONE [M9 PD2 #4]
+
+**COM-83 (P3 Med, 118 net LOC) — DONE.** Stacked on COM-85. One across-cases tabulation replaces the four
+PotentialStrip restatements ("impeccable distill").
+- **NEW `components/ScenarioTable.vue`:** top = the base-case **Floor → Current → Ceiling** progression strip
+  (the old PotentialStrip numbers + captions, same accent semantics); below = **rows = scenarios from
+  `c.scen[]`**, cols Net / Equity / Tokens (tabular-nums right-aligned; Equity/Tokens hide <sm), amber row +
+  outline "base" Badge where `key === c.base.key`, red "equity underwater" Badge from `scen.underwater`.
+  All engine exports — zero view math.
+- **Advisors.vue:** PotentialStrip swapped for ScenarioTable (the "Best case" tile IS the aggressive row now;
+  component file kept — no other usages); the **FootballField range card promoted out of the "Show detail"
+  expander** to sit under the table; expander relabelled "+ Show detail · vesting, mix, instruments".
+- **Preview-verified on :4173:** rows reconcile to the anchors — Conservative $1.87M ($73K eq + $1.80M tok) ·
+  Base $7.67M ($2.27M + $5.40M) · Aggressive $21.4M ($5.23M + $16.2M); progression strip + base badge render;
+  range card sits above the expander; expander label updated. Screenshot. No new console errors.
+- QA: engine 22/22 · `vp check` 0 errors on both files · build 0. Branch `robinandre/com-83-…` stacked on
+  COM-85; PR `Fixes COM-83`. **STOPPED at the merge gate.** Next: COM-84 (target outcome that prints).

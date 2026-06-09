@@ -202,7 +202,14 @@ const board = computed(() =>
 );
 const selected = computed(() => {
   const a = store.S.advisors.find((x) => x.id === store.selId) || store.S.advisors[0];
-  return a ? { a, c: computeAdvisor(a, store.S.plan, store.S.tiers, store.S.objectives) } : null;
+  if (!a) return null;
+  // COM-81: an advisor's caseOverride re-bases THIS projection via a SHALLOW PLAN CLONE — never a
+  // mutation of store.S.plan, so Board/Compare/Overview keep reading the global lens untouched.
+  const plan =
+    a.caseOverride && store.S.plan.scenarios[a.caseOverride]
+      ? { ...store.S.plan, baseScenario: a.caseOverride }
+      : store.S.plan;
+  return { a, c: computeAdvisor(a, plan, store.S.tiers, store.S.objectives) };
 });
 
 export function useStudio() {

@@ -1440,3 +1440,24 @@ engine touch per ULTRACODE_M9_PD2 §2 rule 1 — scaffold copy ONLY, money path 
   Write tool); zsh noclobber `>` onto an existing file exits 1 ("file exists") — rm -f first.
 - Branch `robinandre/com-82-…` stacked on `claude/spec-v2-adoption` (PR #15); PR `Fixes COM-82`. **STOPPED at
   the merge gate — Robin merges #15 → #16 in order.** Next: COM-81 (per-advisor case override).
+
+## 2026-06-09 — COM-81 (per-advisor case override) DONE [M9 PD2 #2]
+
+**COM-81 (P2 High, 46 net LOC) — DONE.** Stacked on COM-82. Re-base ONE advisor without flipping the board.
+- **store.ts `selected` computed:** when `a.caseOverride` is set AND the key exists,
+  `computeAdvisor(a, {...store.S.plan, baseScenario: a.caseOverride}, …)` — a **shallow plan clone**, never a
+  mutation; `board` (and every other consumer) keeps reading `store.S.plan` untouched.
+- **Advisors.vue header:** "This advisor's case" frappe-ui `Select` (options = "Match board" + scenario labels;
+  writable computed → `setAdvisorCase(id, v || null)`) + orange `Badge` "Override: <Label>" shown only when the
+  override diverges from the global `baseScenKey`.
+- **Preview-verified end-to-end on :4173 (REAL UI path):** set Iraj → Aggressive via the actual dropdown — hero
+  re-based **$7.67M → $21.4M** (PotentialStrip/waterfall/ExitSlider all follow), badge rendered, localStorage
+  persisted `caseOverride:"aggressive"`; **/board UNCHANGED** (Iraj row $7.67M, total $23.0M, plan.baseScenario
+  "base"); reverted via "Match board" → $7.67M restored, badge gone, **key deleted (not nulled)** from the
+  persisted advisor. Screenshot captured. 0 console errors on the live bundle.
+- **PREVIEW GOTCHA UPGRADE (supersedes the COM-46 note):** the frappe-ui `Select` (reka button-dropdown,
+  `role=combobox`) CAN be driven synthetically — `PointerEvent('pointerdown')` on the trigger OPENS the listbox
+  (plain `.click()` does not), then **`KeyboardEvent('keydown', {key:'Enter'})` on the focused `[role=option]`
+  SELECTS it** (pointer events on the option do NOT select). Full synthetic open→select→close now possible.
+- QA: engine 22/22 both · `vp check` 0 errors on my files · build 0. Branch `robinandre/com-81-…` stacked on
+  COM-82; PR `Fixes COM-81`. **STOPPED at the merge gate.** Next: COM-85 (Board-local scenario selector).

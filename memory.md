@@ -1058,3 +1058,34 @@ throughout; every issue preview-verified on the live `comp-studio` :4173.
 **GATE (next):** confirm build 0 + both engine copies 22/22 + `vp check` exit 0 → mark PR #2 ready + request
 Copilot review → **Robin reviews the Vercel preview, THEN the merge to frosty deploys prod (NOT auto-merged —
 outward-facing, Robin's explicit call).**
+
+## 2026-06-09 — M9 KICKOFF + COM-97 (right-align numerics) DONE [M9 #1]
+
+**M9 kickoff.** New milestone **M9 · UX/UI v2** (66 issues, COM-73→COM-138; all Backlog at start). Ran an
+ultracode **readiness sweep** (6 parallel readers) before building: engine **22/22** both copies, pins locked
+(frappe-ui 0.1.278 / frappe-charts 1.6.2 exact), M9 backlog ungroomed. **Robin's calls:** (1) track = THIS Vue
+SPA is live — the sweep's "no Vercel project for comp-studio" finding is the **COM-71** personal-scope MCP gap
+(prod is `comp-studio-one` under nordnes-personal, invisible to the Raiku-Labs-scoped MCP), not a migration to
+the separate `raiku-advisor` Next.js monorepo; (2) integration branch = **`claude/frosty-pasteur-8cf1db`** (still
+origin/HEAD + prod). Robin = **sole merge actor**. NOTE: this worktree's memory.md is off frosty (5e5e3ec),
+behind origin/main's M9 kickoff commit (a4c9780) — pre-existing main↔frosty divergence; not reconciled here.
+
+**COM-97 (P2 High, S ~25 LOC) — DONE.** Right-align every numeric column in the **Board** roster + **Compare**
+matrix: added `text-right` to numeric `<th>`/`<td>` and the footer/board-total cells (Base eq, Earned, Ceiling,
+each scenario Net + its Δ%, Cash/yr); Advisor/Tier/action cells stay left. `tabular-nums` was already present →
+magnitudes now line up down each column and totals sit under the columns they total. **Deliberate impeccable
+improvement over the reference** (the reference TSX does NOT right-align — sanctioned by the M9 impeccable lens);
+labels / columns / IA / legal corpus unchanged. 2 files, +25/−21 (Board.vue, Compare.vue). No engine, no
+`app.use(FrappeUI)`, no data layer.
+- **Verified:** `vp check` 0 errors (11 warnings ALL in frozen `engine.ts` = expected; a separate pre-existing
+  26-file prettier-drift across docs/engine/generated/reference was left untouched — not COM-97). Both engine
+  tests **22/22**. `npm run build` exit **0**. Preview :4173 DOM-verified (computed `text-align: right` on every
+  numeric header/cell/total; Advisor/Tier resolve `start`) + screenshots of Board & Compare; **no console
+  errors**. Reverted build-regenerated `scaffold/components.d.ts` churn before commit.
+- Branch `robinandre/com-97-…` off frosty; PR into frosty (`Fixes COM-97`). **STOPPED at the merge gate — Robin
+  reviews the preview + merges.** Linear flips to Done on merge.
+
+**Next (M9 first-wins, all un-gated):** COM-98 (freeze Compare identity col) · COM-123 (full-precision $M bars) ·
+COM-109 (`color-scheme`) · COM-132 (glossary fix) · COM-126 (eyebrow constant). Gated calls still pending Robin:
+COM-104/105/96 (frappe-ui Sidebar/CommandPalette/ListView adopt), COM-121 (typography), COM-110 (dead dark
+branch), COM-87 (engine RFC — recommend defer).

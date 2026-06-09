@@ -148,6 +148,29 @@ function fixSel() {
     store.selId = store.S.advisors[0]?.id || "";
 }
 
+// COM-70: lightweight Undo for reversible list deletes. Snapshot the whole working board before the
+// mutation, then offer "Undo" on an info toast (frappe-ui toast.create action). restoreUndo() swaps S
+// back. Catastrophic actions (Reset, delBoard) keep the confirm dialog instead. Engine untouched.
+let undoSnap: State | null = null;
+function pushUndo() {
+  undoSnap = clone(store.S);
+}
+function restoreUndo() {
+  if (!undoSnap) return;
+  store.S = undoSnap;
+  undoSnap = null;
+  fixSel();
+  persist();
+  toast.success("Restored");
+}
+function undoToast(what: string) {
+  toast.create({
+    message: `Removed ${what}`,
+    type: "info",
+    action: { label: "Undo", onClick: restoreUndo },
+  });
+}
+
 function download(name: string, text: string, mime: string): boolean {
   try {
     const b = new Blob([text], { type: mime });
@@ -189,10 +212,15 @@ export function useStudio() {
     persist();
   }
   function reset() {
+    pushUndo();
     store.S = DEFAULT();
     store.selId = store.S.advisors[0]?.id || "";
     persist();
-    flash("Reset to baseline");
+    toast.create({
+      message: "Reset to baseline",
+      type: "info",
+      action: { label: "Undo", onClick: restoreUndo },
+    });
   }
   function select(id: string) {
     store.selId = id;
@@ -223,9 +251,11 @@ export function useStudio() {
     persist();
   }
   function delAdvisor(id: string) {
+    pushUndo();
     store.S.advisors = store.S.advisors.filter((a) => a.id !== id);
     fixSel();
     persist();
+    undoToast("advisor");
   }
 
   // ---- objectives (ADD_OBJ / DEL_OBJ — DEL scrubs achieved/targeted across ALL advisors) ----
@@ -241,6 +271,7 @@ export function useStudio() {
     persist();
   }
   function delObjective(id: string) {
+    pushUndo();
     store.S.objectives = store.S.objectives.filter((o) => o.id !== id);
     store.S.advisors.forEach((a) => {
       const pf = a.performance || ({} as any);
@@ -249,6 +280,7 @@ export function useStudio() {
       a.performance = pf;
     });
     persist();
+    undoToast("objective");
   }
 
   // ---- tiers (ADD_TIER / DEL_TIER — DEL clamps advisor.tier; min 1) ----
@@ -258,12 +290,14 @@ export function useStudio() {
   }
   function delTier(index: number) {
     if (store.S.tiers.length <= 1) return;
+    pushUndo();
     store.S.tiers = store.S.tiers.filter((_, i) => i !== index);
     const max = store.S.tiers.length - 1;
     store.S.advisors.forEach((a) => {
       a.tier = Math.min(a.tier || 0, max);
     });
     persist();
+    undoToast("tier");
   }
 
   // ---- milestones (ADD_MS / DEL_MS — DEL reassigns currentStage, capitalUplift.gate, objective gates) ----
@@ -273,6 +307,7 @@ export function useStudio() {
   }
   function delMilestone(id: string) {
     if (store.S.plan.milestones.length <= 1) return;
+    pushUndo();
     store.S.plan.milestones = store.S.plan.milestones.filter((m) => m.id !== id);
     const first = store.S.plan.milestones[0]?.id || "bridge";
     if (store.S.plan.currentStage === id) store.S.plan.currentStage = first;
@@ -281,6 +316,7 @@ export function useStudio() {
       if (o.gate === id) o.gate = first;
     });
     persist();
+    undoToast("milestone");
   }
 
   // ---- rounds (ADD_ROUND seeds scenarios from last round ×1.5; DEL fixes tgeAnchor + advisor grantRound) ----
@@ -299,6 +335,7 @@ export function useStudio() {
   }
   function delRound(id: string) {
     if (store.S.plan.rounds.length <= 1) return;
+    pushUndo();
     store.S.plan.rounds = store.S.plan.rounds.filter((r) => r.id !== id);
     Object.keys(store.S.plan.scenarios).forEach((k) => {
       delete store.S.plan.scenarios[k][id];
@@ -309,6 +346,7 @@ export function useStudio() {
       if (a.grantRound === id) a.grantRound = "bridge";
     });
     persist();
+    undoToast("round");
   }
 
   // ---- scenarios (ADD_SCENARIO clones base; DEL fixes baseScenario; min 1) ----
@@ -324,10 +362,12 @@ export function useStudio() {
   }
   function delScenario(key: string) {
     if (Object.keys(store.S.plan.scenarios).length <= 1) return;
+    pushUndo();
     delete store.S.plan.scenarios[key];
     if (store.S.plan.baseScenario === key)
       store.S.plan.baseScenario = Object.keys(store.S.plan.scenarios)[0];
     persist();
+    undoToast("scenario");
   }
 
   // ---- roadmap CSV (SET_ROADMAP merge) ----

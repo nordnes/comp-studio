@@ -16,7 +16,6 @@ import {
   BENCH,
 } from "../engine";
 import { TIER_COLOR, chartHex } from "../constants";
-import { confirmDestroy } from "../confirm";
 import PageHeader from "../components/PageHeader.vue";
 import PoolAllocation from "../components/PoolAllocation.vue";
 import ContextStrip from "../components/ContextStrip.vue";
@@ -322,11 +321,7 @@ const baseTotalSum = computed(() =>
                   <button
                     aria-label="Remove advisor"
                     class="inline-flex shrink-0 items-center justify-center size-8 rounded hover:bg-surface-gray-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-gray-6)] text-ink-gray-6 hover:text-ink-red-3"
-                    @click.stop="
-                      confirmDestroy('Remove advisor', `Remove ${a.name} from the board?`, () =>
-                        delAdvisor(a.id),
-                      )
-                    "
+                    @click.stop="delAdvisor(a.id)"
                   >
                     <span class="lucide-trash-2 size-3.5" aria-hidden="true" />
                   </button>

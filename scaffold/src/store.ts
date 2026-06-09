@@ -4,6 +4,7 @@
 // persistence ({scenarios,last} map, reference parity), clipboard Copy/Paste, #s= URL hash,
 // and JSON / board-CSV / roadmap-CSV IO. The engine is the only place money is computed.
 import { reactive, computed } from "vue";
+import { toast } from "frappe-ui";
 import {
   DEFAULT,
   reconcile,
@@ -66,7 +67,6 @@ interface Store {
   selId: string;
   saved: SavedMap;
   last: string;
-  status: string;
   showMgr: boolean;
   storageOk: boolean;
 }
@@ -112,18 +112,16 @@ function bootstrap(): Store {
   if (!S) S = DEFAULT();
   if (!last) last = S.name;
   if (!saved[last]) saved[last] = S;
-  return { S, selId: S.advisors[0]?.id || "", saved, last, status: "", showMgr: false, storageOk };
+  return { S, selId: S.advisors[0]?.id || "", saved, last, showMgr: false, storageOk };
 }
 
 const store = reactive<Store>(bootstrap());
 
-let flashTimer: ReturnType<typeof setTimeout> | null = null;
+// COM-53: action feedback via frappe-ui Toast (rendered by the mounted FrappeUIProvider/ToastProvider),
+// replacing the old ephemeral header span. Failures route to an error toast; everything else to success.
 function flash(m: string) {
-  store.status = m;
-  if (flashTimer) clearTimeout(flashTimer);
-  flashTimer = setTimeout(() => {
-    store.status = "";
-  }, 2800);
+  if (/fail|invalid|blocked|unavailable|exceed/i.test(m)) toast.error(m);
+  else toast.success(m);
 }
 // COM-45: trust-boundary check before applying an imported/pasted board — JSON.parse succeeds on junk
 // ({}, arrays, a number), which would feed reconcile garbage. A valid board has a plan object + advisors array.

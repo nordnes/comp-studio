@@ -123,9 +123,6 @@ const scenarioOptions = computed(() =>
                   aria-label="Scenario case"
                 />
               </label>
-              <span v-if="store.status" class="text-xs text-ink-gray-6 mr-1">{{
-                store.status
-              }}</span>
               <Button
                 variant="subtle"
                 theme="gray"

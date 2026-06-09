@@ -197,7 +197,8 @@ const tkChart = computed(() => {
       </div>
       <div>
         <div class="text-xs text-ink-amber-strong mb-2">
-          Tokens · value vs <Term k="tgeFdv">TGE FDV</Term> <span class="text-ink-gray-6">· $M</span>
+          Tokens · value vs <Term k="tgeFdv">TGE FDV</Term>
+          <span class="text-ink-gray-6">· $M</span>
         </div>
         <FrappeChart
           type="line"

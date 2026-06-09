@@ -37,7 +37,11 @@ const view = computed(() => {
   };
 });
 // publish the selected exit so a host (Advisors) can mark the UpsideCurve
-watch(() => view.value.exitVal, (v) => emit("exit", v), { immediate: true });
+watch(
+  () => view.value.exitVal,
+  (v) => emit("exit", v),
+  { immediate: true },
+);
 const tickPct = (i: number) => (maxPos.value ? (i / maxPos.value) * 100 : 0);
 </script>
 
@@ -76,9 +80,7 @@ const tickPct = (i: number) => (maxPos.value ? (i / maxPos.value) * 100 : 0);
         v-for="(s, i) in scen"
         :key="s.key"
         class="absolute text-xs text-ink-gray-6 whitespace-nowrap"
-        :class="
-          i === 0 ? '' : i === scen.length - 1 ? '-translate-x-full' : '-translate-x-1/2'
-        "
+        :class="i === 0 ? '' : i === scen.length - 1 ? '-translate-x-full' : '-translate-x-1/2'"
         :style="{ left: tickPct(i) + '%' }"
         >{{ s.label }}</span
       >

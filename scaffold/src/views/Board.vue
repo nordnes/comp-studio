@@ -118,9 +118,7 @@ const scatterPlaced = computed(() => {
     placed.push({ x: px, y: ly });
     return { ...d, px, py, r, ly };
   });
-  return pts.sort(
-    (a, b) => (a.id === hoverId.value ? 1 : 0) - (b.id === hoverId.value ? 1 : 0),
-  );
+  return pts.sort((a, b) => (a.id === hoverId.value ? 1 : 0) - (b.id === hoverId.value ? 1 : 0));
 });
 
 // --- per-advisor scenario range ---
@@ -393,7 +391,8 @@ const baseTotalSum = computed(() =>
                     v-if="c.pendingUplift > 0"
                     class="text-ink-amber-strong"
                   >
-                    +{{ (c.pendingUplift * 100).toFixed(0) }}<Term k="awaitingGate"
+                    +{{ (c.pendingUplift * 100).toFixed(0)
+                    }}<Term k="awaitingGate"
                       ><span class="ml-1 text-xs font-sans">pending</span></Term
                     ></span
                   >

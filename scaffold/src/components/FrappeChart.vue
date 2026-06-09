@@ -88,7 +88,10 @@ onBeforeUnmount(() => {
   <div class="relative" :style="{ minHeight: (height || 240) + 'px' }">
     <div ref="el" :role="ariaLabel ? 'img' : undefined" :aria-label="ariaLabel" />
     <!-- COM-60: neutral fill over the ~1-frame degenerate paint; fades out once the first redraw lands -->
-    <Transition leave-active-class="transition-opacity duration-150 ease-out" leave-to-class="opacity-0">
+    <Transition
+      leave-active-class="transition-opacity duration-150 ease-out"
+      leave-to-class="opacity-0"
+    >
       <div v-if="!ready" class="absolute inset-0 rounded bg-surface-white" aria-hidden="true" />
     </Transition>
   </div>

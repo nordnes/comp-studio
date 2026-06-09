@@ -135,8 +135,10 @@ const refLines = computed(() => {
     </svg>
     <div class="flex gap-3 text-xs mt-2 text-ink-gray-6 flex-wrap">
       <span class="flex items-center gap-1"
-        ><span class="inline-block size-2 rounded-full" style="background: var(--chart-capital)" />Base
-        equity</span
+        ><span
+          class="inline-block size-2 rounded-full"
+          style="background: var(--chart-capital)"
+        />Base equity</span
       >
       <span class="flex items-center gap-1"
         ><span

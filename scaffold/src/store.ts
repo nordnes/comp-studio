@@ -15,8 +15,6 @@ import {
   roadmapToCSV,
   parseRoadmapCSV,
   todayISO,
-  fUSD,
-  fPct,
   SECTORS,
   type State,
   type Scenario,

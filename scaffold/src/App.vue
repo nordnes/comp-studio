@@ -55,21 +55,37 @@ function onImportFile(e: Event) {
   (e.target as HTMLInputElement).value = "";
 }
 
-const moreActions = computed(() => [
-  { label: "Copy state", icon: "lucide-copy", onClick: () => copyState() },
-  { label: "Paste state", icon: "lucide-clipboard-paste", onClick: () => pasteState() },
+// COM-66: surface the primary share path (clipboard / file) as its own labeled "Share" button.
+const shareActions = computed(() => [
+  { label: "Copy to clipboard", icon: "lucide-copy", onClick: () => copyState() },
   { label: "Export JSON", icon: "lucide-file-json", onClick: () => exportJSON() },
-  { label: "Export board CSV", icon: "lucide-file-text", onClick: () => exportBoardCSV() },
-  { label: "Import JSON", icon: "lucide-upload", onClick: () => fileRef.value?.click() },
+]);
+// COM-66: the overflow keeps paste/CSV/import, with destructive Reset isolated in its own group (divider).
+const moreActions = computed(() => [
   {
-    label: "Reset to baseline",
-    icon: "lucide-rotate-ccw",
-    onClick: () =>
-      confirmDestroy(
-        "Reset to baseline",
-        "This discards all edits to the current board and restores the defaults.",
-        reset,
-      ),
+    group: "Data",
+    hideLabel: true,
+    items: [
+      { label: "Paste state", icon: "lucide-clipboard-paste", onClick: () => pasteState() },
+      { label: "Export board CSV", icon: "lucide-file-text", onClick: () => exportBoardCSV() },
+      { label: "Import JSON", icon: "lucide-upload", onClick: () => fileRef.value?.click() },
+    ],
+  },
+  {
+    group: "Reset",
+    hideLabel: true,
+    items: [
+      {
+        label: "Reset to baseline",
+        icon: "lucide-rotate-ccw",
+        onClick: () =>
+          confirmDestroy(
+            "Reset to baseline",
+            "This discards all edits to the current board and restores the defaults.",
+            reset,
+          ),
+      },
+    ],
   },
 ]);
 
@@ -147,12 +163,22 @@ const printRecipient = computed(() => {
                 :label="savedNames.length ? `Saved · ${savedNames.length}` : 'Saved'"
                 @click="toggleMgr()"
               />
+              <Dropdown :options="shareActions">
+                <Button
+                  variant="subtle"
+                  theme="gray"
+                  icon-left="lucide-share-2"
+                  label="Share"
+                  title="Copy or export this board to share"
+                />
+              </Dropdown>
               <Dropdown :options="moreActions">
                 <Button
                   variant="ghost"
                   theme="gray"
                   icon="lucide-ellipsis"
                   aria-label="More actions"
+                  title="More — paste, export CSV, import, reset"
                 />
               </Dropdown>
             </div>

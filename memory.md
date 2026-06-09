@@ -1160,3 +1160,30 @@ stack so memory.md never conflicts at merge — I'd briefly branched it off fros
 - Branch `robinandre/com-132-…` off COM-109; PR **stacked** (`Fixes COM-132`). **STOPPED at the merge gate.**
 
 **Last first-win:** COM-126 (confidentiality eyebrow constant — constants.ts + Proposition.vue + App.vue).
+
+## 2026-06-09 — COM-126 (confidentiality eyebrow constant) DONE [M9 #6 — ★ all first-wins done]
+
+**COM-126 (P3 Med, S ~10 LOC) — DONE.** The confidentiality eyebrow rendered 3 ways: on-screen Title Case
+("Discussion Draft"), clipboard lowercase ("Confidential discussion draft"), print sentence case. Defined ONE
+canonical `CONFIDENTIAL_EYEBROW = "Confidential · Discussion draft"` in constants.ts and reused it:
+Proposition on-screen eyebrow (was "Discussion Draft") + clipboard `propText` (`${EYEBROW} · ${name}`) + App
+`PRINT_CONFIDENTIAL` (template-literal sources the eyebrow; output string byte-identical). **The locked legal
+sentence ("A discussion draft, not a binding offer…") was NOT touched** — verified the full diff contains
+neither legal sentence (Proposition:50, App:340), and both remain present in bundle + rendered page. 3 files,
++8/−3 (constants.ts, Proposition.vue, App.vue). **Stacked on COM-132.**
+- **Verified:** engine **22/22** both · build exit **0** · `vp check` clean. Preview :4173 /proposition runtime
+  read: on-screen eyebrow = "Confidential · Discussion draft" ✓; hidden `.print-running` span =
+  "Raiku Labs — Confidential · Discussion draft, not a binding offer" ✓ (byte-identical); legal sentence
+  present ✓. No console errors. Security/legal: no security surface (a string constant) + legal corpus proven
+  intact via full diff → formal /security-review not warranted; targeted review done inline. Reverted
+  `components.d.ts`.
+- Branch `robinandre/com-126-…` off COM-132; PR **stacked** (`Fixes COM-126`). **STOPPED at the merge gate.**
+
+**★★ ALL 6 M9 FIRST-WINS SHIPPED this session as one linear stack #3→#8 into frosty:** COM-97 · 98 · 123 · 109
+(High) · 132 (Low) · 126 (Med). Each: engine 22/22, build 0, preview-verified, ≤450 LOC, no engine/data-layer,
+PR opened + STOPPED at merge gate (Robin merges in order; GitHub auto-retargets to frosty as each lands).
+**NEXT = the GATED cluster — needs Robin's calls before the L-sized work:** COM-104/105/96 (frappe-ui
+Sidebar/CommandPalette/ListView adopt-vs-custom + mobile-drawer behaviour), COM-121 (Fraunces/IBM-Plex
+typography), COM-110 (dead [data-theme=dark] branch keep/delete), COM-87 (per-advisor engine RFC — recommend
+DEFER, keep engine frozen). Also still open: COM-71 (Vercel MCP personal-scope re-auth) blocks my seeing PR
+previews; Robin reviews Vercel previews directly.

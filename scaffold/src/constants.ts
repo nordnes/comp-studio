@@ -8,6 +8,11 @@
 // the frozen engine.ts to here (engine logic unchanged).
 const v = (token: string) => `var(${token})`;
 
+// COM-126: the confidentiality eyebrow — ONE canonical casing, reused on screen, in the clipboard, and in
+// the print running mark, so a recipient comparing copy / screen / print never sees it drift. The locked
+// legal sentence ("…discussion draft, not a binding offer") is separate and stays verbatim.
+export const CONFIDENTIAL_EYEBROW = "Confidential · Discussion draft";
+
 export const CAT: Record<string, { label: string; color: string }> = {
   capital: { label: "Capital", color: v("--chart-capital") },
   customer: { label: "Customer", color: v("--chart-customer") },

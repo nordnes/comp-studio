@@ -6,6 +6,7 @@ import { computed } from "vue";
 import { Avatar, Button, Divider } from "frappe-ui";
 import { useStudio } from "../store";
 import { fUSD, fPct, fNum, fMult, baseScenKey, roundLabel } from "../engine";
+import { CONFIDENTIAL_EYEBROW } from "../constants";
 import AdvisorPicker from "../components/AdvisorPicker.vue";
 import ExitSlider from "../components/ExitSlider.vue";
 import Term from "../components/Term.vue";
@@ -30,7 +31,7 @@ function propText(): string {
     plan = S.value.plan;
   return [
     `RAIKU LABS — ADVISORY ENGAGEMENT PROPOSITION`,
-    `Confidential discussion draft · ${a.name}`,
+    `${CONFIDENTIAL_EYEBROW} · ${a.name}`,
     a.sector,
     "",
     `BASE (guaranteed): ${fUSD(cc.baseCaseBase)} net at base case`,
@@ -107,7 +108,7 @@ const residencyLine = computed(() =>
       <div class="px-8 sm:px-12 py-10 border-b border-outline-gray-1">
         <div class="flex justify-between items-start flex-wrap gap-4">
           <div>
-            <div class="text-sm text-ink-gray-6">Confidential · Discussion Draft</div>
+            <div class="text-sm text-ink-gray-6">{{ CONFIDENTIAL_EYEBROW }}</div>
             <div class="font-display text-2xl mt-2 text-ink-gray-9">Raiku Labs</div>
             <div class="text-sm mt-1 text-ink-gray-6">Advisory Engagement Proposition</div>
           </div>

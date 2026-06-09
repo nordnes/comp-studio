@@ -5,10 +5,20 @@
 // from the engine via the store.
 import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
-import { Button } from "frappe-ui";
+import { Badge, Button, Select } from "frappe-ui";
 import { useStudio } from "../store";
 import { useEditor } from "../composables/useEditor";
-import { fUSD, fPct, fNum, fTok, fMult, roundLabel, todayISO } from "../engine";
+import {
+  fUSD,
+  fPct,
+  fNum,
+  fTok,
+  fMult,
+  roundLabel,
+  todayISO,
+  scenKeys,
+  baseScenKey,
+} from "../engine";
 import PageHeader from "../components/PageHeader.vue";
 import ContextStrip from "../components/ContextStrip.vue";
 import StageBadge from "../components/StageBadge.vue";
@@ -23,12 +33,28 @@ import MixBreakdown from "../components/MixBreakdown.vue";
 import DilutionPath from "../components/DilutionPath.vue";
 import Term from "../components/Term.vue";
 
-const { store, selected } = useStudio();
+const { store, selected, setAdvisorCase } = useStudio();
 const { openEditor } = useEditor();
 const router = useRouter();
 const S = computed(() => store.S);
 const sel = computed(() => selected.value?.a as any);
 const c = computed(() => selected.value?.c as any);
+// COM-81: per-advisor case override — '' = match board (no override). The store re-bases the
+// projection via a shallow plan clone; the global Case lens is untouched.
+const caseOptions = computed(() => [
+  { label: "Match board", value: "" },
+  ...scenKeys(S.value.plan).map((k) => ({
+    label: S.value.plan.scenarios[k].label || k,
+    value: k,
+  })),
+]);
+const advisorCase = computed({
+  get: () => sel.value?.caseOverride || "",
+  set: (v: string) => setAdvisorCase(sel.value.id, v || null),
+});
+const overrideDiverged = computed(
+  () => !!sel.value?.caseOverride && sel.value.caseOverride !== baseScenKey(S.value.plan),
+);
 const showDetail = ref(false);
 // COM-47: the exit slider publishes the selected exit value; UpsideCurve marks it on the equity curve.
 const exitMarker = ref<number | null>(null);
@@ -60,7 +86,15 @@ function toProp() {
           label="Edit package"
           @click="openEditor"
         />
-        <StageBadge /><AdvisorPicker /><Button
+        <StageBadge /><AdvisorPicker />
+        <label class="flex items-center gap-1.5">
+          <span class="text-xs text-ink-gray-6">This advisor's case</span>
+          <Select v-model="advisorCase" :options="caseOptions" />
+        </label>
+        <Badge v-if="overrideDiverged" theme="orange" variant="subtle"
+          >Override: {{ S.plan.scenarios[sel.caseOverride]?.label || sel.caseOverride }}</Badge
+        >
+        <Button
           variant="subtle"
           theme="gray"
           icon-left="lucide-printer"

@@ -17,6 +17,7 @@ import { confirmDestroy } from "./confirm";
 import Term from "./components/Term.vue";
 import CommandPalette from "./components/CommandPalette.vue";
 import { fUSD, fPct, scenKeys, baseScenKey } from "./engine";
+import { CONFIDENTIAL_EYEBROW } from "./constants";
 
 // COM-62: left-sidebar IA (replaces the 6 horizontal top-tabs). Workflow groups (Robin's call):
 // Board (analyse) · Advisor (package & share); Configure is a footer item. Icons from the bundled set.
@@ -136,7 +137,7 @@ const breadcrumb = computed(() => {
 
 // COM-59: per-recipient print running mark. Left = the confidential statement (constant); right = the
 // recipient + date, route-aware — proposition/advisors print a named package, board is the internal pack.
-const PRINT_CONFIDENTIAL = "Raiku Labs — Confidential · Discussion draft, not a binding offer";
+const PRINT_CONFIDENTIAL = `Raiku Labs — ${CONFIDENTIAL_EYEBROW}, not a binding offer`;
 const printDate = computed(() =>
   new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }),
 );

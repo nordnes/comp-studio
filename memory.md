@@ -683,3 +683,41 @@ build-verified only; final visual confirmation happens on the prod URL at the mi
 
 **Next M8 (objective-spec chart subset):** COM-49 (chart text floor ≥11px) → 50 (visible median) → 51 (non-color
 channel). Then COM-62 app-shell (3 PRs), P3 (59/60/61/63/64/65/66), COM-70/69/72. DEFERRED for preview: 48,57,58,47.
+
+## 2026-06-09 — COM-49 (SVG chart text floor) DONE [M8 #8]
+
+**COM-49 (P2, S) — DONE.** Raised sub-legible SVG `<text>` to the ~11px floor + value labels to ink-gray-7.
+- GrowthWaterfall: value notes ($/%) + Current/Ceiling captions 9→11; notes ink-gray-6→7.
+- VestingTimeline: ref labels (cliff/TGE/Bad-Leaver/today) + M0/M48 axis 8→11.
+- Board scatter: axis labels 9→11 + ink-gray-7; **bubble names 9→10** (NOT 11 — bumping worsens the scatter
+  overlap that COM-48 fixes, which Robin deferred to a preview session; 10 is a legibility nudge that won't
+  aggravate it). DilutionPath compact stage labels 8→10 + ink-gray-7 (HTML, non-scaled → kept 10 for fit).
+- Left for the preview pass (visual judgment): right-edge waterfall note re-anchoring (crowding), final
+  scatter/DilutionPath sizing once COM-48 declutter lands. QA: build 0 · engine 22/22 both · 0 new src errors.
+- DilutionPath % labels were already text-xs (12px, ≥ floor). All viewBox SVG text scales with the chart width.
+
+**Next:** COM-50 (visible median on the staircase) → COM-51 (non-color channel). Then COM-62 app-shell, P3.
+
+## 2026-06-09 — COM-50 + COM-51 (chart legibility) DONE [M8 #9, #10]
+
+**COM-50 (P2, S) — DONE.** Staircase 'Median' series was `--chart-tint` (#E7C99B, 1.59:1 vs white = invisible).
+Added a dedicated **`--chart-median`** token (light #6e7a8a muted slate ≈4.4:1 / dark #a6b0c0) in style.css +
+CHART_HEX fallback; pointed Board `stairColors[1]` at it. Kept `--chart-tint` for the DilutionPath large fills
+(out of COM-50's explicit scope — Board.vue:79 only).
+
+**COM-51 (P2, M) — DONE (objective core).** Tier is single-encoded by hue ONLY on the Board scatter (bubble
+position = x/y data, not tier). The other listed marks already carry a positional channel + text legend:
+VestingTimeline (stack order), MixBreakdown (segment order), Compare (consistent per-group series order). So the
+genuine single-encoded gap = the scatter bubbles.
+- Added a **radius-guarded tier-initial** inside each bubble (`v-if sr(d.z)>=9`, white 10px, pointer-events none)
+  as the redundant non-color channel (colour-blind + print). Guard prevents tiny-bubble overflow without a preview.
+- Surfaced the same initial as a bold prefix in the tier legend → explicit bubble↔legend mapping.
+- **Deferred to the preview pass (visual judgment):** tier-ramp luminance re-pick (brand colours app-wide) +
+  VestingTimeline band hatch/dash. Noted these are the visual half of COM-51.
+- QA (both): build 0 · engine 22/22 both · 0 new src errors. Committed together (shared Board.vue regions).
+
+**M8 chart cluster status:** objective-spec subset COMPLETE — 49 (text floor) · 50 (median) · 51 (non-color) ·
+56 (palette tokens). DEFERRED for a preview-equipped session: 48 (scatter declutter) · 57 (breakeven shading) ·
+58 (scannability) · 47 (exit slider). **Next: COM-62 app-shell (L, 3 PRs) OR P3 polish (59/60/61/63/64/65/66) +
+COM-70/69/72.** COM-62 is architecturally significant (left-sidebar shell, migrate 6 views off PageHeader) — needs
+a design check-in before starting per the prompt.

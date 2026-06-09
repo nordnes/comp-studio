@@ -1,4 +1,4 @@
-import { confirmDialog } from 'frappe-ui';
+import { confirmDialog } from "frappe-ui";
 
 // COM-43 — route destructive store actions through a confirm dialog. Uses frappe-ui's confirmDialog,
 // rendered by the <Dialogs/> already mounted in App.vue (socket-safe ToastProvider, no data layer).
@@ -7,6 +7,9 @@ export function confirmDestroy(title: string, message: string, action: () => voi
   confirmDialog({
     title,
     message,
-    onConfirm: (e?: { hideDialog?: () => void }) => { action(); e?.hideDialog?.(); },
+    onConfirm: (e?: { hideDialog?: () => void }) => {
+      action();
+      e?.hideDialog?.();
+    },
   });
 }

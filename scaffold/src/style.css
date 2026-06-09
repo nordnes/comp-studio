@@ -2,30 +2,66 @@
    so they are NOT repeated here (avoids double-emitting the whole utility layer). App-only rules
    below. Under the adopted frappe-ui system Inter/Espresso is the default look; .font-display is an
    optional Raiku brand accent for headers if a view wants it. */
-.font-display { font-family: 'Fraunces', Georgia, serif; letter-spacing: -0.02em; }
-.font-mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
-.tabular-nums { font-variant-numeric: tabular-nums; }
-.eyebrow { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: .18em; text-transform: uppercase; font-weight: 500; }
+.font-display {
+  font-family: "Fraunces", Georgia, serif;
+  letter-spacing: -0.02em;
+}
+.font-mono {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+}
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+.eyebrow {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
 /* COM-38 (a11y): accessible accent-label amber. Espresso's amber ink-scale stops at ink-amber-3
    (#DB7706 = 2.93:1 on surface-amber-2 / 3.16:1 on white — fails AA for small text). `ink-amber-strong`
    (registered as text-ink-amber-strong in tailwind.config.js) is a theme-aware darker amber for amber
    LABELS/eyebrows; bright ink-amber-3 stays for the hero italic + graphical fills/bars/icons. */
-:root { --ink-amber-strong: #8A4B08; }               /* 6.3:1 on amber-2, 6.8:1 on white */
-[data-theme="dark"] { --ink-amber-strong: #E79913; } /* = ink-amber-3 dark, so the Configure panel is visually unchanged */
+:root {
+  --ink-amber-strong: #8a4b08;
+} /* 6.3:1 on amber-2, 6.8:1 on white */
+[data-theme="dark"] {
+  --ink-amber-strong: #e79913;
+} /* = ink-amber-3 dark, so the Configure panel is visually unchanged */
 /* frappe-ui orange-subtle Badge ("Internal" + tier pills) colors its text via text-ink-amber-3 on a
    light amber-1 surface (3.02:1, fails AA). Re-point just the pill badges to the accessible amber —
    .rounded-full never matches the non-pill hero italic, which intentionally keeps bright amber-3. */
-.rounded-full.text-ink-amber-3 { color: var(--ink-amber-strong); }
+.rounded-full.text-ink-amber-3 {
+  color: var(--ink-amber-strong);
+}
 /* COM-41 (a11y): keyboard focus for the SVG scatter bubbles — box-shadow rings (focus-visible:ring)
    don't render on SVG <g>, so use an outline (SVG groups support outline around their bbox). */
-svg g[tabindex]:focus-visible { outline: 2px solid var(--ink-gray-9); outline-offset: 2px; }
-svg g[tabindex]:focus { outline: none; }
+svg g[tabindex]:focus-visible {
+  outline: 2px solid var(--ink-gray-9);
+  outline-offset: 2px;
+}
+svg g[tabindex]:focus {
+  outline: none;
+}
 /* Print paths: Advisors "Print", Board "Board pack", Proposition "Print". Ported from the reference's
    @media print (the dead .print-only rule is intentionally dropped). */
 @media print {
-  body { background: #fff !important; }
-  .no-print { display: none !important; }
-  .print-area { box-shadow: none !important; border: none !important; }
-  main { padding: 0 !important; max-width: none !important; }
-  @page { margin: 14mm; }
+  body {
+    background: #fff !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-area {
+    box-shadow: none !important;
+    border: none !important;
+  }
+  main {
+    padding: 0 !important;
+    max-width: none !important;
+  }
+  @page {
+    margin: 14mm;
+  }
 }

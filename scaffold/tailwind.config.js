@@ -2,14 +2,14 @@
 // .cjs config fails. Tailwind v3 loads this via jiti. We ADOPT the frappe-ui Espresso preset as
 // the design system (it sets the colour/font/radius/shadow scale + Inter). Keep Tailwind v3 (the
 // preset is v3-only). Brand tweaks, if any, go in `theme.extend` below.
-import frappeUIPreset from 'frappe-ui/tailwind'
+import frappeUIPreset from "frappe-ui/tailwind";
 
 export default {
   presets: [frappeUIPreset],
   content: [
-    './index.html',
-    './src/**/*.{vue,js,ts}',
-    './node_modules/frappe-ui/src/**/*.{vue,js,ts}',
+    "./index.html",
+    "./src/**/*.{vue,js,ts}",
+    "./node_modules/frappe-ui/src/**/*.{vue,js,ts}",
   ],
   theme: {
     extend: {
@@ -19,12 +19,12 @@ export default {
         // ink-scale stops at ink-amber-3 (#DB7706 = 2.93:1 on surface-amber-2, fails AA). The
         // value is a theme-aware CSS var defined in src/style.css (dark mode keeps it bright).
         // Bright ink-amber-3 stays for the hero italic + graphical fills/bars/icons.
-        'ink-amber-strong': 'var(--ink-amber-strong)',
+        "ink-amber-strong": "var(--ink-amber-strong)",
       },
       fontFamily: {
-        display: ['Fraunces', 'Georgia', 'serif'],
+        display: ["Fraunces", "Georgia", "serif"],
       },
     },
   },
   plugins: [],
-}
+};

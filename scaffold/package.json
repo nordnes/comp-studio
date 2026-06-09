@@ -1,7 +1,7 @@
 {
   "name": "advisor-comp-studio",
-  "private": true,
   "version": "0.1.0",
+  "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,12 +9,11 @@
     "preview": "vite preview",
     "test": "node engine.test.mjs"
   },
-  "viteplus": "Local dev uses Vite+ (vp dev / vp check / vp build / vp test). These npm scripts stay plain `vite` so Vercel + CI need no `vp`. Vercel: build `npm run build`, output `dist`.",
   "dependencies": {
-    "vue": "^3.5.13",
-    "vue-router": "^4.3.0",
+    "frappe-charts": "1.6.2",
     "frappe-ui": "0.1.278",
-    "frappe-charts": "1.6.2"
+    "vue": "^3.5.13",
+    "vue-router": "^4.3.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.4",
@@ -25,5 +24,6 @@
     "vite": "^5.2.10",
     "vue-tsc": "^2.0.13"
   },
-  "comment": "frappe-ui (0.1.278, pinned exact) is ADOPTED as the UI system (Espresso/Inter preset + components + templates), frontend-only via the verified recipe in research/EMPIRICAL.md: frappe-ui/vite plugin (Frappe bits off) + optimizeDeps feather-icons + ESM tailwind.config.js with the frappe-ui/tailwind preset + import 'frappe-ui/style.css'. We import components by name and do NOT call app.use(FrappeUI) (it opens socket.io / installs the Frappe RPC layer — backend-bound). frappe-charts pinned exact (1.6.2 ships no dist css; styles self-inject)."
+  "comment": "frappe-ui (0.1.278, pinned exact) is ADOPTED as the UI system (Espresso/Inter preset + components + templates), frontend-only via the verified recipe in research/EMPIRICAL.md: frappe-ui/vite plugin (Frappe bits off) + optimizeDeps feather-icons + ESM tailwind.config.js with the frappe-ui/tailwind preset + import 'frappe-ui/style.css'. We import components by name and do NOT call app.use(FrappeUI) (it opens socket.io / installs the Frappe RPC layer — backend-bound). frappe-charts pinned exact (1.6.2 ships no dist css; styles self-inject).",
+  "viteplus": "Local dev uses Vite+ (vp dev / vp check / vp build / vp test). These npm scripts stay plain `vite` so Vercel + CI need no `vp`. Vercel: build `npm run build`, output `dist`."
 }

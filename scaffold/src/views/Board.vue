@@ -311,7 +311,9 @@ const baseTotalSum = computed(() =>
                     v-if="c.pendingUplift > 0"
                     class="text-ink-amber-strong"
                   >
-                    +{{ (c.pendingUplift * 100).toFixed(0) }}<Term k="awaitingGate">⏳</Term></span
+                    +{{ (c.pendingUplift * 100).toFixed(0) }}<Term k="awaitingGate"
+                      ><span class="ml-1 text-xs font-sans">pending</span></Term
+                    ></span
                   >
                 </td>
                 <td class="px-4 py-3 tabular-nums font-medium text-ink-gray-9">

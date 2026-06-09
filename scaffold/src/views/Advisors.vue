@@ -284,11 +284,10 @@ function toProp() {
               ><span
                 class="font-display tabular-nums"
                 :class="c.capEarned > 0 ? 'text-ink-green-3' : 'text-ink-amber-strong'"
-                >+{{ (c.capRaw * 100).toFixed(0) }}%<Term
+                >+{{ (c.capRaw * 100).toFixed(0) }}%<span
                   v-if="c.capEarned < c.capRaw"
-                  k="awaitingGate"
-                >
-                  ⏳</Term
+                  class="ml-1 text-xs font-sans text-ink-amber-strong"
+                  ><Term k="awaitingGate">pending</Term></span
                 ></span
               >
             </div>
@@ -352,7 +351,7 @@ function toProp() {
                   v-if="objState(o.id) === 'earned' && !stageReached(S.plan, o.gate)"
                   class="text-ink-amber-strong"
                 >
-                  · <Term k="awaitingGate">⏳ awaiting gate</Term></span
+                  · <Term k="awaitingGate">awaiting gate</Term></span
                 >
               </div>
               <div class="mt-2">

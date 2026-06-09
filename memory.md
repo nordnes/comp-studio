@@ -745,3 +745,38 @@ a design check-in before starting per the prompt.
 COM-62 (app-shell, L, 3 PRs — ARCHITECTURAL, needs design check-in + preview) · P3 polish (59,60,61,63,64,65,66) ·
 COM-72 (FormControl — needs dark-panel design call) · COM-69 (vp gate — needs vp, defer to local session) ·
 DEFERRED-for-preview chart visuals (47,48,57,58). **Next decision point: COM-62 — pause for Robin's design call.**
+
+## 2026-06-09 — Session PAUSE (Robin's call): M8 11/23, clean boundary, preview-gated remainder
+
+**Robin's routing call (AskUserQuestion):** PAUSE M8 here and resume the remainder in a session with a WORKING
+PREVIEW. COM-62 nav grouping (flat vs Internal/Share) = DECIDE LATER (when 62 is actually built w/ preview).
+
+**Shipped this session (7 issues, all on `claude/comp-studio-m8-continuation-xqi95l`, draft PR #1 → frosty):**
+COM-52 (glossary tooltips) · COM-68 (Combobox/Avatar/Divider) · COM-56 (CSS-var chart palette + dark; SCEN_COLORS
+out of frozen engine) · COM-49 (chart text ≥11px) · COM-50 (visible median token) · COM-51 (scatter tier-initial
+non-color channel) · COM-70 (Undo on light deletes + Reset toast). Build 0 · engine 22/22 both · every push
+deployed GREEN on the Vercel preview (PR #1 rollup success).
+
+**⚠️ FLOW (unchanged for this run):** work lands on the continuation branch; **NOT yet merged to frosty/prod** —
+Robin batch-merges PR #1 at a milestone gate (his call). Prod (`claude/frosty-pasteur-8cf1db`) is still at the
+pre-session commit. PR #1 = https://github.com/nordnes/comp-studio/pull/1 (draft).
+
+**M8 remaining = 12, all gated on something THIS remote session lacked (no live preview, no vp, or a design call):**
+- **Needs a design call:** COM-62 (L, 3 PRs, left-sidebar app-shell + teleported #app-header; migrates 6 views off
+  PageHeader; absorbs COM-67 nav-grouping + COM-63 board-switcher) · COM-72 (FormControl, dark-panel design) ·
+  COM-63 (⌘K palette + board-switcher, partly in 62).
+- **Needs a live preview (visual judgment):** COM-48 (scatter declutter/gridlines) · 57 (breakeven shading) ·
+  58 (scannability) · 47 (exit slider) · 64 (Proposition band differentiation) · 66 (More-menu tidy, partly) ·
+  60 (chart-mount flash overlay, partly) · 65 (⏳ emoji→glyph — DOM part is a clean lucide swap, but SVG-waterfall
+  notes need a text marker + icon-size eyeball) · 59 (print confidentiality mark — needs print preview).
+- **Needs local vp:** COM-69 (lint-gate green — vp/oxc not installed remotely; would also touch frozen engine's
+  unused vars → ignore-config is the fix, but unverifiable here).
+- **Out of M8 / ops:** COM-71 (Vercel re-auth, human) · COM-36 (merge to main) · M6 COM-34/35 (auth/DB).
+
+**Resume plan (preview session):** verify this session's 7 issues render on the preview; then COM-65 (quick) →
+COM-66/60/64/59 → the chart visual cluster (48/57/58/47) → COM-62 app-shell (3 PRs, get the nav-grouping call
+first) absorbing 67+63 → COM-72 (dark-panel design) → COM-69 (local vp). Engine frozen throughout.
+
+**Subscription:** this session is watching PR #1 for CI failures + review comments until merge/close. All events
+so far were vercel[bot] deploy-status (Building→Ready, all green) — no action. send_later unavailable → no timed
+check-in; relying on webhook events.

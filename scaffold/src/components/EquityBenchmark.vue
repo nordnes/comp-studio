@@ -43,7 +43,7 @@ const vcol = computed(() =>
       />
       <div
         class="absolute -top-0.5 -bottom-0.5 w-0.5"
-        :style="{ left: clamp(eq / MAX, 0, 1) * 100 + '%', background: '#9C4A0C' }"
+        :style="{ left: clamp(eq / MAX, 0, 1) * 100 + '%', background: 'var(--chart-capital)' }"
       />
     </div>
     <p class="text-p-xs mt-1 text-ink-gray-6">

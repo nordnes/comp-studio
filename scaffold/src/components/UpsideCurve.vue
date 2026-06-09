@@ -5,7 +5,10 @@ import { useStudio } from "../store";
 import { roundLabel, fUSD, BENCH, safeDiv } from "../engine";
 import FrappeChart from "./FrappeChart.vue";
 import Term from "./Term.vue";
+import { chartHex } from "../constants";
 const props = defineProps<{ c: any }>();
+const eqColors = computed(() => [chartHex("--chart-capital")]);
+const tkColors = computed(() => [chartHex("--chart-customer")]);
 const { store } = useStudio();
 const plan = computed(() => store.S.plan);
 const sb = computed(() => props.c.base);
@@ -67,7 +70,7 @@ const lineOpts = {
           type="line"
           :data="eqChart"
           :height="190"
-          :colors="['#9C4A0C']"
+          :colors="eqColors"
           :options="areaOpts"
           :aria-label="`Equity net value vs exit company value, net of strike. Underwater below ${fUSD(breakeven)} exit; ${(sb.retention * 100).toFixed(0)}% retained after dilution.`"
         />
@@ -84,7 +87,7 @@ const lineOpts = {
           type="line"
           :data="tkChart"
           :height="190"
-          :colors="['#C46A1F']"
+          :colors="tkColors"
           :options="lineOpts"
           aria-label="Token value vs TGE fully-diluted valuation, rising linearly from zero."
         />

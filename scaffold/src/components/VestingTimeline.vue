@@ -56,10 +56,10 @@ function stackPath(key: "tok" | "base" | "uplift") {
 const refLines = computed(() => {
   const out = [
     { m: 12, label: "cliff", color: "" },
-    { m: 24, label: "Bad-Leaver", color: "#8C3A2B" },
+    { m: 24, label: "Bad-Leaver", color: "var(--chart-warning)" },
   ];
   if (model.value.tgeOffset > 0 && model.value.tgeOffset < 48)
-    out.push({ m: model.value.tgeOffset, label: "TGE", color: "#C46A1F" });
+    out.push({ m: model.value.tgeOffset, label: "TGE", color: "var(--chart-customer)" });
   if (model.value.nowOffset > 0 && model.value.nowOffset < 48)
     out.push({ m: model.value.nowOffset, label: "today", color: "" });
   return out;
@@ -98,9 +98,9 @@ const refLines = computed(() => {
         class="stroke-current text-ink-gray-3"
         stroke-width="1"
       />
-      <path :d="stackPath('tok')" :style="{ fill: '#C46A1F', fillOpacity: 0.25 }" />
-      <path :d="stackPath('base')" :style="{ fill: '#9C4A0C', fillOpacity: 0.3 }" />
-      <path :d="stackPath('uplift')" :style="{ fill: '#2F6E63', fillOpacity: 0.3 }" />
+      <path :d="stackPath('tok')" :style="{ fill: 'var(--chart-customer)', fillOpacity: 0.25 }" />
+      <path :d="stackPath('base')" :style="{ fill: 'var(--chart-capital)', fillOpacity: 0.3 }" />
+      <path :d="stackPath('uplift')" :style="{ fill: 'var(--chart-uplift)', fillOpacity: 0.3 }" />
       <template v-for="r in refLines" :key="r.label">
         <line
           :x1="x(r.m)"
@@ -135,14 +135,20 @@ const refLines = computed(() => {
     </svg>
     <div class="flex gap-3 text-xs mt-2 text-ink-gray-6 flex-wrap">
       <span class="flex items-center gap-1"
-        ><span class="inline-block size-2 rounded-full" style="background: #9c4a0c" />Base
+        ><span class="inline-block size-2 rounded-full" style="background: var(--chart-capital)" />Base
         equity</span
       >
       <span class="flex items-center gap-1"
-        ><span class="inline-block size-2 rounded-full" style="background: #2f6e63" />Uplift</span
+        ><span
+          class="inline-block size-2 rounded-full"
+          style="background: var(--chart-uplift)"
+        />Uplift</span
       >
       <span class="flex items-center gap-1"
-        ><span class="inline-block size-2 rounded-full" style="background: #c46a1f" />Tokens</span
+        ><span
+          class="inline-block size-2 rounded-full"
+          style="background: var(--chart-customer)"
+        />Tokens</span
       >
     </div>
     <p class="text-p-xs mt-1 text-ink-gray-6">

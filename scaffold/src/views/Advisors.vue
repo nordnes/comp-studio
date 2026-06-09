@@ -246,7 +246,7 @@ function toProp() {
                 aria-label="Options / tokens split"
                 :aria-valuetext="`${fPct(sel.splitOptions, 0)} options, ${fPct(1 - sel.splitOptions, 0)} tokens`"
                 class="w-full"
-                style="accent-color: #9c4a0c"
+                style="accent-color: var(--chart-capital)"
                 @input="
                   (e) => setField('splitOptions', Number((e.target as HTMLInputElement).value))
                 "

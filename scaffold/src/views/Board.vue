@@ -15,7 +15,7 @@ import {
   fMult,
   BENCH,
 } from "../engine";
-import { TIER_COLOR } from "../constants";
+import { TIER_COLOR, chartHex } from "../constants";
 import { confirmDestroy } from "../confirm";
 import PageHeader from "../components/PageHeader.vue";
 import PoolAllocation from "../components/PoolAllocation.vue";
@@ -59,6 +59,8 @@ const stairOpts = {
   barOptions: { spaceRatio: 0.4 },
   tooltipOptions: { formatTooltipY: (v: number) => fUSD(v * 1e6) },
 };
+// Raiku series = capital token; market-median series = tint. Resolved to hex for frappe-charts.
+const stairColors = computed(() => [chartHex("--chart-capital"), chartHex("--chart-tint")]);
 
 // --- potential scatter (custom SVG) ---
 const PAD = { l: 46, r: 16, t: 16, b: 28 };
@@ -148,7 +150,7 @@ const baseTotalSum = computed(() =>
           type="bar"
           :data="stair"
           :height="210"
-          :colors="['#9C4A0C', '#E7C99B']"
+          :colors="stairColors"
           :options="stairOpts"
         />
         <p v-if="S.plan.showBenchmarks" class="text-p-xs text-ink-gray-6 mt-1">
@@ -215,7 +217,7 @@ const baseTotalSum = computed(() =>
               :cx="sx(d.x)"
               :cy="sy(d.y)"
               :r="sr(d.z)"
-              :style="{ fill: TIER_COLOR[d.tier] || '#9C4A0C', fillOpacity: 0.7 }"
+              :style="{ fill: TIER_COLOR[d.tier] || 'var(--chart-capital)', fillOpacity: 0.7 }"
             />
             <text
               :x="sx(d.x)"

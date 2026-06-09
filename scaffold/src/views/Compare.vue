@@ -5,7 +5,8 @@ import { computed } from "vue";
 import { useRouter } from "vue-router";
 import { Badge } from "frappe-ui";
 import { useStudio } from "../store";
-import { fUSD, fPct, scenKeys, baseScenKey, SCEN_COLORS } from "../engine";
+import { fUSD, fPct, scenKeys, baseScenKey } from "../engine";
+import { SCEN_TOKENS, chartHex } from "../constants";
 import PageHeader from "../components/PageHeader.vue";
 import FrappeChart from "../components/FrappeChart.vue";
 
@@ -32,7 +33,9 @@ const chartOpts = {
   axisOptions: { xAxisMode: "tick" },
   tooltipOptions: { formatTooltipY: (v: number) => fUSD(v * 1e6) },
 };
-const scenColors = computed(() => cols.value.map((_, i) => SCEN_COLORS[i % SCEN_COLORS.length]));
+const scenColors = computed(() =>
+  cols.value.map((_, i) => chartHex(SCEN_TOKENS[i % SCEN_TOKENS.length])),
+);
 </script>
 
 <template>

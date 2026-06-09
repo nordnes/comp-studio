@@ -28,7 +28,7 @@ const model = computed(() => {
     kind: "base",
     from: 0,
     to: valAt(0),
-    color: "#9C4A0C",
+    color: "var(--chart-capital)",
     note: "",
   });
   if (c.capRaw > 0) {
@@ -60,7 +60,7 @@ const model = computed(() => {
       kind: reached ? "earned" : "pending",
       from: prev,
       to: valAt(cum),
-      color: CAT[o.category]?.color || "#9C4A0C",
+      color: CAT[o.category]?.color || "var(--chart-capital)",
       note: `+${(o.uplift * 100).toFixed(0)}%${reached ? "" : " ⏳"}`,
     });
   });
@@ -75,7 +75,7 @@ const model = computed(() => {
       kind: "available",
       from: prev,
       to: valAt(cum),
-      color: CAT[o.category]?.color || "#9C4A0C",
+      color: CAT[o.category]?.color || "var(--chart-capital)",
       note: `+${(o.uplift * 100).toFixed(0)}%`,
     });
   });
@@ -145,7 +145,7 @@ const hi = (r: any) => Math.max(r.from, r.to);
         :y1="padT"
         :x2="x(model.current)"
         :y2="H - 22"
-        :style="{ stroke: '#2F6E63' }"
+        :style="{ stroke: 'var(--chart-uplift)' }"
         stroke-width="1.5"
       />
       <text
@@ -153,7 +153,7 @@ const hi = (r: any) => Math.max(r.from, r.to);
         :y="H - 10"
         text-anchor="middle"
         font-size="9"
-        :style="{ fill: '#2F6E63' }"
+        :style="{ fill: 'var(--chart-uplift)' }"
       >
         Current
       </text>

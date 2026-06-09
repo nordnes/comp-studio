@@ -1633,3 +1633,21 @@ a wider viewBox would scale its text BELOW the COM-49 ≥11px floor. Reading ord
 
 **★ Clean-layout & IA cluster COMPLETE (COM-89 → 90 → 88 → 95), all merged to frosty same-session under
 Robin's standing authorization.** M9 = 21 Done / 45 open.
+
+## 2026-06-09 — ★ Design phase closed: DESIGN_SYSTEM.md handoff committed (/design-handoff)
+
+Authored **`DESIGN_SYSTEM.md`** (repo root) per Robin's /design-handoff request — the durable distillation of
+the M7→M9 design grammar for future contributors/agents: foundations (Espresso tokens + the custom
+`--ink-amber-strong`/`--chart-*`/`max-w-reading` set), the four clean-layout rules (reading column · borders
+earn their place · lead with the subject · settings two-column), the VERIFIED frappe-ui 0.1.278 idioms +
+Vue gotchas (boolean-prop cast, structuredClone), chart rules ($M axes, ≥11px floor, non-color channel,
+geometry-never-rounded), the M7 a11y floor, the print/confidentiality system, and a Do/Don't table.
+`CLAUDE.md` "Where things live" points at it. Committed straight to frosty (docs-only).
+
+**Session totals (2026-06-09, this session):** spec v2 adopted + Linear re-baselined (M10–M12, COM-139–170,
+32 new issues) · PD2 complete (COM-82/81/85/83/84/86) · clean-layout cluster complete (COM-89/90/88/95) ·
+**25 PRs #15–#25 all merged to frosty/prod** · M9 = 21 Done / 45 open. **Next:** ④ the frappe-ui adopt
+cluster (COM-104 Sidebar · COM-105 CommandPalette · COM-96 RosterTable · COM-121 type cleanup · COM-110 dead
+dark branch — §6 decisions all pre-made) — or **COM-139** (the Δ4 legal fix; needs Charlie's wording
+sign-off) — or start **M12 COM-141** (Governance checklist, presentation-first). COM-33 (Deployment
+Protection) remains the open human action.

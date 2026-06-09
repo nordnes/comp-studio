@@ -66,6 +66,8 @@ current.
 - `research/EMPIRICAL.md` — the verified frappe-ui standalone recipe (sandbox ground truth).
 - `COMP_STUDIO_SPEC_v2.md` — **the product spec (v2)**: philosophy, O1–O16, domain model, trajectory +
   governance scope, M10–M12 build mapping, detail appendices A–F (the granular numbers/legal/session register).
+- `DESIGN_SYSTEM.md` — **the design handoff**: tokens, layout grammar (reading column · borders earn their
+  place · settings two-column), frappe-ui idioms/gotchas, chart + a11y + print rules. Build new surfaces inside it.
 - `DEV_WORKFLOW.md` — commands + the per-issue loop. `ULTRACODE_M9_PD2.md` — the live build-run prompt.
 - `engine/` — frozen maths + spec. `scaffold/` — the wired, build-green project root.
 - Linear: **COM** project "Advisor Comp Studio — Web App (Frappe/Vercel)" — https://linear.app/raiku/team/COM/overview

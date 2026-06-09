@@ -623,3 +623,31 @@ redeploy prod; prod updates at the next M8 gate merge. A draft PR (continuation 
 
 **Next M8:** COM-68 (Divider/Avatar/Combobox + text-scale fixes) → chart cluster (48,49,50,51,56,57 + 47,58) →
 COM-62 app-shell (3 PRs) → P3 (59,60,61,63,64,65,66) → COM-70/69/72. Engine frozen throughout.
+
+## 2026-06-09 — COM-68 (Divider/Avatar/Combobox + text scale) DONE [M8 #6]
+
+**COM-68 (P3, S) — DONE.** Adopted the three named frappe-ui primitives; ~47 LOC source-only.
+- **Combobox:** AdvisorPicker Select → labeled searchable `<Combobox>`. API (0.1.278): `defineModel<string|null>`
+  → clean `:model-value`/`@update:model-value` drop-in; same `{label,value}` options + `select()` handler.
+  `inputAttrs` spreads `...rest` onto the ComboboxInput, so `aria-label` forwards (→ "labeled"). `placeholder`
+  shows when empty; `trigger='input'` (default) = type-to-search. Avatar/Divider/Combobox all ship in 0.1.278.
+- **Avatar** (`:label size="sm"`, renders `label[0]` initial when no image): Overview roster cards, Board table
+  name cell (wrapped name+sector in a flex beside the Avatar), Proposition header (justify-end flex). sm = w-5/h-5.
+- **Divider** (= `<hr border-t-[1px] border-outline-gray-2 w-full>`, no margin): replaced the 2 NEUTRAL-gray
+  in-card `border-t` rules — Advisors cash-retainer break (in a space-y-4 card) + Proposition legal block
+  (`<Divider class="my-4" />`). **Kept** the amber-themed accent rules (Advisors:objectives, Board:cost) and the
+  App footer boundary: Divider is gray-only, so converting amber rules would DROP the deliberate accent (regression).
+- **Text scale:** the audit's line numbers were STALE (e.g. "Advisors:96,110" were not border-t at all — re-found
+  the real `border-t` sites via grep). Did the one clear one-line-label fix (Proposition "Advisory Engagement
+  Proposition" text-p-sm→text-sm). **Left the broad subjective sweep light** — one-line-vs-multiline can't be judged
+  statically and there's NO live preview this session (port-bind blocked, no preview MCP). Flagged for a preview pass.
+- QA: build exit 0 · engine 22/22 both · vue-tsc 0 new src errors (only the pre-existing COM-55 TabButtons line).
+  Pushed to continuation branch (PR #1 → frosty; Vercel preview deploy went Ready/green on the COM-52 push).
+
+**Verification caveat (this remote session):** no `vp`, no live preview, port-bind blocked. Gate = build +
+engine + vue-tsc(advisory). Interaction (Combobox typeahead) and layout/spacing (Avatar rows, Divider gaps) are
+build-verified only; final visual confirmation happens on the prod URL at the milestone-gate merge to frosty.
+
+**Next M8:** chart cluster — COM-48 (scatter overlap/gridlines) · 49 (text floor ≥11px) · 50 (visible median) ·
+51 (non-color channel) · **56 (move SCEN_COLORS out of engine → constants.ts, re-point Compare import)** · 57
+(breakeven shading) · + 47 (exit slider) / 58 (scannability). Then COM-62 app-shell (3 PRs), P3, COM-70/69/72.

@@ -1217,3 +1217,32 @@ package; move `upliftStartMonth`'s editor out of VestingTimeline into Advisors) 
 presentation/state over the frozen engine via `setPath`; snapshot locally (pushUndo is module-private). Then PD2
 (COM-82→81→85→83→84→86), clean-layout (88/89/90/95), the adopt cluster (per decisions above), then
 visual/charts/editorial/hardening. STOP at the merge gate unless Robin says merge.
+
+## 2026-06-09 — COM-73 (consolidate the per-advisor package editor; move upliftStartMonth in) DONE [M9 PD1 #1]
+
+**COM-73 (P2 High, ~37 LOC actual) — DONE.** First PD1-spine issue: made the per-advisor package one coherent
+editor. Renamed the three left-column section eyebrows to **Identity / Base grant / Performance**
+(presentation copy only — Profile→Identity, "Base — denomination"→"Base grant", "Performance uplift"→
+"Performance"; legal/benchmark strings untouched). **Moved `upliftStartMonth`** out of the `VestingTimeline`
+chart header — previously the ONLY place it was editable, buried in the collapsed "+ Show detail" expander —
+into the Performance section as a labelled NumIn beside the capital fields, wired via
+`setField('upliftStartMonth', v)` (= existing `setPath(['advisors', i, k], v)`). `VestingTimeline` now shows a
+**read-only marker** ("Uplift earned · month N") and drops its now-dead `NumIn` import + `setPath`/`idx`
+wiring; chart math unchanged (still reads `clamp(sel.upliftStartMonth ?? 6, 0, 48)`). 2 files, +19/−18
+(`Advisors.vue`, `VestingTimeline.vue`). **ENGINE UNTOUCHED** — `upliftStartMonth` is already a first-class
+`Advisor` field (engine.ts:18); pure UI relocation over the frozen engine via `setPath`. New field uses the
+bare-label idiom so **COM-77** can FormControl-wrap it next.
+- **Verified:** both engine tests **22/22** (`node scaffold/engine.test.mjs` + `node engine/engine.test.mjs`)
+  · `( cd scaffold && npm run build )` exit **0** · `vp check` **0 errors** for my 2 files (oxfmt-formatted via
+  `vp fmt <paths> --write`; the pre-existing ~26-file drift + 12 frozen-engine warnings untouched/expected).
+  Preview :4173 /advisors: sections read Identity / Base grant / Performance ✓; relocated NumIn edits live
+  (6→12 → Performance field + chart read-only marker + persisted localStorage ALL tracked to 12, then reset to
+  6) ✓; expand "+ Show detail" → `VestingTimeline` header is read-only (no input) ✓; no console errors.
+  Screenshot captured. Reverted `components.d.ts` build churn before commit.
+- /code-review: clean (presentation-only; no auth/tenancy/money/legal surface → no /security-review). Branch
+  `robinandre/com-73-…` off **frosty** (first PD1 issue; first-wins already merged to frosty), PR **`Fixes
+  COM-73`**. **STOPPED at the merge gate — Robin merges.**
+
+**Next PD1:** COM-77 (FormControl `:description` + clamp `:error` on load-bearing fields) → COM-74 (dirty/Saved
++ per-advisor Revert) → COM-75 (Board roster kebab: tier select + edit) → COM-76 (promote package editing into
+a Dialog/drawer; watch the 450 cap). Then PD2 (COM-82→81→85→83→84→86), clean-layout, the adopt cluster.

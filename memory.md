@@ -828,3 +828,23 @@ component-import path, but that's untested in app code — would need verifying 
 **Next M8:** COM-60 (chart-mount placeholder/flash) → COM-64 (Proposition band) → COM-59 (print mark) →
 chart cluster (48/57/58/47) → COM-66 (More-menu) → COM-62 app-shell (3 PRs, **design call first**) → COM-63
 (⌘K) → COM-72 (FormControl, **dark-panel design call**) → COM-69 (vp). Then M8 gate.
+
+## 2026-06-09 — COM-60 (chart-mount placeholder, kill the 1-frame flash) DONE [M8 #13]
+
+**COM-60 (P3, S) — DONE.** FrappeChart.vue now covers the degenerate first paint. frappe-charts
+(animate:false) paints a degenerate axis / 0-height bars for ~1 frame before the existing rAF `draw(true)`
+corrects it. Added a `ready` ref + a neutral `bg-surface-white` overlay (absolute inset-0, in a `relative`
+container with `min-height:(height||240)px`) shown while `!ready`, faded out via `<Transition>` (150ms) once
+ready.
+- **LATCH (the gotcha):** first cut reset `ready=false` at the top of build(). The Board staircase rebuilds
+  shortly after mount (chartHex() colours resolve post-paint → colors watch → build()), which BOUNCED ready
+  false→true repeatedly and left the white overlay COVERING the chart ~300ms+ (a screenshot caught a blank
+  pale staircase). Fix: NEVER reset ready in build() — initial `ref(false)` covers the mount, the first rAF
+  latches it true and it stays; post-mount rebuilds no longer re-hide.
+- Preview-verified: Board staircase draws solid (brown #9c4a0c Raiku + slate #6e7a8a median) after a gentle
+  150ms fade; Compare grouped bar drew (53 svg children); overlay fades+clears; no console errors. (Screenshots
+  taken mid-fade show the chart pale — that IS the placeholder working.)
+- QA: build 0 · scaffold engine 22/22 · committed 8c116b6, pushed; Linear Done.
+
+**Next M8:** COM-64 (Proposition band) → COM-59 (print mark) → chart cluster (48/57/58/47) → COM-66 (More-menu)
+→ COM-62 (app-shell, design call) → COM-63 → COM-72 (design call) → COM-69. Then M8 gate.

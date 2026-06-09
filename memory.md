@@ -1109,3 +1109,19 @@ engine, no data layer. **Stacked on COM-97** (branched off its tip; right-align 
 
 **Next first-wins:** COM-123 (full-precision $M bars, ~5 LOC) · COM-109 (`color-scheme`) · COM-132 (glossary) ·
 COM-126 (eyebrow constant).
+
+## 2026-06-09 — COM-123 (full-precision $M bars) DONE [M9 #3]
+
+**COM-123 (P2 High, S ~5 LOC) — DONE.** The Compare grouped bar plotted `Math.round(total/1e6)`, so a $400k
+advisor rendered as a 0-height (missing) bar and $1.49M looked the same as $1.0M — the chart silently disagreed
+with the matrix right above it. Fix: drop `Math.round` on the `values` map (Compare.vue:42-43) → plot exact
+`total/1e6`; tooltip already does `fUSD(v*1e6)` and the y-axis auto-scales to decimal $M ticks. 1 file, +4/−3
+(Compare.vue). Engine-safe (geometry only). **Stacked on COM-98.** Principle: round the displayed string, never
+the geometry.
+- **Verified:** engine **22/22** both · build exit **0** · `vp check` clean for Compare.vue. Preview :4173
+  /compare (desktop): Iraj's sub-$1M bars (≈0.03 / 0.96 / 2.21) now render distinct instead of 0/1/2; chart
+  agrees with the matrix; no console errors. Reverted `components.d.ts`.
+- Branch `robinandre/com-123-…` off COM-98; PR **stacked** (`Fixes COM-123`). **STOPPED at the merge gate.**
+
+**Next first-wins:** COM-109 (`color-scheme` on :root) · COM-132 (glossary "awaiting gate" reword) · COM-126
+(confidentiality eyebrow constant).

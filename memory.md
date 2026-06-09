@@ -930,3 +930,16 @@ areaOpts. Did NOT touch the Proposition "How to read this" (already conveys it v
 
 **Next M8:** COM-58 (Compare/Board scannability) → COM-47 (exit slider) → COM-66 (More-menu) → COM-62
 (app-shell, design call) → COM-63 → COM-72 (design call) → COM-69. Then M8 gate.
+
+## 2026-06-09 — COM-58 (Compare scannability) DONE [M8 #18]
+
+**COM-58 (P2, S) — DONE.** Compare.vue. (1) hover row-highlight was ALREADY present (skipped). (2) `matrix`
+computed appends Δ% vs the base scenario column to each non-base cell — ↑ ink-green-3 / ↓ ink-red-3 (e.g.
+conservative ↓76%, aggressive ↑180%). (3) `<thead>` position:sticky top-0 (bg-surface-white z-[1]); container
+overflow-x-auto → overflow-auto max-h-[70vh] (sticks within the box → no app-header overlap; no-op for the
+short default table). Board summary row left delta-free (aggregate). Engine untouched.
+- Preview-verified: deltas correct colors (red rgb(224,54,54)/green rgb(39,143,94)), thead position:sticky,
+  no console errors. build 0 · engine 22/22 · committed 29818b0; Linear Done.
+
+**Next M8:** COM-47 (exit-valuation slider) → COM-66 (More-menu) → COM-62 (app-shell, design call) → COM-63
+→ COM-72 (design call) → COM-69. Then M8 gate.

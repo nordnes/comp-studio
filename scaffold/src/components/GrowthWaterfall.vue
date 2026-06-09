@@ -28,7 +28,7 @@ const model = computed(() => {
     kind: "base",
     from: 0,
     to: valAt(0),
-    color: "#9C4A0C",
+    color: "var(--chart-capital)",
     note: "",
   });
   if (c.capRaw > 0) {
@@ -60,7 +60,7 @@ const model = computed(() => {
       kind: reached ? "earned" : "pending",
       from: prev,
       to: valAt(cum),
-      color: CAT[o.category]?.color || "#9C4A0C",
+      color: CAT[o.category]?.color || "var(--chart-capital)",
       note: `+${(o.uplift * 100).toFixed(0)}%${reached ? "" : " ⏳"}`,
     });
   });
@@ -75,7 +75,7 @@ const model = computed(() => {
       kind: "available",
       from: prev,
       to: valAt(cum),
-      color: CAT[o.category]?.color || "#9C4A0C",
+      color: CAT[o.category]?.color || "var(--chart-capital)",
       note: `+${(o.uplift * 100).toFixed(0)}%`,
     });
   });
@@ -134,8 +134,8 @@ const hi = (r: any) => Math.max(r.from, r.to);
         <text
           :x="x(hi(r)) + 6"
           :y="padT + i * rowH + rowH / 2 + 4"
-          class="fill-current text-ink-gray-6"
-          font-size="9"
+          class="fill-current text-ink-gray-7"
+          font-size="11"
         >
           {{ r.note || fUSD(r.to) }}
         </text>
@@ -145,15 +145,15 @@ const hi = (r: any) => Math.max(r.from, r.to);
         :y1="padT"
         :x2="x(model.current)"
         :y2="H - 22"
-        :style="{ stroke: '#2F6E63' }"
+        :style="{ stroke: 'var(--chart-uplift)' }"
         stroke-width="1.5"
       />
       <text
         :x="x(model.current)"
         :y="H - 10"
         text-anchor="middle"
-        font-size="9"
-        :style="{ fill: '#2F6E63' }"
+        font-size="11"
+        :style="{ fill: 'var(--chart-uplift)' }"
       >
         Current
       </text>
@@ -170,7 +170,7 @@ const hi = (r: any) => Math.max(r.from, r.to);
         :x="x(model.ceiling)"
         :y="H - 10"
         text-anchor="middle"
-        font-size="9"
+        font-size="11"
         class="fill-current text-ink-gray-6"
       >
         Ceiling

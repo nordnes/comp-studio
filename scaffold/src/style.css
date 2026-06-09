@@ -29,6 +29,35 @@
 [data-theme="dark"] {
   --ink-amber-strong: #e79913;
 } /* = ink-amber-3 dark, so the Configure panel is visually unchanged */
+/* COM-56: chart / category / scenario / tier palette as ONE source of truth (semantic tokens).
+   Light values = the verified v1 hexes (no visual change). Dark values are forward-looking — charts
+   are light-only in v1; this layer is required before any dark-chart work. Custom-SVG + DOM fills
+   reference var(--chart-*) directly (native theme flip); frappe-charts color arrays resolve these to
+   concrete hex via chartHex() in constants.ts (with a light-literal fallback). */
+:root {
+  --chart-capital: #9c4a0c;
+  --chart-customer: #c46a1f;
+  --chart-partnership: #3e5c76;
+  --chart-governance: #6b7f6e;
+  --chart-uplift: #2f6e63;
+  --chart-alt: #8c6a4a;
+  --chart-tint: #e7c99b;
+  --chart-cash: #87807a;
+  --chart-warning: #8c3a2b;
+  --chart-median: #6e7a8a; /* COM-50: median benchmark series — muted slate, ~4.4:1 on white */
+}
+[data-theme="dark"] {
+  --chart-capital: #e08a3c;
+  --chart-customer: #e89a5c;
+  --chart-partnership: #7da0c4;
+  --chart-governance: #9fb3a0;
+  --chart-uplift: #5bb3a3;
+  --chart-alt: #c2a082;
+  --chart-tint: #b08a4a;
+  --chart-cash: #b0a89f;
+  --chart-warning: #e07a6a;
+  --chart-median: #a6b0c0;
+}
 /* frappe-ui orange-subtle Badge ("Internal" + tier pills) colors its text via text-ink-amber-3 on a
    light amber-1 surface (3.02:1, fails AA). Re-point just the pill badges to the accessible amber —
    .rounded-full never matches the non-pill hero italic, which intentionally keeps bright amber-3. */

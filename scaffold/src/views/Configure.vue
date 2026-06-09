@@ -19,7 +19,6 @@ import {
 } from "../engine";
 import { CAT_OPTIONS } from "../constants";
 import NumIn from "../components/NumIn.vue";
-import { confirmDestroy } from "../confirm";
 
 const {
   store,
@@ -184,13 +183,7 @@ const msOpts = () => S.S.plan.milestones.map((m) => ({ label: m.label, value: m.
               v-if="S.S.plan.rounds.length > 1"
               aria-label="Delete round"
               class="inline-flex shrink-0 items-center justify-center size-8 rounded hover:bg-surface-gray-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-gray-6)] text-ink-gray-6 hover:text-ink-red-3"
-              @click="
-                confirmDestroy(
-                  'Delete round',
-                  'Deleting a round removes it from every scenario. Continue?',
-                  () => delRound(rd.id),
-                )
-              "
+              @click="delRound(rd.id)"
             >
               <span class="lucide-trash-2 size-3.5" aria-hidden="true" />
             </button>
@@ -266,11 +259,7 @@ const msOpts = () => S.S.plan.milestones.map((m) => ({ label: m.label, value: m.
                   v-if="Object.keys(S.S.plan.scenarios).length > 1"
                   aria-label="Delete scenario"
                   class="inline-flex shrink-0 items-center justify-center size-8 rounded hover:bg-surface-gray-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-gray-6)] text-ink-gray-6 hover:text-ink-red-3"
-                  @click="
-                    confirmDestroy('Delete scenario', 'Delete this scenario path?', () =>
-                      delScenario(sk),
-                    )
-                  "
+                  @click="delScenario(sk)"
                 >
                   <span class="lucide-trash-2 size-3.5" aria-hidden="true" />
                 </button>
@@ -535,13 +524,7 @@ const msOpts = () => S.S.plan.milestones.map((m) => ({ label: m.label, value: m.
             <button
               aria-label="Delete objective"
               class="sm:col-span-1 justify-self-end inline-flex shrink-0 items-center justify-center size-8 rounded hover:bg-surface-gray-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-gray-6)] text-ink-gray-6 hover:text-ink-red-3"
-              @click="
-                confirmDestroy(
-                  'Delete objective',
-                  'This removes the objective from every advisor performance list. Continue?',
-                  () => delObjective(o.id),
-                )
-              "
+              @click="delObjective(o.id)"
             >
               <span class="lucide-trash-2 size-3.5" aria-hidden="true" />
             </button>
@@ -579,13 +562,7 @@ const msOpts = () => S.S.plan.milestones.map((m) => ({ label: m.label, value: m.
                 v-if="S.S.tiers.length > 1"
                 aria-label="Delete tier"
                 class="inline-flex shrink-0 items-center justify-center size-8 rounded hover:bg-surface-gray-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-gray-6)] text-ink-gray-6 hover:text-ink-red-3"
-                @click="
-                  confirmDestroy(
-                    'Delete tier',
-                    'Advisors on higher tiers shift down. Continue?',
-                    () => delTier(i),
-                  )
-                "
+                @click="delTier(i)"
               >
                 <span class="lucide-trash-2 size-3.5" aria-hidden="true" />
               </button>
@@ -646,13 +623,7 @@ const msOpts = () => S.S.plan.milestones.map((m) => ({ label: m.label, value: m.
               v-if="S.S.plan.milestones.length > 1"
               aria-label="Delete milestone"
               class="inline-flex shrink-0 items-center justify-center size-8 rounded hover:bg-surface-gray-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-gray-6)] text-ink-gray-6 hover:text-ink-red-3"
-              @click="
-                confirmDestroy(
-                  'Delete milestone',
-                  'Dependent stage and objective gates reassign to the first milestone. Continue?',
-                  () => delMilestone(m.id),
-                )
-              "
+              @click="delMilestone(m.id)"
             >
               <span class="lucide-trash-2 size-3.5" aria-hidden="true" />
             </button>

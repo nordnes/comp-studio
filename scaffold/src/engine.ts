@@ -56,7 +56,7 @@ export const roundList = (plan: Plan) => ['bridge', ...(((plan && plan.rounds) |
 export const roundLabel = (plan: Plan, id: string) => id === 'bridge' ? 'Bridge' : ((((plan && plan.rounds) || []).find(r => r.id === id) || ({} as RoundDef)).label || id);
 export const scenKeys = (plan: Plan) => Object.keys((plan && plan.scenarios) || {});
 export const baseScenKey = (plan: Plan) => (plan && plan.baseScenario && plan.scenarios[plan.baseScenario]) ? plan.baseScenario : scenKeys(plan)[0];
-export const SCEN_COLORS = ['#3E5C76', '#9C4A0C', '#2F6E63', '#C46A1F', '#6B7F6E', '#8C6A4A'];
+// SCEN_COLORS moved OUT to constants.ts (presentation palette) per COM-56 — engine stays money-only.
 
 // ===== industry benchmarks (researched, 2025 medians) =====
 export const BENCH = {

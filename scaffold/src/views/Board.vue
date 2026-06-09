@@ -3,7 +3,7 @@
 // grouped bar, Robin's call) and potential scatter (custom SVG — frappe-charts has no scatter in 1.6.2).
 import { computed } from "vue";
 import { useRouter } from "vue-router";
-import { Button, Badge } from "frappe-ui";
+import { Avatar, Button, Badge } from "frappe-ui";
 import { useStudio } from "../store";
 import {
   fUSD,
@@ -15,14 +15,14 @@ import {
   fMult,
   BENCH,
 } from "../engine";
-import { TIER_COLOR } from "../constants";
-import { confirmDestroy } from "../confirm";
+import { TIER_COLOR, chartHex } from "../constants";
 import PageHeader from "../components/PageHeader.vue";
 import PoolAllocation from "../components/PoolAllocation.vue";
 import ContextStrip from "../components/ContextStrip.vue";
 import StageBadge from "../components/StageBadge.vue";
 import FootballField from "../components/FootballField.vue";
 import FrappeChart from "../components/FrappeChart.vue";
+import Term from "../components/Term.vue";
 
 const { store, board, select, addAdvisor, delAdvisor } = useStudio();
 const router = useRouter();
@@ -58,6 +58,8 @@ const stairOpts = {
   barOptions: { spaceRatio: 0.4 },
   tooltipOptions: { formatTooltipY: (v: number) => fUSD(v * 1e6) },
 };
+// Raiku series = capital; market-median series = a mid-weight slate (COM-50: tint was 1.59:1, invisible).
+const stairColors = computed(() => [chartHex("--chart-capital"), chartHex("--chart-median")]);
 
 // --- potential scatter (custom SVG) ---
 const PAD = { l: 46, r: 16, t: 16, b: 28 };
@@ -138,7 +140,7 @@ const baseTotalSum = computed(() =>
             <span class="text-ink-gray-6">· post-money $M</span>
           </div>
           <div class="text-xs tabular-nums text-ink-gray-6">
-            TGE FDV {{ fUSD(stairFdv) }} ·
+            <Term k="tgeFdv">TGE FDV</Term> {{ fUSD(stairFdv) }} ·
             {{ fMult(S.plan.scenarios[baseScenKey(S.plan)].tgeMult) }} ×
             {{ roundLabel(S.plan, S.plan.tgeAnchor) }}
           </div>
@@ -147,7 +149,7 @@ const baseTotalSum = computed(() =>
           type="bar"
           :data="stair"
           :height="210"
-          :colors="['#9C4A0C', '#E7C99B']"
+          :colors="stairColors"
           :options="stairOpts"
         />
         <p v-if="S.plan.showBenchmarks" class="text-p-xs text-ink-gray-6 mt-1">
@@ -163,7 +165,8 @@ const baseTotalSum = computed(() =>
         aria-label="Advisor potential: current net value (x) vs headroom to ceiling (y); bubble size is capital introduced."
       >
         <div class="text-sm text-ink-gray-6 mb-3">
-          Untapped potential · current net (x) vs headroom (y) · bubble = capital introduced
+          Untapped potential · current net (x) vs <Term k="headroom">headroom</Term> (y) · bubble =
+          capital introduced
         </div>
         <svg
           :viewBox="`0 0 ${VW} ${VH}`"
@@ -186,15 +189,15 @@ const baseTotalSum = computed(() =>
             class="stroke-current text-ink-gray-3"
             stroke-width="1"
           />
-          <text :x="PAD.l" :y="VH - 6" class="fill-current text-ink-gray-6" font-size="9">
+          <text :x="PAD.l" :y="VH - 6" class="fill-current text-ink-gray-7" font-size="11">
             {{ fUSD(0) }}
           </text>
           <text
             :x="VW - PAD.r"
             :y="VH - 6"
             text-anchor="end"
-            class="fill-current text-ink-gray-6"
-            font-size="9"
+            class="fill-current text-ink-gray-7"
+            font-size="11"
           >
             {{ fUSD(xMax) }}
           </text>
@@ -213,14 +216,28 @@ const baseTotalSum = computed(() =>
               :cx="sx(d.x)"
               :cy="sy(d.y)"
               :r="sr(d.z)"
-              :style="{ fill: TIER_COLOR[d.tier] || '#9C4A0C', fillOpacity: 0.7 }"
+              :style="{ fill: TIER_COLOR[d.tier] || 'var(--chart-capital)', fillOpacity: 0.7 }"
             />
+            <!-- COM-51: tier initial as a redundant (non-color) channel for colour-blind + print;
+                 rendered only where the bubble is large enough to hold the glyph. -->
+            <text
+              v-if="sr(d.z) >= 9"
+              :x="sx(d.x)"
+              :y="sy(d.y) + 3.5"
+              text-anchor="middle"
+              font-size="10"
+              font-weight="600"
+              class="fill-white"
+              style="pointer-events: none"
+            >
+              {{ (S.tiers[d.tier]?.name || "")[0] }}
+            </text>
             <text
               :x="sx(d.x)"
               :y="sy(d.y) - sr(d.z) - 3"
               text-anchor="middle"
               class="fill-current text-ink-gray-7"
-              font-size="9"
+              font-size="10"
             >
               {{ d.name }}
             </text>
@@ -231,7 +248,8 @@ const baseTotalSum = computed(() =>
             ><span
               class="inline-block size-2 rounded-full"
               :style="{ background: TIER_COLOR[i] }"
-            />{{ t.name }}</span
+            /><span class="font-semibold text-ink-gray-8">{{ (t.name || "")[0] }}</span>
+            {{ t.name }}</span
           >
           <span class="ml-auto">top-left = most headroom, modest today</span>
         </div>
@@ -266,8 +284,15 @@ const baseTotalSum = computed(() =>
                 @keydown.space.prevent="open(a.id)"
               >
                 <td class="px-4 py-3">
-                  <div class="font-medium text-ink-gray-9">{{ a.name }}</div>
-                  <div class="text-xs text-ink-gray-6">{{ a.sector.split("—")[0].trim() }}</div>
+                  <div class="flex items-center gap-2.5">
+                    <Avatar :label="a.name" size="sm" />
+                    <div>
+                      <div class="font-medium text-ink-gray-9">{{ a.name }}</div>
+                      <div class="text-xs text-ink-gray-6">
+                        {{ a.sector.split("—")[0].trim() }}
+                      </div>
+                    </div>
+                  </div>
                 </td>
                 <td class="px-4 py-3">
                   <Badge
@@ -286,7 +311,7 @@ const baseTotalSum = computed(() =>
                     v-if="c.pendingUplift > 0"
                     class="text-ink-amber-strong"
                   >
-                    +{{ (c.pendingUplift * 100).toFixed(0) }}⏳</span
+                    +{{ (c.pendingUplift * 100).toFixed(0) }}<Term k="awaitingGate">⏳</Term></span
                   >
                 </td>
                 <td class="px-4 py-3 tabular-nums font-medium text-ink-gray-9">
@@ -296,11 +321,7 @@ const baseTotalSum = computed(() =>
                   <button
                     aria-label="Remove advisor"
                     class="inline-flex shrink-0 items-center justify-center size-8 rounded hover:bg-surface-gray-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-gray-6)] text-ink-gray-6 hover:text-ink-red-3"
-                    @click.stop="
-                      confirmDestroy('Remove advisor', `Remove ${a.name} from the board?`, () =>
-                        delAdvisor(a.id),
-                      )
-                    "
+                    @click.stop="delAdvisor(a.id)"
                   >
                     <span class="lucide-trash-2 size-3.5" aria-hidden="true" />
                   </button>

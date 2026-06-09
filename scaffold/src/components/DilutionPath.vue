@@ -31,10 +31,15 @@ const pctOfGrant = (sN: number) => props.c.baseEq * (w.value.steps[0].N / sN);
           class="w-[70%] rounded-t"
           :style="{
             height: clamp(pctOfGrant(s.N) / (c.baseEq || 1), 0, 1) * 70 + 6 + 'px',
-            background: i === 0 ? '#9C4A0C' : i === w.steps.length - 1 ? '#C46A1F' : '#E7C99B',
+            background:
+              i === 0
+                ? 'var(--chart-capital)'
+                : i === w.steps.length - 1
+                  ? 'var(--chart-customer)'
+                  : 'var(--chart-tint)',
           }"
         />
-        <div class="text-ink-gray-6 mt-1" style="font-size: 8px">{{ s.label }}</div>
+        <div class="text-ink-gray-7 mt-1" style="font-size: 10px">{{ s.label }}</div>
       </div>
     </div>
     <p class="text-p-xs mt-2 text-ink-gray-6">

@@ -4,7 +4,7 @@
 // (vesting, scenario range, mix, dilution, instruments). All money from the engine via the store.
 import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
-import { Button, Badge, Select, Checkbox, TabButtons } from "frappe-ui";
+import { Button, Badge, Select, Checkbox, TabButtons, Divider } from "frappe-ui";
 import { useStudio } from "../store";
 import {
   fUSD,
@@ -32,6 +32,7 @@ import VestingTimeline from "../components/VestingTimeline.vue";
 import FootballField from "../components/FootballField.vue";
 import MixBreakdown from "../components/MixBreakdown.vue";
 import DilutionPath from "../components/DilutionPath.vue";
+import Term from "../components/Term.vue";
 
 const { store, selected, setPath } = useStudio();
 const router = useRouter();
@@ -190,7 +191,7 @@ function toProp() {
             >
               <span class="lucide-layers size-3.5" aria-hidden="true" /> Uniform base
               {{ fPct(S.plan.baseGrant.equityPct, 2) }} eq ·
-              {{ fPct(S.plan.baseGrant.tokenPct, 2) }} tok, ×tier
+              {{ fPct(S.plan.baseGrant.tokenPct, 2) }} tok, <Term k="tierMultiplier">×tier</Term>
             </div>
             <div class="grid grid-cols-3 gap-2">
               <button
@@ -206,7 +207,9 @@ function toProp() {
               >
                 <div class="flex items-baseline justify-between">
                   <div class="font-display text-base text-ink-gray-9">{{ t.name }}</div>
-                  <div class="text-xs text-ink-amber-strong">{{ fMult(t.mult) }}</div>
+                  <div class="text-xs text-ink-amber-strong">
+                    <Term k="tierMultiplier">{{ fMult(t.mult) }}</Term>
+                  </div>
                 </div>
                 <div class="text-xs mt-1 tabular-nums text-ink-gray-6">
                   {{ fPct(S.plan.baseGrant.equityPct * t.mult, 1) }} eq ·
@@ -243,15 +246,15 @@ function toProp() {
                 aria-label="Options / tokens split"
                 :aria-valuetext="`${fPct(sel.splitOptions, 0)} options, ${fPct(1 - sel.splitOptions, 0)} tokens`"
                 class="w-full"
-                style="accent-color: #9c4a0c"
+                style="accent-color: var(--chart-capital)"
                 @input="
                   (e) => setField('splitOptions', Number((e.target as HTMLInputElement).value))
                 "
               />
             </div>
           </template>
-          <label
-            class="flex items-center gap-2 text-sm pt-2 border-t border-outline-gray-1 text-ink-gray-7"
+          <Divider />
+          <label class="flex items-center gap-2 text-sm text-ink-gray-7"
             ><Checkbox
               :model-value="sel.hasCash"
               @update:model-value="(v) => setField('hasCash', v)"
@@ -281,7 +284,12 @@ function toProp() {
               ><span
                 class="font-display tabular-nums"
                 :class="c.capEarned > 0 ? 'text-ink-green-3' : 'text-ink-amber-strong'"
-                >+{{ (c.capRaw * 100).toFixed(0) }}%{{ c.capEarned < c.capRaw ? " ⏳" : "" }}</span
+                >+{{ (c.capRaw * 100).toFixed(0) }}%<Term
+                  v-if="c.capEarned < c.capRaw"
+                  k="awaitingGate"
+                >
+                  ⏳</Term
+                ></span
               >
             </div>
             <div class="grid grid-cols-2 gap-3">
@@ -344,7 +352,7 @@ function toProp() {
                   v-if="objState(o.id) === 'earned' && !stageReached(S.plan, o.gate)"
                   class="text-ink-amber-strong"
                 >
-                  · ⏳ awaiting gate</span
+                  · <Term k="awaitingGate">⏳ awaiting gate</Term></span
                 >
               </div>
               <div class="mt-2">
@@ -404,7 +412,9 @@ function toProp() {
           <div class="grid sm:grid-cols-2 gap-6">
             <DilutionPath :c="c" />
             <div class="bg-surface-white rounded border border-outline-gray-1 p-5">
-              <div class="text-sm text-ink-gray-6 mb-3">Instruments · net of strike</div>
+              <div class="text-sm text-ink-gray-6 mb-3">
+                Instruments · <Term k="netOfStrike">net of strike</Term>
+              </div>
               <div class="divide-y divide-outline-gray-1 text-sm">
                 <div class="flex justify-between py-2">
                   <span class="text-ink-gray-6">Options (base case net)</span

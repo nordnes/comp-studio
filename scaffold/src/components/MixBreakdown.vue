@@ -6,9 +6,9 @@ const props = defineProps<{ c: any }>();
 const seg = computed(() => {
   const c = props.c;
   const arr: [string, number, string][] = [
-    ["Options", c.baseEqNet, "#9C4A0C"],
-    ["Tokens", c.tkPct * c.base.fdv, "#C46A1F"],
-    ["Cash", c.cashTotal, "#87807A"],
+    ["Options", c.baseEqNet, "var(--chart-capital)"],
+    ["Tokens", c.tkPct * c.base.fdv, "var(--chart-customer)"],
+    ["Cash", c.cashTotal, "var(--chart-cash)"],
   ];
   return arr.filter((s) => s[1] > 0);
 });

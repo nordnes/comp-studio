@@ -582,3 +582,201 @@ views. Tooltip API confirmed: `<Tooltip text="…" placement hoverDelay>` + trig
 **M8 remaining (19):** COM-52 (tooltips) · COM-68 (Divider/Avatar/Combobox + text-scale) · chart cluster
 (COM-48,49,50,51,56,57 + decision aids 47,58) · **COM-62** app-shell (L, 3 ≤450-LOC PRs; absorbs COM-67 + COM-63
 board-switcher) · P3 (COM-59,60,61,63,64,66,65). Resume at COM-52.
+
+## 2026-06-09 — New session: branch + deploy flow CHANGED (Robin's call) + COM-52 DONE [M8 #5]
+
+**⚠️ FLOW CHANGE for this session (Robin chose via AskUserQuestion):** the harness assigned a NEW dev branch
+`claude/comp-studio-m8-continuation-xqi95l` (forked from frosty-pasteur @ b801376) and forbids pushing elsewhere
+without permission. Robin's call: **work issue-by-issue on the continuation branch; batch-merge into
+`claude/frosty-pasteur-8cf1db` (prod) at MILESTONE GATES only — NOT per issue.** So per-issue pushes no longer
+redeploy prod; prod updates at the next M8 gate merge. A draft PR (continuation → frosty) tracks the batch.
+
+**Environment deltas this session (remote, not the original local worktree):**
+- `vp` CLI is NOT available remotely (local-only, as documented). Gate = `npm run build` (exit 0, compiles all
+  templates incl. new ones) + both engine copies 22/22 + `npx vue-tsc --noEmit` for src-error triage.
+- `vue-tsc` here is NOISY: it can't resolve frappe-ui's `~icons/lucide/*` virtual modules (provided by
+  unplugin-icons at vite build time, not raw tsc) → ~120 node_modules errors + the pre-existing COM-55
+  `Advisors.vue TabButtons TabButtonValue→string` error. Verified via `git stash` that these are ALL pre-existing;
+  my changes add ZERO new src errors. **Build is the authoritative gate; vue-tsc is advisory only here.**
+- No preview MCP / port-bind blocked (as before) → no live visual pass remotely; visual verify happens on the
+  prod URL at the milestone merge.
+- `npm install` rewrites package-lock.json cosmetically (strips `libc` fields — npm 10.9.7 churn) and the build
+  re-emits `components.d.ts` (adds the new Term registration). Both REVERTED before commit — source-only commits.
+
+**COM-52 (P2, M) — DONE.** Glossary tooltips on load-bearing finance jargon.
+- New `src/components/Term.vue`: thin wrapper over frappe-ui `<Tooltip :text :hover-delay>`; trigger is a
+  `<span>` with dotted-underline (`border-b border-dotted border-current`, inherits context color), `cursor-help`,
+  `tabindex=0` (keyboard-focusable; reka-ui wires aria-describedby on focus). Default slot overrides displayed text.
+- New `GLOSSARY` map in constants.ts: netOfStrike · tgeFdv · tierMultiplier · headroom · awaitingGate — plain-
+  language definitions (NEW presentation copy; the verbatim legal corpus was NOT touched/fragmented).
+- 14 wraps across 7 files: TGE FDV (ContextStrip/Board staircase caption/Overview base-path/UpsideCurve) · net of
+  strike (Advisors instruments/Proposition net-value caption/App footer note/UpsideCurve) · tier multiplier
+  (Advisors ×tier label + 4 tier-card badges) · headroom (Board scatter caption) · ⏳ awaiting gate (Advisors cap
+  + objectives, Board uplift cell).
+- **Scope decisions:** (1) kept the ⏳ EMOJI (added tooltip + aria only); the emoji→glyph swap stays COM-65 per
+  the plan — avoids double-editing the glyph. (2) RTA / deed-of-adherence live only inside verbatim legal
+  paragraphs / generated draft strings → NOT wrapped (would fragment the legal corpus); the issue's "Fix" targets
+  labels/captions, which are fully covered. GLOSSARY can gain them later if a standalone caption appears.
+- Per-Term TooltipProvider (frappe-ui's built-in) + 0.3s hoverDelay handles flicker — no separate cluster provider.
+- QA: build exit 0 · engine 22/22 (both copies) · vue-tsc adds 0 new src errors (stash-verified) · diff source-only
+  (~78 insertions). Pushed to continuation branch; NOT yet on prod (milestone-gate merge per the flow change above).
+
+**Next M8:** COM-68 (Divider/Avatar/Combobox + text-scale fixes) → chart cluster (48,49,50,51,56,57 + 47,58) →
+COM-62 app-shell (3 PRs) → P3 (59,60,61,63,64,65,66) → COM-70/69/72. Engine frozen throughout.
+
+## 2026-06-09 — COM-68 (Divider/Avatar/Combobox + text scale) DONE [M8 #6]
+
+**COM-68 (P3, S) — DONE.** Adopted the three named frappe-ui primitives; ~47 LOC source-only.
+- **Combobox:** AdvisorPicker Select → labeled searchable `<Combobox>`. API (0.1.278): `defineModel<string|null>`
+  → clean `:model-value`/`@update:model-value` drop-in; same `{label,value}` options + `select()` handler.
+  `inputAttrs` spreads `...rest` onto the ComboboxInput, so `aria-label` forwards (→ "labeled"). `placeholder`
+  shows when empty; `trigger='input'` (default) = type-to-search. Avatar/Divider/Combobox all ship in 0.1.278.
+- **Avatar** (`:label size="sm"`, renders `label[0]` initial when no image): Overview roster cards, Board table
+  name cell (wrapped name+sector in a flex beside the Avatar), Proposition header (justify-end flex). sm = w-5/h-5.
+- **Divider** (= `<hr border-t-[1px] border-outline-gray-2 w-full>`, no margin): replaced the 2 NEUTRAL-gray
+  in-card `border-t` rules — Advisors cash-retainer break (in a space-y-4 card) + Proposition legal block
+  (`<Divider class="my-4" />`). **Kept** the amber-themed accent rules (Advisors:objectives, Board:cost) and the
+  App footer boundary: Divider is gray-only, so converting amber rules would DROP the deliberate accent (regression).
+- **Text scale:** the audit's line numbers were STALE (e.g. "Advisors:96,110" were not border-t at all — re-found
+  the real `border-t` sites via grep). Did the one clear one-line-label fix (Proposition "Advisory Engagement
+  Proposition" text-p-sm→text-sm). **Left the broad subjective sweep light** — one-line-vs-multiline can't be judged
+  statically and there's NO live preview this session (port-bind blocked, no preview MCP). Flagged for a preview pass.
+- QA: build exit 0 · engine 22/22 both · vue-tsc 0 new src errors (only the pre-existing COM-55 TabButtons line).
+  Pushed to continuation branch (PR #1 → frosty; Vercel preview deploy went Ready/green on the COM-52 push).
+
+**Verification caveat (this remote session):** no `vp`, no live preview, port-bind blocked. Gate = build +
+engine + vue-tsc(advisory). Interaction (Combobox typeahead) and layout/spacing (Avatar rows, Divider gaps) are
+build-verified only; final visual confirmation happens on the prod URL at the milestone-gate merge to frosty.
+
+**Next M8:** chart cluster — COM-48 (scatter overlap/gridlines) · 49 (text floor ≥11px) · 50 (visible median) ·
+51 (non-color channel) · **56 (move SCEN_COLORS out of engine → constants.ts, re-point Compare import)** · 57
+(breakeven shading) · + 47 (exit slider) / 58 (scannability). Then COM-62 app-shell (3 PRs), P3, COM-70/69/72.
+
+## 2026-06-09 — Robin's calls (AskUserQuestion) + COM-56 DONE [M8 #7]
+
+**Two decisions surfaced to Robin this session (no live preview here ⇒ pixel work needs his steer):**
+1. **Chart cluster = OBJECTIVE-SPEC ONLY.** Do the ones with an objective target: COM-49 (text ≥11px), 50
+   (visible median), 51 (non-color channel), + 56 (colors). **DEFER to a preview-equipped session:** COM-48
+   (scatter declutter), 58 (scannability) — and by extension 57 (breakeven shading) / 47 (exit slider), which
+   are visual-judgment, not objective. Don't tune pixels blind.
+2. **COM-56 = FULL CSS-custom-property + dark.** Build the whole :root + [data-theme=dark] token palette now,
+   not just the SCEN_COLORS move.
+
+**COM-56 (P2, M) — DONE (full scope).** One source of truth for the chart/category/scenario/tier palette.
+- **style.css:** 9 named tokens (`--chart-capital/customer/partnership/governance/uplift/alt/tint/cash/warning`)
+  under `:root` (light = the verified v1 hexes, zero visual change) + `[data-theme="dark"]` (forward-looking
+  lightened values; charts are light-only in v1 so these are untuned-but-present).
+- **constants.ts:** CAT + TIER_COLOR now emit `var(--chart-*)`; added `SCEN_TOKENS` (the moved scenario palette)
+  + `chartHex(token)` — resolves a token to concrete hex via `getComputedStyle(document.documentElement)` with a
+  **light-literal fallback** (CHART_HEX) so frappe-charts NEVER loses color even pre-paint. (Renamed the
+  CAT_OPTIONS destructure var `v`→`val` to free `v=()=>var(...)` helper.)
+- **engine.ts:** SCEN_COLORS export REMOVED (sanctioned COM-56 engine edit — presentation constant, not money;
+  both engine tests stay 22/22). Compare re-pointed to SCEN_TOKENS+chartHex.
+- **Split by render path:** custom-SVG/DOM fills (Growth/Vesting/Mix/Dilution/EquityBenchmark/Board scatter/
+  slider/CAT dots) use `var(--chart-*)` directly in `:style`/`style` (native theme flip — verified every site is
+  a CSS style context, never an SVG presentation attribute where var() wouldn't resolve). frappe-charts arrays
+  (Board staircase, UpsideCurve eq/tk, Compare scen) use `chartHex()` computeds (lib needs hex values).
+- All 22 inline .vue hexes swapped (0 remain). QA: build 0 · engine 22/22 both · vue-tsc 0 new src errors.
+- **Verification caveat:** light-mode colors are exact (literals preserved → no regression by construction). The
+  runtime `chartHex` resolution + dark-flip are build-verified only (no preview); worst case = light fallback =
+  current behavior. Dark values need a tuning pass when dark-chart work starts.
+
+**Next M8 (objective-spec chart subset):** COM-49 (chart text floor ≥11px) → 50 (visible median) → 51 (non-color
+channel). Then COM-62 app-shell (3 PRs), P3 (59/60/61/63/64/65/66), COM-70/69/72. DEFERRED for preview: 48,57,58,47.
+
+## 2026-06-09 — COM-49 (SVG chart text floor) DONE [M8 #8]
+
+**COM-49 (P2, S) — DONE.** Raised sub-legible SVG `<text>` to the ~11px floor + value labels to ink-gray-7.
+- GrowthWaterfall: value notes ($/%) + Current/Ceiling captions 9→11; notes ink-gray-6→7.
+- VestingTimeline: ref labels (cliff/TGE/Bad-Leaver/today) + M0/M48 axis 8→11.
+- Board scatter: axis labels 9→11 + ink-gray-7; **bubble names 9→10** (NOT 11 — bumping worsens the scatter
+  overlap that COM-48 fixes, which Robin deferred to a preview session; 10 is a legibility nudge that won't
+  aggravate it). DilutionPath compact stage labels 8→10 + ink-gray-7 (HTML, non-scaled → kept 10 for fit).
+- Left for the preview pass (visual judgment): right-edge waterfall note re-anchoring (crowding), final
+  scatter/DilutionPath sizing once COM-48 declutter lands. QA: build 0 · engine 22/22 both · 0 new src errors.
+- DilutionPath % labels were already text-xs (12px, ≥ floor). All viewBox SVG text scales with the chart width.
+
+**Next:** COM-50 (visible median on the staircase) → COM-51 (non-color channel). Then COM-62 app-shell, P3.
+
+## 2026-06-09 — COM-50 + COM-51 (chart legibility) DONE [M8 #9, #10]
+
+**COM-50 (P2, S) — DONE.** Staircase 'Median' series was `--chart-tint` (#E7C99B, 1.59:1 vs white = invisible).
+Added a dedicated **`--chart-median`** token (light #6e7a8a muted slate ≈4.4:1 / dark #a6b0c0) in style.css +
+CHART_HEX fallback; pointed Board `stairColors[1]` at it. Kept `--chart-tint` for the DilutionPath large fills
+(out of COM-50's explicit scope — Board.vue:79 only).
+
+**COM-51 (P2, M) — DONE (objective core).** Tier is single-encoded by hue ONLY on the Board scatter (bubble
+position = x/y data, not tier). The other listed marks already carry a positional channel + text legend:
+VestingTimeline (stack order), MixBreakdown (segment order), Compare (consistent per-group series order). So the
+genuine single-encoded gap = the scatter bubbles.
+- Added a **radius-guarded tier-initial** inside each bubble (`v-if sr(d.z)>=9`, white 10px, pointer-events none)
+  as the redundant non-color channel (colour-blind + print). Guard prevents tiny-bubble overflow without a preview.
+- Surfaced the same initial as a bold prefix in the tier legend → explicit bubble↔legend mapping.
+- **Deferred to the preview pass (visual judgment):** tier-ramp luminance re-pick (brand colours app-wide) +
+  VestingTimeline band hatch/dash. Noted these are the visual half of COM-51.
+- QA (both): build 0 · engine 22/22 both · 0 new src errors. Committed together (shared Board.vue regions).
+
+**M8 chart cluster status:** objective-spec subset COMPLETE — 49 (text floor) · 50 (median) · 51 (non-color) ·
+56 (palette tokens). DEFERRED for a preview-equipped session: 48 (scatter declutter) · 57 (breakeven shading) ·
+58 (scannability) · 47 (exit slider). **Next: COM-62 app-shell (L, 3 PRs) OR P3 polish (59/60/61/63/64/65/66) +
+COM-70/69/72.** COM-62 is architecturally significant (left-sidebar shell, migrate 6 views off PageHeader) — needs
+a design check-in before starting per the prompt.
+
+## 2026-06-09 — COM-70 (Undo on deletes + Reset) DONE [M8 #11]
+
+**COM-70 (P2, M) — DONE.** COM-43 follow-up, unblocked by the COM-53 Toast.
+- store.ts: module-level `undoSnap` + `pushUndo()` (clones the whole working board S before the mutation) +
+  `restoreUndo()` (swaps S back, fixSel, persist, "Restored" toast) + `undoToast(what)` →
+  `toast.create({message:'Removed {what}', type:'info', action:{label:'Undo', onClick:restoreUndo}})`.
+- 6 light list deletes now single-click + Undo (no confirm): delAdvisor/delObjective/delTier/delMilestone/
+  delRound/delScenario. pushUndo() goes AFTER each guard (the `length<=1 return` ones) so a blocked delete
+  doesn't capture a snapshot. Dropped the confirmDestroy wrappers in Board.vue (advisor) + Configure.vue (5) and
+  removed their now-unused confirmDestroy imports. App.vue keeps confirmDestroy for reset + delBoard.
+- reset() now fires an Undo toast ALONGSIDE its confirm (snapshot then DEFAULT) — matches the issue title's
+  "Reset via a Toast action"; confirm kept (catastrophic). delBoard stays confirm-only (it mutates the saved-board
+  MAP, outside the working-board snapshot scope — undo would need a separate saved-map snapshot; out of scope).
+- QA: build 0 · engine 22/22 both · 0 new src errors. `toast.create({action})` typechecks. flash() still used by
+  the roadmap IO paths (not orphaned).
+- **Verification caveat:** the Undo round-trip is build-verified + reasoned (snapshot/restore + documented toast
+  action API) but the click-through isn't preview-tested this session → confirm at the gate. Behavior change:
+  light deletes lost their confirm dialog (intended — this IS the COM-43→COM-70 evolution, not a regression).
+
+**M8 status: 11/23 done this+prior sessions** (46,53,54,55 prior; 52,68,56,49,50,51,70 this session). Remaining:
+COM-62 (app-shell, L, 3 PRs — ARCHITECTURAL, needs design check-in + preview) · P3 polish (59,60,61,63,64,65,66) ·
+COM-72 (FormControl — needs dark-panel design call) · COM-69 (vp gate — needs vp, defer to local session) ·
+DEFERRED-for-preview chart visuals (47,48,57,58). **Next decision point: COM-62 — pause for Robin's design call.**
+
+## 2026-06-09 — Session PAUSE (Robin's call): M8 11/23, clean boundary, preview-gated remainder
+
+**Robin's routing call (AskUserQuestion):** PAUSE M8 here and resume the remainder in a session with a WORKING
+PREVIEW. COM-62 nav grouping (flat vs Internal/Share) = DECIDE LATER (when 62 is actually built w/ preview).
+
+**Shipped this session (7 issues, all on `claude/comp-studio-m8-continuation-xqi95l`, draft PR #1 → frosty):**
+COM-52 (glossary tooltips) · COM-68 (Combobox/Avatar/Divider) · COM-56 (CSS-var chart palette + dark; SCEN_COLORS
+out of frozen engine) · COM-49 (chart text ≥11px) · COM-50 (visible median token) · COM-51 (scatter tier-initial
+non-color channel) · COM-70 (Undo on light deletes + Reset toast). Build 0 · engine 22/22 both · every push
+deployed GREEN on the Vercel preview (PR #1 rollup success).
+
+**⚠️ FLOW (unchanged for this run):** work lands on the continuation branch; **NOT yet merged to frosty/prod** —
+Robin batch-merges PR #1 at a milestone gate (his call). Prod (`claude/frosty-pasteur-8cf1db`) is still at the
+pre-session commit. PR #1 = https://github.com/nordnes/comp-studio/pull/1 (draft).
+
+**M8 remaining = 12, all gated on something THIS remote session lacked (no live preview, no vp, or a design call):**
+- **Needs a design call:** COM-62 (L, 3 PRs, left-sidebar app-shell + teleported #app-header; migrates 6 views off
+  PageHeader; absorbs COM-67 nav-grouping + COM-63 board-switcher) · COM-72 (FormControl, dark-panel design) ·
+  COM-63 (⌘K palette + board-switcher, partly in 62).
+- **Needs a live preview (visual judgment):** COM-48 (scatter declutter/gridlines) · 57 (breakeven shading) ·
+  58 (scannability) · 47 (exit slider) · 64 (Proposition band differentiation) · 66 (More-menu tidy, partly) ·
+  60 (chart-mount flash overlay, partly) · 65 (⏳ emoji→glyph — DOM part is a clean lucide swap, but SVG-waterfall
+  notes need a text marker + icon-size eyeball) · 59 (print confidentiality mark — needs print preview).
+- **Needs local vp:** COM-69 (lint-gate green — vp/oxc not installed remotely; would also touch frozen engine's
+  unused vars → ignore-config is the fix, but unverifiable here).
+- **Out of M8 / ops:** COM-71 (Vercel re-auth, human) · COM-36 (merge to main) · M6 COM-34/35 (auth/DB).
+
+**Resume plan (preview session):** verify this session's 7 issues render on the preview; then COM-65 (quick) →
+COM-66/60/64/59 → the chart visual cluster (48/57/58/47) → COM-62 app-shell (3 PRs, get the nav-grouping call
+first) absorbing 67+63 → COM-72 (dark-panel design) → COM-69 (local vp). Engine frozen throughout.
+
+**Subscription:** this session is watching PR #1 for CI failures + review comments until merge/close. All events
+so far were vercel[bot] deploy-status (Building→Ready, all green) — no action. send_later unavailable → no timed
+check-in; relying on webhook events.

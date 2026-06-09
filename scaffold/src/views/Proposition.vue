@@ -3,10 +3,11 @@
 // verbatim (non-voting shares, RTA, deed of adherence, net exercise, CoC at Board discretion, s431/409A
 // by residency, HMRC SAV, 9-yr/90-day backstop, investor consents). propText() = plain-text clipboard.
 import { computed } from "vue";
-import { Button } from "frappe-ui";
+import { Avatar, Button, Divider } from "frappe-ui";
 import { useStudio } from "../store";
 import { fUSD, fPct, fNum, fMult, baseScenKey, roundLabel } from "../engine";
 import AdvisorPicker from "../components/AdvisorPicker.vue";
+import Term from "../components/Term.vue";
 
 const { store, selected, flash } = useStudio();
 const S = computed(() => store.S);
@@ -103,11 +104,14 @@ const residencyLine = computed(() =>
           <div>
             <div class="text-sm text-ink-gray-6">Confidential · Discussion Draft</div>
             <div class="font-display text-2xl mt-2 text-ink-gray-9">Raiku Labs</div>
-            <div class="text-p-sm mt-1 text-ink-gray-6">Advisory Engagement Proposition</div>
+            <div class="text-sm mt-1 text-ink-gray-6">Advisory Engagement Proposition</div>
           </div>
           <div class="text-right">
             <div class="text-sm text-ink-gray-6">Prepared for</div>
-            <div class="font-display text-xl mt-2 text-ink-gray-9">{{ sel.name }}</div>
+            <div class="flex items-center justify-end gap-2 mt-2">
+              <Avatar :label="sel.name" size="sm" />
+              <span class="font-display text-xl text-ink-gray-9">{{ sel.name }}</span>
+            </div>
             <div class="text-p-xs mt-1 max-w-xs text-ink-gray-6">{{ sel.sector }}</div>
           </div>
         </div>
@@ -201,7 +205,7 @@ const residencyLine = computed(() =>
 
         <div>
           <div class="text-sm text-ink-gray-6 mb-2">
-            Net value across outcomes · net of strike & dilution
+            Net value across outcomes · <Term k="netOfStrike">net of strike</Term> & dilution
           </div>
           <div class="grid grid-cols-3 gap-px bg-surface-gray-2 rounded overflow-hidden">
             <div
@@ -226,7 +230,8 @@ const residencyLine = computed(() =>
           </div>
         </div>
 
-        <div class="text-p-xs text-ink-gray-6 leading-relaxed border-t border-outline-gray-1 pt-4">
+        <Divider class="my-4" />
+        <div class="text-p-xs text-ink-gray-6 leading-relaxed">
           Ackermann Systems Engineering Ltd (t/a Raiku), Cayman Islands. Options over ordinary
           non-voting shares (ESOP), strike at the {{ roundLabel(S.plan, c.grantRound) }} price; net
           exercise permitted. Tokens via Restricted Token Award. Equity vests

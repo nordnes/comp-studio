@@ -17,6 +17,8 @@ export interface Advisor {
   years: number; splitOptions: number; annualValue: number; hasCash: boolean; cashAnnual: number;
   startDate: string; upliftStartMonth: number; grantRound: string; taxResidency: 'UK' | 'US' | 'Other';
   notes: string; performance: Performance;
+  // PD2 (COM-82): optional per-advisor projection state — additive only, reconcile-normalised, no money path.
+  caseOverride?: string; targetExit?: number;
 }
 export interface Plan {
   fdPreESOP: number; tokenSupply: number;
@@ -147,7 +149,10 @@ export function reconcile(l: any): State {
     advisors: Array.isArray(l.advisors) ? l.advisors.map((a: any) => {
       const pf: Performance = { capitalEquity: 0, capitalToken: 0, achieved: [], targeted: [], ...(a.performance || {}) };
       if (a.performance && a.performance.capitalIntroduced != null && a.performance.capitalEquity == null && a.performance.capitalToken == null) pf.capitalEquity = a.performance.capitalIntroduced;
-      return { mode: 'tier', tier: 0, years: 4, splitOptions: 0.65, annualValue: 75000, hasCash: false, cashAnnual: 0, startDate: todayISO(), upliftStartMonth: 6, grantRound: 'bridge', taxResidency: 'Other', notes: '', ...a, performance: pf };
+      const adv = { name: 'Advisor', sector: SECTORS[0], mode: 'tier', tier: 0, years: 4, splitOptions: 0.65, annualValue: 75000, hasCash: false, cashAnnual: 0, startDate: todayISO(), upliftStartMonth: 6, grantRound: 'bridge', taxResidency: 'Other', notes: '', ...a, performance: pf };
+      if (adv.caseOverride != null && !scn[adv.caseOverride]) delete adv.caseOverride;
+      if (adv.targetExit != null && !ok(adv.targetExit)) delete adv.targetExit;
+      return adv;
     }) : d.advisors,
   };
 }

@@ -67,6 +67,9 @@ interface Store {
   last: string;
   showMgr: boolean;
   storageOk: boolean;
+  // COM-82: transient pin-to-compare selection (COM-86 reads it) — UI-only, NEVER enters
+  // State/persist/#s= hash; scrubbed against the live roster in fixSel().
+  pinnedIds: string[];
 }
 
 function bootstrap(): Store {
@@ -110,7 +113,15 @@ function bootstrap(): Store {
   if (!S) S = DEFAULT();
   if (!last) last = S.name;
   if (!saved[last]) saved[last] = S;
-  return { S, selId: S.advisors[0]?.id || "", saved, last, showMgr: false, storageOk };
+  return {
+    S,
+    selId: S.advisors[0]?.id || "",
+    saved,
+    last,
+    showMgr: false,
+    storageOk,
+    pinnedIds: [],
+  };
 }
 
 const store = reactive<Store>(bootstrap());
@@ -144,6 +155,7 @@ function persist() {
 function fixSel() {
   if (!store.S.advisors.find((a) => a.id === store.selId))
     store.selId = store.S.advisors[0]?.id || "";
+  store.pinnedIds = store.pinnedIds.filter((id) => store.S.advisors.some((a) => a.id === id));
 }
 
 // COM-70: lightweight Undo for reversible list deletes. Snapshot the whole working board before the
@@ -213,6 +225,7 @@ export function useStudio() {
     pushUndo();
     store.S = DEFAULT();
     store.selId = store.S.advisors[0]?.id || "";
+    fixSel();
     persist();
     toast.create({
       message: "Reset to baseline",
@@ -364,8 +377,29 @@ export function useStudio() {
     delete store.S.plan.scenarios[key];
     if (store.S.plan.baseScenario === key)
       store.S.plan.baseScenario = Object.keys(store.S.plan.scenarios)[0];
+    // COM-82 cascade parity with delMilestone/delRound: a deleted case must not leave a
+    // dangling per-advisor override (reconcile also drops orphans on import/paste).
+    store.S.advisors.forEach((a) => {
+      if (a.caseOverride === key) delete a.caseOverride;
+    });
     persist();
     undoToast("scenario");
+  }
+
+  // ---- per-advisor projection (PD2 / COM-82): case override + target exit ----
+  function setAdvisorCase(id: string, key: string | null) {
+    const a = store.S.advisors.find((x) => x.id === id);
+    if (!a) return;
+    if (key && store.S.plan.scenarios[key]) a.caseOverride = key;
+    else delete a.caseOverride;
+    persist();
+  }
+  function setAdvisorTargetExit(id: string, v: number | null) {
+    const a = store.S.advisors.find((x) => x.id === id);
+    if (!a) return;
+    if (v != null && isFinite(v) && v > 0) a.targetExit = v;
+    else delete a.targetExit;
+    persist();
   }
 
   // ---- roadmap CSV (SET_ROADMAP merge) ----
@@ -567,6 +601,8 @@ export function useStudio() {
     delRound,
     addScenario,
     delScenario,
+    setAdvisorCase,
+    setAdvisorTargetExit,
     setRoadmap,
     importRoadmap,
     downloadRoadmap,

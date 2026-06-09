@@ -1385,3 +1385,32 @@ state (not `State`/localStorage); view-side arithmetic that mirrors an engine fo
 issues quote pre-COM-76 line numbers — locate by symbol, not line.
 
 **NEXT (new session): PD2, build order 82 → 81 → 85 → 83 → 84 → 86.** Start with `ULTRACODE_M9_PD2.md` §8 kickoff.
+
+## 2026-06-09 — ★ SPEC v2 ADOPTED: gap analysis → Linear re-baselined (M10–M12, COM-139–170) + docs patched
+
+**Robin delivered `COMP_STUDIO_SPEC_v2.md`** (the comprehensive product spec: provenance Part 0, philosophy,
+O1–O16, domain model, the Comp Trajectory system Part 5, scenario sets Part 6, personas, surfaces incl. NEW
+Trajectory + Governance, flows F15–F23, engine-v2 mechanics Part 10, governance Part 11, benchmarks Part 12,
+build mapping Part 14, appendices A–F with every canonical number/legal clause/session decision). Instruction:
+analyse what's missing, sync Linear, adjust the run-prompt, then build. Done this session:
+
+- **Gap analysis (spec vs the 138-issue backlog):** v1+M7–M9 cover the six original surfaces well; the spec's
+  NEW scope had zero Linear coverage — the trajectory/growth system (Δ2), scenario sets + walk-forwards (Δ3),
+  dollar-denominated value bands (Δ1), dual vesting curves (Δ5), exercise windows/backstop (Δ6), governance/
+  consent state (Δ7), constitutional defaults (Δ8), roster seed (Δ9), lifecycle pipeline (Δ11), proposition
+  versioning (Δ12), leaver engine, capital rollup (O15), benchmarks/guardrails (Part 12), audit log. Plus ONE
+  live bug the spec flags: **the Proposition still ships the v8 CoC-acceleration line that Plan v9 DELETED (Δ4)**.
+- **Linear:** created milestones **M10 · Engine v2** (target 30 Sep; unfreeze ONLY behind a reconciliation
+  gate), **M11 · Trajectory & lifecycle** (30 Nov), **M12 · Governance & compliance** (31 Oct; presentation-first
+  may start before M10). Created **32 issues COM-139…170** (each ≤450 LOC, spec-tagged, blockedBy-wired):
+  COM-139 = the Δ4 legal fix (M9, High); M10 = 140 (RFC gate) · 142–154; M11 = 155–165; M12 = 141 · 166–170.
+  Updated existing: **COM-87 → moved to M10, marked SUPERSEDED by 140/143 (still do-not-build)**; COM-33/34
+  (spec re-confirms public-URL = top risk; auth = portal + audit-log prerequisite); COM-92 (build pluggable →
+  COM-148 extends to scenario sets). Posted a project status update.
+- **Docs (this commit):** `COMP_STUDIO_SPEC_v2.md` committed to the repo root (NOT in scaffold/ — no build
+  impact). `ULTRACODE_M9_PD2.md` patched: spec-adoption header, the COM-139 sanctioned legal-corpus exception,
+  the After-M9 roadmap. `CLAUDE.md` patched: spec in "What this is" + "Where things live", the Δ4 corpus
+  exception, the open-decisions section now points at spec Part 17 (the M0-era five were resolved 2026-06-08).
+- **PD2 itself is unchanged by the spec** (it is presentation/state over the frozen engine; Part 14 keeps the
+  engine frozen through M9). **NEXT = COM-82 → 81 → 85 → 83 → 84 → 86**, same session, single linear stack
+  off this docs commit, STOP at the merge gate.

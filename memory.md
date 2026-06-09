@@ -1690,3 +1690,20 @@ Protection — URL still public), Charlie's COM-139 wording sign-off, COM-71 (Ve
   palette click routes (→/proposition); all six routes resolve; zero console errors. vp 0 errors ·
   engine 22/22 both · build 0.
 - Gates COM-104 (Sidebar adopt) + COM-105 (palette rebuild), which consume nav.ts.
+
+## 2026-06-10 — COM-135 (mobile drawer inert + focus trap) DONE [M9 finish-loop W1 #2]
+
+**COM-135 (P2 HIGH, 39/3 LOC, App.vue only) — DONE + MERGED.**
+- `isMobile` matchMedia ref at `(max-width: 1023.98px)` (Tailwind lg boundary), listeners cleaned on
+  unmount. `<aside :inert="isMobile && !navOpen">` kills the phantom tab-walk; the content column takes
+  `:inert="isMobile && navOpen"` while open — inert IS the focus trap (no manual trap loop). Window
+  keydown Esc closes; toggle gets `aria-expanded`.
+- **Gotcha learned: Vue watch fires pre-flush, so `.focus()` on an element inside a still-`inert`
+  subtree is a silent no-op — wrap BOTH focus moves in `nextTick`.** (First Esc test failed exactly
+  there; fixed + re-verified.) Also: the issue's `@keydown.esc.window` is Alpine syntax — Vue has no
+  `.window` modifier; use a window listener.
+- Verified at 375px on :4173: closed → drawer's 11 focusables unreachable (hamburger → page content
+  directly); open → focus lands on Search, content inert, scrim up, aria-expanded true; Esc → closed,
+  focus back on the hamburger. Desktop 1193px: nothing inert, sidebar tabbable. Zero console errors.
+  vp 0 errors · engine 22/22 both · build 0.
+- Known minor: Esc with palette AND drawer open closes both (palette teleports to body) — flagged in PR.

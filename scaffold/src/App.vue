@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch } from "vue";
+import { ref, computed, watch, nextTick, onMounted, onUnmounted } from "vue";
 import { useRoute } from "vue-router";
 import {
   FrappeUIProvider,
@@ -28,6 +28,38 @@ watch(
   () => route.path,
   () => (navOpen.value = false), // close the mobile drawer after navigating
 );
+
+// COM-135: hidden UI must be truly hidden — below lg the closed drawer is `inert` (out of the tab
+// order and a11y tree, not just translated off-canvas), and while it's open the content column is
+// inert instead, which doubles as the focus trap. Esc closes; focus follows the drawer state.
+const isMobile = ref(false);
+let drawerMq: MediaQueryList | undefined;
+const onDrawerMq = () => (isMobile.value = !!drawerMq?.matches);
+const asideRef = ref<HTMLElement | null>(null);
+const navToggleRef = ref<HTMLButtonElement | null>(null);
+function onDrawerKeydown(e: KeyboardEvent) {
+  if (e.key === "Escape" && navOpen.value) navOpen.value = false;
+}
+watch(navOpen, (open) => {
+  if (!isMobile.value) return;
+  // nextTick both ways: the target subtree is still `inert` until the DOM flushes, and
+  // focus() inside an inert subtree is a silent no-op.
+  if (open)
+    nextTick(() =>
+      asideRef.value?.querySelector<HTMLElement>("button, a, select, [tabindex]")?.focus(),
+    );
+  else nextTick(() => navToggleRef.value?.focus());
+});
+onMounted(() => {
+  drawerMq = window.matchMedia("(max-width: 1023.98px)"); // below Tailwind lg
+  onDrawerMq();
+  drawerMq.addEventListener("change", onDrawerMq);
+  window.addEventListener("keydown", onDrawerKeydown);
+});
+onUnmounted(() => {
+  drawerMq?.removeEventListener("change", onDrawerMq);
+  window.removeEventListener("keydown", onDrawerKeydown);
+});
 
 const {
   store,
@@ -160,8 +192,10 @@ const openCmdK = () => window.dispatchEvent(new Event("open-command-palette"));
 
       <!-- COM-62: left sidebar — persistent on lg, off-canvas drawer on mobile -->
       <aside
+        ref="asideRef"
         class="no-print fixed lg:sticky top-0 z-40 h-screen w-60 shrink-0 flex flex-col border-r border-outline-gray-1 bg-surface-white transition-transform duration-200"
         :class="navOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+        :inert="isMobile && !navOpen"
       >
         <div class="px-4 py-4 flex items-center gap-2 border-b border-outline-gray-1">
           <span class="font-display text-lg leading-none text-ink-gray-9">Raiku Labs</span>
@@ -252,14 +286,16 @@ const openCmdK = () => window.dispatchEvent(new Event("open-command-palette"));
         </div>
       </aside>
 
-      <!-- content column -->
-      <div class="flex-1 min-w-0 flex flex-col">
+      <!-- content column — COM-135: inert behind the open mobile drawer (the focus trap) -->
+      <div class="flex-1 min-w-0 flex flex-col" :inert="isMobile && navOpen">
         <!-- COM-62: thin app-header — mobile menu toggle + breadcrumbs + teleported page action -->
         <header class="no-print sticky top-0 z-20 bg-surface-white border-b border-outline-gray-1">
           <div class="flex items-center gap-3 h-12 px-3 sm:px-5">
             <button
+              ref="navToggleRef"
               class="lg:hidden inline-flex items-center justify-center size-8 -ml-1 rounded hover:bg-surface-gray-2 text-ink-gray-7"
               aria-label="Open navigation"
+              :aria-expanded="navOpen"
               @click="navOpen = !navOpen"
             >
               <span class="block w-5 space-y-1" aria-hidden="true">

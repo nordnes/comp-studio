@@ -111,6 +111,20 @@ svg g[tabindex]:focus {
   .print-area {
     box-shadow: none !important;
     border: none !important;
+    /* COM-134: reserve clearance for the fixed .print-running band (~7mm) so the final page's
+       content — the dense legal corpus especially — never runs under it */
+    padding-bottom: 10mm;
+  }
+  /* COM-134: nothing fragments across the fold — rows, range bars, framed charts; table headers
+     repeat on every printed page */
+  .print-area,
+  table,
+  tr,
+  .ff-row {
+    break-inside: avoid;
+  }
+  thead {
+    display: table-header-group;
   }
   main {
     padding: 0 !important;

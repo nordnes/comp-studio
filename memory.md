@@ -1039,3 +1039,22 @@ Engagement. Removed the now-unused Select import.
   light + mostly NumIn; field-by-field FormControl across Configure is the incremental "fuller adoption").
 
 **Next: COM-63 (⌘K command palette) — the LAST M8 issue. Then GATE M8.**
+
+## 2026-06-09 — COM-63 (⌘K command palette) DONE — ★ M8 COMPLETE
+
+**COM-63 (P3, M) — DONE.** Board-switcher half shipped with COM-62 (sidebar Saved). Remainder = the ⌘K palette:
+new `CommandPalette.vue` (mounted globally in App.vue) — Cmd/Ctrl+K, or the sidebar "Search ⌘K" trigger via an
+`open-command-palette` window event (mobile/no-keyboard) — opens a searchable grouped list: Go to (routes) ·
+Advisors (select+open) · Boards (loadBoard) · Actions (copy / export JSON / export CSV / import / reset-with-
+confirm). Substring filter; ↑↓ nav / ↵ run / esc close; Teleport-to-body overlay (z-60); own hidden file input
+for Import. Pure UI over the store.
+- Preview-verified: opens, full list, filter ("reset"→Reset only), run Compare → navigates + closes, no console
+  errors. build 0 · engine 22/22 · committed d3e9e6a; Linear Done.
+
+**★ M8 COMPLETE — all 23 issues Done.** This session shipped **14**: COM-65, 60, 64, 59, 48, 57, 58, 47, 66, 69,
+62 (+67 absorbed), 72, 63. All on `claude/relaxed-faraday-a9f377` / PR #2 (draft → frosty). Engine 22/22
+throughout; every issue preview-verified on the live `comp-studio` :4173.
+
+**GATE (next):** confirm build 0 + both engine copies 22/22 + `vp check` exit 0 → mark PR #2 ready + request
+Copilot review → **Robin reviews the Vercel preview, THEN the merge to frosty deploys prod (NOT auto-merged —
+outward-facing, Robin's explicit call).**

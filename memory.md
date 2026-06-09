@@ -1089,3 +1089,23 @@ labels / columns / IA / legal corpus unchanged. 2 files, +25/−21 (Board.vue, C
 COM-109 (`color-scheme`) · COM-132 (glossary fix) · COM-126 (eyebrow constant). Gated calls still pending Robin:
 COM-104/105/96 (frappe-ui Sidebar/CommandPalette/ListView adopt), COM-121 (typography), COM-110 (dead dark
 branch), COM-87 (engine RFC — recommend defer).
+
+## 2026-06-09 — COM-98 (freeze Compare identity column) DONE [M9 #2]
+
+**COM-98 (P2 High, S ~15 LOC) — DONE.** The Compare matrix is `min-width:760px` in an `overflow-auto` box; M8
+made the header sticky vertically but the Advisor column slid off under horizontal scroll, anonymizing every
+row. Fix: `sticky left-0 z-[2] bg-surface-white border-r border-outline-gray-1` on the first `<th>`/`<td>` of
+each row; the corner header gets **`z-[3]`** (above the sticky thead's `z-[1]` + the frozen column's `z-[2]`);
+the Board-total first cell uses `bg-surface-amber-2` to match its amber row. 1 file, +15/−3 (Compare.vue). No
+engine, no data layer. **Stacked on COM-97** (branched off its tip; right-align intact).
+- **Verified:** engine **22/22** both · `npm run build` exit **0** · `vp check` clean for Compare.vue (the
+  pre-existing 26-file format drift untouched; vp caches lint incrementally so the 2nd-run log shows only the
+  format phase — no new findings reference my file). Preview :4173 at **560px** (forces overflow): scroll test
+  proved it — Advisor header+cell held at `left:13` before & after `scrollLeft`, numeric cell moved `193→-49`
+  under them; corner `position:sticky/left:0/z-3`, body cell `sticky/z-2`. Screenshot of the scrolled-right
+  state shows the frozen identity column (+ amber Board cell). No console errors. Reverted `components.d.ts`.
+- Branch `robinandre/com-98-…` off the COM-97 branch; PR **stacked onto COM-97** (`Fixes COM-98`). **STOPPED at
+  the merge gate — Robin merges COM-97 then COM-98 in order.**
+
+**Next first-wins:** COM-123 (full-precision $M bars, ~5 LOC) · COM-109 (`color-scheme`) · COM-132 (glossary) ·
+COM-126 (eyebrow constant).

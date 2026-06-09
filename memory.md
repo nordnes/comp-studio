@@ -1125,3 +1125,23 @@ the geometry.
 
 **Next first-wins:** COM-109 (`color-scheme` on :root) · COM-132 (glossary "awaiting gate" reword) · COM-126
 (confidentiality eyebrow constant).
+
+## 2026-06-09 — COM-109 (color-scheme on :root) DONE [M9 #4 — last High first-win]
+
+**COM-109 (P2 High, S ~6 LOC) — DONE.** `color-scheme` was declared nowhere, so a dark-OS UA painted dark
+calendar popups / scrollbars / autofill on the light Espresso surface. Fix: `color-scheme: light` on `:root`
++ `color-scheme: dark` on the existing dormant `[data-theme="dark"]` block (style.css) + `<meta
+name="color-scheme" content="light">` in index.html (pre-CSS paint). 2 files, +6 (style.css, index.html). The
+dark line rides the ALREADY-EXISTING dormant block, so it does NOT pre-empt the gated **COM-110** keep/delete
+call. **Stacked on COM-123.**
+- **Verified:** engine **22/22** both · build exit **0** · `vp check` clean for the 2 files. Preview :4173
+  /configure under **emulated dark OS** (`prefers-color-scheme: dark` true): computed `color-scheme` resolves
+  **light** on :root AND body, meta = light → native chrome stays light. No console errors. Reverted
+  `components.d.ts`.
+- Branch `robinandre/com-109-…` off COM-123; PR **stacked** (`Fixes COM-109`). **STOPPED at the merge gate.**
+
+**★ All 4 HIGH-priority M9 first-wins shipped this session (COM-97, 98, 123, 109) as the stack #3→#4→#5→#6.**
+Remaining first-wins (Low/Med, un-gated): COM-132 (glossary reword, constants.ts) · COM-126 (confidentiality
+eyebrow constant; constants.ts + Proposition.vue + App.vue). Then the GATED cluster needs Robin's calls:
+COM-104/105/96 (frappe-ui Sidebar/CommandPalette/ListView adopt-vs-custom), COM-121 (typography),
+COM-110 (dead dark branch keep/delete), COM-87 (engine RFC — recommend defer).

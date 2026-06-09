@@ -44,6 +44,7 @@ const CHART_HEX: Record<string, string> = {
   "--chart-tint": "#E7C99B",
   "--chart-cash": "#87807A",
   "--chart-warning": "#8C3A2B",
+  "--chart-median": "#6E7A8A",
 };
 
 // Resolve a --chart-* token to a concrete hex for libraries that take color values (frappe-charts).

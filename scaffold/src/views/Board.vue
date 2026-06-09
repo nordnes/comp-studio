@@ -59,8 +59,8 @@ const stairOpts = {
   barOptions: { spaceRatio: 0.4 },
   tooltipOptions: { formatTooltipY: (v: number) => fUSD(v * 1e6) },
 };
-// Raiku series = capital token; market-median series = tint. Resolved to hex for frappe-charts.
-const stairColors = computed(() => [chartHex("--chart-capital"), chartHex("--chart-tint")]);
+// Raiku series = capital; market-median series = a mid-weight slate (COM-50: tint was 1.59:1, invisible).
+const stairColors = computed(() => [chartHex("--chart-capital"), chartHex("--chart-median")]);
 
 // --- potential scatter (custom SVG) ---
 const PAD = { l: 46, r: 16, t: 16, b: 28 };
@@ -219,6 +219,20 @@ const baseTotalSum = computed(() =>
               :r="sr(d.z)"
               :style="{ fill: TIER_COLOR[d.tier] || 'var(--chart-capital)', fillOpacity: 0.7 }"
             />
+            <!-- COM-51: tier initial as a redundant (non-color) channel for colour-blind + print;
+                 rendered only where the bubble is large enough to hold the glyph. -->
+            <text
+              v-if="sr(d.z) >= 9"
+              :x="sx(d.x)"
+              :y="sy(d.y) + 3.5"
+              text-anchor="middle"
+              font-size="10"
+              font-weight="600"
+              class="fill-white"
+              style="pointer-events: none"
+            >
+              {{ (S.tiers[d.tier]?.name || "")[0] }}
+            </text>
             <text
               :x="sx(d.x)"
               :y="sy(d.y) - sr(d.z) - 3"
@@ -235,7 +249,8 @@ const baseTotalSum = computed(() =>
             ><span
               class="inline-block size-2 rounded-full"
               :style="{ background: TIER_COLOR[i] }"
-            />{{ t.name }}</span
+            /><span class="font-semibold text-ink-gray-8">{{ (t.name || "")[0] }}</span>
+            {{ t.name }}</span
           >
           <span class="ml-auto">top-left = most headroom, modest today</span>
         </div>

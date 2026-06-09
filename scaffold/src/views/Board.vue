@@ -25,6 +25,7 @@ import StageBadge from "../components/StageBadge.vue";
 import FootballField from "../components/FootballField.vue";
 import FrappeChart from "../components/FrappeChart.vue";
 import Term from "../components/Term.vue";
+import EmptyState from "../components/EmptyState.vue";
 
 const { store, board, select, addAdvisor, delAdvisor, setPath } = useStudio();
 const { openEditor } = useEditor();
@@ -200,7 +201,24 @@ const caseTotalSum = computed(() =>
 
 <template>
   <!-- COM-89: dense tables opt OUT of the reading column — Board keeps the wide canvas -->
-  <div class="mx-auto w-full max-w-7xl px-3 sm:px-5 space-y-8">
+  <!-- COM-133: teach instead of rendering empty axes + a zeroed total -->
+  <EmptyState
+    v-if="!board.rows.length"
+    icon="lucide-users"
+    title="No advisors on the board yet."
+    body="Add your first advisor to model a package — a uniform base that grows with performance, net of strike and dilution against the company plan."
+  >
+    <Button
+      variant="solid"
+      theme="gray"
+      icon-left="lucide-plus"
+      label="Add advisor"
+      class="mt-2"
+      @click="addAdvisor"
+    />
+  </EmptyState>
+
+  <div v-else class="mx-auto w-full max-w-7xl px-3 sm:px-5 space-y-8">
     <PageHeader
       title="The board, and what it costs us."
       desc="Uniform base × tier, grown by gated performance. Equity is net of strike and scenario dilution; tokens are valued at the scenario's TGE FDV."

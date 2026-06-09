@@ -32,8 +32,9 @@ import FootballField from "../components/FootballField.vue";
 import MixBreakdown from "../components/MixBreakdown.vue";
 import DilutionPath from "../components/DilutionPath.vue";
 import Term from "../components/Term.vue";
+import EmptyState from "../components/EmptyState.vue";
 
-const { store, selected, setAdvisorCase } = useStudio();
+const { store, selected, setAdvisorCase, addAdvisor } = useStudio();
 const { openEditor } = useEditor();
 const router = useRouter();
 const S = computed(() => store.S);
@@ -72,12 +73,22 @@ function toProp() {
 </script>
 
 <template>
-  <div
+  <!-- COM-133: the shared teaching empty state replaces the bare one-liner -->
+  <EmptyState
     v-if="!sel || !c"
-    class="mx-auto w-full max-w-reading px-3 sm:px-5 text-center py-24 text-ink-gray-6"
+    icon="lucide-user"
+    title="No advisor selected."
+    body="Add your first advisor to start a package, or pick one from the Board roster — the package builds on the uniform base, net of strike and dilution."
   >
-    No advisor selected. Add one on the Board.
-  </div>
+    <Button
+      variant="solid"
+      theme="gray"
+      icon-left="lucide-plus"
+      label="Add advisor"
+      class="mt-2"
+      @click="addAdvisor"
+    />
+  </EmptyState>
   <div v-else class="mx-auto w-full max-w-reading px-3 sm:px-5 space-y-8">
     <div class="flex justify-between items-center flex-wrap gap-3 no-print">
       <PageHeader title="Base, then performance." />

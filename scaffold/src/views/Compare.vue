@@ -9,8 +9,9 @@ import { fUSD, fPct, scenKeys, baseScenKey } from "../engine";
 import { SCEN_TOKENS, chartHex } from "../constants";
 import PageHeader from "../components/PageHeader.vue";
 import FrappeChart from "../components/FrappeChart.vue";
+import EmptyState from "../components/EmptyState.vue";
 
-const { store, board, select, flash } = useStudio();
+const { store, board, select, flash, addAdvisor } = useStudio();
 const router = useRouter();
 const S = computed(() => store.S);
 const cols = computed(() => scenKeys(S.value.plan));
@@ -100,8 +101,25 @@ const scenColors = computed(() =>
 </script>
 
 <template>
+  <!-- COM-133: teach instead of a sticky header over a zeroed total -->
+  <EmptyState
+    v-if="!board.rows.length"
+    icon="lucide-layers"
+    title="Nothing to compare yet."
+    body="Add advisors to the board and their packages line up here across scenarios — every figure net of strike and dilution."
+  >
+    <Button
+      variant="solid"
+      theme="gray"
+      icon-left="lucide-plus"
+      label="Add advisor"
+      class="mt-2"
+      @click="addAdvisor"
+    />
+  </EmptyState>
+
   <!-- COM-89: dense tables opt OUT of the reading column — Compare keeps the wide canvas -->
-  <div class="mx-auto w-full max-w-7xl px-3 sm:px-5 space-y-8">
+  <div v-else class="mx-auto w-full max-w-7xl px-3 sm:px-5 space-y-8">
     <PageHeader
       title="The board, side by side."
       desc="Net of strike & scenario dilution. Click a row to open a package."

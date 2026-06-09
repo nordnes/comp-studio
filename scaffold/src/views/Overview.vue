@@ -18,6 +18,7 @@ import {
 import PageHeader from "../components/PageHeader.vue";
 import PoolAllocation from "../components/PoolAllocation.vue";
 import Term from "../components/Term.vue";
+import EmptyState from "../components/EmptyState.vue";
 
 const { store, board, select, delAdvisor, setPath } = useStudio();
 const { openEditor } = useEditor();
@@ -95,18 +96,11 @@ const hasBudget = computed(() => flags.value.some((f) => f.t === "budget"));
 </script>
 
 <template>
-  <div
+  <EmptyState
     v-if="!board.rows.length"
-    class="mx-auto w-full max-w-reading px-3 sm:px-5 flex flex-col items-center justify-center gap-3 py-24 text-center"
+    title="No advisors yet."
+    body="Add your first advisor to model a package — a uniform base that grows with performance, net of strike and dilution against the company plan."
   >
-    <div class="rounded-full bg-surface-gray-2 p-3 text-ink-gray-6">
-      <span class="lucide-inbox size-6" aria-hidden="true" />
-    </div>
-    <p class="text-lg text-ink-gray-8">No advisors yet.</p>
-    <p class="text-p-sm text-ink-gray-6 max-w-md">
-      Add your first advisor to model a package — a uniform base that grows with performance, net of
-      strike and dilution against the company plan.
-    </p>
     <Button
       variant="solid"
       theme="gray"
@@ -115,7 +109,7 @@ const hasBudget = computed(() => flags.value.some((f) => f.t === "budget"));
       class="mt-2"
       route="/board"
     />
-  </div>
+  </EmptyState>
 
   <div v-else class="mx-auto w-full max-w-reading px-3 sm:px-5 space-y-8">
     <PageHeader

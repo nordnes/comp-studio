@@ -97,7 +97,7 @@ const hasBudget = computed(() => flags.value.some((f) => f.t === "budget"));
 <template>
   <div
     v-if="!board.rows.length"
-    class="flex flex-col items-center justify-center gap-3 py-24 text-center"
+    class="mx-auto w-full max-w-reading px-3 sm:px-5 flex flex-col items-center justify-center gap-3 py-24 text-center"
   >
     <div class="rounded-full bg-surface-gray-2 p-3 text-ink-gray-6">
       <span class="lucide-inbox size-6" aria-hidden="true" />
@@ -117,7 +117,7 @@ const hasBudget = computed(() => flags.value.some((f) => f.t === "budget"));
     />
   </div>
 
-  <div v-else class="space-y-8">
+  <div v-else class="mx-auto w-full max-w-reading px-3 sm:px-5 space-y-8">
     <PageHeader
       title="The advisory board, at a glance."
       desc="A live snapshot against the company plan — net of strike and dilution. Open Configure to edit the baseline; click an advisor to model their package."

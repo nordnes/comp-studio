@@ -319,13 +319,15 @@ const openCmdK = () => window.dispatchEvent(new Event("open-command-palette"));
           </div>
         </header>
 
-        <main class="flex-1 w-full max-w-7xl mx-auto px-3 sm:px-5 py-6 sm:py-8">
+        <!-- COM-89: main is full-bleed; each view sets its own column (max-w-reading for prose
+             views, max-w-7xl for the dense Board/Compare tables) so one width stops serving none. -->
+        <main class="flex-1 w-full py-6 sm:py-8">
           <router-view />
         </main>
 
         <footer class="no-print bg-surface-white border-t border-outline-gray-1">
           <div
-            class="w-full max-w-7xl mx-auto px-3 sm:px-5 py-8 text-p-xs text-ink-gray-6 leading-relaxed space-y-2"
+            class="w-full max-w-reading mx-auto px-3 sm:px-5 py-8 text-p-xs text-ink-gray-6 leading-relaxed space-y-2"
           >
             <div class="text-sm text-ink-gray-7">
               Notes · all equity values <Term k="netOfStrike">net of strike</Term>

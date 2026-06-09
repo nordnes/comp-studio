@@ -1566,3 +1566,20 @@ therefore hold on frosty. Prod redeploys from frosty. Flipped **COM-82/81/85/83/
 clean-layout & IA cluster (COM-88 de-box · COM-89 ~940px reading column · COM-90 Board roster-first ·
 COM-95 Configure two-column) under the /frontend-skill + /design-system lenses, one PR per issue, merged
 when green; /design-handoff artifact at the end.
+
+## 2026-06-09 — COM-89 (reading column; dense tables opt out) DONE [M9 design #1]
+
+**COM-89 (P3 Med, 27 net LOC) — DONE + MERGED.** First clean-layout issue (the canvas the rest paint on).
+- **Design-critique first** (full app on :4173, all six routes): confirmed all four cluster issues against the
+  live build — Board's inverted reading order, ~19 equal-weight cards, 120ch prose lines, Configure's flat
+  8-section scroll. /frontend-skill + /design-system lenses loaded for the implementation.
+- **tailwind.config.js:** new `maxWidth: { reading: "60rem" }` token (960px — tokenised per the design-system
+  lens instead of scattering `max-w-[960px]` arbitraries).
+- **App.vue:** `<main>` full-bleed (was max-w-7xl); footer inner → `max-w-reading`. **Views own their column:**
+  Overview/Advisors/Configure/Proposition roots (incl. empty states) = `mx-auto w-full max-w-reading px-3
+  sm:px-5`; Board/Compare self-apply `max-w-7xl` (dense tables keep the wide canvas).
+- **Verified at a 1680px viewport** (resize + getBoundingClientRect): main 1440 (full-bleed minus sidebar);
+  Overview/Advisors/Configure/Proposition/footer = **960** ✓; Board/Compare = **1280** ✓. Overview screenshot:
+  centred column, KPI band + roster + right rail intact, prose at readable measure. vp 0 errors on my files ·
+  engine 22/22 · build 0. **Preview gotcha:** one `preview_screenshot` returned `UnknownVizError` — transient;
+  immediate retry succeeded.

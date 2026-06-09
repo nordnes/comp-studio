@@ -345,9 +345,9 @@ const baseTotalSum = computed(() =>
               <tr class="border-b border-outline-gray-2 text-left text-ink-gray-6">
                 <th class="px-4 py-3 font-normal">Advisor</th>
                 <th class="px-4 py-3 font-normal">Tier</th>
-                <th class="px-4 py-3 font-normal">Base eq</th>
-                <th class="px-4 py-3 font-normal">Earned</th>
-                <th class="px-4 py-3 font-normal">Net base-case</th>
+                <th class="px-4 py-3 font-normal text-right">Base eq</th>
+                <th class="px-4 py-3 font-normal text-right">Earned</th>
+                <th class="px-4 py-3 font-normal text-right">Net base-case</th>
                 <th class="px-2 py-3 no-print" />
               </tr>
             </thead>
@@ -382,9 +382,11 @@ const baseTotalSum = computed(() =>
                     size="sm"
                   />
                 </td>
-                <td class="px-4 py-3 tabular-nums text-ink-gray-8">{{ fPct(c.baseEq, 2) }}</td>
+                <td class="px-4 py-3 tabular-nums text-right text-ink-gray-8">
+                  {{ fPct(c.baseEq, 2) }}
+                </td>
                 <td
-                  class="px-4 py-3 tabular-nums"
+                  class="px-4 py-3 tabular-nums text-right"
                   :class="c.earnedUplift > 0 ? 'text-ink-green-3' : 'text-ink-gray-6'"
                 >
                   +{{ (c.earnedUplift * 100).toFixed(0) }}%<span
@@ -397,7 +399,7 @@ const baseTotalSum = computed(() =>
                     ></span
                   >
                 </td>
-                <td class="px-4 py-3 tabular-nums font-medium text-ink-gray-9">
+                <td class="px-4 py-3 tabular-nums text-right font-medium text-ink-gray-9">
                   {{ fUSD(c.baseCaseTotal) }}
                 </td>
                 <td class="px-2 py-3 no-print">
@@ -415,11 +417,11 @@ const baseTotalSum = computed(() =>
                   Board · {{ board.rows.length }}
                 </td>
                 <td />
-                <td class="px-4 py-3 tabular-nums font-medium text-ink-gray-9">
+                <td class="px-4 py-3 tabular-nums text-right font-medium text-ink-gray-9">
                   {{ fPct(baseEqSum, 2) }}
                 </td>
                 <td />
-                <td class="px-4 py-3 tabular-nums font-medium text-ink-gray-9">
+                <td class="px-4 py-3 tabular-nums text-right font-medium text-ink-gray-9">
                   {{ fUSD(baseTotalSum) }}
                 </td>
                 <td class="no-print" />

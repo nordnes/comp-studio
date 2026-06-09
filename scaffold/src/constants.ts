@@ -79,6 +79,6 @@ export const GLOSSARY = {
   },
   awaitingGate: {
     term: "awaiting gate",
-    text: "Earned but awaiting its milestone gate — it doesn't count toward vested value until the gate is reached.",
+    text: "Earned, but its milestone gate hasn't been reached yet — so the uplift doesn't count toward the package's current value until the company hits that milestone.",
   },
 } as const;

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-// Configure (Section VI) — the editing surface. Dark Espresso panel via [data-theme="dark"] (semantic
-// tokens flip automatically). Every structural list (rounds/scenarios/tiers/milestones/objectives) edits
+// Configure (Section VI) — the editing surface, a standard light surface (COM-72; the dark branch was
+// deleted in COM-110). Every structural list (rounds/scenarios/tiers/milestones/objectives) edits
 // through the store's reducer-parity actions incl. delete-cascades. Numbers use the shared NumIn editor.
 import { ref } from "vue";
 import { Button, Select, Checkbox } from "frappe-ui";

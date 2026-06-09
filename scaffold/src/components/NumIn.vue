@@ -1,7 +1,7 @@
 <script setup lang="ts">
-// Inline click-to-edit numeric editor (the reference's NumIn + DField, unified). Theme-aware via semantic
-// tokens — renders light in normal views and dark inside a [data-theme="dark"] panel (Configure). Formats:
-// usd / pct / pps / mult / num. Clamps to min/max. Enter commits, Escape cancels.
+// Inline click-to-edit numeric editor (the reference's NumIn + DField, unified). Semantic tokens
+// throughout; the app is light-only (COM-72 made Configure light, COM-110 deleted the dark branch).
+// Formats: usd / pct / pps / mult / num. Clamps to min/max. Enter commits, Escape cancels.
 import { ref, nextTick } from "vue";
 import { fUSD, fPct, fMult, fNum, ok, clamp } from "../engine";
 

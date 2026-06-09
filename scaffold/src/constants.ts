@@ -2,10 +2,10 @@
 // presentation data, NOT engine logic (the engine stays frozen).
 //
 // COM-56: the chart / category / scenario / tier palette is ONE source of truth — semantic CSS custom
-// properties declared in style.css (:root + [data-theme=dark]). Custom-SVG and DOM fills reference
-// var(--chart-*) directly so they flip with the theme; frappe-charts takes concrete color values, so
-// resolve tokens to hex with chartHex() (light-literal fallback below). SCEN_COLORS was moved OUT of
-// the frozen engine.ts to here (engine logic unchanged).
+// properties declared in style.css (:root; light-only since COM-110 deleted the dead dark branch).
+// Custom-SVG and DOM fills reference var(--chart-*) directly; frappe-charts takes concrete color
+// values, so resolve tokens to hex with chartHex() (light-literal fallback below). SCEN_COLORS was
+// moved OUT of the frozen engine.ts to here (engine logic unchanged).
 const v = (token: string) => `var(${token})`;
 
 // COM-126: the confidentiality eyebrow — ONE canonical casing, reused on screen, in the clipboard, and in

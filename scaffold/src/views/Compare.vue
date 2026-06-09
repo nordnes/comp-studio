@@ -65,7 +65,11 @@ const scenColors = computed(() =>
         <!-- COM-58: sticky header keeps the column labels readable on a tall/wide scroll -->
         <thead class="sticky top-0 z-[1] bg-surface-white">
           <tr class="border-b border-outline-gray-2 text-left text-ink-gray-6">
-            <th class="px-4 py-3 font-normal">Advisor</th>
+            <th
+              class="px-4 py-3 font-normal sticky left-0 z-[3] bg-surface-white border-r border-outline-gray-1"
+            >
+              Advisor
+            </th>
             <th class="px-4 py-3 font-normal">Tier</th>
             <th class="px-4 py-3 font-normal text-right">Base eq</th>
             <th class="px-4 py-3 font-normal text-right">Earned</th>
@@ -88,7 +92,11 @@ const scenColors = computed(() =>
             @keydown.enter="open(a.id)"
             @keydown.space.prevent="open(a.id)"
           >
-            <td class="px-4 py-3 font-medium text-ink-gray-9">{{ a.name }}</td>
+            <td
+              class="px-4 py-3 font-medium text-ink-gray-9 sticky left-0 z-[2] bg-surface-white border-r border-outline-gray-1"
+            >
+              {{ a.name }}
+            </td>
             <td class="px-4 py-3">
               <Badge
                 :label="a.mode === 'value' ? '$value' : S.tiers[a.tier]?.name || '—'"
@@ -136,7 +144,11 @@ const scenColors = computed(() =>
             </td>
           </tr>
           <tr class="bg-surface-amber-2">
-            <td class="px-4 py-3 font-medium text-ink-gray-9">Board</td>
+            <td
+              class="px-4 py-3 font-medium text-ink-gray-9 sticky left-0 z-[2] bg-surface-amber-2 border-r border-outline-gray-1"
+            >
+              Board
+            </td>
             <td />
             <td class="px-4 py-3 tabular-nums text-right font-medium text-ink-gray-9">
               {{ fPct(baseEqSum, 2) }}

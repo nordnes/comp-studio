@@ -515,3 +515,18 @@ implementable under the locked constraints.
 - Option B (separate activeScenario, partial): base reference stays fixed; only exposed values switch; floor/ceil
   stay base (mild inconsistency on those specific cells).
 SURFACED to Robin (recommend A — the only clean, fully-consistent, rule-respecting option). Awaiting his call.
+
+## 2026-06-09 — COM-46 (global scenario toggle) DONE [M8 #1]
+
+**COM-46 (P1, top product lever) — DONE via Option A (Robin's call: reuse baseScenario).** Persistent global
+"Case" selector in App.vue header (frappe-ui Select, styled like Saved) bound to a writable computed
+`activeScenario` (get baseScenKey(plan); set setPath(['plan','baseScenario'],k)). Every view already reads
+baseScenKey → ALL views switch consistently; ZERO view rewiring, zero engine change, persisted with the board.
+Hidden when <2 scenarios.
+- frappe-ui Select = a reka-ui button-dropdown (NOT native <select>); synthetic .click() won't open it. Verified
+  the switch via the identical setPath(baseScenario) action: Board FDV $600M(5×) → $200M(2×), header trigger
+  "Base" → "Conservative". Header reflects the active case.
+- QA: build 0 · engine 22/22 · no console errors · screenshot shows "Case [Base ▾]" in the header.
+
+**Next M8:** frappe-ui adoption cluster — COM-53 (Toasts) → COM-54 (Alert) → COM-55 (TabButtons) → COM-52
+(Tooltips) → COM-68. Then chart legibility, COM-62 app-shell (3 PRs), P3 polish.

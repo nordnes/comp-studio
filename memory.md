@@ -721,3 +721,27 @@ genuine single-encoded gap = the scatter bubbles.
 58 (scannability) · 47 (exit slider). **Next: COM-62 app-shell (L, 3 PRs) OR P3 polish (59/60/61/63/64/65/66) +
 COM-70/69/72.** COM-62 is architecturally significant (left-sidebar shell, migrate 6 views off PageHeader) — needs
 a design check-in before starting per the prompt.
+
+## 2026-06-09 — COM-70 (Undo on deletes + Reset) DONE [M8 #11]
+
+**COM-70 (P2, M) — DONE.** COM-43 follow-up, unblocked by the COM-53 Toast.
+- store.ts: module-level `undoSnap` + `pushUndo()` (clones the whole working board S before the mutation) +
+  `restoreUndo()` (swaps S back, fixSel, persist, "Restored" toast) + `undoToast(what)` →
+  `toast.create({message:'Removed {what}', type:'info', action:{label:'Undo', onClick:restoreUndo}})`.
+- 6 light list deletes now single-click + Undo (no confirm): delAdvisor/delObjective/delTier/delMilestone/
+  delRound/delScenario. pushUndo() goes AFTER each guard (the `length<=1 return` ones) so a blocked delete
+  doesn't capture a snapshot. Dropped the confirmDestroy wrappers in Board.vue (advisor) + Configure.vue (5) and
+  removed their now-unused confirmDestroy imports. App.vue keeps confirmDestroy for reset + delBoard.
+- reset() now fires an Undo toast ALONGSIDE its confirm (snapshot then DEFAULT) — matches the issue title's
+  "Reset via a Toast action"; confirm kept (catastrophic). delBoard stays confirm-only (it mutates the saved-board
+  MAP, outside the working-board snapshot scope — undo would need a separate saved-map snapshot; out of scope).
+- QA: build 0 · engine 22/22 both · 0 new src errors. `toast.create({action})` typechecks. flash() still used by
+  the roadmap IO paths (not orphaned).
+- **Verification caveat:** the Undo round-trip is build-verified + reasoned (snapshot/restore + documented toast
+  action API) but the click-through isn't preview-tested this session → confirm at the gate. Behavior change:
+  light deletes lost their confirm dialog (intended — this IS the COM-43→COM-70 evolution, not a regression).
+
+**M8 status: 11/23 done this+prior sessions** (46,53,54,55 prior; 52,68,56,49,50,51,70 this session). Remaining:
+COM-62 (app-shell, L, 3 PRs — ARCHITECTURAL, needs design check-in + preview) · P3 polish (59,60,61,63,64,65,66) ·
+COM-72 (FormControl — needs dark-panel design call) · COM-69 (vp gate — needs vp, defer to local session) ·
+DEFERRED-for-preview chart visuals (47,48,57,58). **Next decision point: COM-62 — pause for Robin's design call.**

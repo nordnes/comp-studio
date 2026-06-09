@@ -24,9 +24,14 @@
    (registered as text-ink-amber-strong in tailwind.config.js) is a theme-aware darker amber for amber
    LABELS/eyebrows; bright ink-amber-3 stays for the hero italic + graphical fills/bars/icons. */
 :root {
+  /* COM-109: declare the surface so UA-rendered native controls (Configure date input, range
+     sliders, Board/Compare overflow scrollbars, autofill) track the light Espresso surface — a
+     dark-OS UA otherwise paints dark chrome on the light doc. */
+  color-scheme: light;
   --ink-amber-strong: #8a4b08;
 } /* 6.3:1 on amber-2, 6.8:1 on white */
 [data-theme="dark"] {
+  color-scheme: dark; /* COM-109: paired with the dormant dark token branch (charts are light-only in v1) */
   --ink-amber-strong: #e79913;
 } /* = ink-amber-3 dark, so the Configure panel is visually unchanged */
 /* COM-56: chart / category / scenario / tier palette as ONE source of truth (semantic tokens).

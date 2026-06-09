@@ -1365,3 +1365,23 @@ exception) and **retiring COM-74's inline indicator** (revert preserved via the 
 projection: COM-82 state spine → 81 → 85 → 83 → 84 → 86; **COM-87 engine override stays DEFERRED**). Reusable
 gotchas logged this run: FormControl has no `:error`; `structuredClone` throws on reactive proxies (JSON-clone);
 the preview console buffer is cumulative across reloads (stale errors persist — check the bundle hash / count).
+
+## 2026-06-09 — ★ PD1 MERGED TO PROD + ULTRACODE_M9_PD2 authored
+
+**Robin lifted the merge gate ("merge all open PRs").** Merged the 5-issue PD1 stack into `frosty` (prod) in stacked
+order, retargeting each child PR's base to frosty then `gh pr merge --merge`: #9 COM-73 (`380428d`) → #10 COM-77
+(`6337f3a`) → #11 COM-74 (`6d7f4b5`) → #12 COM-75 (`0db7f12`) → #13 COM-76 (`1d53353`). **frosty HEAD = `1d53353`.**
+Post-merge verified: `git diff origin/frosty <com-76 tip> -- scaffold/src` **empty** (byte-identical), both engine tests
+**22/22**, `npm run build` exit **0** — prod green. **0 open PRs.** Flipped all 5 Linear issues **Done** manually
+(`save_issue state:"Done"` — the `Fixes` keyword doesn't auto-flip here). **M9 = 11 Done / 55 Backlog.**
+
+**Authored `ULTRACODE_M9_PD2.md`** (committed to frosty; docs-only, not in `scaffold/` so no Vercel-build impact) via a
+7-agent Workflow that distilled COM-82/81/85/83/84/86/87 from Linear in parallel. PD2 findings baked into the prompt:
+COM-82 is the hard-prerequisite **state spine** (81 needs `caseOverride`, 84 needs `targetExit`, 86 needs `pinnedIds`);
+COM-82 is the ONLY PD2 issue that edits `engine.ts` — **additive optional `Advisor` types + reconcile defaults, scaffold
+copy ONLY** (root `engine/engine.ts` is read-denied/frozen; both tests still 22/22); `pinnedIds` is TRANSIENT Store
+state (not `State`/localStorage); view-side arithmetic that mirrors an engine formula over exported fields is allowed
+(COM-85 scatter ceiling); **COM-87 stays DEFERRED** (maximal engine risk — surface for sign-off, don't build). PD2
+issues quote pre-COM-76 line numbers — locate by symbol, not line.
+
+**NEXT (new session): PD2, build order 82 → 81 → 85 → 83 → 84 → 86.** Start with `ULTRACODE_M9_PD2.md` §8 kickoff.

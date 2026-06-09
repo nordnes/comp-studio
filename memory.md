@@ -1414,3 +1414,29 @@ analyse what's missing, sync Linear, adjust the run-prompt, then build. Done thi
 - **PD2 itself is unchanged by the spec** (it is presentation/state over the frozen engine; Part 14 keeps the
   engine frozen through M9). **NEXT = COM-82 → 81 → 85 → 83 → 84 → 86**, same session, single linear stack
   off this docs commit, STOP at the merge gate.
+
+## 2026-06-09 — COM-82 (PD2 state spine: caseOverride / targetExit / pinnedIds) DONE [M9 PD2 #1]
+
+**COM-82 (P2 High, 43 net LOC) — DONE.** Stacked on the spec-v2 docs commit (PR #15). The sanctioned additive
+engine touch per ULTRACODE_M9_PD2 §2 rule 1 — scaffold copy ONLY, money path untouched.
+- **engine.ts:** `caseOverride?: string` + `targetExit?: number` on the `Advisor` interface; reconcile's advisor
+  mapper drops an **orphan caseOverride** (key gone from the reconciled `scn`) and a **non-numeric targetExit**
+  (`ok()` guard). Also added `name`/`sector` defaults to the same mapper line — **a pre-existing trust-boundary
+  gap found during verification:** a hand-crafted/imported board whose advisor lacked `sector` crashed EVERY view
+  (`undefined.split`) into a blank app; reconcile's contract is "normalises every advisor with defaults", so the
+  fix belongs to this issue. (Found by seeding a minimal 2-field advisor via localStorage on :4173.)
+- **store.ts:** transient `pinnedIds: string[]` on the reactive `Store` interface (NOT `State` — never persisted,
+  never in `#s=`); scrubbed against the live roster in `fixSel()` (covers delAdvisor/loadState/loadBoard/undo;
+  `reset()` now calls fixSel too). `delScenario` cascades the per-advisor `caseOverride` (parity with
+  delMilestone/delRound/delTier). New `persist()`-wrapped reducers `setAdvisorCase(id, key|null)` (validates the
+  key exists) + `setAdvisorTargetExit(id, v)` (finite > 0 else delete), both returned from `useStudio`.
+- **Verified:** BOTH engine suites **22/22** (root via dangerouslyDisableSandbox) · an **8/8 node-level reconcile
+  check** (esbuild-transpiled scaffold engine: orphan dropped / valid kept / legacy advisors gain NO keys /
+  defaults intact) · `vp check` 0 errors (11 frozen-engine warnings = the expected set) · build exit 0 ·
+  **:4173**: seeded minimal board renders (was blank pre-fix), default board restored + renders ($23.0M anchor,
+  screenshot), **no errors citing the live bundle** (`index-zs_lQg8P.js`; the buffered `.split` errors cite the
+  deleted pre-fix bundle — cumulative-console gotcha as documented).
+- **Gotchas re-confirmed:** zsh heredoc mangles `!!` even in non-interactive mode (write verify scripts with the
+  Write tool); zsh noclobber `>` onto an existing file exits 1 ("file exists") — rm -f first.
+- Branch `robinandre/com-82-…` stacked on `claude/spec-v2-adoption` (PR #15); PR `Fixes COM-82`. **STOPPED at
+  the merge gate — Robin merges #15 → #16 in order.** Next: COM-81 (per-advisor case override).

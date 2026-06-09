@@ -3,7 +3,7 @@
 // grouped bar, Robin's call) and potential scatter (custom SVG — frappe-charts has no scatter in 1.6.2).
 import { computed } from "vue";
 import { useRouter } from "vue-router";
-import { Button, Badge } from "frappe-ui";
+import { Avatar, Button, Badge } from "frappe-ui";
 import { useStudio } from "../store";
 import {
   fUSD,
@@ -268,8 +268,15 @@ const baseTotalSum = computed(() =>
                 @keydown.space.prevent="open(a.id)"
               >
                 <td class="px-4 py-3">
-                  <div class="font-medium text-ink-gray-9">{{ a.name }}</div>
-                  <div class="text-xs text-ink-gray-6">{{ a.sector.split("—")[0].trim() }}</div>
+                  <div class="flex items-center gap-2.5">
+                    <Avatar :label="a.name" size="sm" />
+                    <div>
+                      <div class="font-medium text-ink-gray-9">{{ a.name }}</div>
+                      <div class="text-xs text-ink-gray-6">
+                        {{ a.sector.split("—")[0].trim() }}
+                      </div>
+                    </div>
+                  </div>
                 </td>
                 <td class="px-4 py-3">
                   <Badge

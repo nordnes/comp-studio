@@ -4,7 +4,7 @@
 // (vesting, scenario range, mix, dilution, instruments). All money from the engine via the store.
 import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
-import { Button, Badge, Select, Checkbox, TabButtons } from "frappe-ui";
+import { Button, Badge, Select, Checkbox, TabButtons, Divider } from "frappe-ui";
 import { useStudio } from "../store";
 import {
   fUSD,
@@ -253,8 +253,8 @@ function toProp() {
               />
             </div>
           </template>
-          <label
-            class="flex items-center gap-2 text-sm pt-2 border-t border-outline-gray-1 text-ink-gray-7"
+          <Divider />
+          <label class="flex items-center gap-2 text-sm text-ink-gray-7"
             ><Checkbox
               :model-value="sel.hasCash"
               @update:model-value="(v) => setField('hasCash', v)"

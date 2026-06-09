@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useRouter } from "vue-router";
-import { Alert, Button, Badge } from "frappe-ui";
+import { Alert, Avatar, Button, Badge } from "frappe-ui";
 import { useStudio } from "../store";
 import { fUSD, fPct, fNum, scenKeys, baseScenKey, walkScenario, tgeFdvFor, BENCH } from "../engine";
 import PageHeader from "../components/PageHeader.vue";
@@ -122,7 +122,10 @@ const hasBudget = computed(() => flags.value.some((f) => f.t === "budget"));
             class="text-left bg-surface-white rounded border border-outline-gray-1 p-4 hover:bg-surface-gray-1 hover:border-outline-gray-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--ink-gray-6)]"
           >
             <div class="flex items-center justify-between gap-2">
-              <div class="font-medium text-ink-gray-9">{{ a.name }}</div>
+              <div class="flex items-center gap-2 min-w-0">
+                <Avatar :label="a.name" size="sm" />
+                <span class="font-medium text-ink-gray-9 truncate">{{ a.name }}</span>
+              </div>
               <Badge
                 :label="a.mode === 'value' ? '$value' : S.tiers[a.tier]?.name || '—'"
                 theme="orange"

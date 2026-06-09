@@ -3,6 +3,7 @@
 import { computed } from "vue";
 import { useStudio } from "../store";
 import { walkScenario, tgeFdvFor, baseScenKey, roundLabel, fUSD, fPct, fMult } from "../engine";
+import Term from "./Term.vue";
 const { store } = useStudio();
 const plan = computed(() => store.S.plan);
 const w = computed(() => walkScenario(plan.value, baseScenKey(plan.value)));
@@ -19,7 +20,7 @@ const fdv = computed(() => tgeFdvFor(plan.value, baseScenKey(plan.value), w.valu
     >
     <span class="text-ink-gray-6">·</span>
     <span class="tabular-nums text-ink-gray-7"
-      >TGE FDV {{ fUSD(fdv) }}
+      ><Term k="tgeFdv">TGE FDV</Term> {{ fUSD(fdv) }}
       <span class="text-ink-gray-6"
         >({{ fMult(plan.scenarios[baseScenKey(plan)].tgeMult) }} ×
         {{ roundLabel(plan, plan.tgeAnchor) }})</span

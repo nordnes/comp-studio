@@ -4,6 +4,7 @@ import { computed } from "vue";
 import { useStudio } from "../store";
 import { roundLabel, fUSD, BENCH, safeDiv } from "../engine";
 import FrappeChart from "./FrappeChart.vue";
+import Term from "./Term.vue";
 const props = defineProps<{ c: any }>();
 const { store } = useStudio();
 const plan = computed(() => store.S.plan);
@@ -55,7 +56,7 @@ const lineOpts = {
 <template>
   <div class="bg-surface-white rounded border border-outline-gray-1 p-5">
     <div class="text-sm text-ink-gray-6 mb-3">
-      Upside · what an outcome is worth (net of strike)
+      Upside · what an outcome is worth (<Term k="netOfStrike">net of strike</Term>)
     </div>
     <div class="grid lg:grid-cols-2 gap-4">
       <div>
@@ -77,7 +78,7 @@ const lineOpts = {
       </div>
       <div>
         <div class="text-xs text-ink-amber-strong mb-2">
-          Tokens · value vs TGE FDV <span class="text-ink-gray-6">· $M</span>
+          Tokens · value vs <Term k="tgeFdv">TGE FDV</Term> <span class="text-ink-gray-6">· $M</span>
         </div>
         <FrappeChart
           type="line"

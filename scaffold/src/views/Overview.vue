@@ -6,6 +6,7 @@ import { useStudio } from "../store";
 import { fUSD, fPct, fNum, scenKeys, baseScenKey, walkScenario, tgeFdvFor, BENCH } from "../engine";
 import PageHeader from "../components/PageHeader.vue";
 import PoolAllocation from "../components/PoolAllocation.vue";
+import Term from "../components/Term.vue";
 
 const { store, board, select } = useStudio();
 const router = useRouter();
@@ -148,7 +149,7 @@ const hasBudget = computed(() => flags.value.some((f) => f.t === "budget"));
           <span v-for="(s, i) in w.steps" :key="s.id"
             >{{ i ? " → " : "" }}{{ s.label }} {{ fUSD(s.post) }}</span
           >
-          · TGE FDV {{ fUSD(fdv) }}.
+          · <Term k="tgeFdv">TGE FDV</Term> {{ fUSD(fdv) }}.
         </p>
       </div>
 

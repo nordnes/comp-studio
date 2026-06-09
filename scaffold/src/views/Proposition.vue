@@ -7,6 +7,7 @@ import { Button } from "frappe-ui";
 import { useStudio } from "../store";
 import { fUSD, fPct, fNum, fMult, baseScenKey, roundLabel } from "../engine";
 import AdvisorPicker from "../components/AdvisorPicker.vue";
+import Term from "../components/Term.vue";
 
 const { store, selected, flash } = useStudio();
 const S = computed(() => store.S);
@@ -201,7 +202,7 @@ const residencyLine = computed(() =>
 
         <div>
           <div class="text-sm text-ink-gray-6 mb-2">
-            Net value across outcomes · net of strike & dilution
+            Net value across outcomes · <Term k="netOfStrike">net of strike</Term> & dilution
           </div>
           <div class="grid grid-cols-3 gap-px bg-surface-gray-2 rounded overflow-hidden">
             <div

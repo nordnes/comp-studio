@@ -23,6 +23,7 @@ import ContextStrip from "../components/ContextStrip.vue";
 import StageBadge from "../components/StageBadge.vue";
 import FootballField from "../components/FootballField.vue";
 import FrappeChart from "../components/FrappeChart.vue";
+import Term from "../components/Term.vue";
 
 const { store, board, select, addAdvisor, delAdvisor } = useStudio();
 const router = useRouter();
@@ -138,7 +139,7 @@ const baseTotalSum = computed(() =>
             <span class="text-ink-gray-6">· post-money $M</span>
           </div>
           <div class="text-xs tabular-nums text-ink-gray-6">
-            TGE FDV {{ fUSD(stairFdv) }} ·
+            <Term k="tgeFdv">TGE FDV</Term> {{ fUSD(stairFdv) }} ·
             {{ fMult(S.plan.scenarios[baseScenKey(S.plan)].tgeMult) }} ×
             {{ roundLabel(S.plan, S.plan.tgeAnchor) }}
           </div>
@@ -163,7 +164,8 @@ const baseTotalSum = computed(() =>
         aria-label="Advisor potential: current net value (x) vs headroom to ceiling (y); bubble size is capital introduced."
       >
         <div class="text-sm text-ink-gray-6 mb-3">
-          Untapped potential · current net (x) vs headroom (y) · bubble = capital introduced
+          Untapped potential · current net (x) vs <Term k="headroom">headroom</Term> (y) · bubble =
+          capital introduced
         </div>
         <svg
           :viewBox="`0 0 ${VW} ${VH}`"
@@ -286,7 +288,7 @@ const baseTotalSum = computed(() =>
                     v-if="c.pendingUplift > 0"
                     class="text-ink-amber-strong"
                   >
-                    +{{ (c.pendingUplift * 100).toFixed(0) }}⏳</span
+                    +{{ (c.pendingUplift * 100).toFixed(0) }}<Term k="awaitingGate">⏳</Term></span
                   >
                 </td>
                 <td class="px-4 py-3 tabular-nums font-medium text-ink-gray-9">

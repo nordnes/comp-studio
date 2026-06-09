@@ -1651,3 +1651,29 @@ cluster (COM-104 Sidebar · COM-105 CommandPalette · COM-96 RosterTable · COM-
 dark branch — §6 decisions all pre-made) — or **COM-139** (the Δ4 legal fix; needs Charlie's wording
 sign-off) — or start **M12 COM-141** (Governance checklist, presentation-first). COM-33 (Deployment
 Protection) remains the open human action.
+
+## 2026-06-09 — ★ ULTRACODE_M9_FINISH authored (the next-session goal loop) + Linear current
+
+**Robin asked for (1) Linear fully updated and (2) an ultracode goal-loop prompt for Fable 5 to tackle a
+big batch next session.** Done:
+- **Linear:** second project status update of the day posted (PD2 + clean-layout merges itemised; M9 17%→32%
+  on the milestone bar; next-batch pointers; COM-33/71 human actions). All 10 of today's built issues sit
+  Done; COM-139/141 framing confirmed in their issues.
+- **`ULTRACODE_M9_FINISH.md`** (repo root, committed to frosty) — the goal-loop run-prompt for **Fable 5**:
+  drive M9 from 21/66 → 66/66 plus COM-139 (build-and-HOLD for Charlie) and COM-141 (first M12 surface).
+  Authored from a **6-agent verified sweep** (5 Linear distillation lanes over the 45 open issues + 1 repo
+  ground-truth lane at the frosty tip — ~505k subagent tokens). Key contents: §0 verified repo ground truth
+  (App.vue 431-line map; the TWO dead dark blocks at style.css :33-36/:54-65; COM-78/79/80's targets now
+  live in PackageEditor.vue; index.html ships IBM Plex Sans that NOTHING uses — fold into COM-121); §2 the
+  merge-on-green goal loop (per-issue DoD → merge → Done-flip → memory; frosty re-verify at wave
+  boundaries; hold-list = COM-139/legal/engine); §3 a 7-wave dependency-verified order for all 45 issues
+  (foundations 93/135/116/118/110 first; 110 obsoletes COM-124 → cancel it); §4 pre-made decisions + the
+  prompt-set defaults (COM-92 = sidebar placement; COM-101 root = board name; COM-125 = hide); §5 the full
+  verified gotcha register (boolean-prop cast, zsh `!` heredocs, reka Select driving, UnknownVizError
+  retry, stale-line rule). CLAUDE.md's live-prompt pointer updated to it.
+- **Loop discipline encoded:** issues branch independently off frosty (merge-on-green kills the stack need)
+  EXCEPT marked same-region pairs (137→138, 102→101, 119→120, 78→79→80) which stack; COM-96's Compare
+  adoption may split; COM-141 may split seed-vs-UI.
+
+**NEXT SESSION: paste ULTRACODE_M9_FINISH.md §6 kickoff.** Open human items unchanged: COM-33 (Deployment
+Protection — URL still public), Charlie's COM-139 wording sign-off, COM-71 (Vercel MCP scope).

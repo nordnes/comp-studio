@@ -23,7 +23,7 @@ import PageHeader from "../components/PageHeader.vue";
 import ContextStrip from "../components/ContextStrip.vue";
 import StageBadge from "../components/StageBadge.vue";
 import AdvisorPicker from "../components/AdvisorPicker.vue";
-import PotentialStrip from "../components/PotentialStrip.vue";
+import ScenarioTable from "../components/ScenarioTable.vue";
 import GrowthWaterfall from "../components/GrowthWaterfall.vue";
 import UpsideCurve from "../components/UpsideCurve.vue";
 import ExitSlider from "../components/ExitSlider.vue";
@@ -172,7 +172,18 @@ function toProp() {
 
     <!-- full-width decision projection -->
     <div class="space-y-6 print-area">
-      <PotentialStrip :c="c" />
+      <!-- COM-83: one across-cases tabulation (replaces the PotentialStrip restatements) -->
+      <ScenarioTable :c="c" />
+      <!-- COM-83: FootballField promoted out of the detail expander — the range belongs beside the table -->
+      <div class="bg-surface-white rounded border border-outline-gray-1 p-5">
+        <div class="text-sm text-ink-gray-6 mb-3">Scenario range · net value (low → high)</div>
+        <FootballField :lo="ff.lo" :base="ff.base" :hi="ff.hi" :max="ff.hi" />
+        <div class="flex justify-between text-xs mt-2 tabular-nums text-ink-gray-6">
+          <span>Low {{ fUSD(ff.lo) }}</span
+          ><span class="text-ink-amber-strong">Base {{ fUSD(ff.base) }}</span
+          ><span>High {{ fUSD(ff.hi) }}</span>
+        </div>
+      </div>
       <GrowthWaterfall :c="c" :sel="sel" />
       <ExitSlider :c="c" @exit="(v) => (exitMarker = v)" />
       <UpsideCurve :c="c" :marker-exit="exitMarker ?? undefined" />
@@ -180,22 +191,11 @@ function toProp() {
         class="w-full no-print"
         variant="subtle"
         theme="gray"
-        :label="
-          showDetail ? '− Hide detail' : '+ Show detail · vesting, scenario range, mix, instruments'
-        "
+        :label="showDetail ? '− Hide detail' : '+ Show detail · vesting, mix, instruments'"
         @click="showDetail = !showDetail"
       />
       <template v-if="showDetail">
         <VestingTimeline :c="c" :sel="sel" />
-        <div class="bg-surface-white rounded border border-outline-gray-1 p-5">
-          <div class="text-sm text-ink-gray-6 mb-3">Scenario range · net value (low → high)</div>
-          <FootballField :lo="ff.lo" :base="ff.base" :hi="ff.hi" :max="ff.hi" />
-          <div class="flex justify-between text-xs mt-2 tabular-nums text-ink-gray-6">
-            <span>Low {{ fUSD(ff.lo) }}</span
-            ><span class="text-ink-amber-strong">Base {{ fUSD(ff.base) }}</span
-            ><span>High {{ fUSD(ff.hi) }}</span>
-          </div>
-        </div>
         <MixBreakdown :c="c" />
         <div class="grid sm:grid-cols-2 gap-6">
           <DilutionPath :c="c" />

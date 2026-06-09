@@ -873,3 +873,23 @@ band below (amber base-scenario cell) UNCHANGED per "keep the repetition elsewhe
 
 **Next M8:** COM-59 (print mark) → chart cluster (48/57/58/47) → COM-66 (More-menu) → COM-62 (app-shell, design
 call) → COM-63 → COM-72 (design call) → COM-69. Then M8 gate.
+
+## 2026-06-09 — COM-59 (per-recipient print confidentiality mark) DONE [M8 #15]
+
+**COM-59 (P2, S) — DONE.** App-level print-only running footer (App.vue + style.css `.print-running`):
+`display:none` on screen; `position:fixed; bottom:0` inside `@media print` → repeats on every printed page.
+Left = "Raiku Labs — Confidential · Discussion draft, not a binding offer" (const); right = route-aware via a
+`printRecipient` computed — "Prepared for {selected.a.name} · {date}" on /proposition & /advisors, "Internal
+board pack · {date}" on /board, else "Internal · {date}". Date = `toLocaleDateString('en-GB',{day,month:short,
+year})`. White band + 0.5pt top hairline masks overlap with page-content bottom. No diagonal watermark (per
+issue). Verbatim legal corpus untouched; added `selected` to App.vue's useStudio destructure.
+- Verified by forcing the print rule visible on screen (temp injected `<style>`, screenshotted, removed):
+  correct left/right, "Prepared for Iraj Ispahani · 9 Jun 2026", display:none on screen, no console errors.
+- **Caveat:** the preview can't open the real print dialog, so multi-page repetition + exact margin placement
+  are spec-faithful (position:fixed-per-page is documented browser behaviour) but UNVERIFIED in an actual
+  print/PDF — Robin to confirm at the gate; trivial to tune (bottom offset / @page margin) if needed.
+- QA: build 0 · scaffold engine 22/22 · committed c202caa, pushed; Linear Done.
+
+**Progress: M8 15/23 (4 this session: COM-65, 60, 64, 59).** Next: chart cluster — COM-48 (scatter declutter)
+→ COM-57 (breakeven shading) → COM-58 (scannability) → COM-47 (exit slider) → COM-66 (More-menu) → COM-62
+(app-shell, design call) → COM-63 → COM-72 (design call) → COM-69. Then M8 gate.

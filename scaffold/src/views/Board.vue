@@ -5,6 +5,7 @@ import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
 import { Avatar, Button, Badge, Dropdown } from "frappe-ui";
 import { useStudio } from "../store";
+import { useEditor } from "../composables/useEditor";
 import {
   fUSD,
   fPct,
@@ -25,6 +26,7 @@ import FrappeChart from "../components/FrappeChart.vue";
 import Term from "../components/Term.vue";
 
 const { store, board, select, addAdvisor, delAdvisor, setPath } = useStudio();
+const { openEditor } = useEditor();
 const router = useRouter();
 const S = computed(() => store.S);
 
@@ -49,7 +51,14 @@ function rowMenu(a: any) {
         },
       })),
     },
-    { label: "Open package", icon: "lucide-arrow-right", onClick: () => open(a.id) },
+    {
+      label: "Edit package",
+      icon: "lucide-pen",
+      onClick: () => {
+        select(a.id);
+        openEditor();
+      },
+    },
     { label: "Remove", icon: "lucide-trash-2", theme: "red", onClick: () => delAdvisor(a.id) },
   ];
 }

@@ -1,30 +1,18 @@
 <script setup lang="ts">
-// Advisors (Section II) — the hero / live-edit view. Left: profile, base/tier, performance controls.
-// Right (print-area): potential strip, growth waterfall, upside curve, and a detail expander
-// (vesting, scenario range, mix, dilution, instruments). All money from the engine via the store.
-import { ref, reactive, computed, watch } from "vue";
+// Advisors (Section II) — the per-advisor read view. A compact read-only package summary + the
+// full-width decision projection (potential strip, growth waterfall, upside curve, detail expander).
+// Editing lives in the global "Edit package" Dialog (COM-76, components/PackageEditor.vue). All money
+// from the engine via the store.
+import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
-import { Button, Badge, Checkbox, TabButtons, Divider, FormControl, FormLabel } from "frappe-ui";
+import { Button } from "frappe-ui";
 import { useStudio } from "../store";
-import {
-  fUSD,
-  fPct,
-  fNum,
-  fTok,
-  fMult,
-  roundList,
-  roundLabel,
-  SECTORS,
-  stageReached,
-  todayISO,
-} from "../engine";
-import { CAT } from "../constants";
+import { useEditor } from "../composables/useEditor";
+import { fUSD, fPct, fNum, fTok, fMult, roundLabel, todayISO } from "../engine";
 import PageHeader from "../components/PageHeader.vue";
 import ContextStrip from "../components/ContextStrip.vue";
 import StageBadge from "../components/StageBadge.vue";
 import AdvisorPicker from "../components/AdvisorPicker.vue";
-import NumIn from "../components/NumIn.vue";
-import EquityBenchmark from "../components/EquityBenchmark.vue";
 import PotentialStrip from "../components/PotentialStrip.vue";
 import GrowthWaterfall from "../components/GrowthWaterfall.vue";
 import UpsideCurve from "../components/UpsideCurve.vue";
@@ -35,97 +23,19 @@ import MixBreakdown from "../components/MixBreakdown.vue";
 import DilutionPath from "../components/DilutionPath.vue";
 import Term from "../components/Term.vue";
 
-const { store, selected, setPath, flash } = useStudio();
+const { store, selected } = useStudio();
+const { openEditor } = useEditor();
 const router = useRouter();
 const S = computed(() => store.S);
 const sel = computed(() => selected.value?.a as any);
 const c = computed(() => selected.value?.c as any);
-const i = computed(() => S.value.advisors.findIndex((a: any) => a.id === sel.value?.id));
 const showDetail = ref(false);
 // COM-47: the exit slider publishes the selected exit value; UpsideCurve marks it on the equity curve.
 const exitMarker = ref<number | null>(null);
 
-// COM-74: per-advisor edit checkpoint — snapshot the advisor on its first edit (component-local;
-// pushUndo is module-private in store.ts), expose Edited · Revert, and a transient "Saved" tick.
-// Pure presentation/state over the frozen engine; store.ts stays a pure reducer.
-const snapshot = ref<any>(null);
-const savedTick = ref(false);
-let saveTimer: ReturnType<typeof setTimeout> | undefined;
-let hideTimer: ReturnType<typeof setTimeout> | undefined;
-const isDirty = computed(
-  () =>
-    !!snapshot.value && !!sel.value && JSON.stringify(sel.value) !== JSON.stringify(snapshot.value),
-);
-// Deep clone via JSON (the advisor is JSON-safe data) — structuredClone throws on Vue's reactive proxy.
-const cloneAdv = (a: any) => JSON.parse(JSON.stringify(a));
-function markEdited() {
-  if (!snapshot.value && sel.value) snapshot.value = cloneAdv(sel.value);
-  savedTick.value = false;
-  clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => {
-    savedTick.value = true;
-    clearTimeout(hideTimer);
-    hideTimer = setTimeout(() => (savedTick.value = false), 1500);
-  }, 450);
-}
-function revert() {
-  if (!snapshot.value) return;
-  setPath(["advisors", i.value], cloneAdv(snapshot.value));
-  snapshot.value = null;
-  savedTick.value = false;
-  flash("Reverted");
-}
-// Switching advisors discards the previous one's in-progress checkpoint.
-watch(
-  () => sel.value?.id,
-  () => {
-    snapshot.value = null;
-    savedTick.value = false;
-    clearTimeout(saveTimer);
-    clearTimeout(hideTimer);
-  },
-);
-
-function setField(k: string, v: any) {
-  markEdited();
-  setPath(["advisors", i.value, k], v);
-}
-// COM-77: surface a NumIn clamp as a transient red helper under the field. FormControl has no
-// :error slot, so this mirrors its description line (text-p-xs) in red; cleared after a few seconds.
-const clampMsgs = reactive<Record<string, string>>({});
-const clampTimers: Record<string, ReturnType<typeof setTimeout>> = {};
-function onClamp(key: string, message: string) {
-  clampMsgs[key] = message;
-  clearTimeout(clampTimers[key]);
-  clampTimers[key] = setTimeout(() => delete clampMsgs[key], 4000);
-}
-function setPerfField(k: string, v: any) {
-  markEdited();
-  const perf: any = { ...sel.value.performance };
-  perf[k] = v;
-  setPath(["advisors", i.value, "performance"], perf);
-}
-function objState(id: string) {
-  const p: any = sel.value.performance || {};
-  return p.achieved?.includes(id) ? "earned" : p.targeted?.includes(id) ? "targeted" : "off";
-}
-function setObjState(id: string, st: string) {
-  markEdited();
-  const p: any = sel.value.performance || { achieved: [], targeted: [] };
-  const a = new Set<string>(p.achieved || []);
-  const t = new Set<string>(p.targeted || []);
-  a.delete(id);
-  t.delete(id);
-  if (st === "earned") a.add(id);
-  if (st === "targeted") t.add(id);
-  setPath(["advisors", i.value, "performance"], { ...p, achieved: [...a], targeted: [...t] });
-}
 function printPage() {
   window.print();
 }
-const ms = computed(() =>
-  Object.fromEntries(S.value.plan.milestones.map((m: any) => [m.id, m.label])),
-);
 const ff = computed(() => {
   const t = c.value.scen.map((s: any) => s.total);
   return { lo: Math.min(...t), base: c.value.baseCaseTotal, hi: Math.max(...t) };
@@ -143,24 +53,13 @@ function toProp() {
     <div class="flex justify-between items-center flex-wrap gap-3 no-print">
       <PageHeader title="Base, then performance." />
       <div class="flex items-center gap-2 flex-wrap">
-        <span
-          v-if="savedTick"
-          class="inline-flex items-center gap-1 text-xs text-ink-green-3"
-          aria-live="polite"
-        >
-          <span class="lucide-check size-3.5" aria-hidden="true" />Saved
-        </span>
-        <template v-if="isDirty">
-          <span class="text-xs text-ink-amber-strong">Edited</span>
-          <Button
-            variant="subtle"
-            theme="gray"
-            size="sm"
-            icon-left="lucide-rotate-ccw"
-            label="Revert"
-            @click="revert"
-          />
-        </template>
+        <Button
+          variant="solid"
+          theme="gray"
+          icon-left="lucide-pen"
+          label="Edit package"
+          @click="openEditor"
+        />
         <StageBadge /><AdvisorPicker /><Button
           variant="subtle"
           theme="gray"
@@ -172,395 +71,152 @@ function toProp() {
     </div>
     <ContextStrip />
 
-    <div class="grid lg:grid-cols-12 gap-8">
-      <!-- LEFT CONTROLS -->
-      <div class="lg:col-span-5 space-y-6 no-print">
-        <div class="bg-surface-white rounded border border-outline-gray-1 p-5 space-y-4">
-          <div class="text-sm text-ink-gray-6">Identity</div>
-          <!-- COM-72: bare inputs / Selects → frappe-ui FormControl (label association replaces aria-label;
-               helper text would go in #description). NumIn (the click-to-edit numeric primitive) stays. -->
-          <FormControl
-            type="text"
-            label="Name"
-            size="sm"
-            :model-value="sel.name"
-            @update:model-value="(v) => setField('name', v)"
-          />
-          <FormControl
-            type="select"
-            label="Sector"
-            size="sm"
-            :model-value="sel.sector"
-            :options="SECTORS.map((s) => ({ label: s, value: s }))"
-            @update:model-value="(v) => setField('sector', v)"
-          />
-          <div class="grid grid-cols-2 gap-4">
-            <div class="space-y-1.5">
-              <FormLabel label="Engagement (yrs)" />
-              <NumIn
-                :model-value="sel.years"
-                :min="1"
-                :max="10"
-                aria-label="Years"
-                @update:model-value="(v) => setField('years', v)"
-                @clamp="(m) => onClamp('years', m)"
-              />
-              <p v-if="clampMsgs.years" role="alert" class="text-p-xs text-ink-red-3">
-                {{ clampMsgs.years }}
-              </p>
-            </div>
-            <FormControl
-              type="date"
-              label="Start date"
-              description="Anchors vesting & TGE offset"
-              size="sm"
-              :model-value="sel.startDate || todayISO()"
-              @update:model-value="(v) => setField('startDate', v)"
-            />
-          </div>
-          <div class="grid grid-cols-2 gap-4">
-            <FormControl
-              type="select"
-              label="Granted at"
-              description="Sets the strike basis & dilution path"
-              size="sm"
-              :model-value="sel.grantRound || 'bridge'"
-              :options="roundList(S.plan).map((r) => ({ label: roundLabel(S.plan, r), value: r }))"
-              @update:model-value="(v) => setField('grantRound', v)"
-            />
-            <FormControl
-              type="select"
-              label="Tax residency"
-              description="Recorded for the offer; not modelled"
-              size="sm"
-              :model-value="sel.taxResidency || 'Other'"
-              :options="['UK', 'US', 'Other'].map((t) => ({ label: t, value: t }))"
-              @update:model-value="(v) => setField('taxResidency', v)"
-            />
-          </div>
-          <FormControl
-            type="textarea"
-            label="Notes"
-            size="sm"
-            :rows="2"
-            :model-value="sel.notes"
-            @update:model-value="(v) => setField('notes', v)"
-          />
-        </div>
-
-        <div class="bg-surface-white rounded border border-outline-gray-1 p-5 space-y-4">
-          <div class="flex items-center justify-between">
-            <div class="text-sm text-ink-gray-6">Base grant</div>
-            <TabButtons
-              :model-value="sel.mode"
-              :buttons="[
-                { label: 'By tier', value: 'tier' },
-                { label: 'By $ value', value: 'value' },
-              ]"
-              @update:model-value="(v) => setField('mode', v)"
-            />
-          </div>
-          <template v-if="sel.mode === 'tier'">
-            <div
-              class="flex items-center gap-2 text-xs px-3 py-2 rounded bg-surface-amber-2 text-ink-amber-strong"
-            >
-              <span class="lucide-layers size-3.5" aria-hidden="true" /> Uniform base
-              {{ fPct(S.plan.baseGrant.equityPct, 2) }} eq ·
-              {{ fPct(S.plan.baseGrant.tokenPct, 2) }} tok, <Term k="tierMultiplier">×tier</Term>
-            </div>
-            <div class="grid grid-cols-3 gap-2">
-              <button
-                v-for="(t, ti) in S.tiers"
-                :key="ti"
-                class="p-3 text-left rounded border focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--ink-gray-6)]"
-                :class="
-                  sel.tier === ti
-                    ? 'bg-surface-amber-2 border-outline-amber-2'
-                    : 'border-outline-gray-2 hover:bg-surface-gray-1'
-                "
-                @click="setField('tier', ti)"
-              >
-                <div class="flex items-baseline justify-between">
-                  <div class="font-display text-base text-ink-gray-9">{{ t.name }}</div>
-                  <div class="text-xs text-ink-amber-strong">
-                    <Term k="tierMultiplier">{{ fMult(t.mult) }}</Term>
-                  </div>
-                </div>
-                <div class="text-xs mt-1 tabular-nums text-ink-gray-6">
-                  {{ fPct(S.plan.baseGrant.equityPct * t.mult, 1) }} eq ·
-                  {{ fPct(S.plan.baseGrant.tokenPct * t.mult, 1) }} tok
-                </div>
-              </button>
-            </div>
-            <EquityBenchmark :sel="sel" :c="c" />
-          </template>
-          <template v-else>
-            <div class="space-y-1.5">
-              <FormLabel label="Annual value (USD)" />
-              <NumIn
-                :model-value="sel.annualValue"
-                fmt="usd"
-                :min="0"
-                aria-label="Annual value"
-                @update:model-value="(v) => setField('annualValue', v)"
-                @clamp="(m) => onClamp('annualValue', m)"
-              />
-              <p v-if="clampMsgs.annualValue" role="alert" class="text-p-xs text-ink-red-3">
-                {{ clampMsgs.annualValue }}
-              </p>
-            </div>
-            <div>
-              <div class="flex justify-between text-sm mb-1">
-                <span class="text-ink-gray-7">Options / tokens split</span
-                ><span class="tabular-nums text-ink-gray-9"
-                  >{{ fPct(sel.splitOptions, 0) }} / {{ fPct(1 - sel.splitOptions, 0) }}</span
-                >
-              </div>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.05"
-                :value="sel.splitOptions"
-                aria-label="Options / tokens split"
-                :aria-valuetext="`${fPct(sel.splitOptions, 0)} options, ${fPct(1 - sel.splitOptions, 0)} tokens`"
-                class="w-full"
-                style="accent-color: var(--chart-capital)"
-                @input="
-                  (e) => setField('splitOptions', Number((e.target as HTMLInputElement).value))
-                "
-              />
-            </div>
-          </template>
-          <Divider />
-          <label class="flex items-center gap-2 text-sm text-ink-gray-7"
-            ><Checkbox
-              :model-value="sel.hasCash"
-              @update:model-value="(v) => setField('hasCash', v)"
-            />
-            Cash retainer (post-Series A)</label
-          >
-          <div v-if="sel.hasCash" class="space-y-1.5">
-            <FormLabel label="Annual cash (USD)" />
-            <NumIn
-              :model-value="sel.cashAnnual"
-              fmt="usd"
-              :min="0"
-              aria-label="Cash"
-              @update:model-value="(v) => setField('cashAnnual', v)"
-              @clamp="(m) => onClamp('cashAnnual', m)"
-            />
-            <p v-if="clampMsgs.cashAnnual" role="alert" class="text-p-xs text-ink-red-3">
-              {{ clampMsgs.cashAnnual }}
-            </p>
-          </div>
-        </div>
-
-        <div class="rounded border border-outline-amber-2 bg-surface-amber-2 p-5 space-y-4">
-          <div class="flex items-center gap-2">
-            <span class="lucide-trending-up size-4 text-ink-amber-strong" aria-hidden="true" />
-            <div class="text-sm text-ink-amber-strong">Performance</div>
-          </div>
-          <div>
-            <div class="flex justify-between text-sm mb-1">
-              <span class="text-ink-gray-7">Capital introduced · by channel</span
-              ><span
-                class="font-display tabular-nums"
-                :class="c.capEarned > 0 ? 'text-ink-green-3' : 'text-ink-amber-strong'"
-                >+{{ (c.capRaw * 100).toFixed(0) }}%<span
-                  v-if="c.capEarned < c.capRaw"
-                  class="ml-1 text-xs font-sans text-ink-amber-strong"
-                  ><Term k="awaitingGate">pending</Term></span
-                ></span
-              >
-            </div>
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <div class="text-xs text-ink-gray-6 mb-1">Equity round</div>
-                <NumIn
-                  :model-value="sel.performance?.capitalEquity || 0"
-                  fmt="usd"
-                  :min="0"
-                  aria-label="Capital equity round"
-                  @update:model-value="(v) => setPerfField('capitalEquity', v)"
-                />
-              </div>
-              <div>
-                <div class="text-xs text-ink-gray-6 mb-1">Token OTC (Foundation)</div>
-                <NumIn
-                  :model-value="sel.performance?.capitalToken || 0"
-                  fmt="usd"
-                  :min="0"
-                  aria-label="Capital token OTC"
-                  @update:model-value="(v) => setPerfField('capitalToken', v)"
-                />
-              </div>
-            </div>
-            <p class="text-p-xs mt-1 text-ink-gray-6">
-              {{ fUSD(S.plan.capitalUplift.per) }} introduced → +{{
-                (S.plan.capitalUplift.pct * 100).toFixed(0)
-              }}% of base, cap +{{ (S.plan.capitalUplift.cap * 100).toFixed(0) }}% · gate
-              {{ ms[S.plan.capitalUplift.gate] }} · counts both channels
-            </p>
-          </div>
-          <div>
-            <div class="text-xs text-ink-gray-6 mb-1">Uplift earned at (month)</div>
-            <div class="w-16">
-              <NumIn
-                :model-value="sel.upliftStartMonth ?? 6"
-                :min="0"
-                :max="48"
-                aria-label="Uplift earn month"
-                @update:model-value="(v) => setField('upliftStartMonth', v)"
-              />
-            </div>
-          </div>
-          <div class="space-y-2 pt-2 border-t border-outline-amber-2">
-            <div class="text-xs text-ink-gray-6">Objectives · off / target / earned</div>
-            <div
-              v-for="o in S.objectives"
-              :key="o.id"
-              class="p-3 rounded border bg-surface-white"
-              :class="
-                objState(o.id) === 'earned' && !stageReached(S.plan, o.gate)
-                  ? 'border-outline-amber-2'
-                  : objState(o.id) === 'earned'
-                    ? 'border-outline-green-2'
-                    : objState(o.id) === 'targeted'
-                      ? 'border-outline-amber-2'
-                      : 'border-outline-gray-1'
-              "
-            >
-              <div class="flex items-center gap-2">
-                <span
-                  class="inline-block size-2 rounded-full"
-                  :style="{ background: CAT[o.category]?.color }"
-                /><span class="text-sm font-medium text-ink-gray-9">{{ o.label }}</span
-                ><span class="text-xs tabular-nums text-ink-green-3"
-                  >+{{ (o.uplift * 100).toFixed(0) }}%</span
-                >
-              </div>
-              <div class="text-p-xs mt-1 text-ink-gray-6 leading-snug">
-                {{ o.trigger }} · gate: {{ ms[o.gate]
-                }}<span
-                  v-if="objState(o.id) === 'earned' && !stageReached(S.plan, o.gate)"
-                  class="text-ink-amber-strong"
-                >
-                  · <Term k="awaitingGate">awaiting gate</Term></span
-                >
-              </div>
-              <div class="mt-2">
-                <TabButtons
-                  :model-value="objState(o.id)"
-                  :buttons="[
-                    { label: 'Off', value: 'off' },
-                    { label: 'Target', value: 'targeted' },
-                    { label: 'Earned', value: 'earned' },
-                  ]"
-                  @update:model-value="(v) => setObjState(o.id, v)"
-                />
-              </div>
-            </div>
-            <p class="text-p-xs pt-1 text-ink-gray-6">
-              Earned: <span class="text-ink-green-3">+{{ (c.earnedUplift * 100).toFixed(0) }}%</span
-              ><span v-if="c.pendingUplift > 0">
-                · pending gate:
-                <span class="text-ink-amber-strong"
-                  >+{{ (c.pendingUplift * 100).toFixed(0) }}%</span
-                ></span
-              >
-              · ceiling +{{ (c.ceilUplift * 100).toFixed(0) }}%
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <!-- RIGHT HERO -->
-      <div class="lg:col-span-7 space-y-6 print-area">
-        <PotentialStrip :c="c" />
-        <GrowthWaterfall :c="c" :sel="sel" />
-        <ExitSlider :c="c" @exit="(v) => (exitMarker = v)" />
-        <UpsideCurve :c="c" :marker-exit="exitMarker ?? undefined" />
+    <!-- COM-76: read-only package summary (the editable terms, recapped); Edit opens the Dialog -->
+    <div class="bg-surface-white rounded border border-outline-gray-1 p-5 no-print">
+      <div class="flex items-center justify-between mb-3">
+        <div class="text-sm text-ink-gray-6">Package · {{ sel.name }}</div>
         <Button
-          class="w-full no-print"
           variant="subtle"
           theme="gray"
-          :label="
-            showDetail
-              ? '− Hide detail'
-              : '+ Show detail · vesting, scenario range, mix, instruments'
-          "
-          @click="showDetail = !showDetail"
-        />
-        <template v-if="showDetail">
-          <VestingTimeline :c="c" :sel="sel" />
-          <div class="bg-surface-white rounded border border-outline-gray-1 p-5">
-            <div class="text-sm text-ink-gray-6 mb-3">Scenario range · net value (low → high)</div>
-            <FootballField :lo="ff.lo" :base="ff.base" :hi="ff.hi" :max="ff.hi" />
-            <div class="flex justify-between text-xs mt-2 tabular-nums text-ink-gray-6">
-              <span>Low {{ fUSD(ff.lo) }}</span
-              ><span class="text-ink-amber-strong">Base {{ fUSD(ff.base) }}</span
-              ><span>High {{ fUSD(ff.hi) }}</span>
-            </div>
-          </div>
-          <MixBreakdown :c="c" />
-          <div class="grid sm:grid-cols-2 gap-6">
-            <DilutionPath :c="c" />
-            <div class="bg-surface-white rounded border border-outline-gray-1 p-5">
-              <div class="text-sm text-ink-gray-6 mb-3">
-                Instruments · <Term k="netOfStrike">net of strike</Term>
-              </div>
-              <div class="divide-y divide-outline-gray-1 text-sm">
-                <div class="flex justify-between py-2">
-                  <span class="text-ink-gray-6">Options (base case net)</span
-                  ><span class="tabular-nums text-ink-gray-9">{{ fUSD(c.baseEqNet) }}</span>
-                </div>
-                <div class="flex justify-between py-2">
-                  <span class="text-ink-gray-6">Shares @ bridge</span
-                  ><span class="tabular-nums text-ink-gray-9">{{ fNum(c.equityShares) }}</span>
-                </div>
-                <div class="flex justify-between py-2">
-                  <span class="text-ink-gray-6">Strike</span
-                  ><span class="tabular-nums text-ink-gray-9">${{ c.strikePps.toFixed(2) }}</span>
-                </div>
-                <div class="flex justify-between py-2">
-                  <span class="text-ink-gray-6">Exercise cost</span
-                  ><span class="tabular-nums text-ink-gray-9">{{ fUSD(c.exerciseCost) }}</span>
-                </div>
-                <div class="flex justify-between py-2">
-                  <span class="text-ink-gray-6">Tokens</span
-                  ><span class="tabular-nums text-ink-gray-9"
-                    >{{ fPct(c.tkPct, 3) }} · {{ fTok(c.tokenCount) }}</span
-                  >
-                </div>
-                <div class="flex justify-between py-2">
-                  <span class="text-ink-gray-6">Token value (base FDV)</span
-                  ><span class="tabular-nums text-ink-gray-9">{{
-                    fUSD(c.tkPct * c.base.fdv)
-                  }}</span>
-                </div>
-                <div class="flex justify-between py-2">
-                  <span class="text-ink-gray-6">Vesting</span
-                  ><span class="tabular-nums text-ink-gray-9"
-                    >{{ S.plan.equityVestYears }}yr / {{ S.plan.equityCliff }}mo</span
-                  >
-                </div>
-              </div>
-              <p class="text-p-xs mt-2 text-ink-gray-6">
-                Strike subject to an HMRC SAV / 409A valuation agreed before first grant.
-              </p>
-            </div>
-          </div>
-        </template>
-        <Button
-          class="w-full no-print"
-          variant="solid"
-          theme="gray"
-          icon-right="lucide-arrow-right"
-          :label="`View ${sel.name.split(' ')[0]}'s proposition`"
-          @click="toProp"
+          size="sm"
+          icon-left="lucide-pen"
+          label="Edit package"
+          @click="openEditor"
         />
       </div>
+      <dl class="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-3 text-sm">
+        <div>
+          <dt class="text-xs text-ink-gray-6">Base</dt>
+          <dd class="text-ink-gray-9">
+            {{
+              sel.mode === "value"
+                ? fUSD(sel.annualValue) + "/yr"
+                : (S.tiers[sel.tier]?.name || "—") + " · " + fMult(S.tiers[sel.tier]?.mult || 1)
+            }}
+          </dd>
+        </div>
+        <div>
+          <dt class="text-xs text-ink-gray-6">Options / tokens</dt>
+          <dd class="tabular-nums text-ink-gray-9">
+            {{ fPct(sel.splitOptions, 0) }} / {{ fPct(1 - sel.splitOptions, 0) }}
+          </dd>
+        </div>
+        <div>
+          <dt class="text-xs text-ink-gray-6">Sector</dt>
+          <dd class="text-ink-gray-9 truncate">{{ sel.sector.split("—")[0].trim() }}</dd>
+        </div>
+        <div>
+          <dt class="text-xs text-ink-gray-6">Engagement</dt>
+          <dd class="text-ink-gray-9">
+            {{ sel.years }} yrs · from {{ sel.startDate || todayISO() }}
+          </dd>
+        </div>
+        <div>
+          <dt class="text-xs text-ink-gray-6">Granted at</dt>
+          <dd class="text-ink-gray-9">{{ roundLabel(S.plan, sel.grantRound || "bridge") }}</dd>
+        </div>
+        <div>
+          <dt class="text-xs text-ink-gray-6">Tax residency</dt>
+          <dd class="text-ink-gray-9">{{ sel.taxResidency || "Other" }}</dd>
+        </div>
+        <div>
+          <dt class="text-xs text-ink-gray-6">Cash</dt>
+          <dd class="text-ink-gray-9">{{ sel.hasCash ? fUSD(sel.cashAnnual) + "/yr" : "—" }}</dd>
+        </div>
+        <div>
+          <dt class="text-xs text-ink-gray-6">Performance</dt>
+          <dd class="tabular-nums">
+            <span class="text-ink-green-3">+{{ (c.earnedUplift * 100).toFixed(0) }}%</span
+            ><span v-if="c.pendingUplift > 0" class="text-ink-amber-strong">
+              · +{{ (c.pendingUplift * 100).toFixed(0) }}% pending</span
+            >
+            · ceil +{{ (c.ceilUplift * 100).toFixed(0) }}%
+          </dd>
+        </div>
+      </dl>
+    </div>
+
+    <!-- full-width decision projection -->
+    <div class="space-y-6 print-area">
+      <PotentialStrip :c="c" />
+      <GrowthWaterfall :c="c" :sel="sel" />
+      <ExitSlider :c="c" @exit="(v) => (exitMarker = v)" />
+      <UpsideCurve :c="c" :marker-exit="exitMarker ?? undefined" />
+      <Button
+        class="w-full no-print"
+        variant="subtle"
+        theme="gray"
+        :label="
+          showDetail ? '− Hide detail' : '+ Show detail · vesting, scenario range, mix, instruments'
+        "
+        @click="showDetail = !showDetail"
+      />
+      <template v-if="showDetail">
+        <VestingTimeline :c="c" :sel="sel" />
+        <div class="bg-surface-white rounded border border-outline-gray-1 p-5">
+          <div class="text-sm text-ink-gray-6 mb-3">Scenario range · net value (low → high)</div>
+          <FootballField :lo="ff.lo" :base="ff.base" :hi="ff.hi" :max="ff.hi" />
+          <div class="flex justify-between text-xs mt-2 tabular-nums text-ink-gray-6">
+            <span>Low {{ fUSD(ff.lo) }}</span
+            ><span class="text-ink-amber-strong">Base {{ fUSD(ff.base) }}</span
+            ><span>High {{ fUSD(ff.hi) }}</span>
+          </div>
+        </div>
+        <MixBreakdown :c="c" />
+        <div class="grid sm:grid-cols-2 gap-6">
+          <DilutionPath :c="c" />
+          <div class="bg-surface-white rounded border border-outline-gray-1 p-5">
+            <div class="text-sm text-ink-gray-6 mb-3">
+              Instruments · <Term k="netOfStrike">net of strike</Term>
+            </div>
+            <div class="divide-y divide-outline-gray-1 text-sm">
+              <div class="flex justify-between py-2">
+                <span class="text-ink-gray-6">Options (base case net)</span
+                ><span class="tabular-nums text-ink-gray-9">{{ fUSD(c.baseEqNet) }}</span>
+              </div>
+              <div class="flex justify-between py-2">
+                <span class="text-ink-gray-6">Shares @ bridge</span
+                ><span class="tabular-nums text-ink-gray-9">{{ fNum(c.equityShares) }}</span>
+              </div>
+              <div class="flex justify-between py-2">
+                <span class="text-ink-gray-6">Strike</span
+                ><span class="tabular-nums text-ink-gray-9">${{ c.strikePps.toFixed(2) }}</span>
+              </div>
+              <div class="flex justify-between py-2">
+                <span class="text-ink-gray-6">Exercise cost</span
+                ><span class="tabular-nums text-ink-gray-9">{{ fUSD(c.exerciseCost) }}</span>
+              </div>
+              <div class="flex justify-between py-2">
+                <span class="text-ink-gray-6">Tokens</span
+                ><span class="tabular-nums text-ink-gray-9"
+                  >{{ fPct(c.tkPct, 3) }} · {{ fTok(c.tokenCount) }}</span
+                >
+              </div>
+              <div class="flex justify-between py-2">
+                <span class="text-ink-gray-6">Token value (base FDV)</span
+                ><span class="tabular-nums text-ink-gray-9">{{ fUSD(c.tkPct * c.base.fdv) }}</span>
+              </div>
+              <div class="flex justify-between py-2">
+                <span class="text-ink-gray-6">Vesting</span
+                ><span class="tabular-nums text-ink-gray-9"
+                  >{{ S.plan.equityVestYears }}yr / {{ S.plan.equityCliff }}mo</span
+                >
+              </div>
+            </div>
+            <p class="text-p-xs mt-2 text-ink-gray-6">
+              Strike subject to an HMRC SAV / 409A valuation agreed before first grant.
+            </p>
+          </div>
+        </div>
+      </template>
+      <Button
+        class="w-full no-print"
+        variant="solid"
+        theme="gray"
+        icon-right="lucide-arrow-right"
+        :label="`View ${sel.name.split(' ')[0]}'s proposition`"
+        @click="toProp"
+      />
     </div>
   </div>
 </template>

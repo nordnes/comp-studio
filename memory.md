@@ -1276,3 +1276,30 @@ a Dialog/drawer; watch the 450 cap). Then PD2 (COM-82→81→85→83→84→86),
 
 **Carry into COM-76:** when extracting `PackageEditor`, move the FormLabel+description/error stack AND the
 `clampMsgs`/`onClamp` helper with it. **Next:** COM-74 (dirty/Saved + per-advisor Revert).
+
+## 2026-06-09 — COM-74 (per-advisor edit checkpoint: dirty/Saved + Revert) DONE [M9 PD1 #3]
+
+**COM-74 (P2 High, ~58 net LOC) — DONE.** Stacked on COM-77. Component-local edit checkpoint in
+`Advisors.vue` only (no `store.ts` change — `pushUndo` is module-private, per the issue).
+- `markEdited()` (called at the top of setField/setPerfField/setObjState) snapshots the advisor into a local
+  ref on its **first edit**; `isDirty` = `JSON(sel) !== JSON(snapshot)`. Header shows amber **"Edited" +
+  "Revert"** (lucide-rotate-ccw) when dirty, plus a transient green **"Saved ✓"** tick (`aria-live=polite`)
+  ~450ms after an edit settles, hidden after 1.5s. **Revert** = `setPath(['advisors', i], cloneAdv(snapshot))`
+  + `flash("Reverted")` + clears the snapshot. A `watch` on `sel.id` clears the checkpoint on advisor switch.
+- **GOTCHA (important — fix any future structuredClone use):** `structuredClone(sel.value)` **throws
+  `DataCloneError` on Vue's reactive proxy**. The run-prompt/issue literally said `structuredClone(sel)`, but
+  it fails in practice — the edit silently no-op'd (value didn't update, no indicator) and the console showed
+  repeated `DataCloneError`. Fixed with the proven JSON deep-clone `cloneAdv = a => JSON.parse(JSON.stringify(a))`
+  (same idiom as store.ts's private `clone`). **For reactive advisor objects, JSON-clone, not structuredClone.**
+- 1 file, +58/−4 (`Advisors.vue`).
+- **Verified:** engine **22/22** both · build **0** · `vp check` **0 errors** for `Advisors.vue`. :4173
+  /advisors: edit Years 1→5 → "Edited"+"Revert"+transient "Saved" appear and the value persists; Revert →
+  restores baseline (5→1), persists, clears the indicator; live bundle (`index-CbQx6MGz.js`) has **no**
+  `structuredClone` (the `DataCloneError`s left in the console buffer are stale, from the now-deleted pre-fix
+  bundle). Screenshot captured.
+- /code-review clean (presentation/state over the frozen engine; no auth/tenancy/money/legal → no
+  /security-review). Branch `robinandre/com-74-…` **stacked on COM-77**; PR **`Fixes COM-74`**. **STOPPED at
+  the merge gate.**
+
+**Carry into COM-76:** the snapshot/isDirty/Revert + Saved-tick checkpoint moves into `PackageEditor` with the
+field set. **Next:** COM-75 (Board roster inline kebab — tier Select + Open/Remove).

@@ -3,6 +3,7 @@ import { computed } from "vue";
 import { useRouter } from "vue-router";
 import { Alert, Avatar, Button, Badge, Dropdown } from "frappe-ui";
 import { useStudio } from "../store";
+import { useEditor } from "../composables/useEditor";
 import {
   fUSD,
   fPct,
@@ -19,6 +20,7 @@ import PoolAllocation from "../components/PoolAllocation.vue";
 import Term from "../components/Term.vue";
 
 const { store, board, select, delAdvisor, setPath } = useStudio();
+const { openEditor } = useEditor();
 const router = useRouter();
 const S = computed(() => store.S);
 const sk = computed(() => scenKeys(S.value.plan));
@@ -47,7 +49,14 @@ function rowMenu(a: any) {
         },
       })),
     },
-    { label: "Open package", icon: "lucide-arrow-right", onClick: () => open(a.id) },
+    {
+      label: "Edit package",
+      icon: "lucide-pen",
+      onClick: () => {
+        select(a.id);
+        openEditor();
+      },
+    },
     { label: "Remove", icon: "lucide-trash-2", theme: "red", onClick: () => delAdvisor(a.id) },
   ];
 }

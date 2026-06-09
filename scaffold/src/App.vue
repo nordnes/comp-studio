@@ -16,6 +16,7 @@ import { useStudio } from "./store";
 import { confirmDestroy } from "./confirm";
 import Term from "./components/Term.vue";
 import CommandPalette from "./components/CommandPalette.vue";
+import PackageEditor from "./components/PackageEditor.vue";
 import { fUSD, fPct, scenKeys, baseScenKey } from "./engine";
 import { CONFIDENTIAL_EYEBROW } from "./constants";
 
@@ -418,6 +419,9 @@ const openCmdK = () => window.dispatchEvent(new Event("open-command-palette"));
 
       <!-- COM-63: ⌘K command palette (frontend-only) -->
       <CommandPalette />
+
+      <!-- COM-76: global "Edit package" Dialog — opened from Advisors and the roster kebabs -->
+      <PackageEditor />
 
       <Dialogs />
     </div>

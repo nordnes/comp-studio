@@ -145,7 +145,7 @@ const hasBudget = computed(() => flags.value.some((f) => f.t === "budget"));
         <div class="text-xs mb-1" :class="k.accent ? 'text-ink-amber-strong' : 'text-ink-gray-6'">
           {{ k.l }}
         </div>
-        <div class="font-display text-xl leading-none tabular-nums text-ink-gray-9">{{ k.v }}</div>
+        <div class="figure-sm text-ink-gray-9">{{ k.v }}</div>
         <div v-if="k.sub" class="text-xs mt-1 text-ink-gray-6">{{ k.sub }}</div>
       </div>
     </div>
@@ -193,7 +193,7 @@ const hasBudget = computed(() => flags.value.some((f) => f.t === "budget"));
             </div>
             <div class="text-xs mt-0.5 text-ink-gray-6">{{ a.sector.split("—")[0].trim() }}</div>
             <div class="flex justify-between items-baseline mt-3">
-              <div class="font-display text-xl tabular-nums text-ink-gray-9">
+              <div class="figure-sm text-ink-gray-9">
                 {{ fUSD(c.baseCaseTotal) }}
               </div>
               <div class="text-xs tabular-nums text-ink-gray-6">

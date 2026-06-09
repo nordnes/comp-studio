@@ -12,6 +12,28 @@
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
+/* COM-116: THE numeric-figure scale — every headline number is one of these three tiers (Fraunces at
+   the 350 sub-normal weight, tight leading, tabular). Editorial Fraunces strings (letterhead, names,
+   page titles) keep .font-display. NOTE: these load after the Tailwind utilities, so they beat
+   leading-* — a host needing different leading (the Proposition h1's fluid clamp) overrides inline. */
+.figure-sm,
+.figure-md,
+.figure-lg {
+  font-family: "Fraunces", Georgia, serif;
+  font-weight: 350;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+.figure-sm {
+  font-size: 1.5rem;
+}
+.figure-md {
+  font-size: 1.875rem;
+}
+.figure-lg {
+  font-size: 2.5rem;
+}
 .eyebrow {
   font-family: "IBM Plex Mono", monospace;
   font-size: 10px;

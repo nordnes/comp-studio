@@ -1707,3 +1707,16 @@ Protection — URL still public), Charlie's COM-139 wording sign-off, COM-71 (Ve
   focus back on the hamburger. Desktop 1193px: nothing inert, sidebar tabbable. Zero console errors.
   vp 0 errors · engine 22/22 both · build 0.
 - Known minor: Esc with palette AND drawer open closes both (palette teleports to body) — flagged in PR.
+
+## 2026-06-10 — COM-116 (the figure scale) DONE [M9 finish-loop W1 #3]
+
+**COM-116 (P3 Med, 35/29 LOC, 6 files) — DONE + MERGED.** `.figure-sm/md/lg` (1.5/1.875/2.5rem, Fraunces
+350, lh 1, tabular-nums, -.02em) in style.css as plain classes — NOT `@layer components` (this stylesheet
+has no Tailwind directives; they live in frappe-ui's built css, and style.css imports AFTER it so figure
+rules beat leading-* utilities — that's load-bearing: the Proposition h1 keeps clamp + `line-height:1.25`
+inline as the documented override). Migrated: PotentialStrip + ScenarioTable (sm), ExitSlider 2rem→md
+1.875, Proposition tier trio 2.8rem→lg 2.5 + scenario band text-2xl→sm, Overview KPI + roster text-xl→sm
+(1.25→1.5rem bump). ScenarioTable was an unlisted 7th 350-site (grep > issue cites). Editorial Fraunces
+(letterhead/recipient/PageHeader/Configure h1) untouched. Verified by computed style on :4173: sm 24px ·
+md 30px · lg 40px, all weight 350 tabular; h1 47.72px/59.65px at 1193w; Proposition screenshot — reads
+identical. vp 0 · 22/22 both · build 0. Gates COM-113/114/117.

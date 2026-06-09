@@ -160,9 +160,11 @@ const targetLine = computed(
           <div class="text-sm text-ink-amber-strong mb-6">
             An invitation to the founding advisory board
           </div>
+          <!-- COM-116: .figure-lg with the fluid clamp + display leading kept as the inline override
+               (figure utilities set line-height:1, right for numbers, too tight for this 3-line h1) -->
           <h1
-            class="font-display leading-tight text-ink-gray-9"
-            style="font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 350"
+            class="figure-lg text-ink-gray-9"
+            style="font-size: clamp(2rem, 4vw, 3.2rem); line-height: 1.25"
           >
             A {{ sel.years }}-year engagement,<br /><span
               class="font-display italic text-ink-amber-3"
@@ -198,10 +200,7 @@ const targetLine = computed(
               <span class="text-xs text-ink-gray-5">i</span
               ><span class="text-sm text-ink-gray-6">Base · net</span>
             </div>
-            <div
-              class="font-display tabular-nums text-ink-gray-9"
-              style="font-size: 2.8rem; font-weight: 350; line-height: 1"
-            >
+            <div class="figure-lg text-ink-gray-9">
               {{ fUSD(c.baseCaseBase) }}
             </div>
             <div class="text-p-xs mt-6 text-ink-gray-6">
@@ -213,10 +212,7 @@ const targetLine = computed(
               <span class="text-xs text-ink-amber-strong">ii</span
               ><span class="text-sm text-ink-amber-strong">Current · earned</span>
             </div>
-            <div
-              class="font-display tabular-nums text-ink-gray-9"
-              style="font-size: 2.8rem; font-weight: 350; line-height: 1"
-            >
+            <div class="figure-lg text-ink-gray-9">
               {{ fUSD(c.baseCaseTotal) }}
             </div>
             <div class="text-p-xs mt-6 text-ink-gray-6">
@@ -232,10 +228,7 @@ const targetLine = computed(
               <span class="text-xs text-ink-gray-5">iii</span
               ><span class="text-sm text-ink-gray-6">Ceiling</span>
             </div>
-            <div
-              class="font-display tabular-nums text-ink-gray-9"
-              style="font-size: 2.8rem; font-weight: 350; line-height: 1"
-            >
+            <div class="figure-lg text-ink-gray-9">
               {{ fUSD(c.baseCaseCeil) }}
             </div>
             <div class="text-p-xs mt-6 text-ink-gray-6">
@@ -261,7 +254,7 @@ const targetLine = computed(
               >
                 {{ s.label }} · {{ fPct(s.retention, 0) }} kept
               </div>
-              <div class="font-display text-2xl tabular-nums text-ink-gray-9">
+              <div class="figure-sm text-ink-gray-9">
                 {{ fUSD(s.total) }}
               </div>
               <div class="text-p-xs mt-2 text-ink-gray-6">

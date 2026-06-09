@@ -82,10 +82,7 @@ const tickPct = (i: number) => (maxPos.value ? (i / maxPos.value) * 100 : 0);
     </div>
     <div class="flex items-end gap-4 mb-4 flex-wrap">
       <div>
-        <div
-          class="font-display tabular-nums text-ink-gray-9"
-          style="font-size: 2rem; line-height: 1; font-weight: 350"
-        >
+        <div class="figure-md text-ink-gray-9">
           {{ fUSD(view.total) }}
         </div>
         <div class="text-p-xs mt-1 text-ink-gray-6">

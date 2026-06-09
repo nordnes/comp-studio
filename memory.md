@@ -848,3 +848,28 @@ ready.
 
 **Next M8:** COM-64 (Proposition band) → COM-59 (print mark) → chart cluster (48/57/58/47) → COM-66 (More-menu)
 → COM-62 (app-shell, design call) → COM-63 → COM-72 (design call) → COM-69. Then M8 gate.
+
+## 2026-06-09 — COM-64 (Proposition hero band diverges from dashboards) DONE [M8 #14]
+
+**COM-64 (P3, S) — DONE.** Proposition.vue Base/Current/Ceiling hero band now diverges from the dashboard
+KPI bands: dropped the Current cell's `bg-surface-amber-2` FILL → hairline-only (border gray-1); p-8→p-10
+(generous); Fraunces 2.2rem→2.8rem; mb-5/mt-5→mb-6/mt-6. Current stays marked by amber INK on its
+"ii / Current · earned" label (no fill block). Dashboards (Overview KPI, PotentialStrip, Board) + the scenario
+band below (amber base-scenario cell) UNCHANGED per "keep the repetition elsewhere."
+- Preview-verified (light, tall viewport): hero band reads calm/letterpress, no amber fill; the scenario band
+  below keeps its amber "Base · 48% kept" highlight — nice contrast (bespoke offer vs working tool).
+- QA: build 0 · scaffold engine 22/22 · committed 23a55fd, pushed; Linear Done.
+
+**FINDINGS this issue (preview ENV, not my code):**
+1. **Preview screenshot + scroll bug:** screenshots after a window scroll capture bare canvas (blank), not the
+   scrolled content; scroll-0 captures work. WORKAROUND: resize the viewport TALL (e.g. 1280×1820) so the whole
+   page fits at scroll 0, then screenshot. Also the preview can emulate `prefers-color-scheme: dark`
+   (matchMedia=true) → a failed/blank capture renders BLACK. Use `preview_resize colorScheme:'light'` for clean
+   captures. (serverId this session: 7a81dde5-… , `comp-studio` on :4173.)
+2. **App never sets `color-scheme: light`** (root/body colorScheme=normal). On a dark-OS browser the native
+   chrome (scrollbars, date inputs, selects) renders dark on the light app. Pre-existing, NOT introduced here;
+   out of COM-64 scope. A 1-line `:root{ color-scheme: light }` in style.css would lock it for light-only v1.
+   → flagged to Robin; candidate to fold into COM-69 or a quick polish commit.
+
+**Next M8:** COM-59 (print mark) → chart cluster (48/57/58/47) → COM-66 (More-menu) → COM-62 (app-shell, design
+call) → COM-63 → COM-72 (design call) → COM-69. Then M8 gate.

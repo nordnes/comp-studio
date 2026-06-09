@@ -30,6 +30,7 @@ const tabs: { to: string; label: string }[] = [
 const route = useRoute();
 const {
   store,
+  selected,
   board,
   toggleMgr,
   saveBoard,
@@ -89,6 +90,20 @@ const activeScenario = computed({
 const scenarioOptions = computed(() =>
   scenKeys(store.S.plan).map((k) => ({ label: store.S.plan.scenarios[k].label, value: k })),
 );
+
+// COM-59: per-recipient print running mark. Left = the confidential statement (constant); right = the
+// recipient + date, route-aware — proposition/advisors print a named package, board is the internal pack.
+const PRINT_CONFIDENTIAL = "Raiku Labs — Confidential · Discussion draft, not a binding offer";
+const printDate = computed(() =>
+  new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }),
+);
+const printRecipient = computed(() => {
+  const name = selected.value?.a?.name;
+  if (route.path === "/board") return `Internal board pack · ${printDate.value}`;
+  if (name && (route.path === "/proposition" || route.path === "/advisors"))
+    return `Prepared for ${name} · ${printDate.value}`;
+  return `Internal · ${printDate.value}`;
+});
 </script>
 
 <template>
@@ -200,6 +215,12 @@ const scenarioOptions = computed(() =>
           </p>
         </div>
       </footer>
+
+      <!-- COM-59: per-recipient confidentiality running mark — print-only, repeats on every page -->
+      <div class="print-running" aria-hidden="true">
+        <span>{{ PRINT_CONFIDENTIAL }}</span>
+        <span>{{ printRecipient }}</span>
+      </div>
 
       <!-- Saved-board manager (Mgr) -->
       <Dialog v-model="store.showMgr" :options="{ title: 'Saved boards', size: 'lg' }">

@@ -4,7 +4,7 @@
 // (vesting, scenario range, mix, dilution, instruments). All money from the engine via the store.
 import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
-import { Button, Badge, Select, Checkbox, TabButtons, Divider } from "frappe-ui";
+import { Button, Badge, Checkbox, TabButtons, Divider, FormControl } from "frappe-ui";
 import { useStudio } from "../store";
 import {
   fUSD,
@@ -28,6 +28,7 @@ import EquityBenchmark from "../components/EquityBenchmark.vue";
 import PotentialStrip from "../components/PotentialStrip.vue";
 import GrowthWaterfall from "../components/GrowthWaterfall.vue";
 import UpsideCurve from "../components/UpsideCurve.vue";
+import ExitSlider from "../components/ExitSlider.vue";
 import VestingTimeline from "../components/VestingTimeline.vue";
 import FootballField from "../components/FootballField.vue";
 import MixBreakdown from "../components/MixBreakdown.vue";
@@ -41,6 +42,8 @@ const sel = computed(() => selected.value?.a as any);
 const c = computed(() => selected.value?.c as any);
 const i = computed(() => S.value.advisors.findIndex((a: any) => a.id === sel.value?.id));
 const showDetail = ref(false);
+// COM-47: the exit slider publishes the selected exit value; UpsideCurve marks it on the equity curve.
+const exitMarker = ref<number | null>(null);
 
 function setField(k: string, v: any) {
   setPath(["advisors", i.value, k], v);
@@ -103,23 +106,23 @@ function toProp() {
       <div class="lg:col-span-5 space-y-6 no-print">
         <div class="bg-surface-white rounded border border-outline-gray-1 p-5 space-y-4">
           <div class="text-sm text-ink-gray-6">Profile</div>
-          <div>
-            <div class="text-xs text-ink-gray-6 mb-1">Name</div>
-            <input
-              :value="sel.name"
-              aria-label="Advisor name"
-              class="w-full bg-transparent border-b border-outline-gray-2 text-sm text-ink-gray-9 outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--ink-gray-6)] py-1 focus:border-outline-gray-3"
-              @input="(e) => setField('name', (e.target as HTMLInputElement).value)"
-            />
-          </div>
-          <div>
-            <div class="text-xs text-ink-gray-6 mb-1">Sector</div>
-            <Select
-              :model-value="sel.sector"
-              :options="SECTORS.map((s) => ({ label: s, value: s }))"
-              @update:model-value="(v) => setField('sector', v)"
-            />
-          </div>
+          <!-- COM-72: bare inputs / Selects → frappe-ui FormControl (label association replaces aria-label;
+               helper text would go in #description). NumIn (the click-to-edit numeric primitive) stays. -->
+          <FormControl
+            type="text"
+            label="Name"
+            size="sm"
+            :model-value="sel.name"
+            @update:model-value="(v) => setField('name', v)"
+          />
+          <FormControl
+            type="select"
+            label="Sector"
+            size="sm"
+            :model-value="sel.sector"
+            :options="SECTORS.map((s) => ({ label: s, value: s }))"
+            @update:model-value="(v) => setField('sector', v)"
+          />
           <div class="grid grid-cols-2 gap-4">
             <div>
               <div class="text-xs text-ink-gray-6 mb-1">Engagement (yrs)</div>
@@ -131,46 +134,40 @@ function toProp() {
                 @update:model-value="(v) => setField('years', v)"
               />
             </div>
-            <div>
-              <div class="text-xs text-ink-gray-6 mb-1">Start date</div>
-              <input
-                type="date"
-                :value="sel.startDate || todayISO()"
-                aria-label="Start date"
-                class="w-full bg-transparent border-b border-outline-gray-2 text-sm text-ink-gray-9 outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--ink-gray-6)] py-1"
-                @input="(e) => setField('startDate', (e.target as HTMLInputElement).value)"
-              />
-            </div>
-          </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <div class="text-xs text-ink-gray-6 mb-1">Granted at</div>
-              <Select
-                :model-value="sel.grantRound || 'bridge'"
-                :options="
-                  roundList(S.plan).map((r) => ({ label: roundLabel(S.plan, r), value: r }))
-                "
-                @update:model-value="(v) => setField('grantRound', v)"
-              />
-            </div>
-            <div>
-              <div class="text-xs text-ink-gray-6 mb-1">Tax residency</div>
-              <Select
-                :model-value="sel.taxResidency || 'Other'"
-                :options="['UK', 'US', 'Other'].map((t) => ({ label: t, value: t }))"
-                @update:model-value="(v) => setField('taxResidency', v)"
-              />
-            </div>
-          </div>
-          <div>
-            <div class="text-xs text-ink-gray-6 mb-1">Notes</div>
-            <input
-              :value="sel.notes"
-              aria-label="Notes"
-              class="w-full bg-transparent border-b border-outline-gray-2 text-sm text-ink-gray-9 outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--ink-gray-6)] py-1"
-              @input="(e) => setField('notes', (e.target as HTMLInputElement).value)"
+            <FormControl
+              type="date"
+              label="Start date"
+              size="sm"
+              :model-value="sel.startDate || todayISO()"
+              @update:model-value="(v) => setField('startDate', v)"
             />
           </div>
+          <div class="grid grid-cols-2 gap-4">
+            <FormControl
+              type="select"
+              label="Granted at"
+              size="sm"
+              :model-value="sel.grantRound || 'bridge'"
+              :options="roundList(S.plan).map((r) => ({ label: roundLabel(S.plan, r), value: r }))"
+              @update:model-value="(v) => setField('grantRound', v)"
+            />
+            <FormControl
+              type="select"
+              label="Tax residency"
+              size="sm"
+              :model-value="sel.taxResidency || 'Other'"
+              :options="['UK', 'US', 'Other'].map((t) => ({ label: t, value: t }))"
+              @update:model-value="(v) => setField('taxResidency', v)"
+            />
+          </div>
+          <FormControl
+            type="textarea"
+            label="Notes"
+            size="sm"
+            :rows="2"
+            :model-value="sel.notes"
+            @update:model-value="(v) => setField('notes', v)"
+          />
         </div>
 
         <div class="bg-surface-white rounded border border-outline-gray-1 p-5 space-y-4">
@@ -284,11 +281,10 @@ function toProp() {
               ><span
                 class="font-display tabular-nums"
                 :class="c.capEarned > 0 ? 'text-ink-green-3' : 'text-ink-amber-strong'"
-                >+{{ (c.capRaw * 100).toFixed(0) }}%<Term
+                >+{{ (c.capRaw * 100).toFixed(0) }}%<span
                   v-if="c.capEarned < c.capRaw"
-                  k="awaitingGate"
-                >
-                  ⏳</Term
+                  class="ml-1 text-xs font-sans text-ink-amber-strong"
+                  ><Term k="awaitingGate">pending</Term></span
                 ></span
               >
             </div>
@@ -352,7 +348,7 @@ function toProp() {
                   v-if="objState(o.id) === 'earned' && !stageReached(S.plan, o.gate)"
                   class="text-ink-amber-strong"
                 >
-                  · <Term k="awaitingGate">⏳ awaiting gate</Term></span
+                  · <Term k="awaitingGate">awaiting gate</Term></span
                 >
               </div>
               <div class="mt-2">
@@ -385,7 +381,8 @@ function toProp() {
       <div class="lg:col-span-7 space-y-6 print-area">
         <PotentialStrip :c="c" />
         <GrowthWaterfall :c="c" :sel="sel" />
-        <UpsideCurve :c="c" />
+        <ExitSlider :c="c" @exit="(v) => (exitMarker = v)" />
+        <UpsideCurve :c="c" :marker-exit="exitMarker ?? undefined" />
         <Button
           class="w-full no-print"
           variant="subtle"

@@ -780,3 +780,281 @@ first) absorbing 67+63 → COM-72 (dark-panel design) → COM-69 (local vp). Eng
 **Subscription:** this session is watching PR #1 for CI failures + review comments until merge/close. All events
 so far were vercel[bot] deploy-status (Building→Ready, all green) — no action. send_later unavailable → no timed
 check-in; relying on webhook events.
+
+## 2026-06-09 — New session FULLY EQUIPPED + COM-65 (⏳ → "pending" chip) DONE [M8 #12]
+
+**Resume condition the prior pause waited for is MET:** local `vp` present, **Claude Preview MCP present**
+(live visual pass restored), Linear/GitHub/Vercel MCP all connected. The prior "no preview / no vp"
+constraints are LIFTED → the whole remaining M8 is executable here. Robin's calls (AskUserQuestion):
+**(1) full M8 marathon** — all 12 remaining issue-by-issue, surface COM-62/72 design calls when reached,
+then gate M8; **(2) commit ULTRACODE_PROMPT.md to the dev branch** (I deferred the write to session close
+so it reflects final state — memory.md is the durable log meanwhile).
+
+**Branch/flow:** fresh worktree branch `claude/relaxed-faraday-a9f377` off frosty (which now has the 11
+merged M8 issues via PR #1, merge 9ba086d). New **draft PR #2** (relaxed-faraday → frosty,
+https://github.com/nordnes/comp-studio/pull/2) tracks this batch; merge to frosty at the M8 gate ONLY.
+
+**Preview reality (this session):** the HMR dev server (`comp-studio-dev`, port 5173) CRASHES on start
+under the preview MCP; **`comp-studio` (vite preview over built dist, port 4173) is rock-solid.** Loop =
+**edit → `( cd scaffold && npm run build )` (~3s) → reload 4173 → verify** — aligns with the per-issue
+build gate anyway (no HMR needed). `.claude/launch.json` already has both configs. serverId changes per run.
+
+**Icon idiom (IMPORTANT for all future icon work):** lucide icons render via CSS classes `lucide-<name>`
+sourced from a **FIXED 46-icon set baked into frappe-ui's bundled style.css** — NOT an on-demand generator
+(no @iconify/tailwind, no addDynamicIconSelectors; tailwind `plugins:[]`). An arbitrary `lucide-foo` =
+invisible empty span. Available 46: archive, arrow-right, bell, building-2, check, check-circle,
+chevron-down, clipboard-paste, copy, edit, ellipsis, eye, file-json, file-text, folder-input, folder-open,
+inbox, info, layers, layout-grid, link, list-restart, log-out, mail, message-circle, moon, more-horizontal,
+pen, plus, printer, rotate-ccw, save, settings, share-2, sliders-horizontal, smile, target, trash-2,
+trending-down, trending-up, triangle-alert, upload, user, user-plus, users, zap. **No clock/hourglass/timer**
+→ COM-65's lucide-glyph option was off the table. (A NEW glyph could come via frappe-ui's `~icons/lucide/*`
+component-import path, but that's untested in app code — would need verifying first.)
+
+**COM-65 (P3, S) — DONE.** ⏳ emoji → small **"pending" text chip in accessible amber** (`--ink-amber-strong`
+= rgb(138,75,8)) — the issue's sanctioned fallback since no clock/hourglass glyph exists.
+- DOM (3): Advisors capital channel (new wrapper `<span class="ml-1 text-xs font-sans text-ink-amber-strong">
+  <Term k="awaitingGate">pending</Term></span>`), Advisors objective row (`⏳ awaiting gate` → `awaiting gate`
+  — words ARE the marker), Board pending-uplift cell (inner `text-xs font-sans` span, amber from existing
+  wrapper). Kept `<Term>` tooltip + a11y everywhere.
+- SVG (2): GrowthWaterfall note strings `" ⏳"` → `" pending"` (CSS icons can't render in SVG `<text>`).
+  Kept gray-7 (chart-annotation language; faded bar + legend already encode pending — amber would clash
+  with the multi-colour faded bars). Updated the stale Term.vue comment.
+- `text-2xs` is NOT in the preset (only text-p-xs/text-xs) → used text-xs.
+- QA: build 0 · scaffold engine 22/22 · **preview-verified** on 4173: no ⏳ on any route; site-2 "awaiting
+  gate" = amber rgb(138,75,8) text-xs dotted underline; GrowthWaterfall "+30%/+20% pending" notes fit with
+  NEGATIVE overflow (−11…−58px = inside the SVG, no clip); Board "+90% +80 pending" amber. No console errors.
+  Committed f2fdf43, pushed to dev branch; Linear Done.
+
+**Next M8:** COM-60 (chart-mount placeholder/flash) → COM-64 (Proposition band) → COM-59 (print mark) →
+chart cluster (48/57/58/47) → COM-66 (More-menu) → COM-62 app-shell (3 PRs, **design call first**) → COM-63
+(⌘K) → COM-72 (FormControl, **dark-panel design call**) → COM-69 (vp). Then M8 gate.
+
+## 2026-06-09 — COM-60 (chart-mount placeholder, kill the 1-frame flash) DONE [M8 #13]
+
+**COM-60 (P3, S) — DONE.** FrappeChart.vue now covers the degenerate first paint. frappe-charts
+(animate:false) paints a degenerate axis / 0-height bars for ~1 frame before the existing rAF `draw(true)`
+corrects it. Added a `ready` ref + a neutral `bg-surface-white` overlay (absolute inset-0, in a `relative`
+container with `min-height:(height||240)px`) shown while `!ready`, faded out via `<Transition>` (150ms) once
+ready.
+- **LATCH (the gotcha):** first cut reset `ready=false` at the top of build(). The Board staircase rebuilds
+  shortly after mount (chartHex() colours resolve post-paint → colors watch → build()), which BOUNCED ready
+  false→true repeatedly and left the white overlay COVERING the chart ~300ms+ (a screenshot caught a blank
+  pale staircase). Fix: NEVER reset ready in build() — initial `ref(false)` covers the mount, the first rAF
+  latches it true and it stays; post-mount rebuilds no longer re-hide.
+- Preview-verified: Board staircase draws solid (brown #9c4a0c Raiku + slate #6e7a8a median) after a gentle
+  150ms fade; Compare grouped bar drew (53 svg children); overlay fades+clears; no console errors. (Screenshots
+  taken mid-fade show the chart pale — that IS the placeholder working.)
+- QA: build 0 · scaffold engine 22/22 · committed 8c116b6, pushed; Linear Done.
+
+**Next M8:** COM-64 (Proposition band) → COM-59 (print mark) → chart cluster (48/57/58/47) → COM-66 (More-menu)
+→ COM-62 (app-shell, design call) → COM-63 → COM-72 (design call) → COM-69. Then M8 gate.
+
+## 2026-06-09 — COM-64 (Proposition hero band diverges from dashboards) DONE [M8 #14]
+
+**COM-64 (P3, S) — DONE.** Proposition.vue Base/Current/Ceiling hero band now diverges from the dashboard
+KPI bands: dropped the Current cell's `bg-surface-amber-2` FILL → hairline-only (border gray-1); p-8→p-10
+(generous); Fraunces 2.2rem→2.8rem; mb-5/mt-5→mb-6/mt-6. Current stays marked by amber INK on its
+"ii / Current · earned" label (no fill block). Dashboards (Overview KPI, PotentialStrip, Board) + the scenario
+band below (amber base-scenario cell) UNCHANGED per "keep the repetition elsewhere."
+- Preview-verified (light, tall viewport): hero band reads calm/letterpress, no amber fill; the scenario band
+  below keeps its amber "Base · 48% kept" highlight — nice contrast (bespoke offer vs working tool).
+- QA: build 0 · scaffold engine 22/22 · committed 23a55fd, pushed; Linear Done.
+
+**FINDINGS this issue (preview ENV, not my code):**
+1. **Preview screenshot + scroll bug:** screenshots after a window scroll capture bare canvas (blank), not the
+   scrolled content; scroll-0 captures work. WORKAROUND: resize the viewport TALL (e.g. 1280×1820) so the whole
+   page fits at scroll 0, then screenshot. Also the preview can emulate `prefers-color-scheme: dark`
+   (matchMedia=true) → a failed/blank capture renders BLACK. Use `preview_resize colorScheme:'light'` for clean
+   captures. (serverId this session: 7a81dde5-… , `comp-studio` on :4173.)
+2. **App never sets `color-scheme: light`** (root/body colorScheme=normal). On a dark-OS browser the native
+   chrome (scrollbars, date inputs, selects) renders dark on the light app. Pre-existing, NOT introduced here;
+   out of COM-64 scope. A 1-line `:root{ color-scheme: light }` in style.css would lock it for light-only v1.
+   → flagged to Robin; candidate to fold into COM-69 or a quick polish commit.
+
+**Next M8:** COM-59 (print mark) → chart cluster (48/57/58/47) → COM-66 (More-menu) → COM-62 (app-shell, design
+call) → COM-63 → COM-72 (design call) → COM-69. Then M8 gate.
+
+## 2026-06-09 — COM-59 (per-recipient print confidentiality mark) DONE [M8 #15]
+
+**COM-59 (P2, S) — DONE.** App-level print-only running footer (App.vue + style.css `.print-running`):
+`display:none` on screen; `position:fixed; bottom:0` inside `@media print` → repeats on every printed page.
+Left = "Raiku Labs — Confidential · Discussion draft, not a binding offer" (const); right = route-aware via a
+`printRecipient` computed — "Prepared for {selected.a.name} · {date}" on /proposition & /advisors, "Internal
+board pack · {date}" on /board, else "Internal · {date}". Date = `toLocaleDateString('en-GB',{day,month:short,
+year})`. White band + 0.5pt top hairline masks overlap with page-content bottom. No diagonal watermark (per
+issue). Verbatim legal corpus untouched; added `selected` to App.vue's useStudio destructure.
+- Verified by forcing the print rule visible on screen (temp injected `<style>`, screenshotted, removed):
+  correct left/right, "Prepared for Iraj Ispahani · 9 Jun 2026", display:none on screen, no console errors.
+- **Caveat:** the preview can't open the real print dialog, so multi-page repetition + exact margin placement
+  are spec-faithful (position:fixed-per-page is documented browser behaviour) but UNVERIFIED in an actual
+  print/PDF — Robin to confirm at the gate; trivial to tune (bottom offset / @page margin) if needed.
+- QA: build 0 · scaffold engine 22/22 · committed c202caa, pushed; Linear Done.
+
+**Progress: M8 15/23 (4 this session: COM-65, 60, 64, 59).** Next: chart cluster — COM-48 (scatter declutter)
+→ COM-57 (breakeven shading) → COM-58 (scannability) → COM-47 (exit slider) → COM-66 (More-menu) → COM-62
+(app-shell, design call) → COM-63 → COM-72 (design call) → COM-69. Then M8 gate.
+
+## 2026-06-09 — COM-48 (Board scatter declutter + y-gridlines) DONE [M8 #16]
+
+**COM-48 (P2, M) — DONE.** Board.vue potential-scatter (custom SVG). Three Strategic advisors share base
+$5.11M so bubbles + name labels overprinted into a smear.
+- Label de-collision: `scatterPlaced` computed places each label greedily (prefer above → fall back below →
+  stack upward) avoiding collisions within 36px-x/13px-y; white halo (paint-order:stroke 2.5px) keeps names
+  legible over gridlines/neighbours → Martin/Kerim above, Robert below.
+- y-gridlines: `niceStep()` + `yTicks` → ~3 dashed gray-2 gridlines + left $ ticks (fUSD, 10px gray-5);
+  PAD.l 46→52 for tick room.
+- Fill opacity 0.7→0.55 (overlaps read). Hover/focus: `hoverId` ref → @mouseenter/@focusin raises the bubble
+  to front (keyed reorder, focus-safe) + stroke ring (var(--ink-gray-9)) + opacity 0.9; keyboard keeps COM-41
+  :focus-visible outline.
+- Preview-verified: de-collision + 3 gridlines; hover path confirmed (Kerim → stroke, opacity 0.9, raised
+  last). No console errors.
+- **PREVIEW GOTCHAS (reusable):** (1) async/Promise `preview_eval` HANGS → 30s timeout; do post-Vue-flush
+  checks as TWO separate sync evals (dispatch in #1, read in #2). (2) programmatic `.focus()` on an SVG `<g>`
+  doesn't trigger `:focus-visible` (keyboard-only) and didn't fire `@focusin` in my test — verify keyboard
+  paths by reasoning, mouse paths by dispatching `new MouseEvent('mouseenter')`.
+
+**Next M8:** COM-57 (breakeven/underwater shading on UpsideCurve) → COM-58 (scannability) → COM-47 (exit
+slider) → COM-66 (More-menu) → COM-62 (app-shell, design call) → COM-63 → COM-72 (design call) → COM-69.
+
+## 2026-06-09 — COM-57 (UpsideCurve breakeven shading) DONE [M8 #17]
+
+**COM-57 (P2, M) — DONE.** Rewrote the UpsideCurve EQUITY chart frappe-charts → custom SVG (token chart stays
+frappe-charts) so it can show the breakeven crossover (frappe-charts has no vertical marker/x-region). Added:
+faint `--chart-warning` underwater band over x∈[0,breakeven]; dashed labelled "breakeven" vertical at the exit
+where strike is covered (`beClamped`=clamp(strikeBasis/retention,0,topEq)); net-equity area (`--chart-capital`,
+flat $0 then climbing); x-ticks ($0/topEq÷2/topEq) + y-ticks (eqYMax/$0). Caption gained "tokens still carry
+value". From engine values (eqPct/retention/strikeBasis); engine untouched. Removed dead eqChart/eqColors/
+areaOpts. Did NOT touch the Proposition "How to read this" (already conveys it verbatim).
+- Preview-verified (Iraj): underwater band + "breakeven" at $186.7M exit, area→$5.88M at $1B, ticks render,
+  no console errors. build 0 · engine 22/22 · committed 2150671, pushed; Linear Done.
+
+**Next M8:** COM-58 (Compare/Board scannability) → COM-47 (exit slider) → COM-66 (More-menu) → COM-62
+(app-shell, design call) → COM-63 → COM-72 (design call) → COM-69. Then M8 gate.
+
+## 2026-06-09 — COM-58 (Compare scannability) DONE [M8 #18]
+
+**COM-58 (P2, S) — DONE.** Compare.vue. (1) hover row-highlight was ALREADY present (skipped). (2) `matrix`
+computed appends Δ% vs the base scenario column to each non-base cell — ↑ ink-green-3 / ↓ ink-red-3 (e.g.
+conservative ↓76%, aggressive ↑180%). (3) `<thead>` position:sticky top-0 (bg-surface-white z-[1]); container
+overflow-x-auto → overflow-auto max-h-[70vh] (sticks within the box → no app-header overlap; no-op for the
+short default table). Board summary row left delta-free (aggregate). Engine untouched.
+- Preview-verified: deltas correct colors (red rgb(224,54,54)/green rgb(39,143,94)), thead position:sticky,
+  no console errors. build 0 · engine 22/22 · committed 29818b0; Linear Done.
+
+**Next M8:** COM-47 (exit-valuation slider) → COM-66 (More-menu) → COM-62 (app-shell, design call) → COM-63
+→ COM-72 (design call) → COM-69. Then M8 gate.
+
+## 2026-06-09 — COM-47 (exit-valuation slider, Ledgy pattern) DONE [M8 #19]
+
+**COM-47 (P2, M) — DONE.** New `ExitSlider.vue` (no-print): range slider across the deliberate scenario range +
+Conservative/Base/Aggressive ticks + live readout (net total · net at ~$X exit · eq/tok). PRESENTATION-ONLY —
+linearly interpolates the engine's per-scenario values (equity/token/total/exitVal from `c.scen`); EXACT at each
+tick (aggressive = $21.4M = the Best-case cell). Default thumb = base scenario (`c.base.key` index; no store
+dep). Emits `@exit` (lerped exitVal).
+- /advisors: above UpsideCurve; `exitMarker` ref ← @exit → `:marker-exit` → UpsideCurve draws a teal
+  (`--chart-uplift`) vertical+dot at that exit on the COM-57 equity SVG.
+- /proposition: no-print explorer ABOVE the print-area card (not inside) — recipient explores on screen; the
+  printed doc keeps its static PCells (COM-64 doc untouched).
+- Preview-verified both views: default Base $7.67M/$500M; drag→Aggressive $21.4M/$750M, marker tracks; no console
+  errors. build 0 · engine 22/22 · committed 993a30d; Linear Done.
+
+**M8 19/23 (8 this session).** Remaining: COM-66 (More-menu tidy) · COM-62 (app-shell, **DESIGN CALL**) · COM-63
+(⌘K) · COM-72 (FormControl, **DESIGN CALL**) · COM-69 (vp lint). Next: COM-66, then surface the 62/72 design calls.
+
+## 2026-06-09 — COM-66 (More-menu tidy + Share button) DONE [M8 #20]
+
+**COM-66 (P3, S) — DONE.** App.vue header. Split the flat 6-item ellipsis menu: (1) new labeled "Share"
+Dropdown next to Saved (lucide-share-2) surfacing Copy to clipboard + Export JSON; (2) overflow ⋯ keeps
+Paste/Export CSV/Import as a group + destructive "Reset to baseline" ISOLATED in its own frappe-ui Dropdown
+group (renders a divider between groups — confirmed). Native `title` tooltips on Share + ellipsis (ellipsis
+keeps aria-label). Engine untouched.
+- **frappe-ui Dropdown groups (reusable):** `:options="[{group, hideLabel:true, items:[...]}, {...}]"` renders
+  a divider between groups (verified on preview — Reset sits below a divider).
+- Preview-verified: Share in header, More-menu Reset divided/isolated, no console errors. build 0 · engine
+  22/22 · committed d058b21; Linear Done.
+
+**M8 20/23 (9 this session).** Remaining: COM-69 (vp lint) · COM-62 (app-shell, **DESIGN CALL**) · COM-63 (⌘K)
+· COM-72 (FormControl, **DESIGN CALL**). Next: try COM-69 (vp), then surface the 62/72 design calls to Robin.
+
+## 2026-06-09 — COM-69 (vp check green gate) DONE [M8 #21]
+
+**COM-69 (P3, S) — DONE.** `vp check` now EXITS 0. The only thing failing it was vp's formatter wanting to
+reformat the FROZEN engine.ts (616-line expansion) + the generated *.d.ts. Fix: `scaffold/.prettierignore`
+(`src/engine.ts` + `*.d.ts`) — **vp's formatter HONORS .prettierignore** (key finding). Also vp-formatted this
+session's touched source (ExitSlider/FrappeChart/UpsideCurve/VestingTimeline/Board — small wrap-only diffs) +
+removed 2 unused imports (fUSD/fPct) from store.ts.
+- **vp 0.1.24 config findings (REUSABLE):** formatter honors `.prettierignore`; oxlint does NOT honor
+  `.oxlintrc.json` ignorePatterns (tried `src/engine.ts` + broader `**/engine.ts` — engine.ts lint warnings
+  persisted) → removed the dead .oxlintrc.json. `vp check --no-fmt`/`--no-lint` flags exist; NO per-file
+  format-ignore flag (use .prettierignore). vp config hint: `lint.options.typeCheck` (location unconfirmed).
+- **Residual:** ~10 ADVISORY warnings (no-unused-vars/no-useless-escape) on the FROZEN engine.ts +
+  engine.test.mjs — vp check still EXITS 0 (warnings don't fail). Can't clear (frozen). Documented.
+- **PROCESS NOTE:** this session's per-issue gate was build-only (followed the handoff's no-vp assumption) so
+  source format-drift accumulated; COM-69 cleaned it. FUTURE local sessions: run `vp check --fix` per issue
+  (revert engine.ts + .d.ts after) to avoid drift.
+- QA: vp check EXIT=0 · build 0 · engine 22/22 both · committed 4442c58, pushed; Linear Done.
+
+**M8 21/23 (10 this session: 65,60,64,59,48,57,58,47,66,69).** Remaining (ALL gated): COM-62 (app-shell, 3 PRs
+— **DESIGN CALL**: sidebar IA / nav grouping; absorbs COM-67 + COM-63 board-switcher) · COM-63 (⌘K palette
+remainder) · COM-72 (FormControl — **DESIGN CALL**: dark Configure panel). Surfacing the 62/72 design calls.
+
+## 2026-06-09 — Robin's design calls + COM-62 (left-sidebar app shell) DONE [M8 #22]
+
+**Robin's calls (AskUserQuestion):** COM-62 nav = **workflow groups** (overrides the issue's older Internal/
+Share wording); COM-72 = **lighten the Configure dark panel to a light surface** then standard FormControl;
+**push on now** (build the remaining 3 this session, not a continuation).
+
+**COM-62 (P2, L) — DONE.** Replaced the 6 top-tabs with the frappe-ui left-sidebar IA. App.vue rewritten:
+- **Sidebar** (w-60; `lg:sticky` desktop / mobile off-canvas drawer w/ scrim + CSS hamburger, closes on
+  navigate): Raiku Labs + Internal badge; board-switcher (Saved → Mgr) + Case selector; nav grouped
+  **Board** [Overview, Board, Compare] / **Advisor** [Advisors, Proposition]; footer = Configure + Share + ⋯.
+- **Thin sticky app-header**: "Studio › view › advisor" breadcrumb + `#app-header` teleport target + the
+  storage/budget Alerts.
+- **PageHeader** keeps title/desc in the body hero + TELEPORTS #actions to #app-header on desktop; a
+  module-level `matchMedia("(max-width:1023.98px)")` flag (one listener) disables the teleport <lg so actions
+  render in-body (the thin bar crowds on mobile). Auto-migrates Overview/Board/Compare. Advisors/Proposition
+  keep their multi-control tool rows in-body.
+- **Absorbs COM-67** (grouping = the sidebar sections → COM-67 marked Done) + COM-63's board-switcher (= the
+  sidebar Saved button → COM-63 reduces to the ⌘K palette).
+- Preview-verified all 6 views render; Board actions app-header(desktop)/in-body(mobile); mobile drawer opens;
+  3-level breadcrumb resolves; no console errors. Committed d127d72 (shell) + 00a5dea (teleport). build 0 ·
+  engine 22/22. Linear: COM-62 + COM-67 Done.
+- **Preview reuse note:** the `comp-studio` (vite preview :4173) server DROPPED mid-session → `preview_start`
+  again (new serverId 0a287ac7). Desktop nav via `location.href='/route'` works (vite preview SPA fallback).
+
+**M8 ~22/23 (COM-67 absorbed; reconcile exact count at gate).** Remaining: COM-72 (lighten Configure + FormControl)
+· COM-63 (⌘K palette). Next: COM-72, then COM-63, then GATE M8.
+
+## 2026-06-09 — COM-72 (lighten Configure + FormControl) DONE [M8 #23]
+
+**COM-72 (P3, M) — DONE.** (1) **Lighten:** Configure.vue root dropped `data-theme="dark"` + the full-bleed
+wrapper (-mx/-my/min-h) → standard LIGHT surface (inputs use semantic tokens → lightens cleanly; now matches the
+app). Inner container simplified to `space-y-6` (main already provides max-w-7xl/padding → no double-pad).
+(2) **FormControl:** Advisors profile bare inputs/Selects → frappe-ui FormControl — Name(text), Sector/Granted/Tax
+(select), Start date(date), Notes(textarea); label association replaces COM-40's aria-labels. NumIn kept for
+Engagement. Removed the now-unused Select import.
+- Preview-verified: Configure light + all sections render; Advisors profile = labeled FormControl fields with
+  correct values; no console errors. build 0 · engine 22/22 · committed 86fc5ef; Linear Done.
+- **Scope note:** Configure's many round/scenario/tier/milestone inputs were NOT converted to FormControl (now
+  light + mostly NumIn; field-by-field FormControl across Configure is the incremental "fuller adoption").
+
+**Next: COM-63 (⌘K command palette) — the LAST M8 issue. Then GATE M8.**
+
+## 2026-06-09 — COM-63 (⌘K command palette) DONE — ★ M8 COMPLETE
+
+**COM-63 (P3, M) — DONE.** Board-switcher half shipped with COM-62 (sidebar Saved). Remainder = the ⌘K palette:
+new `CommandPalette.vue` (mounted globally in App.vue) — Cmd/Ctrl+K, or the sidebar "Search ⌘K" trigger via an
+`open-command-palette` window event (mobile/no-keyboard) — opens a searchable grouped list: Go to (routes) ·
+Advisors (select+open) · Boards (loadBoard) · Actions (copy / export JSON / export CSV / import / reset-with-
+confirm). Substring filter; ↑↓ nav / ↵ run / esc close; Teleport-to-body overlay (z-60); own hidden file input
+for Import. Pure UI over the store.
+- Preview-verified: opens, full list, filter ("reset"→Reset only), run Compare → navigates + closes, no console
+  errors. build 0 · engine 22/22 · committed d3e9e6a; Linear Done.
+
+**★ M8 COMPLETE — all 23 issues Done.** This session shipped **14**: COM-65, 60, 64, 59, 48, 57, 58, 47, 66, 69,
+62 (+67 absorbed), 72, 63. All on `claude/relaxed-faraday-a9f377` / PR #2 (draft → frosty). Engine 22/22
+throughout; every issue preview-verified on the live `comp-studio` :4173.
+
+**GATE (next):** confirm build 0 + both engine copies 22/22 + `vp check` exit 0 → mark PR #2 ready + request
+Copilot review → **Robin reviews the Vercel preview, THEN the merge to frosty deploys prod (NOT auto-merged —
+outward-facing, Robin's explicit call).**

@@ -1,92 +1,86 @@
-# Claude Code prompt — build & ship the Advisor Comp Studio web app (continuous run)
+# Advisor Comp Studio — build-run handoff (state + workflow reference)
 
-Paste everything below into a fresh Claude Code session, working in a clone of **https://github.com/nordnes/comp-studio** (origin/main) with this build-kit at the repo root. Run it as **one continuous goal** until the production URL is live.
+This supersedes the original v1 "build & ship" prompt (preserved in git history). It is the durable
+build-run reference. **`memory.md` (repo root) is the detailed dated log — read it first.** Then `CLAUDE.md`.
 
-> **Stack direction (POST-GATE, 2026-06-08):** we **ADOPT `frappe-ui` as-is** — its components + the **Espresso preset** (Inter typography) + the **Frappe UI Starter / Gameplan / Helpdesk layout templates** — as the UI system, for clean, consistent UI/UX. This is Robin's locked leadership decision and it **supersedes** the Phase-0 "reject frappe-ui" recommendation. The Phase-0 evidence (use/avoid matrix, the corrected standalone recipe, bundle numbers, licensing) is still **valid and correct** — it is now the **ADOPTION GUIDE**, not a rejection. Do **not** re-open or re-litigate the adopt/skip question. Design tradeoff is **accepted**: Inter/Espresso replaces the bespoke Fraunces/IBM-Plex editorial look (optional, light Raiku brand accents via `theme.extend` tokens / CSS-variable overrides — not a fight).
+## Current state (2026-06-09)
+- **v1 SHIPPED + live** (`comp-studio-one.vercel.app`), **M7 COMPLETE** (a11y/control floor), **M8 COMPLETE**
+  (UX/UI uplift — all 23 issues Done). v1 prod deploys from **`claude/frosty-pasteur-8cf1db`**.
+- **M8 final batch (this branch `claude/relaxed-faraday-a9f377`, PR #2 → frosty, READY):** COM-65 (pending
+  chip) · 60 (chart-mount flash) · 64 (Proposition band) · 59 (print confidentiality mark) · 48 (scatter
+  declutter) · 57 (UpsideCurve breakeven) · 58 (Compare delta/sticky) · 47 (exit slider) · 66 (Share/Reset
+  menu) · 69 (vp-check green) · 62 (left-sidebar shell, absorbs 67 + 63 board-switcher) · 72 (lighten
+  Configure + FormControl) · 63 (⌘K palette). Prior 11 M8 issues were PR #1 (merge 9ba086d).
+- **Gate is green:** `( cd scaffold && npm run build )` exit 0 · `node scaffold/engine.test.mjs` +
+  `node engine/engine.test.mjs` → 22/22 · `vp check` EXIT 0 (11 advisory unused-var warnings on the FROZEN
+  engine.ts/engine.test.mjs — unfixable, non-failing).
 
----
+## Immediate next step (Robin's call — outward-facing)
+**Merge PR #2 (`relaxed-faraday-a9f377` → `frosty-pasteur`) — this DEPLOYS PROD.** A Copilot review is
+requested; review the Vercel preview, resolve threads, then `merge_method: merge`. Not auto-merged.
 
-You are building and shipping a production web app for Raiku Labs — the **Advisory Board Compensation Studio** — as one continuous effort. It exists today as a single-file React artifact (`reference/advisor-comp-studio.tsx`) that works but won't load reliably. Re-implement it as a **Vue 3 + Vite static SPA** styled with **frappe-ui (Espresso/Inter)**, deploy it to **Vercel**, and drive the work through the **Linear `comp-studio` (COM)** project, milestone by milestone.
+## Remaining roadmap (post-M8, out of M8 scope)
+- **COM-36** — merge `frosty-pasteur` → `main` + point Vercel prod at the chosen branch.
+- **COM-71** — re-auth the Vercel `nordnes-personal` connector (human; unblocks API deploy checks).
+- **M6 (COM-34/35)** — auth + DB. NEW phase (backend) — needs Robin's product decisions before scoping;
+  conflicts with the current "frontend-only, no Frappe data layer" lock until then.
 
-## The adopted stack (locked — do not re-litigate)
-- **UI = `frappe-ui` 0.1.278 (pinned EXACT), adopted as-is.** Use its **components** (import **by name**), the **Espresso preset** (colour/font/radius/shadow scale + Inter), and the **Frappe UI Starter / Gameplan / Helpdesk layout templates** for shell, panels, lists, forms, dialogs. Espresso/Inter is the design language now.
-- **Charts = `frappe-charts` 1.6.2 (pinned EXACT)** for line / area / percentage / grouped-bar **including the valuation staircase (grouped bar, Raiku vs median)**; **custom SVG** (styled with frappe-ui/Espresso tokens) for growth waterfall, potential scatter, football-field ranges (two variants), vesting timeline, DilutionPath. frappe-charts stays **primary** (lighter, verified); frappe-ui's own `AxisChart`/`DonutChart` (echarts, ~1 MB) are an **option** for full design consistency but **not** the default.
-- **`engine/engine.ts` is FROZEN** — canonical maths, reuse verbatim, type-only tweaks allowed, `engine.test.mjs` stays **22/22**.
-- **Frontend-only.** No Frappe / Python backend, no ERPNext, no socket.io. The frappe-ui **data layer** (`createResource` / `useList` / `frappeRequest` / `call` / `initSocket`) is **OUT OF SCOPE**; state is local over the frozen engine.
-- **NEVER `app.use(FrappeUI)`.** That plugin opens a socket.io connection and installs the Frappe RPC/resource layer (backend-bound). Import components by name only.
+## Locked stack (do NOT re-litigate)
+- **frappe-ui 0.1.278 (exact) ADOPTED as-is** (Espresso/Inter); import components by name; **NEVER
+  `app.use(FrappeUI)`**; frappe-ui data layer OUT of scope (state is local in `store.ts` over the engine).
+- **frappe-charts 1.6.2 (exact)**, bare import, NO css; scatter NOT implemented (custom SVG); staircase =
+  grouped bar. Custom SVG for waterfall / scatter / football / vesting / DilutionPath / UpsideCurve-equity.
+- **`engine/engine.ts` + `scaffold/src/engine.ts` FROZEN** — only place money is computed; type-only tweaks,
+  NO logic changes; both test copies stay **22/22**. Views never recompute money inline.
+- Pins: vue ^3.5 · vue-router ^4 · vite ^5 · tailwind ^3.4 (NOT v4, ESM config) · ts ^5 · vue-tsc ^2.
+- **Confidential + net-of-strike; "discussion draft, not a binding offer."** Legal/benchmark strings VERBATIM.
+  `reference/advisor-comp-studio.tsx` = UX/behaviour/legal/IA truth (visual = Espresso).
 
-## The scaffold is ALREADY wired & BUILD-GREEN (do not redo this — extend it)
-The committed `scaffold/` was re-wired to the **verified adoption recipe** this session and builds green; `engine.test.mjs` is **22/22**. What is already done:
-- `package.json` — pins match: `vue ^3.5`, `vue-router ^4`, `vite ^5`, `@vitejs/plugin-vue ^5`, `tailwindcss ^3.4` (v3 only — **NOT v4**, the preset is v3), `typescript ^5`, `vue-tsc ^2`, **`frappe-ui 0.1.278` exact**, **`frappe-charts 1.6.2` exact**.
-- `vite.config.ts` — `frappeui({ frappeProxy:false, jinjaBootData:false, buildConfig:false })` + `vue()`, `build.outDir:'dist'`, `optimizeDeps:{ include:['feather-icons'] }`.
-- `tailwind.config.js` — **ESM**, `import frappeUIPreset from 'frappe-ui/tailwind'`, `presets:[frappeUIPreset]`, content glob **including `./node_modules/frappe-ui/src/**/*`**. Stale `tailwind.config.cjs` removed.
-- `main.ts` — `import 'frappe-ui/style.css'` (Inter + preset base) **before** `./style.css`; mounts router; **no** `app.use(FrappeUI)`.
-- `src/style.css` — de-duped (no repeated `@tailwind` layers; app-only overrides).
+## Per-issue workflow (≤450 LOC/issue, one issue = one push)
+1. Linear COM issue → **In Progress** (state `4a7e54ac-…`). 2. Implement, presentation-only. 3. **Gate:**
+`( cd scaffold && npm run build )` exit 0 · `node scaffold/engine.test.mjs` 22/22 · `vp check` EXIT 0 (local;
+revert engine.ts + `*.d.ts` after `--fix`) · **live preview pass** (see below). 4. Linear → **Done**
+(`03cc9c60-…`). 5. Commit `feat|fix(COM-XX)` + `Co-Authored-By: Claude Opus 4.8 (1M context)` → push the dev
+branch (preview redeploys). 6. Append a dated `memory.md` entry (own `docs(memory):` commit).
+- **Batch-merge to frosty at the MILESTONE GATE only** (PR review + Copilot + Robin's go — it deploys prod).
+- Git/gh/push need `dangerouslyDisableSandbox: true` + `git -c core.fsmonitor=false …` (sandbox denies
+  `engine/engine.ts` reads → the root engine test also needs sandbox off).
+- **Before every commit revert generated churn:** `git -c core.fsmonitor=false checkout
+  scaffold/package-lock.json scaffold/components.d.ts scaffold/auto-imports.d.ts`. Commit source only.
 
-**Your job:** `npm install` and confirm green (`npm run build` + `node engine.test.mjs` → 22/22), then **convert the views to frappe-ui** (`src/views/Overview.vue`, `src/App.vue`, and the rest). The views are **not yet** on frappe-ui — that is the build work (COM-14 / COM-17 / etc.), now using frappe-ui components + templates.
+## Local preview (when equipped — this session was)
+- `.claude/launch.json` has `comp-studio` (vite preview over built `dist/`, :4173 — STABLE) and
+  `comp-studio-dev` (vite dev :5173 — CRASHES under the preview MCP). Use `comp-studio`; the loop is
+  **edit → `npm run build` (~3s) → reload :4173 → verify** (aligns with the build gate). The server can drop
+  mid-session → `preview_start` again (new serverId). Desktop route nav via `location.href='/route'` works.
+- **`preview_eval` does NOT await Promises** (async evals hang 30s) → do post-Vue-flush checks as TWO sync
+  evals. Programmatic `.focus()` on SVG `<g>` won't trigger `:focus-visible`; mouse paths: dispatch
+  `new MouseEvent('mouseenter')`. Screenshots can blank after a window scroll → resize the viewport TALL so
+  the page fits at scroll 0. Preview can emulate `prefers-color-scheme: dark` → use `colorScheme:'light'`.
 
-## Read these first (your sources of truth)
-- **The verified recipe + the 5 things that break** → `research/EMPIRICAL.md` (authoritative; overrides any doc that disagrees). Mirrored in `TECH_BRIEF.md` §2c and `research/FINDINGS.md` §6.
-- **Stack rationale, chart decision table, wrapper contract, pins, licensing** → `TECH_BRIEF.md` (§2 use/avoid → now a **"use"** matrix; §3 charts; §4 pins) and `research/FINDINGS.md` (note the ADOPTION banner at top — §1/§7/D2/D3 keep the "reject" framing as the audit trail; the rest is the adoption guide).
-- **Behaviour / copy / IA / legal corpus** → `reference/advisor-comp-studio.tsx` is the UX source of truth. The **visual** design is now Espresso, but **features, labels, caveats, IA still match the reference**. Parity checklist: `research/D-feature-inventory.md` — grade against it.
-- **Milestones → issues, dependencies, delete-cascades, open decisions** → `IMPLEMENTATION_PLAN.md` (§5 milestones, §6 dependencies/risks/decisions).
+## Reusable facts (this codebase)
+- **lucide icons = a FIXED 46-class set baked into frappe-ui's CSS** (`lucide-<name>`). NOT on-demand — an
+  arbitrary `lucide-foo` is an invisible empty span. The 46: archive, arrow-right, bell, building-2, check,
+  check-circle, chevron-down, clipboard-paste, copy, edit, ellipsis, eye, file-json, file-text, folder-input,
+  folder-open, inbox, info, layers, layout-grid, link, list-restart, log-out, mail, message-circle, moon,
+  more-horizontal, pen, plus, printer, rotate-ccw, save, settings, share-2, sliders-horizontal, smile, target,
+  trash-2, trending-down, trending-up, triangle-alert, upload, user, user-plus, users, zap. (No clock/hourglass.)
+- **Chart palette = one source of truth (COM-56):** `--chart-*` tokens in `style.css`; `constants.ts`
+  `CAT`/`TIER_COLOR` = `var(--chart-*)`, `chartHex(token)` resolves token→hex (light-literal fallback). DOM/
+  custom-SVG fills use `var(--chart-*)` in `:style`/`style` (NEVER as an SVG presentation attr); frappe-charts
+  `:colors` use `chartHex()`. `.prettierignore` excludes engine.ts + `*.d.ts` from `vp` format; vp's oxlint
+  does NOT honor `.oxlintrc.json` ignorePatterns (frozen-engine lint warnings stay advisory).
+- **App shell (COM-62):** App.vue = left sidebar (workflow groups Board/Advisor + Configure footer +
+  board-switcher + ⌘K trigger) + a thin `#app-header` (breadcrumb + PageHeader actions teleported on lg,
+  in-body <lg). `CommandPalette.vue` = ⌘K (Cmd/Ctrl+K or `open-command-palette` window event).
 
-## Use the `frappe-ui` Skill for all component/UI work
-The **`frappe-ui` Skill is available** in this session. **Invoke it** whenever you scaffold a page, shell, form, dialog, list, or any UI surface, and whenever you pick or wire a frappe-ui component or design token. Reach for the **Starter / Gameplan / Helpdesk layout templates** through it for the app shell and panels. Default to frappe-ui components + Espresso tokens over hand-rolled markup.
+## Open follow-ups noted (Robin's call)
+- **`color-scheme: light`** is NOT set on `:root` → on a dark-OS browser, native scrollbars/date-pickers
+  render dark on the light app. 1-line `style.css` lock; out of M8 scope. (See COM-64 memory entry.)
+- COM-50 `--chart-tint` (DilutionPath mid bars) + COM-51 tier-ramp luminance / VestingTimeline hatch were
+  deferred-visual; revisit if desired. Dark `[data-theme=dark]` chart tokens are untuned (charts light-only).
 
-## RECORD progress to `memory.md` (hard requirement)
-A running **`memory.md` at the repo root** is the cross-session log. **At the end of every issue and every milestone, APPEND** to `memory.md`: what you built, decisions you made (especially any of the 5 open product decisions you resolved), and anything that surprised you (build gotchas, parity mismatches, recipe deviations). A later agent session relies on this — **"record to local `memory.md`"** is not optional. If `memory.md` does not exist yet, create it.
-
-## Standing rules & rails
-- **`CLAUDE.md`** at the repo root carries the standing rules/context — read it at session start and follow it.
-- **`.claude/settings.json`** carries the permission rails — operate within them.
-- **`THIRD-PARTY-NOTICES`** records the frappe-ui + frappe-charts MIT attributions — keep it accurate if deps change.
-- **`.gitignore`** excludes `node_modules` / `dist` / local cruft.
-
-## Non-negotiables (preserve in every issue)
-- **`engine/engine.ts` (→ `src/engine.ts`) is the canonical maths — reuse verbatim, never reimplement formulas.** It reconciles to the dilution model (bridge 57,217 FD → Series C 118,707; strike $1,572.95; base TGE FDV $600M; board net base ~$23M). Type-only tweaks; keep `engine.test.mjs` **22/22**.
-- **Internal & confidential tool** — keep **net-of-strike** framing and **"discussion draft, not a binding offer"** caveats; port the legal corpus + benchmark source strings **verbatim** (enumerated in `IMPLEMENTATION_PLAN.md` §6.6).
-- **`reference/advisor-comp-studio.tsx`** = behaviour/labels/caveats/IA source of truth; **Espresso** = the visual layer.
-- **NEVER `app.use(FrappeUI)`**; frappe-ui data layer stays out of scope.
-
-## Open product decisions to resolve before/at M0–M1 (do NOT invent answers — flag for Robin)
-These 5 remain **open** from the gate. Surface them, get the call, then record the resolution in `memory.md`:
-1. **(COM-32)** Named multi-board `Mgr` subsystem — **port** or **descope to single-board** for v1. This sets COM-11's localStorage schema.
-2. **localStorage schema** — the reference's `{scenarios, last}` map vs the scaffold's raw `State` collide on key `raiku-advisor-comp-v5`; COM-11 must **version + migrate** so old payloads don't crash `reconcile`.
-3. **Share mechanism** — clipboard Copy/Paste only (reference) or keep the URL-hash `#s=` too.
-4. **Valuation staircase** — grouped **bar** (default, frappe-charts) or custom **step**-SVG.
-5. **Section numbering** fix.
-
-## Chart wrapper contract (`src/components/FrappeChart.vue`, COM-16) — mandatory
-Bare `import { Chart } from 'frappe-charts'`, **NO css import** (1.6.2 ships none; styles self-inject — a css import 404s the build). Then: **guard the `undefined` return**; `update(plainSnapshot)` for data only; **`destroy()` + `new Chart()`** on type/colour change; own **`ResizeObserver` → `chart.draw()`** and **redraw on route/tab show** (hidden views render at 0 width); **`chart.destroy()`** on unmount. **`scatter` is NOT implemented in 1.6.2** — do not pass `type:'scatter'`; use custom SVG. The **staircase is a grouped bar**, not SVG.
-
-## Tooling
-- **Vite+ (`vp`)** is **local dev only** (alpha): `vp dev` / `vp check` / `vp build` / `vp test`. Keep **plain `vite` scripts** in `package.json`; Vercel/CI build = `npm run build` → `dist`. Never make `vp` a build/deploy dependency.
-- **Deploy via the Vercel connector** (`deploy_to_vercel`). `vercel.json` (SPA rewrite) is included.
-- **Linear** COM project: move issues **In Progress → Done**; respect milestone order. Issue descriptions carry Phase-0 "research basis" notes — read them.
-- **Git/GitHub** `nordnes/comp-studio` (origin/main): branch per issue (Linear branch name); small PRs/commits; conventional commits.
-
-## Definition of Done — apply to EVERY issue
-1. **≤ 450 LOC** of change (if it grows, split + add a Linear sub-issue under the same milestone). 2. `vp check` clean. 3. **Functional pass:** `vp dev`, exercise the route/feature. 4. **Visual pass:** screenshot the route; check it reads as a coherent Espresso/frappe-ui surface and matches the reference's **features/labels/IA** (not its old fonts). 5. `npm run build` succeeds **and** engine spec green (`node engine.test.mjs`, **22/22**). 6. Commit on the issue's branch; set the Linear issue → **Done**. 7. **Append to `memory.md`.**
-
-## Milestone gate
-Milestones gate each other: do **not** start M(n+1) until M(n)'s **Vercel preview** is green (`deploy_to_vercel`). Append the milestone outcome to `memory.md`.
-
-## Dynamic workflow (parallelise within a milestone)
-Issues touching different files are independent — spin up parallel sub-agents, then integrate + run the milestone gate. Suggested concurrency (mirrors Linear COM):
-- **M0** sequential: COM-8 (boot the wired scaffold — already pinned/wired/green; just `npm install` + confirm) → COM-10 (engine + spec) → COM-11 (store: reducer parity **incl. delete cascades**, schema reconcile/version/migrate, clipboard share) → COM-9 (git + Vercel preview). Resolve open decisions **#1–#3** here.
-- **M1** Configure: COM-25 (shell + baseline + `DField`, use a frappe-ui layout template) first, then COM-12 / COM-23 / COM-24 / COM-13 in parallel (each carries its **DELETE-cascade fixups**). Settle **COM-32 (Mgr)**.
-- **M2**: COM-14 (Overview parity, verbatim benchmark sources) ∥ COM-15 (Board table + board-CSV export) → COM-26 (staircase **grouped bar** + scatter **custom SVG**). Decide **#4 (staircase)**.
-- **M3**: COM-16 (FrappeChart wrapper — contract above) + COM-27 (custom SVG: waterfall, scatter, football) first, then COM-18 / COM-30 (controls; `NumIn` primitive) ∥ COM-17 (layout + waterfall + **DilutionPath**) / COM-28 (upside curve) / COM-29 (vesting + football + mix + instruments + DilutionPath) in parallel.
-- **M4**: COM-19 (Compare matrix + grouped bar — the grouped scenario bar lives HERE, not Board) ∥ COM-20 (Proposition + print + **legal corpus verbatim**). Fix **#5 (section numbering)** in the relevant view.
-- **M5**: COM-21 (colour-blind + a11y) ∥ COM-31 (mobile + print paths) → COM-22 (production deploy + share, final gate).
-
-## Acceptance (project done)
-- All COM leaf issues Done; `npm run build` + `node engine.test.mjs` (**22/22**) green; no console errors across the 6 routes.
-- Defaults reconcile to the dilution model; **full feature parity** with the React reference per `research/D-feature-inventory.md` (net-of-strike, scenario dilution, gated uplift, channel capital, grant round, dynamic rounds/scenarios/tiers/milestones, benchmarks with verbatim sources, print for package/board/proposition, legal corpus) — delivered through the **Espresso/frappe-ui** design language.
-- Deployed at a production **Vercel** URL; Overview is the fast default; state persists (localStorage) + shareable. **Report the URL** and record it in `memory.md`.
-
-## Guardrails
-- Engine untouched except type-only tweaks. Pins are locked (frappe-ui **exact 0.1.278**, frappe-charts **exact 1.6.2**, tailwind **v3.4**). Do **not** add a Frappe backend / `app.use(FrappeUI)` / the data layer.
-- ≤ 450 LOC per issue — split if it grows.
-- The adopt-frappe-ui decision is **final**; the Phase-0 "reject" sections in `FINDINGS.md` §1/§7 are the **audit trail**, not current direction.
+## Where things live
+`CLAUDE.md` (standing rules) · `memory.md` (dated log) · `IMPLEMENTATION_PLAN.md` · `TECH_BRIEF.md` ·
+`research/EMPIRICAL.md` (verified frappe-ui recipe) · `engine/` (frozen maths + spec) · `scaffold/` (the app).
+Linear: COM project, **M8 milestone `d67cd073-…`** (now complete). Use the **frappe-ui Skill** for UI work.

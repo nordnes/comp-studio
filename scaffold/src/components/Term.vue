@@ -3,7 +3,7 @@
 // definition is a hover/focus affordance, not buried in footnotes. Presentation-only; definitions
 // live in constants.ts GLOSSARY. The trigger is keyboard-focusable; reka-ui wires aria-describedby
 // to the bubble on focus, and aria-label gives the trigger a name (important when the slot is an
-// emoji-only marker like ⏳). Default slot overrides the displayed text (keeps the existing label).
+// marker-only, e.g. a "pending" chip). Default slot overrides the displayed text (keeps the existing label).
 import { computed } from "vue";
 import { Tooltip } from "frappe-ui";
 import { GLOSSARY } from "../constants";

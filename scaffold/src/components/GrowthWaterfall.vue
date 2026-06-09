@@ -42,7 +42,7 @@ const model = computed(() => {
       from: prev,
       to: valAt(cum),
       color: CAT.capital.color,
-      note: `+${(c.capRaw * 100).toFixed(0)}%${earned ? "" : " ⏳"}`,
+      note: `+${(c.capRaw * 100).toFixed(0)}%${earned ? "" : " pending"}`,
     });
   }
   const perf = sel.performance || { achieved: [], targeted: [] };
@@ -61,7 +61,7 @@ const model = computed(() => {
       from: prev,
       to: valAt(cum),
       color: CAT[o.category]?.color || "var(--chart-capital)",
-      note: `+${(o.uplift * 100).toFixed(0)}%${reached ? "" : " ⏳"}`,
+      note: `+${(o.uplift * 100).toFixed(0)}%${reached ? "" : " pending"}`,
     });
   });
   (perf.targeted || []).forEach((id: string) => {

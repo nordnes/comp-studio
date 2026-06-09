@@ -7,6 +7,7 @@ import { Avatar, Button, Divider } from "frappe-ui";
 import { useStudio } from "../store";
 import { fUSD, fPct, fNum, fMult, baseScenKey, roundLabel } from "../engine";
 import AdvisorPicker from "../components/AdvisorPicker.vue";
+import ExitSlider from "../components/ExitSlider.vue";
 import Term from "../components/Term.vue";
 
 const { store, selected, flash } = useStudio();
@@ -98,6 +99,10 @@ const residencyLine = computed(() =>
       </div>
     </div>
 
+    <!-- COM-47: exit-valuation explorer (no-print) — lets the recipient feel the upside on screen;
+         the printed document keeps its static Base/Current/Ceiling figures. -->
+    <ExitSlider :c="c" />
+
     <div class="print-area bg-surface-white rounded border border-outline-gray-2">
       <div class="px-8 sm:px-12 py-10 border-b border-outline-gray-1">
         <div class="flex justify-between items-start flex-wrap gap-4">
@@ -151,34 +156,37 @@ const residencyLine = computed(() =>
           scenarios are a deliberately wide range, not a forecast.
         </div>
 
-        <div class="grid md:grid-cols-3 border-y border-outline-gray-2">
-          <div class="p-8 border-r border-outline-gray-1">
-            <div class="flex items-baseline gap-3 mb-5">
-              <span class="text-xs text-ink-gray-6">i</span
+        <!-- COM-64: the proposition's hero band diverges from the dashboard KPI bands — hairline-only
+             (no amber fill), more generous spacing, larger Fraunces — so the document reads calmer and
+             more letterpress than the working tool. Current stays marked by amber INK, not a fill block. -->
+        <div class="grid md:grid-cols-3 border-y border-outline-gray-1">
+          <div class="p-10 border-r border-outline-gray-1">
+            <div class="flex items-baseline gap-3 mb-6">
+              <span class="text-xs text-ink-gray-5">i</span
               ><span class="text-sm text-ink-gray-6">Base · net</span>
             </div>
             <div
               class="font-display tabular-nums text-ink-gray-9"
-              style="font-size: 2.2rem; font-weight: 350; line-height: 1"
+              style="font-size: 2.8rem; font-weight: 350; line-height: 1"
             >
               {{ fUSD(c.baseCaseBase) }}
             </div>
-            <div class="text-p-xs mt-5 text-ink-gray-6">
+            <div class="text-p-xs mt-6 text-ink-gray-6">
               {{ fPct(c.baseEq, 2) }} equity + {{ fPct(c.baseTk, 3) }} tokens
             </div>
           </div>
-          <div class="p-8 border-r border-outline-gray-1 bg-surface-amber-2">
-            <div class="flex items-baseline gap-3 mb-5">
+          <div class="p-10 border-r border-outline-gray-1">
+            <div class="flex items-baseline gap-3 mb-6">
               <span class="text-xs text-ink-amber-strong">ii</span
               ><span class="text-sm text-ink-amber-strong">Current · earned</span>
             </div>
             <div
               class="font-display tabular-nums text-ink-gray-9"
-              style="font-size: 2.2rem; font-weight: 350; line-height: 1"
+              style="font-size: 2.8rem; font-weight: 350; line-height: 1"
             >
               {{ fUSD(c.baseCaseTotal) }}
             </div>
-            <div class="text-p-xs mt-5 text-ink-gray-6">
+            <div class="text-p-xs mt-6 text-ink-gray-6">
               {{
                 c.earnedUplift > 0
                   ? `+${(c.earnedUplift * 100).toFixed(0)}% earned`
@@ -186,18 +194,18 @@ const residencyLine = computed(() =>
               }}
             </div>
           </div>
-          <div class="p-8">
-            <div class="flex items-baseline gap-3 mb-5">
-              <span class="text-xs text-ink-gray-6">iii</span
+          <div class="p-10">
+            <div class="flex items-baseline gap-3 mb-6">
+              <span class="text-xs text-ink-gray-5">iii</span
               ><span class="text-sm text-ink-gray-6">Ceiling</span>
             </div>
             <div
               class="font-display tabular-nums text-ink-gray-9"
-              style="font-size: 2.2rem; font-weight: 350; line-height: 1"
+              style="font-size: 2.8rem; font-weight: 350; line-height: 1"
             >
               {{ fUSD(c.baseCaseCeil) }}
             </div>
-            <div class="text-p-xs mt-5 text-ink-gray-6">
+            <div class="text-p-xs mt-6 text-ink-gray-6">
               +{{ (c.ceilUplift * 100).toFixed(0) }}% over base
             </div>
           </div>

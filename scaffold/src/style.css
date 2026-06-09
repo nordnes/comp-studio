@@ -73,6 +73,11 @@ svg g[tabindex]:focus-visible {
 svg g[tabindex]:focus {
   outline: none;
 }
+/* COM-59: per-recipient confidentiality running mark — hidden on screen; shown as a fixed footer band
+   that repeats on every printed page (position:fixed prints per page). Legal corpus stays verbatim. */
+.print-running {
+  display: none;
+}
 /* Print paths: Advisors "Print", Board "Board pack", Proposition "Print". Ported from the reference's
    @media print (the dead .print-only rule is intentionally dropped). */
 @media print {
@@ -89,6 +94,24 @@ svg g[tabindex]:focus {
   main {
     padding: 0 !important;
     max-width: none !important;
+  }
+  /* COM-59: running confidentiality + per-recipient fingerprint on every printed page. The white band
+     + top hairline keeps it legible and masks any overlap with the bottom edge of page content. */
+  .print-running {
+    display: flex !important;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 1.5mm 2mm 0;
+    background: #fff;
+    border-top: 0.5pt solid #d6d3d1;
+    font-size: 7.5pt;
+    line-height: 1.4;
+    letter-spacing: 0.01em;
+    color: #57534e;
   }
   @page {
     margin: 14mm;

@@ -39,11 +39,12 @@ const chart = computed(() => ({
   labels: board.value.rows.map((r: any) => r.a.name.split(" ")[0]),
   datasets: cols.value.map((k) => ({
     name: S.value.plan.scenarios[k].label,
-    values: board.value.rows.map((r: any) =>
-      Math.round((r.c.scen.find((x: any) => x.key === k)?.total || 0) / 1e6),
+    values: board.value.rows.map(
+      (r: any) => (r.c.scen.find((x: any) => x.key === k)?.total || 0) / 1e6,
     ),
   })),
-})); // values in $M — frappe-charts has no y-axis tick formatter (raw dollars read "10000000").
+})); // values in full-precision $M (COM-123: never Math.round the geometry — sub-$1M bars must stay accurate;
+// frappe-charts has no y-axis tick formatter so raw dollars would read "10000000", hence $M not $).
 const chartOpts = {
   axisOptions: { xAxisMode: "tick" },
   tooltipOptions: { formatTooltipY: (v: number) => fUSD(v * 1e6) },

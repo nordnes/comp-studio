@@ -83,14 +83,22 @@ svg g[tabindex]:focus {
 .print-running {
   display: none;
 }
+/* COM-84: print-only line (the target-outcome sentence) — the slider CONTROL stays no-print, but the
+   chosen outcome survives into the printed page. Revives the reference's .print-only with a real user. */
+.print-only {
+  display: none;
+}
 /* Print paths: Advisors "Print", Board "Board pack", Proposition "Print". Ported from the reference's
-   @media print (the dead .print-only rule is intentionally dropped). */
+   @media print. */
 @media print {
   body {
     background: #fff !important;
   }
   .no-print {
     display: none !important;
+  }
+  .print-only {
+    display: block !important;
   }
   .print-area {
     box-shadow: none !important;

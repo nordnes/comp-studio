@@ -2,12 +2,20 @@
 // COM-47: exit-valuation slider (Ledgy pattern). Lets a non-expert drag across the deliberate scenario
 // range and feel the options upside. PRESENTATION-ONLY — it linearly interpolates the engine's already-
 // computed per-scenario net values (equity / token / total / exitVal); at each scenario tick it matches
-// the engine exactly, so it stays anchored to the deliberate range, not a forecast. Default thumb = the
-// base scenario, so initial state is unchanged. no-print (the printed doc keeps its static figures).
+// the engine exactly, so it stays anchored to the deliberate range, not a forecast. The slider CONTROL
+// is no-print; COM-84 adds a print-only target-outcome sentence so the chosen exit survives the doc.
+// COM-84: when a `sel` advisor is passed, the thumb initialises from sel.targetExit and each released
+// drag persists the interpolated exit back via setAdvisorTargetExit (the COM-82 reducer).
 import { computed, ref, watch } from "vue";
 import { fUSD } from "../engine";
-const props = defineProps<{ c: any }>();
+import { useStudio } from "../store";
+// printLine needs an explicit default: Vue casts an ABSENT Boolean-typed prop to false
+// (HTML boolean-attribute semantics), which would silently drop the print sentence.
+const props = withDefaults(defineProps<{ c: any; sel?: any; printLine?: boolean }>(), {
+  printLine: true,
+});
 const emit = defineEmits<{ (e: "exit", v: number): void }>();
+const { setAdvisorTargetExit } = useStudio();
 
 const scen = computed<any[]>(() =>
   [...(props.c?.scen || [])].sort((a: any, b: any) => a.exitVal - b.exitVal),
@@ -18,8 +26,29 @@ const baseIndex = computed(() => {
 });
 const maxPos = computed(() => Math.max(0, scen.value.length - 1));
 const pos = ref(0);
-// thumb tracks the base scenario; resets when the advisor (and so the scenario set) changes
-watch(baseIndex, (i) => (pos.value = i), { immediate: true });
+// COM-84: map a persisted exit value back to a thumb position (inverse of the lerp below).
+function posFromExit(v: number) {
+  const s = scen.value;
+  if (!s.length) return 0;
+  if (v <= s[0].exitVal) return 0;
+  for (let i = 0; i < s.length - 1; i++) {
+    const a = s[i].exitVal,
+      b = s[i + 1].exitVal;
+    if (v <= b) return i + (b > a ? (v - a) / (b - a) : 0);
+  }
+  return maxPos.value;
+}
+// thumb = the advisor's saved target when present, else the base scenario; re-inits when the
+// advisor or the scenario set changes (NOT on every drag — targetExit isn't watched).
+function initPos() {
+  const t = props.sel?.targetExit;
+  pos.value = t != null ? posFromExit(t) : baseIndex.value;
+}
+watch([() => props.sel?.id, () => scen.value.length, baseIndex], initPos, { immediate: true });
+// COM-84: persist on release (the `change` event), not per drag frame.
+function commitTarget() {
+  if (props.sel) setAdvisorTargetExit(props.sel.id, view.value.exitVal);
+}
 
 const view = computed(() => {
   const s = scen.value;
@@ -74,6 +103,7 @@ const tickPct = (i: number) => (maxPos.value ? (i / maxPos.value) * 100 : 0);
       step="0.01"
       class="w-full accent-[var(--chart-capital)]"
       :aria-label="`Exit valuation: ${view.label}, net ${fUSD(view.total)}`"
+      @change="commitTarget"
     />
     <div class="relative h-4 mt-1">
       <span
@@ -86,4 +116,10 @@ const tickPct = (i: number) => (maxPos.value ? (i / maxPos.value) * 100 : 0);
       >
     </div>
   </div>
+  <!-- COM-84: the chosen outcome survives into print (the control above is no-print). Hosts that
+       carry their own in-document sentence (Proposition) pass :print-line="false". -->
+  <p v-if="printLine !== false" class="print-only text-p-sm text-ink-gray-7">
+    At a ~{{ fUSD(view.exitVal) }} exit, this package is worth ~{{ fUSD(view.total) }} net — net of
+    strike &amp; dilution · not a forecast.
+  </p>
 </template>

@@ -1523,3 +1523,29 @@ PotentialStrip restatements ("impeccable distill").
   caveat as COM-59 (no real print dialog in the preview); Robin eyeballs an actual print at the gate.
 - QA: engine 22/22 · `vp check` 0 errors on the 4 files · build 0. Branch `robinandre/com-84-…` stacked on
   COM-83; PR `Fixes COM-84`. **STOPPED at the merge gate.** Next: COM-86 (Compare Spread + pin-to-compare).
+
+## 2026-06-09 — COM-86 (Compare Spread + pin-to-compare) DONE [M9 PD2 #6 — ★ PD2 COMPLETE]
+
+**COM-86 (P3 Med, 160 net LOC) — DONE.** Stacked on COM-84. The PD2 capstone on Compare.
+- **Spread column** (sortable; desc → asc → roster order; `aria-sort` + ↓/↑ glyph on the header button):
+  `max(scen.total) − min(scen.total)` per row — engine totals only.
+- **Pin column** (Button Pin/Pinned, `aria-pressed`, `@click.stop` off the row-open) toggling the **transient
+  `store.pinnedIds`** (COM-82); cap 3 with a toast past the cap. **Head-to-head panel** above the matrix when
+  ≥2 pinned: transposed table (rows = scenarios w/ amber base row, cols = pinned advisors, cells = net + the
+  COM-58 Δ shape) + a 2–3-series grouped bar reusing FrappeChart/SCEN_TOKENS/chartHex + "Unpin all". Panel is
+  `no-print` (the printed Compare matrix stays canonical).
+- **Preview-verified on :4173:** Spread renders ($19.6M Iraj / $13.0M others = max−min ✓); pin Iraj+Martin →
+  "Head-to-head · Iraj vs Martin" with correct transposed nets/Δ + grouped bar SVG; pinned a 3rd, a 4th was
+  REJECTED (count stayed 3); **`pinnedIds` does NOT appear in localStorage** (transience contract ✓);
+  sort asc moved Iraj (largest spread) LAST + `aria-sort=ascending`; Unpin all + sort reset after. Screenshot.
+- **Stack-wide /code-review (all 6 PD2 issues, frosty…COM-86):** clean. One benign edge recorded: a
+  hand-imported NEGATIVE `targetExit` survives reconcile (`ok()` checks finite, not >0) but every consumer
+  clamps to the floor — cosmetic; fold a `> 0` guard into a future hardening issue rather than rebase the
+  pushed stack. Also noted: `togglePin`/Unpin-all mutate the transient `store.pinnedIds` from the view —
+  sanctioned (transient UI state per the issue; `State` mutations still go through reducers only).
+
+**★ PD2 COMPLETE — 82 → 81 → 85 → 83 → 84 → 86, six stacked PRs #16–#21 into frosty (on top of the spec-v2
+docs PR #15).** Merge order #15 → #16 → … → #21; GitHub auto-retargets each child as its parent lands.
+Engine frozen + 22/22 throughout; every issue preview-verified on :4173; Linear issues sit In Progress and
+flip Done at merge (Robin is the merge actor). **Next after merge: ③ clean layout & IA (COM-88/89/90/95) →
+④ the frappe-ui adopt cluster (§6 decisions) — or COM-139 (the Δ4 legal fix, GC wording sign-off) any time.**

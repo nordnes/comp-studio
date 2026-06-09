@@ -997,3 +997,30 @@ removed 2 unused imports (fUSD/fPct) from store.ts.
 **M8 21/23 (10 this session: 65,60,64,59,48,57,58,47,66,69).** Remaining (ALL gated): COM-62 (app-shell, 3 PRs
 — **DESIGN CALL**: sidebar IA / nav grouping; absorbs COM-67 + COM-63 board-switcher) · COM-63 (⌘K palette
 remainder) · COM-72 (FormControl — **DESIGN CALL**: dark Configure panel). Surfacing the 62/72 design calls.
+
+## 2026-06-09 — Robin's design calls + COM-62 (left-sidebar app shell) DONE [M8 #22]
+
+**Robin's calls (AskUserQuestion):** COM-62 nav = **workflow groups** (overrides the issue's older Internal/
+Share wording); COM-72 = **lighten the Configure dark panel to a light surface** then standard FormControl;
+**push on now** (build the remaining 3 this session, not a continuation).
+
+**COM-62 (P2, L) — DONE.** Replaced the 6 top-tabs with the frappe-ui left-sidebar IA. App.vue rewritten:
+- **Sidebar** (w-60; `lg:sticky` desktop / mobile off-canvas drawer w/ scrim + CSS hamburger, closes on
+  navigate): Raiku Labs + Internal badge; board-switcher (Saved → Mgr) + Case selector; nav grouped
+  **Board** [Overview, Board, Compare] / **Advisor** [Advisors, Proposition]; footer = Configure + Share + ⋯.
+- **Thin sticky app-header**: "Studio › view › advisor" breadcrumb + `#app-header` teleport target + the
+  storage/budget Alerts.
+- **PageHeader** keeps title/desc in the body hero + TELEPORTS #actions to #app-header on desktop; a
+  module-level `matchMedia("(max-width:1023.98px)")` flag (one listener) disables the teleport <lg so actions
+  render in-body (the thin bar crowds on mobile). Auto-migrates Overview/Board/Compare. Advisors/Proposition
+  keep their multi-control tool rows in-body.
+- **Absorbs COM-67** (grouping = the sidebar sections → COM-67 marked Done) + COM-63's board-switcher (= the
+  sidebar Saved button → COM-63 reduces to the ⌘K palette).
+- Preview-verified all 6 views render; Board actions app-header(desktop)/in-body(mobile); mobile drawer opens;
+  3-level breadcrumb resolves; no console errors. Committed d127d72 (shell) + 00a5dea (teleport). build 0 ·
+  engine 22/22. Linear: COM-62 + COM-67 Done.
+- **Preview reuse note:** the `comp-studio` (vite preview :4173) server DROPPED mid-session → `preview_start`
+  again (new serverId 0a287ac7). Desktop nav via `location.href='/route'` works (vite preview SPA fallback).
+
+**M8 ~22/23 (COM-67 absorbed; reconcile exact count at gate).** Remaining: COM-72 (lighten Configure + FormControl)
+· COM-63 (⌘K palette). Next: COM-72, then COM-63, then GATE M8.

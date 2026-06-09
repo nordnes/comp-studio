@@ -1611,3 +1611,25 @@ a wider viewBox would scale its text BELOW the COM-49 ≥11px floor. Reading ord
 - **Verified by computed style on :4173** (borders are sub-pixel in screenshots): vesting/mix/instruments/
   ranges/ContextStrip = `border 0 / transparent bg`; ScenarioTable + both charts + cost panel = `1px`.
   vp clean (one fmt round on ContextStrip) · engine 22/22 · build 0.
+
+## 2026-06-09 — COM-95 (Configure settings two-column IA) DONE [M9 design #4 — ★ clean-layout cluster COMPLETE]
+
+**COM-95 (P4 Low, L) — DONE + MERGED.** The flat 8-section scroll becomes the frappe-ui settings pattern.
+- **Left rail** (`nav aria-label="Configure sections"`, sticky `lg:top-20`, horizontal scroll strip <lg with
+  descriptions hidden): **Cap table** (Roadmap CSV + Bridge + Rounds + Scenario paths) · **Grants & pools**
+  (Uniform base + Capital schedule) · **Performance** (Objectives + Tiers + Milestones). Active state reuses
+  the sidebar idiom (`bg-surface-gray-3` + medium). Only the active group renders (`v-if` per group); a local
+  `group` ref — zero store involvement.
+- **Scope decision:** the gray form-group boxes KEPT their frames — they wrap interactive field clusters,
+  which is precisely a border earning its place (COM-88's rule); the issue's "static lists → divide-y" had
+  no real static lists here (rounds/milestones are editable chips). The "sequence after COM-127/106" note was
+  advisory — the IA layer is independent of the inner control types; COM-106 (FormControl conversion) can
+  proceed inside the new groups unchanged.
+- **Verified on :4173:** rail renders; cap default; Performance click → its 3 sections swap in, others
+  unmount, `aria-current` tracks; **edit round-trip through the new layout persisted** (tier rename hit
+  localStorage live, reverted); mobile (375px) rail is horizontal with descs hidden; whole-group-per-screen
+  screenshot. vp clean · engine 22/22 · build 0. Diff is 599/532 because wrapping re-indented the template —
+  the semantic delta is the rail + three `<template v-if>` wrappers (~60 LOC).
+
+**★ Clean-layout & IA cluster COMPLETE (COM-89 → 90 → 88 → 95), all merged to frosty same-session under
+Robin's standing authorization.** M9 = 21 Done / 45 open.

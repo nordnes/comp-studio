@@ -494,3 +494,24 @@ Ran `vp check --fix` across scaffold/src. Decisions:
 
 **M8 STARTING** (COM-46…68, 23 issues) autonomously per Robin, prompt order: COM-46 global scenario toggle →
 frappe-ui cluster → chart legibility → COM-62 app-shell (3 PRs) → P3 polish.
+
+## 2026-06-09 — COM-46 (global scenario toggle) — ANALYSIS + DESIGN FORK (surfaced to Robin)
+
+In Progress. Engine analysis (scaffold/src/engine.ts computeAdvisor/computeBoard):
+- Per scenario, `c.scen[k]` exposes {key,label,retention,strikeBasis,exitVal,fdv,grantN,netEqAt(fn),equity,token,
+  **total**,underwater}; `board.cost[k]` and `walkScenario(plan,k)`/`tgeFdvFor` are also per-key. SWITCHABLE.
+- BUT floor/current/ceiling (`baseCaseBase/baseCaseTotal/baseCaseCeil`, `baseEqNet`…) are computed ONCE from
+  sb=scen.find(baseScenKey) (engine lines 275-278) → BASE-ONLY, not exposed per scenario. The Advisors
+  PotentialStrip (Floor/Current/Ceiling), GrowthWaterfall and UpsideCurve read these base-baked scalars.
+
+**FORK:** the issue says add a SEPARATE `activeScenario` (NOT baseScenario), engine untouched. The frozen engine
+bakes floor/ceil to baseScenario, so a separate activeScenario can switch only the exposed values (totals/cost/
+staircase/FDV/ContextStrip/DilutionPath); floor/ceil breakdowns would stay base-anchored (INCONSISTENT) unless I
+recompute them inline in views (forbidden) or change the engine (forbidden). So the issue's approach isn't cleanly
+implementable under the locked constraints.
+- Option A (reuse plan.baseScenario via the header toggle): EVERY view switches CONSISTENTLY (engine recomputes
+  baseCase* for the new base) — zero engine change, zero inline math, persistent. Trade-off: Configure ★ + Compare
+  base-highlight + Proposition base-framing follow the toggle (one synced "active case").
+- Option B (separate activeScenario, partial): base reference stays fixed; only exposed values switch; floor/ceil
+  stay base (mild inconsistency on those specific cells).
+SURFACED to Robin (recommend A — the only clean, fully-consistent, rule-respecting option). Awaiting his call.

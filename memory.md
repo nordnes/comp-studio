@@ -893,3 +893,25 @@ issue). Verbatim legal corpus untouched; added `selected` to App.vue's useStudio
 **Progress: M8 15/23 (4 this session: COM-65, 60, 64, 59).** Next: chart cluster — COM-48 (scatter declutter)
 → COM-57 (breakeven shading) → COM-58 (scannability) → COM-47 (exit slider) → COM-66 (More-menu) → COM-62
 (app-shell, design call) → COM-63 → COM-72 (design call) → COM-69. Then M8 gate.
+
+## 2026-06-09 — COM-48 (Board scatter declutter + y-gridlines) DONE [M8 #16]
+
+**COM-48 (P2, M) — DONE.** Board.vue potential-scatter (custom SVG). Three Strategic advisors share base
+$5.11M so bubbles + name labels overprinted into a smear.
+- Label de-collision: `scatterPlaced` computed places each label greedily (prefer above → fall back below →
+  stack upward) avoiding collisions within 36px-x/13px-y; white halo (paint-order:stroke 2.5px) keeps names
+  legible over gridlines/neighbours → Martin/Kerim above, Robert below.
+- y-gridlines: `niceStep()` + `yTicks` → ~3 dashed gray-2 gridlines + left $ ticks (fUSD, 10px gray-5);
+  PAD.l 46→52 for tick room.
+- Fill opacity 0.7→0.55 (overlaps read). Hover/focus: `hoverId` ref → @mouseenter/@focusin raises the bubble
+  to front (keyed reorder, focus-safe) + stroke ring (var(--ink-gray-9)) + opacity 0.9; keyboard keeps COM-41
+  :focus-visible outline.
+- Preview-verified: de-collision + 3 gridlines; hover path confirmed (Kerim → stroke, opacity 0.9, raised
+  last). No console errors.
+- **PREVIEW GOTCHAS (reusable):** (1) async/Promise `preview_eval` HANGS → 30s timeout; do post-Vue-flush
+  checks as TWO separate sync evals (dispatch in #1, read in #2). (2) programmatic `.focus()` on an SVG `<g>`
+  doesn't trigger `:focus-visible` (keyboard-only) and didn't fire `@focusin` in my test — verify keyboard
+  paths by reasoning, mouse paths by dispatching `new MouseEvent('mouseenter')`.
+
+**Next M8:** COM-57 (breakeven/underwater shading on UpsideCurve) → COM-58 (scannability) → COM-47 (exit
+slider) → COM-66 (More-menu) → COM-62 (app-shell, design call) → COM-63 → COM-72 (design call) → COM-69.

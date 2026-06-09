@@ -4,7 +4,7 @@
 // (vesting, scenario range, mix, dilution, instruments). All money from the engine via the store.
 import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
-import { Button, Badge, Select, Checkbox } from "frappe-ui";
+import { Button, Badge, Select, Checkbox, TabButtons } from "frappe-ui";
 import { useStudio } from "../store";
 import {
   fUSD,
@@ -175,20 +175,14 @@ function toProp() {
         <div class="bg-surface-white rounded border border-outline-gray-1 p-5 space-y-4">
           <div class="flex items-center justify-between">
             <div class="text-sm text-ink-gray-6">Base — denomination</div>
-            <div class="flex gap-1">
-              <Button
-                v-for="[m, l] in [
-                  ['tier', 'By tier'],
-                  ['value', 'By $ value'],
-                ]"
-                :key="m"
-                :variant="sel.mode === m ? 'solid' : 'subtle'"
-                theme="gray"
-                size="sm"
-                :label="l"
-                @click="setField('mode', m)"
-              />
-            </div>
+            <TabButtons
+              :model-value="sel.mode"
+              :buttons="[
+                { label: 'By tier', value: 'tier' },
+                { label: 'By $ value', value: 'value' },
+              ]"
+              @update:model-value="(v) => setField('mode', v)"
+            />
           </div>
           <template v-if="sel.mode === 'tier'">
             <div
@@ -353,19 +347,15 @@ function toProp() {
                   · ⏳ awaiting gate</span
                 >
               </div>
-              <div class="flex gap-1 mt-2">
-                <Button
-                  v-for="[k, l] in [
-                    ['off', 'Off'],
-                    ['targeted', 'Target'],
-                    ['earned', 'Earned'],
+              <div class="mt-2">
+                <TabButtons
+                  :model-value="objState(o.id)"
+                  :buttons="[
+                    { label: 'Off', value: 'off' },
+                    { label: 'Target', value: 'targeted' },
+                    { label: 'Earned', value: 'earned' },
                   ]"
-                  :key="k"
-                  :variant="objState(o.id) === k ? 'solid' : 'subtle'"
-                  :theme="objState(o.id) === k ? (k === 'earned' ? 'green' : 'gray') : 'gray'"
-                  size="sm"
-                  :label="l"
-                  @click="setObjState(o.id, k)"
+                  @update:model-value="(v) => setObjState(o.id, v)"
                 />
               </div>
             </div>

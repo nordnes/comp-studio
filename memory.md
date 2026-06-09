@@ -1738,3 +1738,16 @@ identical. vp 0 · 22/22 both · build 0. Gates COM-113/114/117.
 - Verified on :4173 by computed color sweep per page: Configure cap+perf groups → zero amber text but
   the caution; Proposition → only current-case markers; PackageEditor card gray-1/icon-amber. Board
   screenshot: total row neutral, cost panel pops. vp 0 · 22/22 both · build 0. Gates COM-114/115/117.
+
+## 2026-06-10 — COM-110 (dead dark branch deleted) DONE + COM-124 cancelled [M9 finish-loop W1 #5 — ★ WAVE 1 COMPLETE]
+
+**COM-110 (P4 Low, 15/29 LOC, 4 files) — DONE + MERGED.** Robin's pre-made call (2026-06-09): DELETE.
+- Both `[data-theme="dark"]` blocks removed from style.css (amber-strong + the 10 --chart-*) with an
+  audit-trail comment in their place; `:root{color-scheme:light}` KEPT (COM-109). Stale dark comments
+  fixed in NumIn.vue, constants.ts, Configure.vue header. Tokens verified resolving on :4173
+  (#8a4b08 / #9c4a0c, color-scheme light), zero console errors. vp 0 · 22/22 both · build 0.
+- **COM-124 cancelled** as obsolete with the prescribed comment (re-open with any future dark milestone).
+
+**★ WAVE 1 (foundations) COMPLETE: COM-93 → 135 → 116 → 118 → 110, PRs #26–#30 all merged to frosty.**
+M9 = 26 Done / 40 open. Next: wave-boundary frosty re-verify, then WAVE 2 hardening (COM-133 EmptyState,
+COM-134 print, COM-137→138 alerts stack, COM-136 truncation).

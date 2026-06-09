@@ -20,6 +20,21 @@ function open(id: string) {
 }
 
 const baseEqSum = computed(() => board.value.rows.reduce((s: number, r: any) => s + r.c.baseEq, 0));
+// COM-58: per-row scenario cells with Δ% vs the base scenario column (engine values; computed once).
+const matrix = computed(() => {
+  const bk = baseScenKey(S.value.plan);
+  return board.value.rows.map(({ a, c }: any) => ({
+    a,
+    c,
+    cells: cols.value.map((k) => {
+      const baseTotal = c.scen.find((x: any) => x.key === bk)?.total || 0;
+      const total = c.scen.find((x: any) => x.key === k)?.total || 0;
+      const delta =
+        k === bk || !baseTotal ? null : Math.round(((total - baseTotal) / baseTotal) * 100);
+      return { k, total, delta, isBase: k === bk };
+    }),
+  }));
+});
 const chart = computed(() => ({
   labels: board.value.rows.map((r: any) => r.a.name.split(" ")[0]),
   datasets: cols.value.map((k) => ({
@@ -45,9 +60,10 @@ const scenColors = computed(() =>
       desc="Net of strike & scenario dilution. Click a row to open a package."
     />
 
-    <div class="bg-surface-white rounded border border-outline-gray-1 overflow-x-auto">
+    <div class="bg-surface-white rounded border border-outline-gray-1 overflow-auto max-h-[70vh]">
       <table class="w-full text-sm" style="min-width: 760px">
-        <thead>
+        <!-- COM-58: sticky header keeps the column labels readable on a tall/wide scroll -->
+        <thead class="sticky top-0 z-[1] bg-surface-white">
           <tr class="border-b border-outline-gray-2 text-left text-ink-gray-6">
             <th class="px-4 py-3 font-normal">Advisor</th>
             <th class="px-4 py-3 font-normal">Tier</th>
@@ -62,7 +78,7 @@ const scenColors = computed(() =>
         </thead>
         <tbody>
           <tr
-            v-for="{ a, c } in board.rows"
+            v-for="{ a, c, cells } in matrix"
             :key="a.id"
             tabindex="0"
             role="button"
@@ -92,12 +108,26 @@ const scenColors = computed(() =>
               +{{ (c.ceilUplift * 100).toFixed(0) }}%
             </td>
             <td
-              v-for="k in cols"
-              :key="k"
+              v-for="cell in cells"
+              :key="cell.k"
               class="px-4 py-3 tabular-nums text-ink-gray-9"
-              :class="k === baseScenKey(S.plan) ? 'font-medium' : ''"
+              :class="cell.isBase ? 'font-medium' : ''"
             >
-              {{ fUSD(c.scen.find((x: any) => x.key === k)?.total || 0) }}
+              {{ fUSD(cell.total) }}
+              <!-- COM-58: Δ% vs the base scenario column (green up / red down) -->
+              <span
+                v-if="cell.delta !== null"
+                class="ml-1 text-xs"
+                :class="
+                  cell.delta > 0
+                    ? 'text-ink-green-3'
+                    : cell.delta < 0
+                      ? 'text-ink-red-3'
+                      : 'text-ink-gray-5'
+                "
+                >{{ cell.delta > 0 ? "↑" : cell.delta < 0 ? "↓" : ""
+                }}{{ Math.abs(cell.delta) }}%</span
+              >
             </td>
             <td class="px-4 py-3 tabular-nums text-ink-gray-8">
               {{ c.cash ? fUSD(c.cash) : "—" }}

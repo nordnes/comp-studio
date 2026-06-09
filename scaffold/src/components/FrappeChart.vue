@@ -24,6 +24,9 @@ const props = defineProps<{
 const el = ref<HTMLDivElement | null>(null);
 let chart: any = null;
 let ro: ResizeObserver | null = null;
+// COM-60: frappe-charts paints a degenerate axis / 0-height bars for ~1 frame before the rAF redraw
+// (below) corrects it. `ready` gates a neutral overlay that hides that flash on mount / client-side nav.
+const ready = ref(false);
 
 // COM-16 contract: pass a PLAIN snapshot to Chart/update — frappe-charts deep-clones and mutating a
 // reactive proxy in place won't update; passing the proxy can also confuse it.
@@ -46,8 +49,12 @@ function build() {
     ...props.options,
   }); // new Chart returns undefined for an unknown type — guarded below.
   // frappe-charts (animate:false) can paint a degenerate axis / 0-height bars until a redraw — force one
-  // on the next frame so the FIRST paint is correct, without waiting for a resize event.
-  requestAnimationFrame(() => chart?.draw?.(true));
+  // on the next frame so the FIRST paint is correct, without waiting for a resize event. COM-60: only
+  // drop the placeholder AFTER that corrected paint, so the flash is never visible.
+  requestAnimationFrame(() => {
+    chart?.draw?.(true);
+    ready.value = true;
+  });
 }
 // update() only swaps data; type/colours changes need a full rebuild (destroy+new via build()).
 watch(
@@ -77,4 +84,12 @@ onBeforeUnmount(() => {
 });
 </script>
 
-<template><div ref="el" :role="ariaLabel ? 'img' : undefined" :aria-label="ariaLabel" /></template>
+<template>
+  <div class="relative" :style="{ minHeight: (height || 240) + 'px' }">
+    <div ref="el" :role="ariaLabel ? 'img' : undefined" :aria-label="ariaLabel" />
+    <!-- COM-60: neutral fill over the ~1-frame degenerate paint; fades out once the first redraw lands -->
+    <Transition leave-active-class="transition-opacity duration-150 ease-out" leave-to-class="opacity-0">
+      <div v-if="!ready" class="absolute inset-0 rounded bg-surface-white" aria-hidden="true" />
+    </Transition>
+  </div>
+</template>

@@ -3,7 +3,7 @@
 // grouped bar, Robin's call) and potential scatter (custom SVG — frappe-charts has no scatter in 1.6.2).
 import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
-import { Avatar, Button, Badge } from "frappe-ui";
+import { Avatar, Button, Badge, Dropdown } from "frappe-ui";
 import { useStudio } from "../store";
 import {
   fUSD,
@@ -24,13 +24,34 @@ import FootballField from "../components/FootballField.vue";
 import FrappeChart from "../components/FrappeChart.vue";
 import Term from "../components/Term.vue";
 
-const { store, board, select, addAdvisor, delAdvisor } = useStudio();
+const { store, board, select, addAdvisor, delAdvisor, setPath } = useStudio();
 const router = useRouter();
 const S = computed(() => store.S);
 
 function open(id: string) {
   select(id);
   router.push("/advisors");
+}
+// COM-75: per-row kebab — change tier in-context (writes via setPath; switches to tier mode so it
+// takes effect), open the package, or remove. Shared shape with Overview. Engine untouched.
+function rowMenu(a: any) {
+  const idx = S.value.advisors.findIndex((x: any) => x.id === a.id);
+  return [
+    {
+      label: "Change tier",
+      icon: "lucide-layers",
+      submenu: S.value.tiers.map((t: any, ti: number) => ({
+        label: `${t.name} · ${fMult(t.mult)}`,
+        icon: a.mode !== "value" && a.tier === ti ? "lucide-check" : null,
+        onClick: () => {
+          setPath(["advisors", idx, "mode"], "tier");
+          setPath(["advisors", idx, "tier"], ti);
+        },
+      })),
+    },
+    { label: "Open package", icon: "lucide-arrow-right", onClick: () => open(a.id) },
+    { label: "Remove", icon: "lucide-trash-2", theme: "red", onClick: () => delAdvisor(a.id) },
+  ];
 }
 function boardPack() {
   window.print();
@@ -403,13 +424,18 @@ const baseTotalSum = computed(() =>
                   {{ fUSD(c.baseCaseTotal) }}
                 </td>
                 <td class="px-2 py-3 no-print">
-                  <button
-                    aria-label="Remove advisor"
-                    class="inline-flex shrink-0 items-center justify-center size-8 rounded hover:bg-surface-gray-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-gray-6)] text-ink-gray-6 hover:text-ink-red-3"
-                    @click.stop="delAdvisor(a.id)"
-                  >
-                    <span class="lucide-trash-2 size-3.5" aria-hidden="true" />
-                  </button>
+                  <Dropdown :options="rowMenu(a)" placement="right">
+                    <template #trigger>
+                      <button
+                        aria-label="Advisor actions"
+                        class="inline-flex shrink-0 items-center justify-center size-8 rounded hover:bg-surface-gray-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-gray-6)] text-ink-gray-6"
+                        @click.stop
+                        @keydown.stop
+                      >
+                        <span class="lucide-ellipsis size-4" aria-hidden="true" />
+                      </button>
+                    </template>
+                  </Dropdown>
                 </td>
               </tr>
               <tr class="bg-surface-amber-2">

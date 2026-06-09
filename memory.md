@@ -1303,3 +1303,30 @@ a Dialog/drawer; watch the 450 cap). Then PD2 (COM-82→81→85→83→84→86),
 
 **Carry into COM-76:** the snapshot/isDirty/Revert + Saved-tick checkpoint moves into `PackageEditor` with the
 field set. **Next:** COM-75 (Board roster inline kebab — tier Select + Open/Remove).
+
+## 2026-06-09 — COM-75 (inline roster kebab: change tier + open + remove) DONE [M9 PD1 #4]
+
+**COM-75 (P3 Med, ~80 net LOC) — DONE.** Stacked on COM-74. Edit-in-context from the roster on Board + Overview.
+- Per-row frappe-ui **Dropdown** (kebab, `lucide-ellipsis` trigger, portals to body so it escapes the roster's
+  `overflow-x-auto`): **Change tier** (submenu over `S.tiers` — "{name} · {mult}×", lucide-check on the active
+  tier; `onClick` sets `mode='tier'` + `tier` via setPath so it takes effect even from `$value` mode), **Open
+  package** (→ /advisors), **Remove** (theme red → delAdvisor). Identical `rowMenu(a)` in each view (idx by id).
+  Dropdown `icon` accepts a `lucide-*` class string (frappe-ui `isLucideIconString`).
+- **Board.vue:** replaced the Remove-only button cell with the kebab; trigger has `@click.stop`/`@keydown.stop`
+  so it doesn't fire the row's open.
+- **Overview.vue:** converted the card `<button>` → `<div role="button" tabindex=0>` (+ enter/space handlers)
+  so the kebab isn't a **nested interactive** (per the issue); kebab sits beside the Badge with `@click.stop`.
+  Card body still navigates. (Closing `</button>`→`</div>` too — easy to miss when swapping the tag.)
+- 2 files, +~80/−15 (`Board.vue`, `Overview.vue`). No engine; store stays a pure reducer.
+- **Verified:** engine **22/22** both · build **0** · `vp check` **0 errors** for both files. :4173 — Board: kebab
+  opens [Change tier ▸ Base/Strategic/Anchor · Open package · Remove]; picking "Base · 1×" flipped Iraj
+  `$value`→`Base` and **persisted** `mode:tier, tier:0`; kebab click stays on /board. Overview: kebab opens
+  (stays /overview), card body click → /advisors. **No NEW console errors** (the 16 `DataCloneError`s in the
+  buffer are stale from COM-74's deleted pre-fix bundle — count stayed 16 through all COM-75 interaction).
+  Screenshot. Reverted `components.d.ts`.
+- /code-review clean (presentation; no security surface). Branch `robinandre/com-75-…` **stacked on COM-74**;
+  PR **`Fixes COM-75`**. **STOPPED at the merge gate.**
+
+**Next (last PD1):** COM-76 (promote package editing into a Dialog/drawer; extract a reusable `PackageEditor` —
+carry the COM-73 field set + COM-77 FormLabel/`:description`/clamp stack + COM-74 checkpoint; **L ~280, watch the
+450 cap**).

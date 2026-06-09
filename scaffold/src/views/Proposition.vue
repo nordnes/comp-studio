@@ -10,8 +10,9 @@ import { CONFIDENTIAL_EYEBROW } from "../constants";
 import AdvisorPicker from "../components/AdvisorPicker.vue";
 import ExitSlider from "../components/ExitSlider.vue";
 import Term from "../components/Term.vue";
+import EmptyState from "../components/EmptyState.vue";
 
-const { store, selected, flash } = useStudio();
+const { store, selected, flash, addAdvisor } = useStudio();
 const S = computed(() => store.S);
 const sel = computed(() => selected.value?.a);
 const c = computed(() => selected.value?.c);
@@ -103,12 +104,22 @@ const targetLine = computed(
 </script>
 
 <template>
-  <div
+  <!-- COM-133: the shared teaching empty state replaces the bare one-liner -->
+  <EmptyState
     v-if="!sel || !c"
-    class="mx-auto w-full max-w-reading px-3 sm:px-5 text-center py-24 text-ink-gray-6"
+    icon="lucide-file-text"
+    title="No advisor to propose to yet."
+    body="Add an advisor and the proposition letter builds itself from their live package — net of strike, ready to print."
   >
-    Add an advisor to prepare a proposition.
-  </div>
+    <Button
+      variant="solid"
+      theme="gray"
+      icon-left="lucide-plus"
+      label="Add advisor"
+      class="mt-2"
+      @click="addAdvisor"
+    />
+  </EmptyState>
   <div v-else class="mx-auto w-full max-w-reading px-3 sm:px-5 space-y-8">
     <div class="flex justify-between items-center flex-wrap gap-3 no-print">
       <div class="text-sm text-ink-gray-6">Proposition</div>

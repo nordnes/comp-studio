@@ -173,12 +173,13 @@ function toProp() {
       </dl>
     </div>
 
-    <!-- full-width decision projection -->
-    <div class="space-y-6 print-area">
+    <!-- full-width decision projection (COM-88: space-y-8 gives the de-boxed groups their rhythm) -->
+    <div class="space-y-8 print-area">
       <!-- COM-83: one across-cases tabulation (replaces the PotentialStrip restatements) -->
       <ScenarioTable :c="c" />
-      <!-- COM-83: FootballField promoted out of the detail expander — the range belongs beside the table -->
-      <div class="bg-surface-white rounded border border-outline-gray-1 p-5">
+      <!-- COM-83: FootballField promoted out of the detail expander — the range belongs beside the table.
+           COM-88: static read-out, de-boxed (the label carries it). -->
+      <div>
         <div class="text-sm text-ink-gray-6 mb-3">Scenario range · net value (low → high)</div>
         <FootballField :lo="ff.lo" :base="ff.base" :hi="ff.hi" :max="ff.hi" />
         <div class="flex justify-between text-xs mt-2 tabular-nums text-ink-gray-6">
@@ -202,7 +203,8 @@ function toProp() {
         <MixBreakdown :c="c" />
         <div class="grid sm:grid-cols-2 gap-6">
           <DilutionPath :c="c" />
-          <div class="bg-surface-white rounded border border-outline-gray-1 p-5">
+          <!-- COM-88: static read-out — label + divide-y rows, no frame -->
+          <div>
             <div class="text-sm text-ink-gray-6 mb-3">
               Instruments · <Term k="netOfStrike">net of strike</Term>
             </div>

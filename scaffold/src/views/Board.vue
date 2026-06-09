@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // Board (Section III) — roster, scenario ranges, pool, company cost, valuation staircase (frappe-charts
 // grouped bar, Robin's call) and potential scatter (custom SVG — frappe-charts has no scatter in 1.6.2).
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
 import { Avatar, Button, Badge } from "frappe-ui";
 import { useStudio } from "../store";
@@ -62,7 +62,7 @@ const stairOpts = {
 const stairColors = computed(() => [chartHex("--chart-capital"), chartHex("--chart-median")]);
 
 // --- potential scatter (custom SVG) ---
-const PAD = { l: 46, r: 16, t: 16, b: 28 };
+const PAD = { l: 52, r: 16, t: 16, b: 28 };
 const VW = 460;
 const VH = 280;
 const scatter = computed(() =>
@@ -81,6 +81,47 @@ const zMax = computed(() => Math.max(1, ...scatter.value.map((d) => d.z)));
 const sx = (x: number) => PAD.l + (x / xMax.value) * (VW - PAD.l - PAD.r);
 const sy = (y: number) => VH - PAD.b - (y / yMax.value) * (VH - PAD.t - PAD.b);
 const sr = (z: number) => 5 + Math.sqrt(z / zMax.value) * 16;
+
+// COM-48: y-gridlines at "nice" headroom values (the chart had only two corner $ labels).
+function niceStep(raw: number) {
+  const mag = Math.pow(10, Math.floor(Math.log10(raw || 1)));
+  const n = raw / mag;
+  return (n < 1.5 ? 1 : n < 3 ? 2 : n < 7 ? 5 : 10) * mag;
+}
+const yTicks = computed(() => {
+  const step = niceStep(yMax.value / 3);
+  const ticks: number[] = [];
+  for (let v = step; v <= yMax.value * 1.0001; v += step) ticks.push(v);
+  return ticks;
+});
+
+// COM-48: bubble + label layout. Several advisors cluster at the same low base, so their names
+// overprinted into a smear. Place each label greedily — prefer above, fall back below, then stack
+// upward — avoiding collisions at similar x. hoverId raises the active bubble to the front (rendered
+// last) and is also set on focus, so keyboard selection is legible too.
+const hoverId = ref<string | null>(null);
+const LABEL_H = 13;
+const scatterPlaced = computed(() => {
+  const placed: { x: number; y: number }[] = [];
+  const collides = (x: number, y: number) =>
+    placed.some((q) => Math.abs(q.x - x) < 36 && Math.abs(q.y - y) < LABEL_H);
+  const pts = scatter.value.map((d) => {
+    const px = sx(d.x),
+      py = sy(d.y),
+      r = sr(d.z);
+    let ly = py - r - 5; // prefer a label above the bubble
+    if (collides(px, ly)) {
+      const yb = py + r + 12;
+      if (!collides(px, yb)) ly = yb;
+      else while (collides(px, ly) && ly > LABEL_H) ly -= LABEL_H; // stack upward
+    }
+    placed.push({ x: px, y: ly });
+    return { ...d, px, py, r, ly };
+  });
+  return pts.sort(
+    (a, b) => (a.id === hoverId.value ? 1 : 0) - (b.id === hoverId.value ? 1 : 0),
+  );
+});
 
 // --- per-advisor scenario range ---
 const ranges = computed(() =>
@@ -189,6 +230,27 @@ const baseTotalSum = computed(() =>
             class="stroke-current text-ink-gray-3"
             stroke-width="1"
           />
+          <!-- COM-48: light y-gridlines + $ ticks (headroom) so vertical position reads quantitatively -->
+          <g v-for="t in yTicks" :key="`gl-${t}`">
+            <line
+              :x1="PAD.l"
+              :y1="sy(t)"
+              :x2="VW - PAD.r"
+              :y2="sy(t)"
+              class="stroke-current text-ink-gray-2"
+              stroke-width="1"
+              stroke-dasharray="2 3"
+            />
+            <text
+              :x="PAD.l - 5"
+              :y="sy(t) + 3"
+              text-anchor="end"
+              class="fill-current text-ink-gray-5"
+              font-size="10"
+            >
+              {{ fUSD(t) }}
+            </text>
+          </g>
           <text :x="PAD.l" :y="VH - 6" class="fill-current text-ink-gray-7" font-size="11">
             {{ fUSD(0) }}
           </text>
@@ -202,7 +264,7 @@ const baseTotalSum = computed(() =>
             {{ fUSD(xMax) }}
           </text>
           <g
-            v-for="d in scatter"
+            v-for="d in scatterPlaced"
             :key="d.id"
             tabindex="0"
             role="button"
@@ -211,19 +273,28 @@ const baseTotalSum = computed(() =>
             @click="open(d.id)"
             @keydown.enter="open(d.id)"
             @keydown.space.prevent="open(d.id)"
+            @mouseenter="hoverId = d.id"
+            @mouseleave="hoverId = null"
+            @focusin="hoverId = d.id"
+            @focusout="hoverId = null"
           >
             <circle
-              :cx="sx(d.x)"
-              :cy="sy(d.y)"
-              :r="sr(d.z)"
-              :style="{ fill: TIER_COLOR[d.tier] || 'var(--chart-capital)', fillOpacity: 0.7 }"
+              :cx="d.px"
+              :cy="d.py"
+              :r="d.r"
+              :style="{
+                fill: TIER_COLOR[d.tier] || 'var(--chart-capital)',
+                fillOpacity: hoverId === d.id ? 0.9 : 0.55,
+              }"
+              :stroke="hoverId === d.id ? 'var(--ink-gray-9)' : 'none'"
+              stroke-width="1.5"
             />
             <!-- COM-51: tier initial as a redundant (non-color) channel for colour-blind + print;
                  rendered only where the bubble is large enough to hold the glyph. -->
             <text
-              v-if="sr(d.z) >= 9"
-              :x="sx(d.x)"
-              :y="sy(d.y) + 3.5"
+              v-if="d.r >= 9"
+              :x="d.px"
+              :y="d.py + 3.5"
               text-anchor="middle"
               font-size="10"
               font-weight="600"
@@ -232,12 +303,23 @@ const baseTotalSum = computed(() =>
             >
               {{ (S.tiers[d.tier]?.name || "")[0] }}
             </text>
+            <!-- COM-48: de-collided label (above / below / stacked) with a white halo so names stay
+                 legible over gridlines and neighbouring bubbles even when points cluster. -->
             <text
-              :x="sx(d.x)"
-              :y="sy(d.y) - sr(d.z) - 3"
+              :x="d.px"
+              :y="d.ly"
               text-anchor="middle"
-              class="fill-current text-ink-gray-7"
+              class="fill-current"
+              :class="hoverId === d.id ? 'text-ink-gray-9' : 'text-ink-gray-7'"
               font-size="10"
+              :font-weight="hoverId === d.id ? 600 : 400"
+              style="
+                pointer-events: none;
+                paint-order: stroke;
+                stroke: #fff;
+                stroke-width: 2.5px;
+                stroke-linejoin: round;
+              "
             >
               {{ d.name }}
             </text>

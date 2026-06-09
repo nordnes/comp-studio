@@ -134,8 +134,8 @@ const hi = (r: any) => Math.max(r.from, r.to);
         <text
           :x="x(hi(r)) + 6"
           :y="padT + i * rowH + rowH / 2 + 4"
-          class="fill-current text-ink-gray-6"
-          font-size="9"
+          class="fill-current text-ink-gray-7"
+          font-size="11"
         >
           {{ r.note || fUSD(r.to) }}
         </text>
@@ -152,7 +152,7 @@ const hi = (r: any) => Math.max(r.from, r.to);
         :x="x(model.current)"
         :y="H - 10"
         text-anchor="middle"
-        font-size="9"
+        font-size="11"
         :style="{ fill: 'var(--chart-uplift)' }"
       >
         Current
@@ -170,7 +170,7 @@ const hi = (r: any) => Math.max(r.from, r.to);
         :x="x(model.ceiling)"
         :y="H - 10"
         text-anchor="middle"
-        font-size="9"
+        font-size="11"
         class="fill-current text-ink-gray-6"
       >
         Ceiling

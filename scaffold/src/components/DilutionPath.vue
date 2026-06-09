@@ -39,7 +39,7 @@ const pctOfGrant = (sN: number) => props.c.baseEq * (w.value.steps[0].N / sN);
                   : 'var(--chart-tint)',
           }"
         />
-        <div class="text-ink-gray-6 mt-1" style="font-size: 8px">{{ s.label }}</div>
+        <div class="text-ink-gray-7 mt-1" style="font-size: 10px">{{ s.label }}</div>
       </div>
     </div>
     <p class="text-p-xs mt-2 text-ink-gray-6">

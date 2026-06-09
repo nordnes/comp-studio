@@ -115,19 +115,19 @@ const refLines = computed(() => {
           :x="x(r.m)"
           :y="padT + 6"
           text-anchor="middle"
-          font-size="8"
+          font-size="11"
           :class="r.color ? '' : 'fill-current text-ink-gray-6'"
           :style="r.color ? { fill: r.color } : {}"
         >
           {{ r.label }}
         </text>
       </template>
-      <text :x="padL" :y="H - 6" font-size="8" class="fill-current text-ink-gray-6">M0</text>
+      <text :x="padL" :y="H - 6" font-size="11" class="fill-current text-ink-gray-6">M0</text>
       <text
         :x="W - padR"
         :y="H - 6"
         text-anchor="end"
-        font-size="8"
+        font-size="11"
         class="fill-current text-ink-gray-6"
       >
         M48

@@ -190,15 +190,15 @@ const baseTotalSum = computed(() =>
             class="stroke-current text-ink-gray-3"
             stroke-width="1"
           />
-          <text :x="PAD.l" :y="VH - 6" class="fill-current text-ink-gray-6" font-size="9">
+          <text :x="PAD.l" :y="VH - 6" class="fill-current text-ink-gray-7" font-size="11">
             {{ fUSD(0) }}
           </text>
           <text
             :x="VW - PAD.r"
             :y="VH - 6"
             text-anchor="end"
-            class="fill-current text-ink-gray-6"
-            font-size="9"
+            class="fill-current text-ink-gray-7"
+            font-size="11"
           >
             {{ fUSD(xMax) }}
           </text>
@@ -224,7 +224,7 @@ const baseTotalSum = computed(() =>
               :y="sy(d.y) - sr(d.z) - 3"
               text-anchor="middle"
               class="fill-current text-ink-gray-7"
-              font-size="9"
+              font-size="10"
             >
               {{ d.name }}
             </text>

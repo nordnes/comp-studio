@@ -780,3 +780,51 @@ first) absorbing 67+63 → COM-72 (dark-panel design) → COM-69 (local vp). Eng
 **Subscription:** this session is watching PR #1 for CI failures + review comments until merge/close. All events
 so far were vercel[bot] deploy-status (Building→Ready, all green) — no action. send_later unavailable → no timed
 check-in; relying on webhook events.
+
+## 2026-06-09 — New session FULLY EQUIPPED + COM-65 (⏳ → "pending" chip) DONE [M8 #12]
+
+**Resume condition the prior pause waited for is MET:** local `vp` present, **Claude Preview MCP present**
+(live visual pass restored), Linear/GitHub/Vercel MCP all connected. The prior "no preview / no vp"
+constraints are LIFTED → the whole remaining M8 is executable here. Robin's calls (AskUserQuestion):
+**(1) full M8 marathon** — all 12 remaining issue-by-issue, surface COM-62/72 design calls when reached,
+then gate M8; **(2) commit ULTRACODE_PROMPT.md to the dev branch** (I deferred the write to session close
+so it reflects final state — memory.md is the durable log meanwhile).
+
+**Branch/flow:** fresh worktree branch `claude/relaxed-faraday-a9f377` off frosty (which now has the 11
+merged M8 issues via PR #1, merge 9ba086d). New **draft PR #2** (relaxed-faraday → frosty,
+https://github.com/nordnes/comp-studio/pull/2) tracks this batch; merge to frosty at the M8 gate ONLY.
+
+**Preview reality (this session):** the HMR dev server (`comp-studio-dev`, port 5173) CRASHES on start
+under the preview MCP; **`comp-studio` (vite preview over built dist, port 4173) is rock-solid.** Loop =
+**edit → `( cd scaffold && npm run build )` (~3s) → reload 4173 → verify** — aligns with the per-issue
+build gate anyway (no HMR needed). `.claude/launch.json` already has both configs. serverId changes per run.
+
+**Icon idiom (IMPORTANT for all future icon work):** lucide icons render via CSS classes `lucide-<name>`
+sourced from a **FIXED 46-icon set baked into frappe-ui's bundled style.css** — NOT an on-demand generator
+(no @iconify/tailwind, no addDynamicIconSelectors; tailwind `plugins:[]`). An arbitrary `lucide-foo` =
+invisible empty span. Available 46: archive, arrow-right, bell, building-2, check, check-circle,
+chevron-down, clipboard-paste, copy, edit, ellipsis, eye, file-json, file-text, folder-input, folder-open,
+inbox, info, layers, layout-grid, link, list-restart, log-out, mail, message-circle, moon, more-horizontal,
+pen, plus, printer, rotate-ccw, save, settings, share-2, sliders-horizontal, smile, target, trash-2,
+trending-down, trending-up, triangle-alert, upload, user, user-plus, users, zap. **No clock/hourglass/timer**
+→ COM-65's lucide-glyph option was off the table. (A NEW glyph could come via frappe-ui's `~icons/lucide/*`
+component-import path, but that's untested in app code — would need verifying first.)
+
+**COM-65 (P3, S) — DONE.** ⏳ emoji → small **"pending" text chip in accessible amber** (`--ink-amber-strong`
+= rgb(138,75,8)) — the issue's sanctioned fallback since no clock/hourglass glyph exists.
+- DOM (3): Advisors capital channel (new wrapper `<span class="ml-1 text-xs font-sans text-ink-amber-strong">
+  <Term k="awaitingGate">pending</Term></span>`), Advisors objective row (`⏳ awaiting gate` → `awaiting gate`
+  — words ARE the marker), Board pending-uplift cell (inner `text-xs font-sans` span, amber from existing
+  wrapper). Kept `<Term>` tooltip + a11y everywhere.
+- SVG (2): GrowthWaterfall note strings `" ⏳"` → `" pending"` (CSS icons can't render in SVG `<text>`).
+  Kept gray-7 (chart-annotation language; faded bar + legend already encode pending — amber would clash
+  with the multi-colour faded bars). Updated the stale Term.vue comment.
+- `text-2xs` is NOT in the preset (only text-p-xs/text-xs) → used text-xs.
+- QA: build 0 · scaffold engine 22/22 · **preview-verified** on 4173: no ⏳ on any route; site-2 "awaiting
+  gate" = amber rgb(138,75,8) text-xs dotted underline; GrowthWaterfall "+30%/+20% pending" notes fit with
+  NEGATIVE overflow (−11…−58px = inside the SVG, no clip); Board "+90% +80 pending" amber. No console errors.
+  Committed f2fdf43, pushed to dev branch; Linear Done.
+
+**Next M8:** COM-60 (chart-mount placeholder/flash) → COM-64 (Proposition band) → COM-59 (print mark) →
+chart cluster (48/57/58/47) → COM-66 (More-menu) → COM-62 app-shell (3 PRs, **design call first**) → COM-63
+(⌘K) → COM-72 (FormControl, **dark-panel design call**) → COM-69 (vp). Then M8 gate.

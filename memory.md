@@ -555,3 +555,14 @@ import shows an error toast (bottom-right, icon + close); old span gone.
   (rare states) — same Alert pattern, API-correct + build-verified.
 
 **Next M8:** COM-55 (TabButtons) → COM-52 (Tooltips) → COM-68, then chart cluster, COM-62 app-shell, P3.
+
+## 2026-06-09 — COM-55 (TabButtons) DONE [M8]
+
+**COM-55 (P2, S) — DONE.** Converted the 2 hand-rolled Button-array segmented toggles in Advisors to frappe-ui
+<TabButtons :buttons :model-value @update:model-value>: base denomination (By tier / By $ value) + per-objective
+tri-state (Off / Target / Earned). Gains roving-focus keyboard nav + selected-state ARIA. Trade-off: the tri-state's
+earned=green per-segment theme is gone (TabButtons has no per-button theme) — earned is still cued by the green
+"+X%" text + dot. Verified: clicking "By $ value" switched to value mode (slider appeared) → TabButtons are
+click/keyboard-functional; 15 tri-state segments render. QA: build 0 · engine 22/22 · vp clean · no console errors.
+
+**Next M8:** COM-52 (Tooltips on finance jargon) → COM-68 (Divider/Avatar/Combobox + text-scale), then chart cluster, COM-62 app-shell, P3.

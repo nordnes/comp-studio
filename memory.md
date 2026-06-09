@@ -1751,3 +1751,16 @@ identical. vp 0 · 22/22 both · build 0. Gates COM-113/114/117.
 **★ WAVE 1 (foundations) COMPLETE: COM-93 → 135 → 116 → 118 → 110, PRs #26–#30 all merged to frosty.**
 M9 = 26 Done / 40 open. Next: wave-boundary frosty re-verify, then WAVE 2 hardening (COM-133 EmptyState,
 COM-134 print, COM-137→138 alerts stack, COM-136 truncation).
+
+## 2026-06-10 — COM-133 (shared EmptyState) DONE [M9 finish-loop W2 #1]
+
+**COM-133 (P2 HIGH, 96/24 LOC, 6 files) — DONE + MERGED.** `components/EmptyState.vue` (icon medallion +
+title + body + CTA slot, max-w-reading centered) extracted from Overview's donor block; Board + Compare now
+gate their whole template on `board.rows.length` (charts/total rows suppressed), Advisors + Proposition
+upgraded from bare one-liners. CTAs call `addAdvisor` (it self-selects → Advisors/Proposition render the
+new package immediately); Overview keeps its route-to-/board CTA (pure refactor of the donor).
+- **Verified by actually emptying the board on :4173** (localStorage surgery on `raiku-advisor-comp-v5` —
+  the persisted shape is `{scenarios: savedBoardsMap, last}`, NOT {S,saved}; backup → sessionStorage →
+  restore): all four views show the teaching state, Board screenshot clean, CTA on Proposition created
+  "New advisor" + rendered the letter; original 4-advisor board restored after. Zero console errors.
+  vp 0 · 22/22 both · build 0.

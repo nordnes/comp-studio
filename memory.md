@@ -530,3 +530,14 @@ Hidden when <2 scenarios.
 
 **Next M8:** frappe-ui adoption cluster — COM-53 (Toasts) → COM-54 (Alert) → COM-55 (TabButtons) → COM-52
 (Tooltips) → COM-68. Then chart legibility, COM-62 app-shell (3 PRs), P3 polish.
+
+## 2026-06-09 — COM-53 (frappe-ui Toasts) DONE [M8]
+
+**COM-53 (P2, S) — DONE.** Replaced the ephemeral header status span with frappe-ui Toasts. flash() (store.ts)
+now calls toast.error (msgs matching /fail|invalid|blocked|unavailable|exceed/) else toast.success — rendered by
+the already-mounted FrappeUIProvider → ToastProvider (which renders <Toasts/> + ToastViewport bottom-right; no
+extra mount needed). Removed the dead `store.status` field + the header span. All flash() call sites + Proposition
+copyProp now toast (success/error styled). QA: build 0 · engine 22/22 · no console errors · verified an invalid
+import shows an error toast (bottom-right, icon + close); old span gone.
+
+**Next M8:** COM-54 (Alert for storage/budget banners) → COM-55 (TabButtons) → COM-52 (Tooltips) → COM-68 → chart cluster → COM-62 app-shell → P3.

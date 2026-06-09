@@ -8,7 +8,11 @@
 >
 > **First three actions, every session:** (1) read `memory.md` (the dated tail — the live status of record); (2)
 > read `CLAUDE.md` (locked rules); (3) read the COM issue you're about to build, **in full**, in Linear.
-> `reference/advisor-comp-studio.tsx` is the UX/behaviour/legal/IA source of truth (visual = Espresso).
+> `reference/advisor-comp-studio.tsx` is the UX/behaviour/legal/IA source of truth (visual = Espresso),
+> **as extended by `COMP_STUDIO_SPEC_v2.md` — the product spec, ADOPTED 2026-06-09** (after this prompt was
+> first authored). For NEW scope (M10 Engine v2 · M11 Trajectory & lifecycle · M12 Governance — Linear
+> COM-139…170) and the Δ4 legal correction (COM-139), **the spec supersedes the reference**; for everything
+> PD2 builds, nothing changes — PD2 remains presentation/state over the frozen engine.
 
 ---
 
@@ -50,7 +54,10 @@
   waterfall, scatter, football-field, vesting timeline, DilutionPath.
 - **Internal & CONFIDENTIAL.** Every equity figure **net of strike**. The "**discussion draft, not a binding offer**"
   caveat stays. The **legal corpus + benchmark strings are verbatim** — never reword (presentation/eyebrow copy is
-  fair game; the locked legal sentences are not). PD2's printed target-outcome line (COM-84) must carry the existing
+  fair game; the locked legal sentences are not). **ONE sanctioned exception — COM-139 (spec v2 Δ4):** the
+  reference's "CoC acceleration at Board discretion" sentence is **STALE** (Plan rules v9 deleted Rule 9.2);
+  it gets corrected via COM-139 (with GC wording sign-off), and the corrected sentence becomes the new locked
+  corpus. PD2's printed target-outcome line (COM-84) must carry the existing
   "**net of strike & dilution · not a forecast**" qualifier verbatim (it's already in `ExitSlider.vue`).
 - **`reference/advisor-comp-studio.tsx` = UX source of truth** for features/labels/legal/IA/behaviour. Espresso is the
   visual layer; M9 sanctions deliberate "impeccable" visual polish, but labels/columns/IA/legal corpus stay unchanged.
@@ -178,6 +185,15 @@ first · COM-95 Configure two-column) → ④ the **frappe-ui adopt cluster** (d
 Sidebar (adopt + scrim drawer) · COM-105 CommandPalette full rebuild · COM-96 local RosterTable · COM-121 remove dead
 mono + sentence-case labels · COM-110 delete dead `[data-theme=dark]` branch → then the visual-system/anti-slop,
 charts, editorial, and responsive/print/empty-state hardening sets (remaining COM-* to COM-138).
+
+**After/alongside M9 (spec v2 roadmap — Linear carries it as of 2026-06-09):** **COM-139** (M9 High — the Δ4
+legal-corpus correction; small, buildable any time, GC wording sign-off) → **M10 · Engine v2** (COM-140 RFC +
+reconciliation gate FIRST; then COM-142–154: value-denominated grants, per-grant strike, dual vesting curves,
+scenario sets + walk-forwards, leaver engine, exercise windows/backstop, conversion fallback, capital schedule,
+cash-floor — the engine unfreezes ONLY behind COM-140's green parity suite) · **M12 · Governance & compliance**
+(COM-141 checklist may start presentation-only ANY time; COM-166–170) · **M11 · Trajectory & lifecycle**
+(COM-155–165; depends on M10). **COM-87 is SUPERSEDED by COM-140/143 — still do not build it.** M6 (COM-33/34/35)
+remains the most urgent RISK item per spec Part 14 — the live URL is public.
 
 ---
 

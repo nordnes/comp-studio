@@ -1461,3 +1461,22 @@ engine touch per ULTRACODE_M9_PD2 §2 rule 1 — scaffold copy ONLY, money path 
   SELECTS it** (pointer events on the option do NOT select). Full synthetic open→select→close now possible.
 - QA: engine 22/22 both · `vp check` 0 errors on my files · build 0. Branch `robinandre/com-81-…` stacked on
   COM-82; PR `Fixes COM-81`. **STOPPED at the merge gate.** Next: COM-85 (Board-local scenario selector).
+
+## 2026-06-09 — COM-85 (Board-local scenario selector) DONE [M9 PD2 #3]
+
+**COM-85 (P3 Med, 59 net LOC) — DONE.** Stacked on COM-81. Project the whole board under a chosen case from
+the Board surface — presentation ref only, NO store mutation, global Case untouched.
+- **Board.vue:** `boardCase` ref ('' = follow base) + guarded `bc` computed; "Project the board under"
+  `TabButtons` over `scenKeys` + orange "Projected: <label>" Badge when diverged. `sFor(c)` =
+  `c.scen.find(key===bc) || c.base` re-keys: roster value cell + board total (header relabels to
+  "Net · <label>"), the scatter (x = `s.total`, y = headroom where the **per-scenario ceiling is mirrored
+  in-view** per §2 rule 3: `s.netEqAt(c.eqPctCeil, s.exitVal) + c.tkPctCeil * s.fdv` — exactly engine.ts
+  `baseCaseCeil` line 282 over exported fields), and the company-cost **white-card highlight** (`k === bc`).
+  Scatter aria-label carries the projected case label. Staircase + FootballField ranges stay base/min-max
+  (out of the issue's three named surfaces).
+- **Preview-verified on :4173:** click Aggressive → header "Net · Aggressive", Iraj $21.4M / others $14.3M,
+  **board total $64.3M == the cost panel's Aggressive cell** (internal consistency proof), white card moved,
+  badge on, `plan.baseScenario` still "base" in localStorage; click Base → all restored, badge gone.
+  Screenshot captured. TabButtons select via plain `.click()` (real buttons — no reka dance needed).
+- QA: engine 22/22 · `vp check` 0 errors on Board.vue · build 0. Branch `robinandre/com-85-…` stacked on
+  COM-81; PR `Fixes COM-85`. **STOPPED at the merge gate.** Next: COM-83 (ScenarioTable small-multiples).

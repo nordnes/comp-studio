@@ -100,7 +100,8 @@ const scenColors = computed(() =>
 </script>
 
 <template>
-  <div class="space-y-8">
+  <!-- COM-89: dense tables opt OUT of the reading column — Compare keeps the wide canvas -->
+  <div class="mx-auto w-full max-w-7xl px-3 sm:px-5 space-y-8">
     <PageHeader
       title="The board, side by side."
       desc="Net of strike & scenario dilution. Click a row to open a package."

@@ -59,7 +59,7 @@ const msOpts = () => S.S.plan.milestones.map((m) => ({ label: m.label, value: m.
 <template>
   <!-- COM-72 (Robin's call): the editing surface is a standard LIGHT surface (was a [data-theme=dark]
        panel). Inputs use semantic tokens, so dropping the dark theme lightens the whole view cleanly. -->
-  <div class="text-ink-gray-9">
+  <div class="mx-auto w-full max-w-reading px-3 sm:px-5 text-ink-gray-9">
     <div class="space-y-6">
       <!-- header -->
       <div class="flex justify-between items-center gap-3 flex-wrap">

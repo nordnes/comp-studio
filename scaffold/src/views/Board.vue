@@ -199,7 +199,8 @@ const caseTotalSum = computed(() =>
 </script>
 
 <template>
-  <div class="space-y-8">
+  <!-- COM-89: dense tables opt OUT of the reading column — Board keeps the wide canvas -->
+  <div class="mx-auto w-full max-w-7xl px-3 sm:px-5 space-y-8">
     <PageHeader
       title="The board, and what it costs us."
       desc="Uniform base × tier, grown by gated performance. Equity is net of strike and scenario dilution; tokens are valued at the scenario's TGE FDV."

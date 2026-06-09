@@ -24,6 +24,12 @@ export default {
       fontFamily: {
         display: ["Fraunces", "Georgia", "serif"],
       },
+      // COM-89: the reading-column token (~960px keeps prose at the 65–75ch target). Reading-heavy
+      // views (Overview/Advisors/Configure/Proposition + the footer) use max-w-reading; the dense
+      // tables (Board/Compare) self-apply max-w-7xl instead.
+      maxWidth: {
+        reading: "60rem",
+      },
     },
   },
   plugins: [],

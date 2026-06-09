@@ -72,10 +72,13 @@ function toProp() {
 </script>
 
 <template>
-  <div v-if="!sel || !c" class="text-center py-24 text-ink-gray-6">
+  <div
+    v-if="!sel || !c"
+    class="mx-auto w-full max-w-reading px-3 sm:px-5 text-center py-24 text-ink-gray-6"
+  >
     No advisor selected. Add one on the Board.
   </div>
-  <div v-else class="space-y-8">
+  <div v-else class="mx-auto w-full max-w-reading px-3 sm:px-5 space-y-8">
     <div class="flex justify-between items-center flex-wrap gap-3 no-print">
       <PageHeader title="Base, then performance." />
       <div class="flex items-center gap-2 flex-wrap">

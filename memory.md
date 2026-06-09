@@ -1677,3 +1677,16 @@ big batch next session.** Done:
 
 **NEXT SESSION: paste ULTRACODE_M9_FINISH.md §6 kickoff.** Open human items unchanged: COM-33 (Deployment
 Protection — URL still public), Charlie's COM-139 wording sign-off, COM-71 (Vercel MCP scope).
+
+## 2026-06-10 — COM-93 (nav single-source) DONE [M9 finish-loop W1 #1]
+
+**COM-93 (P4 Low, S, 52/38 LOC) — DONE + MERGED.** First issue of the ULTRACODE_M9_FINISH goal loop (wave 1).
+- New `src/nav.ts`: `NAV: {to,label,icon,group}[]` + derived `navGroups` (Board/Advisor; Configure excluded)
+  + `configureItem`. App.vue's inline navGroups const (COM-62) replaced by the import; CommandPalette's local
+  ROUTES deleted — its "Go to" group consumes NAV and shows the workflow group as the row hint (skipped when
+  it would repeat the label: Board, Configure); router.ts iterates NAV for order+titles over a local
+  `views` component map (components stay out of nav.ts so the palette/sidebar don't pull view chunks).
+- Verified on :4173: sidebar order = NAV order; palette "Go to" hints Board/Board/—/Advisor/Advisor/—;
+  palette click routes (→/proposition); all six routes resolve; zero console errors. vp 0 errors ·
+  engine 22/22 both · build 0.
+- Gates COM-104 (Sidebar adopt) + COM-105 (palette rebuild), which consume nav.ts.

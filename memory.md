@@ -1024,3 +1024,18 @@ Share wording); COM-72 = **lighten the Configure dark panel to a light surface**
 
 **M8 ~22/23 (COM-67 absorbed; reconcile exact count at gate).** Remaining: COM-72 (lighten Configure + FormControl)
 · COM-63 (⌘K palette). Next: COM-72, then COM-63, then GATE M8.
+
+## 2026-06-09 — COM-72 (lighten Configure + FormControl) DONE [M8 #23]
+
+**COM-72 (P3, M) — DONE.** (1) **Lighten:** Configure.vue root dropped `data-theme="dark"` + the full-bleed
+wrapper (-mx/-my/min-h) → standard LIGHT surface (inputs use semantic tokens → lightens cleanly; now matches the
+app). Inner container simplified to `space-y-6` (main already provides max-w-7xl/padding → no double-pad).
+(2) **FormControl:** Advisors profile bare inputs/Selects → frappe-ui FormControl — Name(text), Sector/Granted/Tax
+(select), Start date(date), Notes(textarea); label association replaces COM-40's aria-labels. NumIn kept for
+Engagement. Removed the now-unused Select import.
+- Preview-verified: Configure light + all sections render; Advisors profile = labeled FormControl fields with
+  correct values; no console errors. build 0 · engine 22/22 · committed 86fc5ef; Linear Done.
+- **Scope note:** Configure's many round/scenario/tier/milestone inputs were NOT converted to FormControl (now
+  light + mostly NumIn; field-by-field FormControl across Configure is the incremental "fuller adoption").
+
+**Next: COM-63 (⌘K command palette) — the LAST M8 issue. Then GATE M8.**

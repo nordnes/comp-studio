@@ -28,6 +28,7 @@ import EquityBenchmark from "../components/EquityBenchmark.vue";
 import PotentialStrip from "../components/PotentialStrip.vue";
 import GrowthWaterfall from "../components/GrowthWaterfall.vue";
 import UpsideCurve from "../components/UpsideCurve.vue";
+import ExitSlider from "../components/ExitSlider.vue";
 import VestingTimeline from "../components/VestingTimeline.vue";
 import FootballField from "../components/FootballField.vue";
 import MixBreakdown from "../components/MixBreakdown.vue";
@@ -41,6 +42,8 @@ const sel = computed(() => selected.value?.a as any);
 const c = computed(() => selected.value?.c as any);
 const i = computed(() => S.value.advisors.findIndex((a: any) => a.id === sel.value?.id));
 const showDetail = ref(false);
+// COM-47: the exit slider publishes the selected exit value; UpsideCurve marks it on the equity curve.
+const exitMarker = ref<number | null>(null);
 
 function setField(k: string, v: any) {
   setPath(["advisors", i.value, k], v);
@@ -384,7 +387,8 @@ function toProp() {
       <div class="lg:col-span-7 space-y-6 print-area">
         <PotentialStrip :c="c" />
         <GrowthWaterfall :c="c" :sel="sel" />
-        <UpsideCurve :c="c" />
+        <ExitSlider :c="c" @exit="(v) => (exitMarker = v)" />
+        <UpsideCurve :c="c" :marker-exit="exitMarker ?? undefined" />
         <Button
           class="w-full no-print"
           variant="subtle"

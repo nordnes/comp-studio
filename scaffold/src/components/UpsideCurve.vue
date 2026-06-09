@@ -10,7 +10,7 @@ import { roundLabel, fUSD, BENCH, safeDiv } from "../engine";
 import FrappeChart from "./FrappeChart.vue";
 import Term from "./Term.vue";
 import { chartHex } from "../constants";
-const props = defineProps<{ c: any }>();
+const props = defineProps<{ c: any; markerExit?: number | null }>();
 const tkColors = computed(() => [chartHex("--chart-customer")]);
 const { store } = useStudio();
 const plan = computed(() => store.S.plan);
@@ -41,6 +41,10 @@ const eqPath = computed(() => {
 });
 const beClamped = computed(() => Math.min(Math.max(breakeven.value, 0), topEq.value));
 const eqXTicks = computed(() => [0, topEq.value / 2, topEq.value]);
+// COM-47: optional exit-slider marker (clamped to the plotted exit range).
+const mx = computed(() =>
+  props.markerExit == null ? null : Math.min(Math.max(props.markerExit, 0), topEq.value),
+);
 
 // --- tokens vs FDV: frappe-charts line (linear, no strike) ---
 const lineOpts = {
@@ -136,6 +140,26 @@ const tkChart = computed(() => {
           >
             breakeven
           </text>
+          <!-- COM-47: exit-slider marker — where the advisor's slider sits on the curve -->
+          <template v-if="mx !== null">
+            <line
+              :x1="ex(mx)"
+              :y1="EPAD.t"
+              :x2="ex(mx)"
+              :y2="EH - EPAD.b"
+              :style="{ stroke: 'var(--chart-uplift)' }"
+              stroke-width="1"
+              stroke-opacity="0.55"
+            />
+            <circle
+              :cx="ex(mx)"
+              :cy="ey(netAt(mx))"
+              r="4"
+              stroke="#fff"
+              stroke-width="1.5"
+              :style="{ fill: 'var(--chart-uplift)' }"
+            />
+          </template>
           <text
             :x="EPAD.l - 5"
             :y="EPAD.t + 8"

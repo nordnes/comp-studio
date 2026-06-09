@@ -7,6 +7,7 @@ import { Avatar, Button, Divider } from "frappe-ui";
 import { useStudio } from "../store";
 import { fUSD, fPct, fNum, fMult, baseScenKey, roundLabel } from "../engine";
 import AdvisorPicker from "../components/AdvisorPicker.vue";
+import ExitSlider from "../components/ExitSlider.vue";
 import Term from "../components/Term.vue";
 
 const { store, selected, flash } = useStudio();
@@ -97,6 +98,10 @@ const residencyLine = computed(() =>
         />
       </div>
     </div>
+
+    <!-- COM-47: exit-valuation explorer (no-print) — lets the recipient feel the upside on screen;
+         the printed document keeps its static Base/Current/Ceiling figures. -->
+    <ExitSlider :c="c" />
 
     <div class="print-area bg-surface-white rounded border border-outline-gray-2">
       <div class="px-8 sm:px-12 py-10 border-b border-outline-gray-1">

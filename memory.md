@@ -1330,3 +1330,38 @@ field set. **Next:** COM-75 (Board roster inline kebab — tier Select + Open/Re
 **Next (last PD1):** COM-76 (promote package editing into a Dialog/drawer; extract a reusable `PackageEditor` —
 carry the COM-73 field set + COM-77 FormLabel/`:description`/clamp stack + COM-74 checkpoint; **L ~280, watch the
 450 cap**).
+
+## 2026-06-09 — COM-76 (Edit package Dialog; extract PackageEditor) DONE [M9 PD1 #5 — ★ PD1 COMPLETE]
+
+**COM-76 (P3 Med, L — ~445 new + ~504-line relocation) — DONE.** Stacked on COM-75. PD1 capstone: editing moves
+from the inline Advisors column into a **global frappe-ui Dialog**. Robin approved **one PR** (structural-move
+exception) and **retiring COM-74's inline indicator** (revert preserved via the Dialog's Cancel).
+- **NEW `components/PackageEditor.vue`** — the COM-73 field set + COM-77 FormLabel/`:description`/clamp stack,
+  relocated into `<Dialog v-model="open" :options="{title:'Edit package · '+name, size:'lg'}">` with
+  `#body-content` (Identity / Base grant / Performance / Objectives) + `#actions="{close}"` footer (Cancel / Save
+  + an "Edited" hint). Edits the **selected** advisor live via setPath (autosave); snapshots `cloneAdv(sel)` on
+  open (`watch(open)`); **Cancel** restores via `setPath(['advisors',i], clone)` + close; **Save** closes. JSON
+  clone (structuredClone throws on the reactive proxy).
+- **NEW `composables/useEditor.ts`** — module-level singleton (`open` ref + openEditor/closeEditor); keeps
+  store.ts pure (the only cross-component state). Callers `select(id)` then `openEditor()`.
+- **`App.vue`** mounts `<PackageEditor />` once inside FrappeUIProvider (next to the Mgr Dialog) → overlays ANY route.
+- **`Advisors.vue`** — removed the left 5/12 editor column + the COM-74 inline checkpoint script; now a
+  full-width read projection + a compact read-only **Package summary** (`<dl>` of the editable terms) + an "Edit
+  package" button (header + summary). ~660 lines changed (mostly deletion).
+- **`Board.vue` + `Overview.vue`** — kebab "Open package" (navigate) → **"Edit package"** (`select(a.id);
+  openEditor()` → opens the Dialog overlaid, no navigation — the PD1 "edit from the roster" goal).
+- 4 modified + 2 new files. Engine frozen; store pure; no data layer.
+- **Verified:** engine **22/22** both · build **0** · `vp check` **0 errors** (run from `scaffold/` — from repo
+  root it aborts on the sandbox-denied root `engine/engine.ts`). :4173: Advisors full-width read layout + summary;
+  "Edit package" opens the Dialog; tier edit live 0→2 → **Cancel restored to 0** / **Save kept (1) + closed**;
+  Board kebab → Edit package opens the Dialog **overlaid, path stays /board**; no new console errors. Screenshot.
+  Reverted `components.d.ts`/`auto-imports.d.ts`. **Verify-quirk:** a frappe-ui Dialog's teleported content
+  lingers briefly after close — judge open/closed by the reka `role="dialog"` element, not by button/title text.
+- /code-review clean (presentation; no `/security-review`). Branch `robinandre/com-76-…` **stacked on COM-75**;
+  PR **`Fixes COM-76`** (base = COM-75 branch). **STOPPED at the merge gate.**
+
+**★ PD1 SPINE COMPLETE — 73 → 77 → 74 → 75 → 76, five stacked PRs #9–#13 into frosty.** Merge order
+#9→#10→#11→#12→#13; GitHub auto-retargets each to frosty as its parent lands. **Next = PD2** (per-advisor scenario
+projection: COM-82 state spine → 81 → 85 → 83 → 84 → 86; **COM-87 engine override stays DEFERRED**). Reusable
+gotchas logged this run: FormControl has no `:error`; `structuredClone` throws on reactive proxies (JSON-clone);
+the preview console buffer is cumulative across reloads (stale errors persist — check the bundle hash / count).

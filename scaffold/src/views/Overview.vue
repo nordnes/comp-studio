@@ -1,14 +1,24 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useRouter } from "vue-router";
-import { Alert, Avatar, Button, Badge } from "frappe-ui";
+import { Alert, Avatar, Button, Badge, Dropdown } from "frappe-ui";
 import { useStudio } from "../store";
-import { fUSD, fPct, fNum, scenKeys, baseScenKey, walkScenario, tgeFdvFor, BENCH } from "../engine";
+import {
+  fUSD,
+  fPct,
+  fNum,
+  fMult,
+  scenKeys,
+  baseScenKey,
+  walkScenario,
+  tgeFdvFor,
+  BENCH,
+} from "../engine";
 import PageHeader from "../components/PageHeader.vue";
 import PoolAllocation from "../components/PoolAllocation.vue";
 import Term from "../components/Term.vue";
 
-const { store, board, select } = useStudio();
+const { store, board, select, delAdvisor, setPath } = useStudio();
 const router = useRouter();
 const S = computed(() => store.S);
 const sk = computed(() => scenKeys(S.value.plan));
@@ -20,6 +30,26 @@ const fdv = computed(() => tgeFdvFor(S.value.plan, baseKey.value, w.value));
 function open(id: string) {
   select(id);
   router.push("/advisors");
+}
+// COM-75: per-card kebab (mirror of Board) — change tier in-context, open the package, or remove.
+function rowMenu(a: any) {
+  const idx = S.value.advisors.findIndex((x: any) => x.id === a.id);
+  return [
+    {
+      label: "Change tier",
+      icon: "lucide-layers",
+      submenu: S.value.tiers.map((t: any, ti: number) => ({
+        label: `${t.name} · ${fMult(t.mult)}`,
+        icon: a.mode !== "value" && a.tier === ti ? "lucide-check" : null,
+        onClick: () => {
+          setPath(["advisors", idx, "mode"], "tier");
+          setPath(["advisors", idx, "tier"], ti);
+        },
+      })),
+    },
+    { label: "Open package", icon: "lucide-arrow-right", onClick: () => open(a.id) },
+    { label: "Remove", icon: "lucide-trash-2", theme: "red", onClick: () => delAdvisor(a.id) },
+  ];
 }
 
 const kpis = computed(() => [
@@ -115,23 +145,42 @@ const hasBudget = computed(() => flags.value.some((f) => f.t === "budget"));
       <div class="lg:col-span-2 space-y-3">
         <div class="text-sm text-ink-gray-6">Roster · click to open a package</div>
         <div class="grid sm:grid-cols-2 gap-3">
-          <button
+          <div
             v-for="{ a, c } in board.rows"
             :key="a.id"
+            role="button"
+            tabindex="0"
+            :aria-label="`Open ${a.name}`"
             @click="open(a.id)"
-            class="text-left bg-surface-white rounded border border-outline-gray-1 p-4 hover:bg-surface-gray-1 hover:border-outline-gray-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--ink-gray-6)]"
+            @keydown.enter="open(a.id)"
+            @keydown.space.prevent="open(a.id)"
+            class="text-left bg-surface-white rounded border border-outline-gray-1 p-4 cursor-pointer hover:bg-surface-gray-1 hover:border-outline-gray-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--ink-gray-6)]"
           >
             <div class="flex items-center justify-between gap-2">
               <div class="flex items-center gap-2 min-w-0">
                 <Avatar :label="a.name" size="sm" />
                 <span class="font-medium text-ink-gray-9 truncate">{{ a.name }}</span>
               </div>
-              <Badge
-                :label="a.mode === 'value' ? '$value' : S.tiers[a.tier]?.name || '—'"
-                theme="orange"
-                variant="subtle"
-                size="sm"
-              />
+              <div class="flex items-center gap-1 shrink-0">
+                <Badge
+                  :label="a.mode === 'value' ? '$value' : S.tiers[a.tier]?.name || '—'"
+                  theme="orange"
+                  variant="subtle"
+                  size="sm"
+                />
+                <Dropdown :options="rowMenu(a)" placement="right" class="no-print">
+                  <template #trigger>
+                    <button
+                      aria-label="Advisor actions"
+                      class="inline-flex shrink-0 items-center justify-center size-7 rounded hover:bg-surface-gray-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-gray-6)] text-ink-gray-6"
+                      @click.stop
+                      @keydown.stop
+                    >
+                      <span class="lucide-ellipsis size-4" aria-hidden="true" />
+                    </button>
+                  </template>
+                </Dropdown>
+              </div>
             </div>
             <div class="text-xs mt-0.5 text-ink-gray-6">{{ a.sector.split("—")[0].trim() }}</div>
             <div class="flex justify-between items-baseline mt-3">
@@ -145,7 +194,7 @@ const hasBudget = computed(() => flags.value.some((f) => f.t === "budget"));
             <div v-if="c.ceilUplift > c.earnedUplift" class="text-xs mt-1 text-ink-green-3">
               +{{ (c.ceilUplift * 100).toFixed(0) }}% potential at ceiling
             </div>
-          </button>
+          </div>
         </div>
         <p class="text-p-xs text-ink-gray-6">
           Base path:

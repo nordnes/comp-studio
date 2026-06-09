@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useRouter } from "vue-router";
-import { Button, Badge } from "frappe-ui";
+import { Alert, Button, Badge } from "frappe-ui";
 import { useStudio } from "../store";
 import { fUSD, fPct, fNum, scenKeys, baseScenKey, walkScenario, tgeFdvFor, BENCH } from "../engine";
 import PageHeader from "../components/PageHeader.vue";
@@ -162,28 +162,22 @@ const hasBudget = computed(() => flags.value.some((f) => f.t === "budget"));
           </p>
           <p class="text-p-xs text-ink-gray-6">Source: {{ BENCH.advisorSrc }}.</p>
         </div>
-        <div
-          class="rounded border p-5 space-y-2"
-          :class="
-            hasBudget
-              ? 'bg-surface-red-2 border-outline-red-2'
-              : 'bg-surface-amber-2 border-outline-amber-2'
-          "
-        >
-          <div class="text-sm" :class="hasBudget ? 'text-ink-red-3' : 'text-ink-amber-strong'">
-            To confirm / alerts
-          </div>
-          <div
-            v-for="(f, i) in flags"
-            :key="i"
-            class="text-p-xs flex items-start gap-1.5 leading-relaxed"
-            :class="f.t === 'budget' ? 'text-ink-red-3' : 'text-ink-gray-7'"
-          >
-            <span class="lucide-triangle-alert size-3.5 shrink-0 mt-0.5" aria-hidden="true" />{{
-              f.m
-            }}
-          </div>
-        </div>
+        <Alert :theme="hasBudget ? 'red' : 'yellow'" title="To confirm / alerts">
+          <template #description>
+            <div class="space-y-1.5">
+              <div
+                v-for="(f, i) in flags"
+                :key="i"
+                class="text-p-xs flex items-start gap-1.5 leading-relaxed"
+                :class="f.t === 'budget' ? 'text-ink-red-3' : 'text-ink-gray-7'"
+              >
+                <span class="lucide-triangle-alert size-3.5 shrink-0 mt-0.5" aria-hidden="true" />{{
+                  f.m
+                }}
+              </div>
+            </div>
+          </template>
+        </Alert>
       </div>
     </div>
   </div>

@@ -15,6 +15,7 @@ import {
 import { useStudio } from "./store";
 import { confirmDestroy } from "./confirm";
 import Term from "./components/Term.vue";
+import CommandPalette from "./components/CommandPalette.vue";
 import { fUSD, fPct, scenKeys, baseScenKey } from "./engine";
 
 // COM-62: left-sidebar IA (replaces the 6 horizontal top-tabs). Workflow groups (Robin's call):
@@ -151,6 +152,9 @@ const navLinkClass = (active: boolean) =>
   active
     ? "bg-surface-gray-3 text-ink-gray-9 font-medium"
     : "text-ink-gray-7 hover:bg-surface-gray-2";
+
+// COM-63: open the ⌘K command palette from the sidebar trigger (it also listens for Cmd/Ctrl+K itself).
+const openCmdK = () => window.dispatchEvent(new Event("open-command-palette"));
 </script>
 
 <template>
@@ -182,6 +186,13 @@ const navLinkClass = (active: boolean) =>
         </div>
         <!-- board-switcher + scenario case -->
         <div class="px-3 py-3 space-y-2 border-b border-outline-gray-1">
+          <!-- COM-63: command-palette trigger (⌘K) -->
+          <button
+            class="flex w-full items-center gap-2 rounded border border-outline-gray-2 px-2.5 py-1.5 text-sm text-ink-gray-5 hover:bg-surface-gray-2"
+            @click="openCmdK"
+          >
+            <span>Search</span><span class="ml-auto text-xs text-ink-gray-4">⌘K</span>
+          </button>
           <Button
             class="w-full"
             variant="subtle"
@@ -405,6 +416,9 @@ const navLinkClass = (active: boolean) =>
           </div>
         </template>
       </Dialog>
+
+      <!-- COM-63: ⌘K command palette (frontend-only) -->
+      <CommandPalette />
 
       <Dialogs />
     </div>

@@ -1583,3 +1583,15 @@ when green; /design-handoff artifact at the end.
   centred column, KPI band + roster + right rail intact, prose at readable measure. vp 0 errors on my files ·
   engine 22/22 · build 0. **Preview gotcha:** one `preview_screenshot` returned `UnknownVizError` — transient;
   immediate retry succeeded.
+
+## 2026-06-09 — COM-90 (Board leads with the roster) DONE [M9 design #2]
+
+**COM-90 (P3 Med, a pure block move) — DONE + MERGED.** Board's reading order un-inverted: PageHeader →
+ContextStrip → COM-85 selector → **roster + company-cost grid** → the two analysis charts below. DOM-order
+verified on :4173 (header/context/selector/ROSTER-GRID/CHARTS-GRID) + screenshot: roster + cost panel above
+the fold. **Documented trade-off:** kept the charts' half-width `lg:grid-cols-2` pairing instead of the
+issue's full-width option — the scatter's fixed 460×280 viewBox letterboxes at full width and, on mobile,
+a wider viewBox would scale its text BELOW the COM-49 ≥11px floor. Reading order was the load-bearing fix.
+- **Gotcha (2nd occurrence — now a rule):** zsh heredocs (even `<<'EOF'` to python) escape `!` → `\!` in
+  generated text. NEVER emit `!` through Bash heredocs; use the Write/Edit tools for content with bangs.
+- QA: vp 0 errors on Board.vue · engine 22/22 · build 0 · no new console errors.

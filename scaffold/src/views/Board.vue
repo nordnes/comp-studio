@@ -238,6 +238,157 @@ const caseTotalSum = computed(() =>
       >
     </div>
 
+    <div class="grid lg:grid-cols-12 gap-8">
+      <div class="lg:col-span-8 space-y-6">
+        <!-- roster table -->
+        <div class="bg-surface-white rounded border border-outline-gray-1 overflow-x-auto">
+          <table class="w-full text-sm" style="min-width: 560px">
+            <thead>
+              <tr class="border-b border-outline-gray-2 text-left text-ink-gray-6">
+                <th class="px-4 py-3 font-normal">Advisor</th>
+                <th class="px-4 py-3 font-normal">Tier</th>
+                <th class="px-4 py-3 font-normal text-right">Base eq</th>
+                <th class="px-4 py-3 font-normal text-right">Earned</th>
+                <th class="px-4 py-3 font-normal text-right">
+                  Net · {{ S.plan.scenarios[bc].label }}
+                </th>
+                <th class="px-2 py-3 no-print" />
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="{ a, c } in board.rows"
+                :key="a.id"
+                tabindex="0"
+                role="button"
+                :aria-label="`Open ${a.name}`"
+                class="border-b border-outline-gray-1 cursor-pointer hover:bg-surface-gray-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--ink-gray-6)] focus-visible:bg-surface-gray-1"
+                @click="open(a.id)"
+                @keydown.enter="open(a.id)"
+                @keydown.space.prevent="open(a.id)"
+              >
+                <td class="px-4 py-3">
+                  <div class="flex items-center gap-2.5">
+                    <Avatar :label="a.name" size="sm" />
+                    <div>
+                      <div class="font-medium text-ink-gray-9">{{ a.name }}</div>
+                      <div class="text-xs text-ink-gray-6">
+                        {{ a.sector.split("—")[0].trim() }}
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-4 py-3">
+                  <Badge
+                    :label="a.mode === 'value' ? '$value' : S.tiers[a.tier]?.name || '—'"
+                    theme="orange"
+                    variant="subtle"
+                    size="sm"
+                  />
+                </td>
+                <td class="px-4 py-3 tabular-nums text-right text-ink-gray-8">
+                  {{ fPct(c.baseEq, 2) }}
+                </td>
+                <td
+                  class="px-4 py-3 tabular-nums text-right"
+                  :class="c.earnedUplift > 0 ? 'text-ink-green-3' : 'text-ink-gray-6'"
+                >
+                  +{{ (c.earnedUplift * 100).toFixed(0) }}%<span
+                    v-if="c.pendingUplift > 0"
+                    class="text-ink-amber-strong"
+                  >
+                    +{{ (c.pendingUplift * 100).toFixed(0)
+                    }}<Term k="awaitingGate"
+                      ><span class="ml-1 text-xs font-sans">pending</span></Term
+                    ></span
+                  >
+                </td>
+                <td class="px-4 py-3 tabular-nums text-right font-medium text-ink-gray-9">
+                  {{ fUSD(sFor(c).total) }}
+                </td>
+                <td class="px-2 py-3 no-print">
+                  <Dropdown :options="rowMenu(a)" placement="right">
+                    <template #trigger>
+                      <button
+                        aria-label="Advisor actions"
+                        class="inline-flex shrink-0 items-center justify-center size-8 rounded hover:bg-surface-gray-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-gray-6)] text-ink-gray-6"
+                        @click.stop
+                        @keydown.stop
+                      >
+                        <span class="lucide-ellipsis size-4" aria-hidden="true" />
+                      </button>
+                    </template>
+                  </Dropdown>
+                </td>
+              </tr>
+              <tr class="bg-surface-amber-2">
+                <td class="px-4 py-3 font-medium text-ink-gray-9">
+                  Board · {{ board.rows.length }}
+                </td>
+                <td />
+                <td class="px-4 py-3 tabular-nums text-right font-medium text-ink-gray-9">
+                  {{ fPct(baseEqSum, 2) }}
+                </td>
+                <td />
+                <td class="px-4 py-3 tabular-nums text-right font-medium text-ink-gray-9">
+                  {{ fUSD(caseTotalSum) }}
+                </td>
+                <td class="no-print" />
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- scenario range by advisor -->
+        <div>
+          <div class="text-sm text-ink-gray-6 mb-3">Scenario range by advisor · net value</div>
+          <div class="bg-surface-white rounded border border-outline-gray-1 p-5 space-y-3">
+            <FootballField
+              v-for="r in ranges"
+              :key="r.name"
+              :lo="r.lo"
+              :base="r.base"
+              :hi="r.hi"
+              :max="rangeMax"
+              :label="r.name"
+              compact
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="lg:col-span-4 space-y-6">
+        <PoolAllocation :board="board" :committed="S.plan.committedAdvisorTokenPct" />
+        <div class="rounded border border-outline-amber-2 bg-surface-amber-2 p-5 space-y-3">
+          <div class="text-sm text-ink-amber-strong flex items-center gap-2">
+            <span class="lucide-building-2 size-3.5" aria-hidden="true" /> Company cost · net to the
+            board
+          </div>
+          <div class="grid grid-cols-3 gap-px bg-surface-gray-2 rounded overflow-hidden">
+            <div
+              v-for="k in Object.keys(S.plan.scenarios)"
+              :key="k"
+              class="p-3"
+              :class="k === bc ? 'bg-surface-white' : 'bg-surface-amber-2'"
+            >
+              <div class="text-xs text-ink-gray-6 mb-1">{{ S.plan.scenarios[k].label }}</div>
+              <div class="font-display text-base tabular-nums text-ink-gray-9">
+                {{ fUSD(board.cost[k] || 0) }}
+              </div>
+            </div>
+          </div>
+          <p class="text-p-xs text-ink-gray-6">
+            Total net value across the board at each scenario.
+          </p>
+          <div class="pt-2 border-t border-outline-amber-2 text-sm flex justify-between">
+            <span class="text-ink-gray-6">Annual cash</span
+            ><span class="tabular-nums text-ink-gray-9">{{ fUSD(board.sumCash) }}/yr</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COM-90: analysis charts sit BELOW the roster — the page leads with its subject
+         (the roster + what it costs us); the dense graphics are the supporting read. -->
     <div class="grid lg:grid-cols-2 gap-6">
       <!-- valuation staircase -->
       <div
@@ -404,155 +555,6 @@ const caseTotalSum = computed(() =>
             {{ t.name }}</span
           >
           <span class="ml-auto">top-left = most headroom, modest today</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="grid lg:grid-cols-12 gap-8">
-      <div class="lg:col-span-8 space-y-6">
-        <!-- roster table -->
-        <div class="bg-surface-white rounded border border-outline-gray-1 overflow-x-auto">
-          <table class="w-full text-sm" style="min-width: 560px">
-            <thead>
-              <tr class="border-b border-outline-gray-2 text-left text-ink-gray-6">
-                <th class="px-4 py-3 font-normal">Advisor</th>
-                <th class="px-4 py-3 font-normal">Tier</th>
-                <th class="px-4 py-3 font-normal text-right">Base eq</th>
-                <th class="px-4 py-3 font-normal text-right">Earned</th>
-                <th class="px-4 py-3 font-normal text-right">
-                  Net · {{ S.plan.scenarios[bc].label }}
-                </th>
-                <th class="px-2 py-3 no-print" />
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="{ a, c } in board.rows"
-                :key="a.id"
-                tabindex="0"
-                role="button"
-                :aria-label="`Open ${a.name}`"
-                class="border-b border-outline-gray-1 cursor-pointer hover:bg-surface-gray-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--ink-gray-6)] focus-visible:bg-surface-gray-1"
-                @click="open(a.id)"
-                @keydown.enter="open(a.id)"
-                @keydown.space.prevent="open(a.id)"
-              >
-                <td class="px-4 py-3">
-                  <div class="flex items-center gap-2.5">
-                    <Avatar :label="a.name" size="sm" />
-                    <div>
-                      <div class="font-medium text-ink-gray-9">{{ a.name }}</div>
-                      <div class="text-xs text-ink-gray-6">
-                        {{ a.sector.split("—")[0].trim() }}
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td class="px-4 py-3">
-                  <Badge
-                    :label="a.mode === 'value' ? '$value' : S.tiers[a.tier]?.name || '—'"
-                    theme="orange"
-                    variant="subtle"
-                    size="sm"
-                  />
-                </td>
-                <td class="px-4 py-3 tabular-nums text-right text-ink-gray-8">
-                  {{ fPct(c.baseEq, 2) }}
-                </td>
-                <td
-                  class="px-4 py-3 tabular-nums text-right"
-                  :class="c.earnedUplift > 0 ? 'text-ink-green-3' : 'text-ink-gray-6'"
-                >
-                  +{{ (c.earnedUplift * 100).toFixed(0) }}%<span
-                    v-if="c.pendingUplift > 0"
-                    class="text-ink-amber-strong"
-                  >
-                    +{{ (c.pendingUplift * 100).toFixed(0)
-                    }}<Term k="awaitingGate"
-                      ><span class="ml-1 text-xs font-sans">pending</span></Term
-                    ></span
-                  >
-                </td>
-                <td class="px-4 py-3 tabular-nums text-right font-medium text-ink-gray-9">
-                  {{ fUSD(sFor(c).total) }}
-                </td>
-                <td class="px-2 py-3 no-print">
-                  <Dropdown :options="rowMenu(a)" placement="right">
-                    <template #trigger>
-                      <button
-                        aria-label="Advisor actions"
-                        class="inline-flex shrink-0 items-center justify-center size-8 rounded hover:bg-surface-gray-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-gray-6)] text-ink-gray-6"
-                        @click.stop
-                        @keydown.stop
-                      >
-                        <span class="lucide-ellipsis size-4" aria-hidden="true" />
-                      </button>
-                    </template>
-                  </Dropdown>
-                </td>
-              </tr>
-              <tr class="bg-surface-amber-2">
-                <td class="px-4 py-3 font-medium text-ink-gray-9">
-                  Board · {{ board.rows.length }}
-                </td>
-                <td />
-                <td class="px-4 py-3 tabular-nums text-right font-medium text-ink-gray-9">
-                  {{ fPct(baseEqSum, 2) }}
-                </td>
-                <td />
-                <td class="px-4 py-3 tabular-nums text-right font-medium text-ink-gray-9">
-                  {{ fUSD(caseTotalSum) }}
-                </td>
-                <td class="no-print" />
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <!-- scenario range by advisor -->
-        <div>
-          <div class="text-sm text-ink-gray-6 mb-3">Scenario range by advisor · net value</div>
-          <div class="bg-surface-white rounded border border-outline-gray-1 p-5 space-y-3">
-            <FootballField
-              v-for="r in ranges"
-              :key="r.name"
-              :lo="r.lo"
-              :base="r.base"
-              :hi="r.hi"
-              :max="rangeMax"
-              :label="r.name"
-              compact
-            />
-          </div>
-        </div>
-      </div>
-
-      <div class="lg:col-span-4 space-y-6">
-        <PoolAllocation :board="board" :committed="S.plan.committedAdvisorTokenPct" />
-        <div class="rounded border border-outline-amber-2 bg-surface-amber-2 p-5 space-y-3">
-          <div class="text-sm text-ink-amber-strong flex items-center gap-2">
-            <span class="lucide-building-2 size-3.5" aria-hidden="true" /> Company cost · net to the
-            board
-          </div>
-          <div class="grid grid-cols-3 gap-px bg-surface-gray-2 rounded overflow-hidden">
-            <div
-              v-for="k in Object.keys(S.plan.scenarios)"
-              :key="k"
-              class="p-3"
-              :class="k === bc ? 'bg-surface-white' : 'bg-surface-amber-2'"
-            >
-              <div class="text-xs text-ink-gray-6 mb-1">{{ S.plan.scenarios[k].label }}</div>
-              <div class="font-display text-base tabular-nums text-ink-gray-9">
-                {{ fUSD(board.cost[k] || 0) }}
-              </div>
-            </div>
-          </div>
-          <p class="text-p-xs text-ink-gray-6">
-            Total net value across the board at each scenario.
-          </p>
-          <div class="pt-2 border-t border-outline-amber-2 text-sm flex justify-between">
-            <span class="text-ink-gray-6">Annual cash</span
-            ><span class="tabular-nums text-ink-gray-9">{{ fUSD(board.sumCash) }}/yr</span>
-          </div>
         </div>
       </div>
     </div>

@@ -1348,5 +1348,62 @@ console.log('\nT19 · Seeded roster: the Δ9 register as the fresh-board state (
     && ENG.ENTITY.jurisdiction === 'Cayman Islands' && ENG.ENTITY.regNo === 'BL-411368');
 }
 
+// ---- T20: the Trajectory surface (COM-157 — live-bound) ----
+console.log('\nT20 · Trajectory: the value band + dated events (COM-157):');
+{
+  const dflt = ENG.DEFAULT();
+  const a0 = dflt.advisors[0];
+  A('trajectoryBand: starts at zero · floor ≤ base ≤ ceil every month · monotone non-decreasing',
+    (() => {
+      const b = ENG.trajectoryBand(a0, dflt.plan, dflt.tiers, dflt.objectives);
+      const startsZero = b[0].floor === 0 && b[0].base === 0 && b[0].ceil === 0;
+      const ordered = b.every(p => p.floor <= p.base + 1e-9 && p.base <= p.ceil + 1e-9);
+      const monotone = b.every((p, i) => i === 0 || (p.base >= b[i - 1].base - 1e-9 && p.ceil >= b[i - 1].ceil - 1e-9));
+      return b.length === 49 && startsZero && ordered && monotone;
+    })());
+  A('trajectoryBand: the terminal month reconciles with computeAdvisor (base ≈ vested-complete package value)',
+    (() => {
+      const c = ENG.computeAdvisor(a0, dflt.plan, dflt.tiers, dflt.objectives);
+      const b = ENG.trajectoryBand(a0, dflt.plan, dflt.tiers, dflt.objectives);
+      const end = b[b.length - 1];
+      // base at M48 = equity net (earned) + token leg + accrued cash — the base-case total's parts
+      const expect = c.base.netEqAt(c.eqPct, c.base.exitVal)
+        + (c.base.tokenAsEquity ? c.tkPct * c.base.retention * c.base.exitVal : c.tkPct * c.base.fdv)
+        + (c.cashAnnualEq ?? 0) * c.years;
+      return near(end.base, expect, 1);
+    })());
+  A('trajectoryBand: the token leg is GATED — at month 23 the band carries no token value yet (rta distributable 0)',
+    (() => {
+      const b = ENG.trajectoryBand(a0, dflt.plan, dflt.tiers, dflt.objectives);
+      const c = ENG.computeAdvisor(a0, dflt.plan, dflt.tiers, dflt.objectives);
+      const eq23 = ENG.vestedFrac(23, dflt.plan.equityVestYears, dflt.plan.equityCliff) * c.base.netEqAt(c.eqPct, c.base.exitVal);
+      const cash23 = (c.cashAnnualEq ?? 0) * (23 / 12);
+      return near(b[23].base, eq23 + cash23, 1);
+    })());
+  A('trajectoryEvents: start/cliff/qualifying/tranches/TGE/backstop all dated; sorted by month; backstop ≈ M108',
+    (() => {
+      const evs = ENG.trajectoryEvents(a0, dflt.plan, dflt.tiers, dflt.objectives, '2026-06-10');
+      const kinds = evs.map(e => e.kind);
+      const sorted = evs.every((e, i) => i === 0 || e.m >= evs[i - 1].m);
+      const backstop = evs.find(e => e.kind === 'backstop');
+      const cliff = evs.find(e => e.kind === 'cliff');
+      const tranches = evs.filter(e => e.kind === 'tranche').length;
+      // POSITION, not just presence — equityCliff is MONTHS (12), and the first render shipped
+      // the cliff at m144 because a presence-only assertion let `cliff*12` through.
+      return kinds.includes('start') && cliff && cliff.m === 12 && kinds.includes('qualifying')
+        && kinds.includes('tge') && sorted && tranches === 3
+        && backstop && backstop.m >= 107 && backstop.m <= 109;
+    })());
+  A('trajectoryEvents: an open review renders as scheduled; with none, the cadence projects review-due',
+    (() => {
+      const withReview = { ...a0, reviews: [{ id: 'r1', scheduledISO: '2027-01-15', trigger: 'scheduled' }] };
+      const e1 = ENG.trajectoryEvents(withReview, dflt.plan, dflt.tiers, dflt.objectives, '2026-06-10');
+      const e2 = ENG.trajectoryEvents(a0, dflt.plan, dflt.tiers, dflt.objectives, '2026-06-10');
+      return e1.some(e => e.kind === 'review' && e.dateISO === '2027-01-15')
+        && !e1.some(e => e.kind === 'review-due')
+        && e2.some(e => e.kind === 'review-due');
+    })());
+}
+
 console.log(`\n${pass} passed, ${fail} failed, ${pending} pending(v2).`);
 process.exit(fail ? 1 : 0);

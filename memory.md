@@ -2375,3 +2375,15 @@ dispatch: 'lapsed' zeroes, 'exercised' = issued shares (retained, no pool return
 live/dead; (4) a degraded-flag result (qty 0 from failed derivation) must propagate flags through
 EVERY consumer shape, not just the row that computed it.** vp 0/10 · 22/22 both · 159/0/0 ·
 build 0. Wave-1 engine queue: COM-151 → 152 → 146 → 154 → 171 remain.
+
+## 2026-06-10 — COM-151 (exercise windows + 3.6 backstop + carve-out) DONE [V2-finish W1 #7]
+
+**COM-151 (P3, 128 LOC, PR #80) — DONE + MERGED.** EXERCISE_MECHANICS (4 statements) ·
+exerciseCheck (window membership; 9th-anniversary → day-before-10th dates; backstop.required
+flip; route flags; only live options exercisable) · addYearsISO/dayBeforeISO (TZ-free UTC) ·
+FUNDING_ROUND_CARVEOUT (the Part 10 #7 explainer the RFC scope comment pinned to this issue —
+display ONLY) · Instruments mechanics block w/ computed backstop dates · Proposition fine-print
+expansion (additive around locked sentences). One mixed PR — the issue's own scope names the UI
+statements, so §7's presentation rule (one ISSUE per PR) is satisfied. Backstop timeline marker →
+COM-149 (flagged). T12 = 8 vectors. vp 0/10 · 22/22 both · v2 167/0/0 · build 0 · 9/9 live.
+Next: scoped grader (5 merges since 002), then COM-152 (S).

@@ -15,12 +15,25 @@ import { useRouter } from "vue-router";
 import { Dialog, FeatherIcon, CommandPaletteItem } from "frappe-ui";
 import { Combobox, ComboboxInput, ComboboxOption, ComboboxOptions } from "@headlessui/vue";
 import { useStudio } from "../store";
+import { useEditor } from "../composables/useEditor";
 import { confirmDestroy } from "../confirm";
 import { NAV } from "../nav";
 
 const router = useRouter();
-const { store, select, loadBoard, copyState, exportJSON, exportBoardCSV, importJSON, reset } =
-  useStudio();
+const {
+  store,
+  select,
+  loadBoard,
+  copyState,
+  exportJSON,
+  exportBoardCSV,
+  importJSON,
+  reset,
+  addAdvisor,
+  addScenario,
+  addObjective,
+} = useStudio();
+const { openEditor } = useEditor();
 
 const show = ref(false);
 const searchQuery = ref("");
@@ -60,6 +73,34 @@ const allGroups = computed(() => {
     run: () => loadBoard(n),
   }));
   const actions: Cmd[] = [
+    // COM-94: the editing verbs lead — package editing is the core task, plumbing follows.
+    {
+      name: "act:add-advisor",
+      title: "Add advisor",
+      description: "create + open the editor",
+      run: () => {
+        addAdvisor(); // selects the new advisor
+        openEditor();
+      },
+    },
+    {
+      name: "act:new-scenario",
+      title: "New scenario",
+      description: "Configure · Cap table",
+      run: () => {
+        addScenario();
+        router.push({ path: "/configure", query: { group: "cap" } });
+      },
+    },
+    {
+      name: "act:new-objective",
+      title: "New objective",
+      description: "Configure · Performance",
+      run: () => {
+        addObjective();
+        router.push({ path: "/configure", query: { group: "perf" } });
+      },
+    },
     { name: "act:copy", title: "Copy to clipboard", run: () => copyState() },
     { name: "act:json", title: "Export JSON", run: () => exportJSON() },
     { name: "act:csv", title: "Export board CSV", run: () => exportBoardCSV() },

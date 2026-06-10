@@ -17,6 +17,7 @@ import {
   roundLabel,
   fMult,
   BENCH,
+  generosityCheck,
 } from "../engine";
 import { TIER_COLOR, chartHex, shortName } from "../constants";
 import PageHeader from "../components/PageHeader.vue";
@@ -139,6 +140,11 @@ const VW = 460;
 const VH = 280;
 // COM-136: chart labels disambiguate duplicate first names (and guard mononyms/empty).
 const rosterNames = computed(() => board.value.rows.map((r: any) => r.a.name));
+const sn = (n: string) => shortName(n, rosterNames.value);
+// COM-156: the generosity guardrails — all numbers from the engine
+const generosity = computed(() =>
+  generosityCheck(S.value.advisors, S.value.plan, S.value.tiers, S.value.objectives),
+);
 const scatter = computed(() =>
   board.value.rows.map(({ a, c }: any) => {
     const s = sFor(c); // COM-85: scatter re-keys to the board-local case
@@ -469,6 +475,57 @@ const caseTotalSum = computed(() =>
 
       <!-- COM-161 (F20/O15): the capital rollup — the board as a fundraising channel -->
       <CapitalRollupPanel />
+
+      <!-- COM-156: generosity guardrails — Carl's "too generous" challenge as software -->
+      <Panel class="print-area">
+        <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+          <div class="section-label">Generosity guardrails · the Sjöström check</div>
+          <div class="text-xs tabular-nums text-ink-gray-6">
+            Anchor ~{{ fUSD(generosity.anchorUSD) }}/yr (US private-company advisory median)
+          </div>
+        </div>
+        <div class="divide-y divide-outline-gray-1 text-sm">
+          <div
+            v-for="r in generosity.rows"
+            :key="r.advisorId"
+            class="py-2 flex items-start gap-3 flex-wrap"
+          >
+            <span class="text-ink-gray-7 w-32 shrink-0">{{ sn(r.name) }}</span>
+            <span class="tabular-nums text-ink-gray-9 w-24 shrink-0">{{ fUSD(r.annual) }}/yr</span>
+            <span
+              class="tabular-nums text-p-xs"
+              :class="
+                r.status === 'above'
+                  ? 'text-ink-amber-strong'
+                  : r.status === 'below'
+                    ? 'text-ink-gray-6'
+                    : 'text-ink-green-3'
+              "
+              :title="`Compa-ratio vs the ${fUSD(generosity.anchorUSD)} median`"
+            >
+              {{ r.status === "above" ? "▲" : r.status === "below" ? "▼" : "◆" }}
+              {{ r.compa.toFixed(2) }}
+            </span>
+            <span v-if="r.flags.length" class="basis-full space-y-0.5">
+              <span
+                v-for="(f, i) in r.flags"
+                :key="i"
+                class="block text-p-xs text-ink-amber-strong"
+                >{{ f }}</span
+              >
+            </span>
+          </div>
+        </div>
+        <div v-if="generosity.board.length" class="mt-3 space-y-1">
+          <p v-for="(w, i) in generosity.board" :key="i" class="text-p-xs text-ink-amber-strong">
+            {{ w }}
+          </p>
+        </div>
+        <p class="text-p-xs text-ink-gray-6 mt-2">
+          The negotiation unit is dollars; FAST percentages are a sanity band on the output. ▲/◆/▼
+          follow the salary-survey compa-ratio grammar (above 1.2 / 0.8–1.2 / below 0.8).
+        </p>
+      </Panel>
 
       <!-- potential scatter -->
       <Panel

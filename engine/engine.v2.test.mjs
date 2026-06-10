@@ -1507,5 +1507,54 @@ console.log('\nT22 · Proposition versions: the straw-man trail (COM-164):');
     })());
 }
 
+// ---- T23: generosity guardrails (COM-156 — live-bound) ----
+console.log('\nT23 · Generosity guardrails: the Sjöström check (COM-156):');
+{
+  const dflt = ENG.DEFAULT();
+  A('anchors stand: $50K advisory median + $10K day-rate equivalent (sourced constants)',
+    ENG.ADVISORY_MEDIAN_USD === 50000 && ENG.BENCH_DAY_RATE_USD === 10000);
+  A('compa grammar: annual = baseCaseTotal/years vs the median; ▲ above 1.2 / ◆ 0.8–1.2 / ▼ below 0.8',
+    (() => {
+      const g = ENG.generosityCheck(dflt.advisors, dflt.plan, dflt.tiers, dflt.objectives);
+      const c0 = ENG.computeAdvisor(dflt.advisors[0], dflt.plan, dflt.tiers, dflt.objectives);
+      const r0 = g.rows.find(r => r.advisorId === 'iraj');
+      return near(r0.annual, c0.baseCaseTotal / 4, 1e-6)
+        && near(r0.compa, r0.annual / 50000, 1e-9)
+        && g.rows.every(r => (r.compa > 1.2) === (r.status === 'above'))
+        && g.rows.every(r => (r.compa < 0.8) === (r.status === 'below'));
+    })());
+  A('band breach keys on the FAST Expert ceiling (1.00%): the fixture\'s tier-2 anchor (1.5%) breaches; a modest plan is silent',
+    (() => {
+      // the DEFAULT fixture is deliberately generous — Iraj at 3× the 0.5% base = 1.5% > 1.0%,
+      // so the breach MUST fire there (the guardrail exists exactly for this board)
+      const g0 = ENG.generosityCheck(dflt.advisors, dflt.plan, dflt.tiers, dflt.objectives);
+      const irajBreaches = g0.rows.find(r => r.advisorId === 'iraj').flags.some(f => f.includes('Band breach'));
+      const modest = JSON.parse(JSON.stringify(dflt));
+      modest.plan.baseGrant.equityPct = 0.002; // 0.2% base → 0.6% even at 3× — inside the band
+      const g1 = ENG.generosityCheck(modest.advisors, modest.plan, modest.tiers, modest.objectives);
+      return irajBreaches && g1.rows.every(r => !r.flags.some(f => f.includes('Band breach')));
+    })());
+  A('totality flags one package > 2× the board median (needs ≥3 rows); the default board is clean',
+    (() => {
+      const g0 = ENG.generosityCheck(dflt.advisors, dflt.plan, dflt.tiers, dflt.objectives);
+      const clean = g0.rows.every(r => !r.flags.some(f => f.includes('Totality')));
+      const skew = JSON.parse(JSON.stringify(dflt));
+      skew.plan.tiers; // tier 2 stays — push Iraj's multiplier through a fatter base instead
+      skew.advisors[0].mode = 'value'; skew.advisors[0].annualValue = 3e6; // ~4× the peers
+      const g1 = ENG.generosityCheck(skew.advisors, skew.plan, skew.tiers, skew.objectives);
+      const iraj = g1.rows.find(r => r.advisorId === 'iraj');
+      return clean && iraj.baseCaseTotal > 2 * g1.median && iraj.flags.some(f => f.includes('Totality'));
+    })());
+  A('pool-consumption warning fires at ≥50% of the ESOP (Ispahani step 8) and names both figures',
+    (() => {
+      const g0 = ENG.generosityCheck(dflt.advisors, dflt.plan, dflt.tiers, dflt.objectives);
+      const rich = JSON.parse(JSON.stringify(dflt));
+      rich.plan.baseGrant.equityPct = 0.015; // 4 advisors × ~1.5%+ ≈ >50% of the 10% pool
+      const g1 = ENG.generosityCheck(rich.advisors, rich.plan, rich.tiers, rich.objectives);
+      const warn = g1.board.find(w => w.includes('Pool consumption'));
+      return !g0.board.some(w => w.includes('Pool consumption')) && warn && warn.includes('step 8');
+    })());
+}
+
 console.log(`\n${pass} passed, ${fail} failed, ${pending} pending(v2).`);
 process.exit(fail ? 1 : 0);

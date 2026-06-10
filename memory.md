@@ -2155,3 +2155,25 @@ FROZEN engine.ts (spread simplifications) — reverted before commit; both suite
 Verified: 14 rows + verbatim strings rendered, status flip → persist → reload survival, mobile
 stacks controls under text (fixed half-width squeeze), 0 console errors. vp 0 · 22/22 both ·
 build 0. NO gating semantics (follow-on issue).
+
+## 2026-06-10 — ★ M9 GATE PASSED — M9 · UX/UI v2 complete (modulo the COM-139 hold)
+
+**The M9-finish goal loop is done.** This session shipped 44 issues + 1 cancelled (COM-124) across
+waves 1–7, PRs #26–#67 + #69 all merged to frosty; COM-139 built + HELD on PR #68 (Charlie/GC
+wording sign-off — Robin pinged; Linear stays In Progress). M9 milestone: every issue Done except
+COM-139. COM-141 (first M12 surface) shipped → M12 at ~17%.
+
+**Gate sweep at frosty tip (9b34b84):** `npm run build` exit 0 · engine 22/22 BOTH suites · clean
+tree · all 7 routes smoke-passed on :4173 (overview hero+roster · board table+FF+ranges · compare ·
+governance 14 rows · advisors tabs · proposition statement+corpus · configure rail+two-col) · 0
+console errors/warnings · mobile (375px) spot-checks clean (drawer collapsed, no overflow, board
+table fits, governance stacks). **Known-stale at tip (by design):** the CoC line still reads the
+reference wording until PR #68 merges. **Print-PDF: not machine-verifiable from the preview harness
+— Robin: print Proposition + Board pack to PDF from the browser once, per the M9 print rules
+(break-inside, running header tokens, 10mm bottom pad all shipped + CSS-verified in COM-112/134).**
+
+**Linear:** project status update posted (on track); CLAUDE.md live-prompt pointer flipped to "M10
+RFC prep" (ULTRACODE_M9_FINISH.md is a completed predecessor). **Next:** author the M10 RFC
+(COM-140 gate scope — engine-unfreeze reconciliation suite), then the M10 run-prompt. Open human
+items: Charlie's COM-139 sign-off → merge PR #68; COM-33/34 public-URL remediation; COM-36
+merge-to-main; pool-sizing blanks (spec Part 17).

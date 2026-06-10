@@ -1912,3 +1912,13 @@ view crumb → its own path; advisor crumb routeless (no :id route yet). Lib loo
 separators, last crumb ink-gray-9, built-in overflow dropdown for >2 crumbs on narrow widths.
 - Verified on /advisors: 2 links + routeless advisor crumb; root click navigated to /overview.
   vp 0 · 22/22 both · build 0 · zero console errors.
+
+## 2026-06-10 — COM-106 (Configure TextInput sweep) DONE [M9 finish-loop W3 #8]
+
+**COM-106 (P3 Med, ~70/90 LOC, Configure.vue) — DONE + MERGED.** 7 bare inputs → TextInput sm (aria-labels
+kept, flex/grid classes on the component root, setPath unchanged via @update:model-value); TGE date →
+FormControl type=date label="TGE date" (the PackageEditor idiom). Scenario/tier inputs lose their
+font-display styling — ONE form idiom beats the editorial accent on an editing control (flagged in PR).
+Only the hidden CSV file input remains bare.
+- Verified live: tier rename through TextInput persisted to localStorage + reverted; FormControl date
+  renders in the grants group w/ stored value 2027-06-30. vp 0 · 22/22 both · build 0 · zero console errors.

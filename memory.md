@@ -2201,3 +2201,18 @@ cell 8,523 is ~3.5 shares short of its own arithmetic (8,526.49 exact)** — COM
 flagged to Robin on COM-140. Scope comment posted on COM-151 (Part 10 #7 carve-out doc note).
 **Next:** Robin sign-offs (COM-140 = unfreeze; COM-139 wording via Charlie; COM-36 Vercel flip),
 then encode §8 as Linear blocking relations and author the M10 run-prompt.
+
+## 2026-06-10 — ULTRACODE_V2_FINISH authored: the finish-everything run is armed
+
+**Robin's authorization (2026-06-10, verbatim): "finish all of the work (all remaining tickets which is
+implementation work). Nothing is blocked."** Acted on it: **COM-140 flipped Done (= the engine-unfreeze
+sign-off, comment quotes Robin)** · the RFC §8 landing order is now ENCODED as Linear blocking relations
+(143←142, 144←143, 145←144, 150←144, 153←144+145, 151←144, 152←143, 146←144, 154←150, 147/148←143,
+149←145) · **COM-171 created** (the single SCHEMA-6 bump, blockedBy 150 + 139) · **ULTRACODE_V2_FINISH.md
+written** (35-issue queue in 7 waves: W0 merge PR #68 → W1 M10 engine under RFC §7 → W2 M10 UI → W3 M11
+155→159→160→157→158→162→163→161→164→156→165 → W4 M12 166→167→168→169→170 → W5 legacy triage
+28/21/31/61 + epics 5/7 close-with-evidence → W6 M6 hardening 34/35 w/ mandatory security-review →
+W7 final gate) · CLAUDE.md updated: **engine clause now GATED-not-frozen** (RFC §7 pointer; never
+`vp check --fix`) + live-prompt pointer → ULTRACODE_V2_FINISH.md. COM-139's hold is LIFTED by the same
+authorization — W0 merges #68. Excluded: COM-36 (Robin: later) + human-only COM-33/71. **Next session:
+paste the §6 kickoff block from ULTRACODE_V2_FINISH.md.**

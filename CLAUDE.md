@@ -26,9 +26,14 @@ mapping; for NEW scope and the Δ4 legal correction, the spec supersedes the ref
   (grouped bar)**. **Custom SVG** for waterfall, scatter (frappe-charts scatter is NOT implemented),
   football-field, vesting timeline, DilutionPath. (frappe-ui's echarts charts are an option but ~1 MB —
   frappe-charts stays primary.)
-- **Engine: `engine/engine.ts` is FROZEN** — the only place money is computed. Type-only tweaks allowed; no
-  logic changes. `node engine/engine.test.mjs` must stay **22/22** (bridge 57,217 → Series C 118,707; strike
-  $1,572.95; base TGE FDV $600M; board net base ~$23M). Views never recompute money inline.
+- **Engine: GATED, no longer frozen (COM-140 signed off 2026-06-10).** The live engine is
+  `scaffold/src/engine.ts` — still the only place money is computed; views never recompute inline. M10
+  engine edits land ONLY under the five-condition unfreeze rule in **`engine/ENGINE_V2_RFC.md` §7**: both
+  22-vector suites stay green & unmodified (the v1 anchors hold: bridge 57,217 → Series C 118,707; strike
+  $1,572.95; base TGE FDV $600M) · `node engine/engine.v2.test.mjs` 0 failed with the PR's T5 bindings
+  flipped live · one issue per PR ≤450 LOC · only COM-171 touches SCHEMA. Root `engine/engine.ts` is the
+  v1 historical reference (read-denied in the harness) — never edit it. NEVER run `vp check --fix` (it
+  mutates the engine).
 - **Pins:** vue ^3.5 · vue-router ^4 · vite ^5 · @vitejs/plugin-vue ^5 · tailwindcss ^3.4 (NOT v4) ·
   typescript ^5 · vue-tsc ^2 · **frappe-ui 0.1.278 (exact)** · **frappe-charts 1.6.2 (exact)**.
 
@@ -50,7 +55,7 @@ built, decisions made, anything surprising, and the next step. It is the durable
 current.
 
 ## Non-negotiables
-- Engine frozen (above). `reference/advisor-comp-studio.tsx` is the **UX source of truth** for
+- Engine gated by the RFC §7 rule (above). `reference/advisor-comp-studio.tsx` is the **UX source of truth** for
   features/labels/legal copy/IA (the *visual* design is now Espresso, but behaviour + the legal corpus match
   the reference, ported **verbatim**). **Exception (spec v2 Δ4 / COM-139):** the reference's CoC-acceleration
   sentence is stale — Plan rules v9 deleted Rule 9.2; on that line the corpus follows Plan v9 / spec Appendix C.
@@ -68,11 +73,12 @@ current.
   governance scope, M10–M12 build mapping, detail appendices A–F (the granular numbers/legal/session register).
 - `DESIGN_SYSTEM.md` — **the design handoff**: tokens, layout grammar (reading column · borders earn their
   place · settings two-column), frappe-ui idioms/gotchas, chart + a11y + print rules. Build new surfaces inside it.
-- `DEV_WORKFLOW.md` — commands + the per-issue loop. **Next build run: M10 RFC prep** (the M10 RFC
-  issue — COM-140 gate scope — gates every other M10 issue; no live run-prompt until it's authored).
-  `ULTRACODE_M9_FINISH.md` + `ULTRACODE_M9_PD2.md` are completed predecessors (M9 gated 2026-06-10:
-  all issues Done except COM-139, built + HELD on PR #68 for Charlie's wording sign-off).
-- `engine/` — frozen maths + spec. `scaffold/` — the wired, build-green project root.
+- `DEV_WORKFLOW.md` — commands + the per-issue loop. **`ULTRACODE_V2_FINISH.md` — THE live build-run
+  prompt** (finish everything: M10 engine v2 under the RFC §7 gate · M10 UI · M11 · M12 · legacy triage ·
+  M6 hardening; authorized by Robin 2026-06-10 — "Nothing is blocked"). `engine/ENGINE_V2_RFC.md` = the
+  engine-wave contract. `ULTRACODE_M9_FINISH.md` + `ULTRACODE_M9_PD2.md` are completed predecessors.
+- `engine/` — the v1 reference engine + BOTH test suites + the v2 RFC. `scaffold/` — the wired,
+  build-green project root (`scaffold/src/engine.ts` is the live engine).
 - Linear: **COM** project "Advisor Comp Studio — Web App (Frappe/Vercel)" — https://linear.app/raiku/team/COM/overview
 
 ## Open product decisions

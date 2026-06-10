@@ -412,11 +412,15 @@ const backstop = computed(() => {
                     >{{ fPct(c.tkPct, 3) }} · {{ fTok(c.tokenCount) }}</span
                   >
                 </div>
+                <!-- COM-152: read the engine's token leg — the old tkPct×fdv mirror DIVERGES
+                     under the pre-TGE fallback (token re-states as equity) -->
                 <div class="flex justify-between py-2">
-                  <span class="text-ink-gray-6">Token value (base FDV)</span
-                  ><span class="tabular-nums text-ink-gray-9">{{
-                    fUSD(c.tkPct * c.base.fdv)
-                  }}</span>
+                  <span class="text-ink-gray-6">{{
+                    c.base.tokenAsEquity
+                      ? "Token value (as equity — pre-TGE fallback)"
+                      : "Token value (base FDV)"
+                  }}</span
+                  ><span class="tabular-nums text-ink-gray-9">{{ fUSD(c.base.token) }}</span>
                 </div>
                 <div class="flex justify-between py-2">
                   <span class="text-ink-gray-6">Vesting</span

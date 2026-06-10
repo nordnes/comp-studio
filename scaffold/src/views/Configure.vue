@@ -386,6 +386,16 @@ const poolOpts = computed(() => {
                       />
                     </div>
                   </div>
+                  <!-- COM-152: the pre-TGE liquidity fallback — token awards re-state 1:1 as
+                       equity in THIS scenario (the 16 Apr all-hands position) -->
+                  <Switch
+                    class="mt-2"
+                    :model-value="!!S.S.plan.scenarios[sk].preTgeLiquidity"
+                    label="Liquidity event before TGE — token awards re-state 1:1 as equity"
+                    @update:model-value="
+                      (v: boolean) => setPath(['plan', 'scenarios', sk, 'preTgeLiquidity'], v)
+                    "
+                  />
                 </div>
               </div>
               <div class="grid sm:grid-cols-3 gap-4 mt-3">

@@ -299,6 +299,10 @@ const targetLine = computed(
           exercise binds a deed of adherence. No automatic or discretionary change-of-control
           acceleration under the plan (Plan rules v9); on a change of control the acquirer may roll
           over awards, and vested options remain exercisable per the plan rules.
+          <template v-if="sb?.tokenAsEquity"
+            >Under this scenario a liquidity event precedes TGE: token awards convert 1:1 into
+            equity — all protocol value accrues to equity, net of the same dilution walk.
+          </template>
           {{ residencyLine }} Strike subject to an agreed HMRC SAV / 409A valuation before first
           grant. Exercise is available during Board-determined liquidity windows; if no Exit Event
           occurs before the 9th anniversary of grant, the Company shall open an Exercise Period of

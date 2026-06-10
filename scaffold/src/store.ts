@@ -598,6 +598,58 @@ export function useStudio() {
     });
   }
 
+  // COM-161 (F20): first-class capital introductions — the per-intro pipeline that the Board
+  // rollup reads. CONVERTING from the v1 aggregate fields seeds EARNED intro rows from
+  // capitalEquity/capitalToken so the computed uplift is preserved to the cent (intros-present
+  // overrides the v1 fields in the engine — seeding anything else would move money).
+  function addIntroduction(advisorId: string) {
+    const a: any = store.S.advisors.find((x) => x.id === advisorId);
+    if (!a) return;
+    if (!Array.isArray(a.introductions)) {
+      const seeds: any[] = [];
+      const p: any = a.performance || {};
+      if (p.capitalEquity > 0)
+        seeds.push({
+          id: uid("in"),
+          amountUSD: p.capitalEquity,
+          round: a.grantRound || "bridge",
+          status: "earned",
+          note: "Equity round (converted from the aggregate field)",
+        });
+      if (p.capitalToken > 0)
+        seeds.push({
+          id: uid("in"),
+          amountUSD: p.capitalToken,
+          round: a.grantRound || "bridge",
+          status: "earned",
+          note: "Token OTC (converted from the aggregate field)",
+        });
+      a.introductions = seeds;
+    }
+    a.introductions.push({
+      id: uid("in"),
+      amountUSD: 0,
+      round: store.S.plan.rounds[0]?.id || "bridge",
+      status: "targeted",
+    });
+    persist();
+  }
+  function updateIntroduction(advisorId: string, introId: string, patch: Record<string, any>) {
+    const a: any = store.S.advisors.find((x) => x.id === advisorId);
+    const it = a && (a.introductions || []).find((x: any) => x.id === introId);
+    if (!it) return;
+    Object.assign(it, patch);
+    persist();
+  }
+  function removeIntroduction(advisorId: string, introId: string) {
+    const a: any = store.S.advisors.find((x) => x.id === advisorId);
+    if (!a || !Array.isArray(a.introductions)) return;
+    pushUndo();
+    a.introductions = a.introductions.filter((x: any) => x.id !== introId);
+    persist();
+    undoToast("introduction");
+  }
+
   // COM-158 (F16): the review workflow — "start everyone the same; review and top up the
   // keepers", ON THE RECORD. Scheduling creates an open Review; completing one records
   // inputs/outcome/approver and applies the outcome: a top-up appends a NEW grant priced at
@@ -929,6 +981,9 @@ export function useStudio() {
     scheduleReview,
     completeReview,
     closeRound,
+    addIntroduction,
+    updateIntroduction,
+    removeIntroduction,
     setAdvisorCase,
     setAdvisorTargetExit,
     setGovItem,

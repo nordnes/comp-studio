@@ -3,7 +3,16 @@
 // (mounted once in App.vue). Edits the currently-selected advisor live via setPath (autosave); snapshots
 // on open and restores on Cancel. Carries the COM-73 field set + COM-77 FormLabel/:description/clamp stack.
 import { ref, reactive, computed, watch } from "vue";
-import { Dialog, Button, Switch, TabButtons, Divider, FormControl, FormLabel } from "frappe-ui";
+import {
+  Dialog,
+  Button,
+  Switch,
+  TabButtons,
+  Divider,
+  FormControl,
+  FormLabel,
+  TextInput,
+} from "frappe-ui";
 import { useStudio } from "../store";
 import { useEditor } from "../composables/useEditor";
 import {
@@ -16,18 +25,22 @@ import {
   stageReached,
   todayISO,
   CHECK_STATUSES,
+  INTRO_STATUSES,
 } from "../engine";
 import { CAT } from "../constants";
 import NumIn from "./NumIn.vue";
 import EquityBenchmark from "./EquityBenchmark.vue";
 import Term from "./Term.vue";
 
-const { store, selected, setPath } = useStudio();
+const { store, selected, setPath, addIntroduction, updateIntroduction, removeIntroduction } =
+  useStudio();
 const { open } = useEditor();
 const S = computed(() => store.S);
 const sel = computed(() => selected.value?.a as any);
 const c = computed(() => selected.value?.c as any);
 const i = computed(() => S.value.advisors.findIndex((a: any) => a.id === sel.value?.id));
+// COM-161: introductions-present means the engine reads the pipeline, not the aggregates
+const hasIntroPipeline = computed(() => Array.isArray(sel.value?.introductions));
 const ms = computed(() =>
   Object.fromEntries(S.value.plan.milestones.map((m: any) => [m.id, m.label])),
 );
@@ -402,28 +415,108 @@ function setObjState(id: string, st: string) {
                 ></span
               >
             </div>
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <div class="text-xs text-ink-gray-6 mb-1">Equity round</div>
-                <NumIn
-                  :model-value="sel.performance?.capitalEquity || 0"
-                  fmt="usd"
-                  :min="0"
-                  aria-label="Capital equity round"
-                  @update:model-value="(v) => setPerfField('capitalEquity', v)"
+            <!-- COM-161: when introductions[] exists the ENGINE ignores the aggregate fields —
+                 rendering live NumIns over dead state misstates the package (the flagged bug).
+                 The per-intro pipeline editor takes over; the aggregates render only while they
+                 are still the live inputs. -->
+            <div v-if="hasIntroPipeline" class="space-y-2">
+              <div
+                v-for="it in sel.introductions"
+                :key="it.id"
+                class="flex items-end gap-2 flex-wrap"
+              >
+                <div>
+                  <div class="text-xs text-ink-gray-6 mb-1">Amount</div>
+                  <NumIn
+                    :model-value="it.amountUSD"
+                    fmt="usd"
+                    :min="0"
+                    :aria-label="`Introduction ${it.id} amount`"
+                    @update:model-value="(v) => updateIntroduction(sel.id, it.id, { amountUSD: v })"
+                  />
+                </div>
+                <FormControl
+                  type="select"
+                  label="Round"
+                  size="sm"
+                  :model-value="it.round"
+                  :options="
+                    roundList(S.plan).map((r) => ({ label: roundLabel(S.plan, r), value: r }))
+                  "
+                  @update:model-value="(v) => updateIntroduction(sel.id, it.id, { round: v })"
                 />
-              </div>
-              <div>
-                <div class="text-xs text-ink-gray-6 mb-1">Token OTC (Foundation)</div>
-                <NumIn
-                  :model-value="sel.performance?.capitalToken || 0"
-                  fmt="usd"
-                  :min="0"
-                  aria-label="Capital token OTC"
-                  @update:model-value="(v) => setPerfField('capitalToken', v)"
+                <FormControl
+                  type="select"
+                  label="Status"
+                  size="sm"
+                  :model-value="it.status"
+                  :options="INTRO_STATUSES.map((s) => ({ label: s, value: s }))"
+                  @update:model-value="(v) => updateIntroduction(sel.id, it.id, { status: v })"
                 />
+                <TextInput
+                  class="flex-1 min-w-32"
+                  size="sm"
+                  placeholder="Note — e.g. XTX Markets"
+                  :model-value="it.note || ''"
+                  :aria-label="`Introduction ${it.id} note`"
+                  @update:model-value="
+                    (v: string) => updateIntroduction(sel.id, it.id, { note: v || undefined })
+                  "
+                />
+                <button
+                  aria-label="Remove introduction"
+                  class="inline-flex shrink-0 items-center justify-center size-8 rounded hover:bg-surface-gray-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-gray-6)] text-ink-gray-6 hover:text-ink-red-3"
+                  @click="removeIntroduction(sel.id, it.id)"
+                >
+                  <span class="lucide-trash-2 size-3.5" aria-hidden="true" />
+                </button>
               </div>
+              <Button
+                variant="subtle"
+                theme="gray"
+                size="sm"
+                icon-left="lucide-plus"
+                label="Add introduction"
+                @click="addIntroduction(sel.id)"
+              />
+              <p class="text-p-xs text-ink-gray-6">
+                Targeted → gated → earned; gated amounts crystallise when their round closes. The
+                board rollup on the Board view reads this pipeline.
+              </p>
             </div>
+            <template v-else>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <div class="text-xs text-ink-gray-6 mb-1">Equity round</div>
+                  <NumIn
+                    :model-value="sel.performance?.capitalEquity || 0"
+                    fmt="usd"
+                    :min="0"
+                    aria-label="Capital equity round"
+                    @update:model-value="(v) => setPerfField('capitalEquity', v)"
+                  />
+                </div>
+                <div>
+                  <div class="text-xs text-ink-gray-6 mb-1">Token OTC (Foundation)</div>
+                  <NumIn
+                    :model-value="sel.performance?.capitalToken || 0"
+                    fmt="usd"
+                    :min="0"
+                    aria-label="Capital token OTC"
+                    @update:model-value="(v) => setPerfField('capitalToken', v)"
+                  />
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                theme="gray"
+                size="sm"
+                icon-left="lucide-list-plus"
+                label="Track introductions individually"
+                title="Converts these aggregates into earned introduction rows (value-preserving) and opens the per-introduction pipeline"
+                @click="addIntroduction(sel.id)"
+              />
+            </template>
             <p class="text-p-xs mt-1 text-ink-gray-6">
               {{ fUSD(S.plan.capitalUplift.per) }} introduced → +{{
                 (S.plan.capitalUplift.pct * 100).toFixed(0)

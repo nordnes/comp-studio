@@ -25,6 +25,62 @@
 .figure-sm {
   font-size: 1.5rem;
 }
+/* COM-100: the ONE native-range treatment. frappe-ui Slider is UNFIT here (recorded decision): its
+   SliderThumb hardcodes aria-label="Volume" with no override and its v-model expects number[] —
+   adopting it would break the dynamic accessible labels and the 0.01-step float interpolation.
+   Espresso tokens replace the per-instance accent-color escape; the dragged portion fills via
+   --slider-pct (set per-host from the bound value). */
+.range-input {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 16px;
+  background: transparent;
+  cursor: pointer;
+}
+.range-input::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 9999px;
+  background: linear-gradient(
+    to right,
+    var(--surface-gray-7) 0%,
+    var(--surface-gray-7) var(--slider-pct, 50%),
+    var(--surface-gray-3) var(--slider-pct, 50%),
+    var(--surface-gray-3) 100%
+  );
+}
+.range-input::-moz-range-track {
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--surface-gray-3);
+}
+.range-input::-moz-range-progress {
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--surface-gray-7);
+}
+.range-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  margin-top: -5px;
+  border-radius: 9999px;
+  background: var(--surface-white);
+  border: 1px solid var(--outline-gray-3);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.15);
+}
+.range-input::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 9999px;
+  background: var(--surface-white);
+  border: 1px solid var(--outline-gray-3);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.15);
+}
+.range-input:focus-visible {
+  outline: 2px solid var(--ink-gray-6);
+  outline-offset: 2px;
+}
 /* COM-117: THE section-label treatment — one quiet convention for every label-above-content
    (sentence case in the markup; amber is never a heading color per COM-118). */
 .section-label {

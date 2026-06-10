@@ -244,6 +244,7 @@ function setObjState(id: string, st: string) {
                   >{{ fPct(sel.splitOptions, 0) }} / {{ fPct(1 - sel.splitOptions, 0) }}</span
                 >
               </div>
+              <!-- COM-100: the shared .range-input treatment (tokens + --slider-pct track fill) -->
               <input
                 type="range"
                 min="0"
@@ -252,8 +253,8 @@ function setObjState(id: string, st: string) {
                 :value="sel.splitOptions"
                 aria-label="Options / tokens split"
                 :aria-valuetext="`${fPct(sel.splitOptions, 0)} options, ${fPct(1 - sel.splitOptions, 0)} tokens`"
-                class="w-full"
-                style="accent-color: var(--chart-capital)"
+                class="w-full range-input"
+                :style="{ '--slider-pct': sel.splitOptions * 100 + '%' }"
                 @input="
                   (e) => setField('splitOptions', Number((e.target as HTMLInputElement).value))
                 "

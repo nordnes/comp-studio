@@ -250,7 +250,7 @@ const openCmdK = () => window.dispatchEvent(new Event("open-command-palette"));
       <!-- COM-62: mobile drawer scrim -->
       <div
         v-if="navOpen"
-        class="no-print fixed inset-0 z-30 bg-black/30 lg:hidden"
+        class="no-print fixed inset-0 z-30 bg-[var(--overlay)] lg:hidden"
         @click="navOpen = false"
       />
 

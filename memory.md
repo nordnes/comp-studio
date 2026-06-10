@@ -2655,3 +2655,12 @@ pro-rata + ss.8–13 survival; Big Brain/Figment waivers w/ surviving MFNs; Reci
 token MFNs + s.6(a); the 40+ bucket) · CONSENT_FACTS (Resolution v5) · consentersFor(actionId)
 = the COM-167 gating join. Governance renders it. 7/7 live. vp 0/10 · 22/22 · 254/0/0 · build 0.
 LINEAR DEBT: +COM-166. Next: COM-167 (blocking semantics + Proposition watermark).
+
+## 2026-06-11 — COM-167 (blocking + watermark) DONE [W4 #2]
+
+**COM-167 (M, 88 LOC, PR #103) — MERGED. No engine edit.** grantPreconditions() in governance.ts
+(O13's own list: A-1/A-2 pool · open10 SAV · b3 only for explicit executive grants · checkStatus
+clear). Overview chips + Advisors outstanding line + the criterion-#6 Proposition watermark
+(printable ALWAYS; triple diagonal crop-proof + amber banner INSIDE .print-area; lifts on green —
+verified both directions). 8/8 live. vp 0/10 · 22/22 · 254/0/0 · build 0. LINEAR DEBT: +COM-167.
+Next: COM-168 (SAV/409A valuation record F22, S).

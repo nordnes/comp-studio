@@ -12,6 +12,27 @@ export interface Tier { name: string; mult: number; days?: number }
 export interface Milestone { id: string; label: string }
 export interface Objective { id: string; category: 'capital' | 'customer' | 'partnership' | 'governance'; label: string; trigger: string; uplift: number; gate: string }
 export interface Performance { capitalEquity?: number; capitalToken?: number; capitalIntroduced?: number; achieved: string[]; targeted: string[] }
+// v2 (COM-144): the award unit — v1's implicit single grant becomes explicit and repeatable.
+// `lifecycle` (COM-144/F19) and `docStatus` (the A.4 workbook "Status of docs" column) are TWO
+// distinct status dimensions, never one enum (RFC §3, verified delta vs the issue text).
+export type Instrument = 'option' | 'rta' | 'cash';
+export const GRANT_LIFECYCLES = ['draft', 'loi', 'granted', 'exercised', 'lapsed'] as const;
+export type GrantLifecycle = (typeof GRANT_LIFECYCLES)[number];
+export const DOC_STATUSES = ['in-draft', 'sent', 'in-review', 'signed', 'cancelled'] as const;
+export type DocStatus = (typeof DOC_STATUSES)[number];
+export interface Grant {
+  id: string;
+  instrument: Instrument;
+  round: string;                  // grant round id → prices strike/FMV off the walk
+  valueUSD?: number;              // dollar-denominated entry (Δ1); quantity derivation = COM-150
+  quantity?: number;              // options or tokens
+  strikePps?: number;             // options: explicit strike; absent → the grant round's price
+  curve: 'cert-v3' | 'rta';       // vesting curve (COM-145 wires the RTA monthly curve)
+  vestStartISO: string;
+  lifecycle: GrantLifecycle;
+  docStatus?: DocStatus;
+  docUrl?: string;                // the RTA/certificate link column from the workbook
+}
 export interface Advisor {
   id: string; name: string; sector: string; mode: 'tier' | 'value'; tier: number;
   years: number; splitOptions: number; annualValue: number; hasCash: boolean; cashAnnual: number;
@@ -19,6 +40,9 @@ export interface Advisor {
   notes: string; performance: Performance;
   // PD2 (COM-82): optional per-advisor projection state — additive only, reconcile-normalised, no money path.
   caseOverride?: string; targetExit?: number;
+  // v2 (COM-144): explicit grants. ABSENT → v1 implicit-package behaviour (the §5 shim);
+  // reconcile() never materialises this (derive-don't-materialise, RFC D3).
+  grants?: Grant[];
 }
 export interface Plan {
   fdPreESOP: number; tokenSupply: number;
@@ -283,6 +307,35 @@ export function reconcile(l: any): State {
       const adv = { name: 'Advisor', sector: SECTORS[0], mode: 'tier', tier: 0, years: 4, splitOptions: 0.65, annualValue: 75000, hasCash: false, cashAnnual: 0, startDate: todayISO(), upliftStartMonth: 6, grantRound: 'bridge', taxResidency: 'Other', notes: '', ...a, performance: pf };
       if (adv.caseOverride != null && !scn[adv.caseOverride]) delete adv.caseOverride;
       if (adv.targetExit != null && !ok(adv.targetExit)) delete adv.targetExit;
+      // v2 (COM-144): sanitize EXPLICIT grants when present; never materialise them (RFC D3).
+      // Trust boundary: numerics re-default via ok(), enums heal, docUrl must be http(s).
+      if (Array.isArray(a.grants)) {
+        adv.grants = a.grants
+          .filter((g: any) => g && typeof g === 'object' && g.id && ['option', 'rta', 'cash'].includes(g.instrument))
+          .map((g: any) => {
+            const out: any = {
+              ...g, id: String(g.id), instrument: g.instrument,
+              round: typeof g.round === 'string' && g.round ? g.round : 'bridge',
+              curve: g.curve === 'rta' || (g.curve == null && g.instrument === 'rta') ? 'rta' : 'cert-v3',
+              vestStartISO: typeof g.vestStartISO === 'string' && g.vestStartISO ? g.vestStartISO : adv.startDate,
+              // Money-bearing enum heals fail-CLOSED: an ABSENT lifecycle defaults to 'draft'
+              // (modeling intent), but a present-yet-unknown value (e.g. the docStatus
+              // 'cancelled' confusion) heals to 'lapsed' — never silently back into the totals.
+              lifecycle: (GRANT_LIFECYCLES as readonly string[]).includes(g.lifecycle) ? g.lifecycle
+                : (g.lifecycle == null ? 'draft' : 'lapsed'),
+            };
+            if (!(ok(g.valueUSD) && g.valueUSD >= 0)) delete out.valueUSD;
+            if (!(ok(g.quantity) && g.quantity >= 0)) delete out.quantity;
+            // strikePps 0 is a legitimate nil-cost option — the sanitizer must accept what
+            // computeGrant prices, or a save/reload silently re-prices the grant (review finding).
+            if (!(ok(g.strikePps) && g.strikePps >= 0)) delete out.strikePps;
+            if (!(DOC_STATUSES as readonly string[]).includes(g.docStatus)) delete out.docStatus;
+            if (!(typeof g.docUrl === 'string' && /^https?:\/\//i.test(g.docUrl))) delete out.docUrl;
+            return out;
+          });
+      } else if ('grants' in adv) {
+        delete adv.grants;
+      }
       return adv;
     }) : d.advisors,
   };
@@ -407,7 +460,53 @@ export function tgeFdvFor(plan: Plan, scenKey: string, walk: any) {
   return (s.tgeMult || 1) * (anchor?.post || 0);
 }
 
+// v2 (COM-144): plan.currentStage is a MILESTONE id ('mainnet'/'tge' are not rounds) — a raw
+// walk.byId[currentStage] lookup silently regresses to bridge past Series A. The most-recent
+// ROUND at the current stage = the last walk step whose id is a milestone at/before currentStage.
+export function currentRoundStep(plan: Plan, walk: any) {
+  const curIdx = stageIdx(plan, plan.currentStage);
+  let step = walk.byId.bridge || walk.steps[0];
+  for (const st of walk.steps) {
+    const mi = (plan.milestones || []).findIndex(m => m.id === st.id);
+    if (mi >= 0 && mi <= curIdx) step = st;
+  }
+  return step;
+}
+
+// v2 (COM-144): per-grant pricing off the grant's round. Strike = the round's price/share unless
+// the grant carries an explicit strikePps. FMV per Cert v3 cl. 4.5(c): exit consideration at an
+// Exit Event (exit price/share), else the most-recent-grant methodology — the price at the plan's
+// current stage in this scenario's walk. Net of strike, always. Quantity derivation from
+// valueUSD is COM-150; until then an option/rta grant prices its explicit quantity (absent → 0).
+export function computeGrant(grant: Grant, plan: Plan, scenKey: string) {
+  const w = walkScenario(plan, scenKey);
+  const round = w.byId[grant.round] || w.byId.bridge;
+  const exit = w.exit;
+  const lapsed = grant.lifecycle === 'lapsed';
+  if (grant.instrument === 'cash') {
+    const value = lapsed ? 0 : (ok(grant.valueUSD) ? grant.valueUSD : 0);
+    return { id: grant.id, instrument: 'cash' as Instrument, round: grant.round, roundLabel: roundLabel(plan, grant.round), quantity: null, strikePps: null, fmvPps: null, exitPps: null, exerciseCost: 0, stepUp: null, value, netAtExit: value, underwater: false, lapsed };
+  }
+  if (grant.instrument === 'rta') {
+    const qty = lapsed ? 0 : (ok(grant.quantity) ? grant.quantity : 0);
+    const tokenPps = safeDiv(tgeFdvFor(plan, scenKey, w), plan.tokenSupply);
+    const value = qty * tokenPps;
+    return { id: grant.id, instrument: 'rta' as Instrument, round: grant.round, roundLabel: roundLabel(plan, grant.round), quantity: qty, strikePps: null, fmvPps: tokenPps, exitPps: null, exerciseCost: 0, stepUp: null, tokenPps, value, netAtExit: value, underwater: false, lapsed };
+  }
+  const strikePps = ok(grant.strikePps) ? grant.strikePps : round.price;
+  const qty = lapsed ? 0 : (ok(grant.quantity) ? grant.quantity : 0);
+  const exitPps = safeDiv(exit.post, exit.N);
+  const fmvPps = currentRoundStep(plan, w).price;
+  const netAtExit = Math.max(0, qty * (exitPps - strikePps));
+  return { id: grant.id, instrument: 'option' as Instrument, round: grant.round, roundLabel: roundLabel(plan, grant.round), quantity: qty, strikePps, fmvPps, exitPps, exerciseCost: qty * strikePps, stepUp: fmvPps - strikePps, value: netAtExit, netAtExit, underwater: exitPps < strikePps, lapsed };
+}
+
 export function computeAdvisor(a: Advisor, plan: Plan, tiers: Tier[], objectives: Objective[]) {
+  // v2 (COM-144): an advisor WITH a grants array computes as a fold over it — including EMPTY
+  // ([] = explicitly granted nothing → $0; the implicit package must never resurrect when the
+  // last grant is deleted or a corrupt import drops every row — fail toward understatement).
+  // The v1 implicit path below stays byte-equivalent for grant-less advisors (22/22 pins it).
+  if (Array.isArray(a.grants)) return computeAdvisorFromGrants(a, plan);
   const years = a.years || 4;
   const bg = plan.baseGrant;
   const grantRound = a.grantRound || 'bridge';
@@ -472,6 +571,86 @@ export function computeAdvisor(a: Advisor, plan: Plan, tiers: Tier[], objectives
     baseEqNet: sb.netEqAt(eqPct, sb.exitVal), baseBaseEqNet: sb.netEqAt(baseEq, sb.exitVal),
     bestCaseTotal: scen.reduce((m, x) => Math.max(m, x.total), 0),
   };
+}
+
+// v2 (COM-144): the grants fold. Returns the v1 SUPERSET shape so views migrate incrementally.
+// Conventions (flagged in the PR, proceed-unless-vetoed): lapsed grants are excluded from money;
+// explicit grants are PRICED, not uplift-multiplied (performance uplifts express as top-up grants
+// from COM-157/158 on), so ceiling == earned for grant-advisors; eqPct restates total option
+// shares as a % of the CURRENT-stage FD in the base scenario (the Board pool comparison's basis).
+function computeAdvisorFromGrants(a: Advisor, plan: Plan) {
+  const years = a.years || 4;
+  const live = (a.grants || []).filter(g => g.lifecycle !== 'lapsed');
+  const baseKey = baseScenKey(plan);
+  const baseWalk = walkScenario(plan, baseKey);
+  const grantRound = a.grantRound || 'bridge';
+
+  // Shares/eqPct are scenario-independent (quantities are grant data); compute them first so
+  // every scenario's netEqAt can scale off the same eqPct reference.
+  const equityShares = live.reduce((s, g) => s + (g.instrument === 'option' && ok(g.quantity) ? g.quantity : 0), 0);
+  const tokenCount = live.reduce((s, g) => s + (g.instrument === 'rta' && ok(g.quantity) ? g.quantity : 0), 0);
+  const tkPct = safeDiv(tokenCount, plan.tokenSupply);
+  const curN = currentRoundStep(plan, baseWalk).N;
+  const eqPct = safeDiv(equityShares, curN);
+
+  const scen = Object.keys(plan.scenarios).map(k => {
+    const w = walkScenario(plan, k);
+    const rows = live.map(g => computeGrant(g, plan, k));
+    const equity = rows.reduce((s, r) => s + (r.instrument === 'option' ? r.netAtExit : 0), 0);
+    const token = rows.reduce((s, r) => s + (r.instrument === 'rta' ? r.value : 0), 0);
+    const grant = w.byId[grantRound] || w.byId.bridge, exit = w.exit;
+    const retention = safeDiv(grant.N, exit.N);
+    // Fold-consistent netEqAt: price the GRANTS at valuation V (per-share V/exitN against each
+    // grant's own strike), scaled by pct relative to eqPct so ceiling-style calls stay
+    // proportional. The v1 single-round closure contradicted the fold for explicit strikes and
+    // non-bridge rounds (review finding 2026-06-10) — scen.equity === netEqAt(eqPct, exitVal).
+    const netEqAt = (pct: number, V: number) => {
+      const pps = safeDiv(V, exit.N);
+      const raw = rows.reduce((s, r) => s + (r.instrument === 'option' ? (r.quantity || 0) * Math.max(0, pps - (r.strikePps as number)) : 0), 0);
+      return raw * safeDiv(pct, eqPct, 0);
+    };
+    return {
+      key: k, label: plan.scenarios[k].label, retention, strikeBasis: grant.post, exitVal: exit.post,
+      fdv: tgeFdvFor(plan, k, w), grantN: grant.N, exitN: exit.N, grantPrice: grant.price, netEqAt,
+      equity, token, total: equity + token, underwater: equityShares > 0 && equity === 0, rows,
+    };
+  });
+  const sb = scen.find(x => x.key === baseKey) || scen[0];
+
+  const baseRows = sb.rows;
+  const exerciseCost = baseRows.reduce((s, r) => s + (r.instrument === 'option' ? r.exerciseCost : 0), 0);
+  const strikePps = safeDiv(exerciseCost, equityShares, baseRows.find(r => r.instrument === 'option')?.strikePps ?? sb.grantPrice);
+  const grantCash = baseRows.reduce((s, r) => s + (r.instrument === 'cash' ? r.value : 0), 0);
+  const cash = a.hasCash ? (a.cashAnnual || 0) : 0;
+
+  return {
+    years, tierMult: 1, baseEq: eqPct, baseTk: tkPct, grantRound,
+    capEquity: 0, capToken: 0, capTotal: 0,
+    earnedUplift: 0, ceilUplift: 0, pendingUplift: 0, capEarned: 0, capRaw: 0,
+    eqPct, tkPct, eqPctCeil: eqPct, tkPctCeil: tkPct,
+    scen, base: sb, retentionBase: sb.retention,
+    equityShares, strikePps, exerciseCost, tokenCount,
+    cash, cashTotal: cash * years + grantCash,
+    baseCaseBase: sb.total, baseCaseTotal: sb.total, baseCaseCeil: sb.total,
+    baseEqNet: sb.equity, baseBaseEqNet: sb.equity,
+    bestCaseTotal: scen.reduce((m, x) => Math.max(m, x.total), 0),
+    grants: baseRows,
+  };
+}
+
+// v2 (COM-144): the §5 derivation shim, for UIs that render grant rows uniformly — explicit
+// grants when the array exists (even empty — [] is explicit-zero, never re-derive), else the v1
+// implicit package expressed as Grant entries. NOT persisted; reconcile never materialises these.
+// A flow that DOES persist them (materialise-on-first-edit) MUST clear hasCash/cashAnnual or drop
+// the implicit-cash row — the fold sums advisor-level cash AND cash grants (review 2026-06-10).
+export function effectiveGrants(a: Advisor, plan: Plan, tiers: Tier[], objectives: Objective[]): Grant[] {
+  if (Array.isArray(a.grants)) return a.grants;
+  const c = computeAdvisor(a, plan, tiers, objectives);
+  const out: Grant[] = [];
+  if (c.equityShares > 0) out.push({ id: `${a.id}-implicit-eq`, instrument: 'option', round: c.grantRound, quantity: c.equityShares, strikePps: c.strikePps, curve: 'cert-v3', vestStartISO: a.startDate, lifecycle: 'granted' });
+  if (c.tokenCount > 0) out.push({ id: `${a.id}-implicit-rta`, instrument: 'rta', round: c.grantRound, quantity: c.tokenCount, curve: 'rta', vestStartISO: a.startDate, lifecycle: 'granted' });
+  if (a.hasCash && a.cashAnnual) out.push({ id: `${a.id}-implicit-cash`, instrument: 'cash', round: c.grantRound, valueUSD: (a.cashAnnual || 0) * (a.years || 4), curve: 'cert-v3', vestStartISO: a.startDate, lifecycle: 'granted' });
+  return out;
 }
 
 export function computeBoard(advisors: Advisor[], plan: Plan, tiers: Tier[], objectives: Objective[]) {

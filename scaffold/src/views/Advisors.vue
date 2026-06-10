@@ -5,7 +5,7 @@
 // from the engine via the store.
 import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
-import { Badge, Button, Select, Tabs } from "frappe-ui";
+import { Badge, Button, Dropdown, Select, Tabs } from "frappe-ui";
 import { useStudio } from "../store";
 import { useEditor } from "../composables/useEditor";
 import {
@@ -18,7 +18,13 @@ import {
   todayISO,
   scenKeys,
   baseScenKey,
+  fDate,
+  roundList,
+  effectiveGrants,
+  computeGrant,
+  GRANT_LIFECYCLES,
 } from "../engine";
+import NumIn from "../components/NumIn.vue";
 import PageHeader from "../components/PageHeader.vue";
 import ContextStrip from "../components/ContextStrip.vue";
 import AdvisorPicker from "../components/AdvisorPicker.vue";
@@ -34,7 +40,8 @@ import Term from "../components/Term.vue";
 import EmptyState from "../components/EmptyState.vue";
 import Panel from "../components/Panel.vue";
 
-const { store, selected, setAdvisorCase, addAdvisor } = useStudio();
+const { store, selected, setAdvisorCase, addAdvisor, addGrant, updateGrant, removeGrant } =
+  useStudio();
 const { openEditor } = useEditor();
 const router = useRouter();
 const S = computed(() => store.S);
@@ -71,6 +78,24 @@ const ff = computed(() => {
 function toProp() {
   router.push("/proposition");
 }
+// COM-144: per-grant rows — explicit grants when the advisor has them, else the derived implicit
+// package (the engine's §5 shim). All pricing comes from computeGrant; the view renders rows.
+const isExplicit = computed(() => Array.isArray(sel.value?.grants));
+const grantRows = computed(() =>
+  effectiveGrants(sel.value, S.value.plan, S.value.tiers, S.value.objectives).map((g) => ({
+    g,
+    r: computeGrant(g, S.value.plan, sel.value.caseOverride || baseScenKey(S.value.plan)),
+  })),
+);
+const grantRoundOpts = computed(() =>
+  roundList(S.value.plan).map((r) => ({ label: roundLabel(S.value.plan, r), value: r })),
+);
+const lifecycleOpts = GRANT_LIFECYCLES.map((l) => ({ label: l, value: l }));
+const addGrantOpts = [
+  { label: "Option grant", onClick: () => addGrant(sel.value.id, "option") },
+  { label: "Token grant (RTA)", onClick: () => addGrant(sel.value.id, "rta") },
+  { label: "Cash", onClick: () => addGrant(sel.value.id, "cash") },
+];
 </script>
 
 <template>
@@ -232,6 +257,122 @@ function toProp() {
             <DilutionPath v-else-if="tab.label === 'Dilution'" :c="c" />
             <!-- COM-88: static read-out — label + divide-y rows, no frame -->
             <div v-else>
+              <!-- COM-144: per-grant rows — grant date · round · strike · FMV · count · status.
+                   Later top-up grants price at later valuations (Part 5.3). -->
+              <div class="flex items-center justify-between mb-3">
+                <div class="section-label">Grants · per-grant strike from the grant round</div>
+                <Dropdown :options="addGrantOpts">
+                  <Button
+                    variant="subtle"
+                    theme="gray"
+                    size="sm"
+                    icon-left="lucide-plus"
+                    label="Add grant"
+                  />
+                </Dropdown>
+              </div>
+              <div class="divide-y divide-outline-gray-1 text-sm mb-2">
+                <div v-for="{ g, r } in grantRows" :key="g.id" class="py-2">
+                  <div class="flex items-center gap-3 flex-wrap">
+                    <span class="text-xs text-ink-gray-6 tabular-nums w-16 shrink-0">{{
+                      fDate(g.vestStartISO)
+                    }}</span>
+                    <Select
+                      v-if="isExplicit"
+                      class="w-28"
+                      :model-value="g.round"
+                      :options="grantRoundOpts"
+                      :aria-label="`Grant round`"
+                      @update:model-value="
+                        (v) => updateGrant(sel.id, g.id, { round: v, strikePps: undefined })
+                      "
+                    />
+                    <span v-else class="text-ink-gray-7 w-28">{{ r.roundLabel }}</span>
+                    <span class="text-xs tabular-nums text-ink-gray-6"
+                      >strike
+                      <span class="text-ink-gray-9">{{
+                        r.strikePps == null ? "—" : `$${r.strikePps.toFixed(2)}`
+                      }}</span></span
+                    >
+                    <span class="text-xs tabular-nums text-ink-gray-6"
+                      >FMV
+                      <span class="text-ink-gray-9">{{
+                        r.fmvPps == null
+                          ? "—"
+                          : g.instrument === "rta"
+                            ? `$${r.fmvPps.toFixed(3)}`
+                            : `$${r.fmvPps.toFixed(2)}`
+                      }}</span></span
+                    >
+                    <span class="flex items-center gap-1.5 text-xs text-ink-gray-6">
+                      {{ g.instrument === "cash" ? "amount" : "count" }}
+                      <NumIn
+                        v-if="isExplicit && g.instrument !== 'cash'"
+                        :model-value="g.quantity ?? 0"
+                        :min="0"
+                        :aria-label="`${g.instrument} count`"
+                        @update:model-value="(v) => updateGrant(sel.id, g.id, { quantity: v })"
+                      />
+                      <NumIn
+                        v-else-if="isExplicit"
+                        :model-value="g.valueUSD ?? 0"
+                        fmt="usd"
+                        :min="0"
+                        aria-label="Cash amount"
+                        @update:model-value="(v) => updateGrant(sel.id, g.id, { valueUSD: v })"
+                      />
+                      <span v-else class="tabular-nums text-ink-gray-9">{{
+                        g.instrument === "cash"
+                          ? fUSD(g.valueUSD ?? 0)
+                          : g.instrument === "rta"
+                            ? fTok(g.quantity ?? 0)
+                            : fNum(g.quantity ?? 0)
+                      }}</span>
+                    </span>
+                    <span class="ml-auto flex items-center gap-2">
+                      <span
+                        class="text-xs tabular-nums"
+                        :class="r.underwater ? 'text-ink-red-3' : 'text-ink-gray-9'"
+                        >{{ fUSD(r.value) }}</span
+                      >
+                      <Select
+                        v-if="isExplicit"
+                        class="w-26"
+                        :model-value="g.lifecycle"
+                        :options="lifecycleOpts"
+                        aria-label="Grant status"
+                        @update:model-value="(v) => updateGrant(sel.id, g.id, { lifecycle: v })"
+                      />
+                      <Badge v-else theme="gray" size="sm">{{ g.lifecycle }}</Badge>
+                      <button
+                        v-if="isExplicit"
+                        aria-label="Remove grant"
+                        class="inline-flex shrink-0 items-center justify-center size-8 rounded hover:bg-surface-gray-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-gray-6)] text-ink-gray-6 hover:text-ink-red-3"
+                        @click="removeGrant(sel.id, g.id)"
+                      >
+                        <span class="lucide-trash-2 size-3.5" aria-hidden="true" />
+                      </button>
+                    </span>
+                  </div>
+                  <p v-if="g.docStatus || g.docUrl" class="text-p-xs text-ink-gray-6 mt-0.5 pl-19">
+                    docs: {{ g.docStatus || "—"
+                    }}<a
+                      v-if="g.docUrl"
+                      class="underline ml-1"
+                      :href="g.docUrl"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      >link</a
+                    >
+                  </p>
+                </div>
+                <p v-if="!grantRows.length" class="py-2 text-p-xs text-ink-gray-6">
+                  No grants — add one to start the package.
+                </p>
+              </div>
+              <p v-if="!isExplicit && grantRows.length" class="text-p-xs text-ink-gray-6 mb-4">
+                Rows derive from the package settings — the first grant edit makes them explicit.
+              </p>
               <div class="section-label mb-3">
                 Instruments · <Term k="netOfStrike">net of strike</Term>
               </div>

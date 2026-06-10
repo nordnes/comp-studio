@@ -2620,3 +2620,14 @@ min-widths inside grid columns; and measure mobile against PROD parity, not just
 sw≤iw (Chrome's auto-fit makes iw==sw ALWAYS pass).** Board mobile = 572 = prod parity (legacy
 roster width — a Wave-7 R4.3 item). 9/9 live. vp 0/10 · 22/22 · 251/0/0 · build 0. LINEAR DEBT:
 +COM-156. Next: COM-165 (Ispahani wizard, S) — closes Wave 3/M11.
+
+## 2026-06-10 — COM-165 DONE — ★ WAVE 3 / THE M11 MILESTONE COMPLETE [W3 #11]
+
+**COM-165 (S, ~330 LOC, PR #100) — MERGED. M11 · Trajectory & lifecycle = ALL 11 issues done
+(155→159→160→157→158→162→163→161→164→156→165, PRs #90–#100), v2 suite 225→253.** ISPAHANI_STEPS
+(B.3 verbatim, 9 pinned) · GrantDecision artefacts on State (answers pad to exactly 9) ·
+recordDecision (subject required) · the wizard from Board w/ LIVE engine context under steps
+5–8 · the register on Governance. 9/9 live. vp 0/10 · 22/22 · 253/0/0 · build 0.
+**LINEAR DEBT (MCP down since COM-162): COM-162, COM-163, COM-161, COM-164, COM-156, COM-165
+all need In Progress→Done flips + closing comments when Linear returns.**
+Next: the M11-boundary grader panel → Wave 4 (M12: COM-166→170).

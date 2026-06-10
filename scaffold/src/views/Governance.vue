@@ -4,9 +4,17 @@
 // follow-on issue), no engine reads, no money. Canonical row text is seed-only (governance.ts);
 // the four user-owned fields (status / owner / evidence / note) edit inline and persist.
 import { computed, ref } from "vue";
-import { Button, FormControl } from "frappe-ui";
+import { Badge, Button, FormControl } from "frappe-ui";
 import { useStudio } from "../store";
 import type { ComplianceItem, RagStatus } from "../governance";
+import { CONSENT_MATRIX, CONSENT_FACTS } from "../consents";
+
+// COM-166: right-status → badge theme (live = the gating state, amber attention)
+const RIGHT_THEME: Record<string, string> = {
+  live: "orange",
+  extinguished: "gray",
+  none: "green",
+};
 import PageHeader from "../components/PageHeader.vue";
 import Panel from "../components/Panel.vue";
 
@@ -178,6 +186,45 @@ const evidenceHref = (it: ComplianceItem) =>
       Register text is fixed; statuses, owners, evidence and notes are tracking state and save with
       the studio. Internal &amp; confidential.
     </p>
+
+    <!-- COM-166: the A.6 consent matrix as data — definitive, 47 investors reviewed -->
+    <section class="space-y-3">
+      <div class="section-label">Investor consent matrix · A.6 (definitive — 47 reviewed)</div>
+      <Panel :padded="false">
+        <ul class="divide-y divide-outline-gray-1">
+          <li v-for="e in CONSENT_MATRIX" :key="e.id" class="p-4">
+            <div class="flex items-baseline gap-2 flex-wrap">
+              <span class="text-sm font-medium text-ink-gray-9">{{ e.name }}</span>
+              <span class="text-xs text-ink-gray-6">{{ e.context }}</span>
+              <span class="ml-auto flex items-center gap-1.5">
+                <Badge :theme="RIGHT_THEME[e.consent]" variant="subtle" size="sm"
+                  >consent {{ e.consent }}</Badge
+                >
+                <Badge
+                  :theme="RIGHT_THEME[e.proRata === 'live-uncapped' ? 'live' : e.proRata]"
+                  variant="subtle"
+                  size="sm"
+                  >pro-rata
+                  {{ e.proRata === "live-uncapped" ? "live · uncapped" : e.proRata }}</Badge
+                >
+                <Badge v-if="e.mfn" theme="blue" variant="subtle" size="sm">{{ e.mfn }}</Badge>
+              </span>
+            </div>
+            <ul v-if="e.consentTriggers.length" class="mt-1.5 space-y-0.5">
+              <li
+                v-for="t in e.consentTriggers"
+                :key="t.id"
+                class="text-p-xs text-ink-amber-strong"
+              >
+                Consent required: {{ t.label }}
+              </li>
+            </ul>
+            <p v-if="e.survival" class="text-p-xs text-ink-gray-6 mt-1">{{ e.survival }}</p>
+          </li>
+        </ul>
+      </Panel>
+      <p v-for="(f, i) in CONSENT_FACTS" :key="i" class="text-p-xs text-ink-gray-6">{{ f }}</p>
+    </section>
 
     <!-- COM-165: the grant-decision artefacts (B.3) — the defend-it-in-a-board-conversation log -->
     <div v-if="decisions.length">

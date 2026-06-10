@@ -5,7 +5,7 @@
 // from the engine via the store.
 import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
-import { Badge, Button, Select } from "frappe-ui";
+import { Badge, Button, Select, Tabs } from "frappe-ui";
 import { useStudio } from "../store";
 import { useEditor } from "../composables/useEditor";
 import {
@@ -57,7 +57,8 @@ const advisorCase = computed({
 const overrideDiverged = computed(
   () => !!sel.value?.caseOverride && sel.value.caseOverride !== baseScenKey(S.value.plan),
 );
-const showDetail = ref(false);
+// COM-91: granular disclosure — Tabs replace the all-or-nothing detail dump (one surface at a time).
+const detailTab = ref(0);
 // COM-47: the exit slider publishes the selected exit value; UpsideCurve marks it on the equity curve.
 const exitMarker = ref<number | null>(null);
 
@@ -203,63 +204,72 @@ function toProp() {
       <GrowthWaterfall :c="c" :sel="sel" />
       <ExitSlider :c="c" :sel="sel" @exit="(v) => (exitMarker = v)" />
       <UpsideCurve :c="c" :marker-exit="exitMarker ?? undefined" />
-      <Button
-        class="w-full no-print"
-        variant="subtle"
-        theme="gray"
-        :label="showDetail ? '− Hide detail' : '+ Show detail · vesting, mix, instruments'"
-        @click="showDetail = !showDetail"
-      />
-      <template v-if="showDetail">
-        <VestingTimeline :c="c" :sel="sel" />
-        <MixBreakdown :c="c" />
-        <div class="grid sm:grid-cols-2 gap-6">
-          <DilutionPath :c="c" />
-          <!-- COM-88: static read-out — label + divide-y rows, no frame -->
-          <div>
-            <div class="section-label mb-3">
-              Instruments · <Term k="netOfStrike">net of strike</Term>
+      <!-- COM-91: frappe-ui Tabs (Vesting · Mix · Dilution · Instruments) replace the single
+           "+ Show detail" toggle that dumped four surfaces at once — jump straight to one.
+           no-print keeps parity with the old collapsed-by-default print behaviour. -->
+      <Tabs
+        v-model="detailTab"
+        class="no-print"
+        :tabs="[
+          { label: 'Vesting' },
+          { label: 'Mix' },
+          { label: 'Dilution' },
+          { label: 'Instruments' },
+        ]"
+      >
+        <template #tab-panel="{ tab }">
+          <div class="w-full pt-6">
+            <VestingTimeline v-if="tab.label === 'Vesting'" :c="c" :sel="sel" />
+            <MixBreakdown v-else-if="tab.label === 'Mix'" :c="c" />
+            <DilutionPath v-else-if="tab.label === 'Dilution'" :c="c" />
+            <!-- COM-88: static read-out — label + divide-y rows, no frame -->
+            <div v-else>
+              <div class="section-label mb-3">
+                Instruments · <Term k="netOfStrike">net of strike</Term>
+              </div>
+              <div class="divide-y divide-outline-gray-1 text-sm">
+                <div class="flex justify-between py-2">
+                  <span class="text-ink-gray-6">Options (base case net)</span
+                  ><span class="tabular-nums text-ink-gray-9">{{ fUSD(c.baseEqNet) }}</span>
+                </div>
+                <div class="flex justify-between py-2">
+                  <span class="text-ink-gray-6">Shares @ bridge</span
+                  ><span class="tabular-nums text-ink-gray-9">{{ fNum(c.equityShares) }}</span>
+                </div>
+                <div class="flex justify-between py-2">
+                  <span class="text-ink-gray-6">Strike</span
+                  ><span class="tabular-nums text-ink-gray-9">${{ c.strikePps.toFixed(2) }}</span>
+                </div>
+                <div class="flex justify-between py-2">
+                  <span class="text-ink-gray-6">Exercise cost</span
+                  ><span class="tabular-nums text-ink-gray-9">{{ fUSD(c.exerciseCost) }}</span>
+                </div>
+                <div class="flex justify-between py-2">
+                  <span class="text-ink-gray-6">Tokens</span
+                  ><span class="tabular-nums text-ink-gray-9"
+                    >{{ fPct(c.tkPct, 3) }} · {{ fTok(c.tokenCount) }}</span
+                  >
+                </div>
+                <div class="flex justify-between py-2">
+                  <span class="text-ink-gray-6">Token value (base FDV)</span
+                  ><span class="tabular-nums text-ink-gray-9">{{
+                    fUSD(c.tkPct * c.base.fdv)
+                  }}</span>
+                </div>
+                <div class="flex justify-between py-2">
+                  <span class="text-ink-gray-6">Vesting</span
+                  ><span class="tabular-nums text-ink-gray-9"
+                    >{{ S.plan.equityVestYears }}yr / {{ S.plan.equityCliff }}mo</span
+                  >
+                </div>
+              </div>
+              <p class="text-p-xs mt-2 text-ink-gray-6">
+                Strike subject to an HMRC SAV / 409A valuation agreed before first grant.
+              </p>
             </div>
-            <div class="divide-y divide-outline-gray-1 text-sm">
-              <div class="flex justify-between py-2">
-                <span class="text-ink-gray-6">Options (base case net)</span
-                ><span class="tabular-nums text-ink-gray-9">{{ fUSD(c.baseEqNet) }}</span>
-              </div>
-              <div class="flex justify-between py-2">
-                <span class="text-ink-gray-6">Shares @ bridge</span
-                ><span class="tabular-nums text-ink-gray-9">{{ fNum(c.equityShares) }}</span>
-              </div>
-              <div class="flex justify-between py-2">
-                <span class="text-ink-gray-6">Strike</span
-                ><span class="tabular-nums text-ink-gray-9">${{ c.strikePps.toFixed(2) }}</span>
-              </div>
-              <div class="flex justify-between py-2">
-                <span class="text-ink-gray-6">Exercise cost</span
-                ><span class="tabular-nums text-ink-gray-9">{{ fUSD(c.exerciseCost) }}</span>
-              </div>
-              <div class="flex justify-between py-2">
-                <span class="text-ink-gray-6">Tokens</span
-                ><span class="tabular-nums text-ink-gray-9"
-                  >{{ fPct(c.tkPct, 3) }} · {{ fTok(c.tokenCount) }}</span
-                >
-              </div>
-              <div class="flex justify-between py-2">
-                <span class="text-ink-gray-6">Token value (base FDV)</span
-                ><span class="tabular-nums text-ink-gray-9">{{ fUSD(c.tkPct * c.base.fdv) }}</span>
-              </div>
-              <div class="flex justify-between py-2">
-                <span class="text-ink-gray-6">Vesting</span
-                ><span class="tabular-nums text-ink-gray-9"
-                  >{{ S.plan.equityVestYears }}yr / {{ S.plan.equityCliff }}mo</span
-                >
-              </div>
-            </div>
-            <p class="text-p-xs mt-2 text-ink-gray-6">
-              Strike subject to an HMRC SAV / 409A valuation agreed before first grant.
-            </p>
           </div>
-        </div>
-      </template>
+        </template>
+      </Tabs>
       <Button
         class="w-full no-print"
         variant="solid"

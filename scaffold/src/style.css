@@ -6,9 +6,6 @@
   font-family: "Fraunces", Georgia, serif;
   letter-spacing: -0.02em;
 }
-.font-mono {
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
-}
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
@@ -33,13 +30,6 @@
 }
 .figure-lg {
   font-size: 2.5rem;
-}
-.eyebrow {
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 10px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  font-weight: 500;
 }
 /* COM-38 (a11y): accessible accent-label amber. Espresso's amber ink-scale stops at ink-amber-3
    (#DB7706 = 2.93:1 on surface-amber-2 / 3.16:1 on white — fails AA for small text). `ink-amber-strong`

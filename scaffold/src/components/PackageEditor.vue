@@ -179,6 +179,14 @@ function setObjState(id: string, st: string) {
               @update:model-value="(v) => setField('mode', v)"
             />
           </div>
+          <!-- COM-78: the denomination switch explains itself — neither mode's inputs are lost -->
+          <p class="text-p-xs text-ink-gray-6">
+            {{
+              sel.mode === "tier"
+                ? "Uniform base × tier multiplier — your $-value inputs are preserved when you switch."
+                : "Target annual value converted to eq% / tok% at the base-case path — your tier selection is preserved."
+            }}
+          </p>
           <template v-if="sel.mode === 'tier'">
             <div
               class="flex items-center gap-2 text-xs px-3 py-2 rounded bg-surface-gray-2 text-ink-gray-7"
@@ -249,6 +257,12 @@ function setObjState(id: string, st: string) {
                   (e) => setField('splitOptions', Number((e.target as HTMLInputElement).value))
                 "
               />
+            </div>
+            <!-- COM-78: the resolved denomination, read from the existing engine computed —
+                 value mode shows its eq/tok the same way the tier cards show theirs -->
+            <div v-if="c" class="text-xs tabular-nums text-ink-gray-6">
+              Resolves to {{ fPct(c.baseEq, 2) }} eq · {{ fPct(c.baseTk, 3) }} tok at the base-case
+              path
             </div>
           </template>
           <Divider />

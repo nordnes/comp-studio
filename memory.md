@@ -2006,3 +2006,10 @@ treatment. Verified: Board labels 14px/500/#525252. vp 0 · 22/22 both · build 
 **★ WAVE 4 (visual system) COMPLETE: COM-108/119/120/113/115/114/117, PRs #45–#51.** M9 = 47 Done /
 18 open. Next: WAVE 5 (editorial & package editor: 78→79→80 stack in PackageEditor, 91 Tabs, 92+127
 header zone, 128, 130+131, 129).
+
+## 2026-06-10 — COM-78 (denomination helper) DONE [M9 finish-loop W5 #1]
+
+**COM-78 (P3 Med, ~20 LOC, PackageEditor.vue) — DONE + MERGED.** Helper line under the mode TabButtons
+(mode-specific copy; "…preserved when you switch"); value mode shows "Resolves to X% eq · Y% tok at the
+base-case path" from c.baseEq/baseTk. Verified both modes live in the editor dialog (resolved line read
+0.22% eq · 0.017% tok). vp 0 · 22/22 both · build 0.

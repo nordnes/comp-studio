@@ -1903,3 +1903,12 @@ current) + grouped "Manage boards…" → toggleMgr (divider renders between gro
   Share/More menus — **preview gotcha: headlessui Menu popovers do NOT reliably survive between
   preview_eval calls (open-state parity gets lost); verify item RENDERING in the eval right after the
   trigger click, don't chain interactions across evals.** vp 0 · 22/22 both · build 0.
+
+## 2026-06-10 — COM-101 (Breadcrumbs adopt) DONE [M9 finish-loop W3 #7]
+
+**COM-101 (P3 Med, ~20 LOC, App.vue) — DONE + MERGED.** breadcrumb computed → breadcrumbItems
+`[{label, route?}]`; `<Breadcrumbs>` inside the existing nav landmark. Root = board name → /overview;
+view crumb → its own path; advisor crumb routeless (no :id route yet). Lib look: text-lg medium, "/"
+separators, last crumb ink-gray-9, built-in overflow dropdown for >2 crumbs on narrow widths.
+- Verified on /advisors: 2 links + routeless advisor crumb; root click navigated to /overview.
+  vp 0 · 22/22 both · build 0 · zero console errors.

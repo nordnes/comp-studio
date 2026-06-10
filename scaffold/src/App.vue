@@ -18,6 +18,7 @@ import {
   ListRows,
   ListRow,
   ListRowItem,
+  Breadcrumbs,
 } from "frappe-ui";
 import { useStudio } from "./store";
 import { confirmDestroy } from "./confirm";
@@ -176,16 +177,20 @@ const scenarioOptions = computed(() =>
 );
 
 // COM-62: breadcrumb — board › view › advisor (the advisor segment only on the per-advisor routes).
-// COM-102: the root is the active BOARD, not the static "Studio" (board identity in the chrome).
+// COM-102: the root is the active BOARD (→ /overview), not the static "Studio".
+// COM-101: shaped for frappe-ui <Breadcrumbs> — every segment with a route is real wayfinding; the
+// advisor crumb stays routeless until a /advisors/:id param exists.
 const allNav = [...navGroups.flatMap((g) => g.items), configureItem];
-const breadcrumb = computed(() => {
-  const parts = [
-    store.S.name || "Untitled board",
-    allNav.find((i) => i.to === route.path)?.label || "",
+const breadcrumbItems = computed(() => {
+  const items: { label: string; route?: string }[] = [
+    { label: store.S.name || "Untitled board", route: "/overview" },
   ];
+  const view = allNav.find((i) => i.to === route.path);
+  if (view) items.push({ label: view.label, route: view.to });
   const adv = selected.value?.a?.name;
-  if (adv && (route.path === "/advisors" || route.path === "/proposition")) parts.push(adv);
-  return parts.filter(Boolean);
+  if (adv && (route.path === "/advisors" || route.path === "/proposition"))
+    items.push({ label: adv });
+  return items;
 });
 
 // COM-59: per-recipient print running mark. Left = the confidential statement (constant); right = the
@@ -379,17 +384,10 @@ const openCmdK = () => window.dispatchEvent(new Event("open-command-palette"));
                 <span class="block h-0.5 rounded bg-current" />
               </span>
             </button>
-            <nav aria-label="Breadcrumb" class="flex items-center gap-1.5 text-sm min-w-0">
-              <template v-for="(b, i) in breadcrumb" :key="i">
-                <span v-if="i" class="text-ink-gray-4" aria-hidden="true">›</span>
-                <span
-                  class="truncate"
-                  :class="
-                    i === breadcrumb.length - 1 ? 'text-ink-gray-9 font-medium' : 'text-ink-gray-6'
-                  "
-                  >{{ b }}</span
-                >
-              </template>
+            <!-- COM-101: frappe-ui Breadcrumbs — real wayfinding (board root → /overview, view
+                 crumb routes; advisor crumb routeless until /advisors/:id exists) -->
+            <nav aria-label="Breadcrumb" class="flex items-center min-w-0">
+              <Breadcrumbs :items="breadcrumbItems" />
             </nav>
             <!-- COM-62: teleport target for the active view's primary action(s) -->
             <div id="app-header" class="ml-auto flex items-center gap-2" />

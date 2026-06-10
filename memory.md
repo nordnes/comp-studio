@@ -1856,3 +1856,15 @@ footer-items = Configure + Share/More.
   synthetic ↓+↵ silently no-ops — two-eval it), ↵ selects→navigates→closes, Esc closes, "No matches"
   disabled item renders. Dialog leave transition ≈300ms (a "closed" check right after Esc reads stale).
 - For COM-94 (palette Actions): write new verbs in the `{name,title,description,run}` shape.
+
+## 2026-06-10 — COM-94 (palette editing verbs) DONE [M9 finish-loop W3 #3]
+
+**COM-94 (P4 Low, ~55 LOC, 2 files) — DONE + MERGED.** Actions group now leads with: Add advisor
+(addAdvisor → openEditor — the composable targets store.selId, which addAdvisor sets), New scenario
+(→ /configure?group=cap), New objective (→ /configure?group=perf). Configure reads `?group=` into its
+COM-95 rail ref (guarded against junk values). Row-level focus skipped — the add* reducers append last,
+which the group deep-link makes visible; flagged in PR.
+- **Driving gotcha confirmed for headlessui ComboboxOption: bare .click() does NOTHING — dispatch the
+  full pointerdown→mousedown→pointerup→mouseup→click sequence on the LI.** Verified live (backup→
+  restore): New objective added a row + landed on the Performance group; Add advisor opened the editor
+  on "New advisor". vp 0 · 22/22 both · build 0 · zero console errors.

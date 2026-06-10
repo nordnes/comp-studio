@@ -11,6 +11,7 @@ import AdvisorPicker from "../components/AdvisorPicker.vue";
 import ExitSlider from "../components/ExitSlider.vue";
 import Term from "../components/Term.vue";
 import EmptyState from "../components/EmptyState.vue";
+import PageHeader from "../components/PageHeader.vue";
 
 const { store, selected, flash, addAdvisor } = useStudio();
 const S = computed(() => store.S);
@@ -121,25 +122,28 @@ const targetLine = computed(
     />
   </EmptyState>
   <div v-else class="mx-auto w-full max-w-reading px-3 sm:px-5 space-y-8">
-    <div class="flex justify-between items-center flex-wrap gap-3 no-print">
-      <div class="section-label">Proposition</div>
-      <div class="flex items-center gap-2">
-        <AdvisorPicker />
-        <Button
-          variant="subtle"
-          theme="gray"
-          icon-left="lucide-printer"
-          label="Print"
-          @click="print"
-        />
-        <Button
-          variant="subtle"
-          theme="gray"
-          icon-left="lucide-copy"
-          label="Copy"
-          @click="copyProp"
-        />
-      </div>
+    <!-- COM-127: the shared editorial PageHeader (screen chrome only — no-print keeps the printed
+         letter to its own masthead). Print is the page's ONE primary; Copy demotes to ghost. -->
+    <div class="no-print">
+      <PageHeader title="The proposition.">
+        <template #actions>
+          <AdvisorPicker />
+          <Button
+            variant="solid"
+            theme="gray"
+            icon-left="lucide-printer"
+            label="Print"
+            @click="print"
+          />
+          <Button
+            variant="ghost"
+            theme="gray"
+            icon-left="lucide-copy"
+            label="Copy"
+            @click="copyProp"
+          />
+        </template>
+      </PageHeader>
     </div>
 
     <!-- COM-47: exit-valuation explorer (no-print) — lets the recipient feel the upside on screen.

@@ -91,9 +91,10 @@ function toProp() {
     />
   </EmptyState>
   <div v-else class="mx-auto w-full max-w-reading px-3 sm:px-5 space-y-8">
-    <div class="flex justify-between items-center flex-wrap gap-3 no-print">
-      <PageHeader title="Base, then performance." />
-      <div class="flex items-center gap-2 flex-wrap">
+    <!-- COM-127: the actions ride PageHeader's #actions teleport (#app-header on desktop) —
+         the bespoke flex row that bypassed the shared action zone is gone -->
+    <PageHeader title="Base, then performance.">
+      <template #actions>
         <Button
           variant="solid"
           theme="gray"
@@ -116,8 +117,8 @@ function toProp() {
           label="Print"
           @click="printPage"
         />
-      </div>
-    </div>
+      </template>
+    </PageHeader>
     <ContextStrip />
 
     <!-- COM-76: read-only package summary (the editable terms, recapped); Edit opens the Dialog -->

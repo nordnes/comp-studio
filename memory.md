@@ -2046,3 +2046,12 @@ two Selects align), `currentStage` computed over the existing setPath. stageOpti
 the pluggable single supply points for COM-148 (M10 sets = data change). StageBadge.vue DELETED (its 2
 mounts retired). Verified: Case+Stage render in the shell on /overview AND /configure (a route that
 never had Stage); wiring is the identical setPath mechanism. vp 0 · 22/22 both · build 0.
+
+## 2026-06-10 — COM-127 (one action zone) DONE [M9 finish-loop W5 #6]
+
+**COM-127 (P3 Med, ~70 LOC churn, 3 views) — DONE + MERGED.** Advisors' bespoke flex row → PageHeader
+#actions (Edit/Picker/case-override/Print teleport to #app-header on desktop); Proposition gets
+PageHeader "The proposition." wrapped no-print (the printed letter keeps its own masthead) w/ Print
+SOLID + Copy ghost; Configure gets PageHeader "The plan everything is measured against." + ghost
+"Back to overview" (solid Done deleted). Verified per route: #app-header carries each view's actions;
+Print bg rgb(23,23,23) vs Copy transparent; no Done remains. vp 0 · 22/22 both · build 0.

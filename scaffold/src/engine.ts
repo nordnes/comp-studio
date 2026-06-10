@@ -678,3 +678,52 @@ export function computeBoard(advisors: Advisor[], plan: Plan, tiers: Tier[], obj
 }
 
 export function vestedFrac(m: number, years: number, cliff: number) { if (m < cliff) return 0; return clamp((1 / years) * (Math.floor((m - cliff) / 12) + 1), 0, 1); }
+
+// ===== v2: dual vesting curves (COM-145 — spec v2 Δ5 · C.3 cl. 3.2(b) · Appendix D) =====
+// Equity keeps v1 vestedFrac above — it is ALREADY the Cert v3 annual staircase (T2 pins it).
+// RTA: 25% at the month-12 Cliff Date, then 75%/36 per month (displayed "2.08%/mo") so the curve
+// closes at EXACTLY 100% at month 48 — RFC decision D1 (literal 2.08% × 36 strands 0.12%).
+export function vestedFracRTA(m: number) {
+  if (!ok(m) || m < 12) return 0;
+  // Discrete monthly tranches, never interpolation — a fractional month has not vested its
+  // tranche yet (review finding: 23.7 must price as month 23, not 1.46pp above it).
+  const mm = Math.floor(Math.min(m, 48));
+  return clamp(0.25 + (mm - 12) * (0.75 / 36), 0, 1);
+}
+// Vested-to-date per instrument — consumed by the VestingTimeline render (COM-149), the leaver
+// engine (COM-153) and the Trajectory view (M11). Equity tranche shape is plan-parameterised
+// (equityVestYears/equityCliff, default 4/12); the RTA curve is contractual; CASH accrues
+// linearly from month 0 (a retainer earns by service, it has no cliff — prompt-set default,
+// flagged in the PR). Junk months fail closed to 0 on EVERY branch.
+export function vestedAtMonths(grant: Grant, m: number, years = 4, cliff = 12) {
+  if (!ok(m)) return 0;
+  if (grant.instrument === 'cash') return clamp(m / (years * 12), 0, 1);
+  return grant.curve === 'rta' ? vestedFracRTA(m) : vestedFrac(m, years, cliff);
+}
+// Day-aware, timezone-free complete-months counter for LEGAL date arithmetic (cliff/tranche
+// anniversaries). v1 monthsBetween is a calendar-month delta that ignores day-of-month (fine for
+// display offsets, but it credits a cliff up to ~30 days early and is TZ-dependent at month
+// boundaries) — never use it for vesting. Short-month anniversaries grade conservatively: the
+// anniversary DAY must be reached (Jan 31 starts vest → Feb 28 has not completed the month).
+export function fullMonthsBetween(aISO: string, bISO: string) {
+  const pa = String(aISO).slice(0, 10).split('-').map(Number);
+  const pb = String(bISO).slice(0, 10).split('-').map(Number);
+  if (pa.length < 3 || pb.length < 3 || pa.some(n => !ok(n)) || pb.some(n => !ok(n))) return 0;
+  let m = (pb[0] - pa[0]) * 12 + (pb[1] - pa[1]);
+  if (pb[2] < pa[2]) m -= 1;
+  return m;
+}
+export function vestedAtDate(grant: Grant, atISO: string, years = 4, cliff = 12) {
+  return vestedAtMonths(grant, fullMonthsBetween(grant.vestStartISO, atISO), years, cliff);
+}
+// The RTA 24-month minimum Continuous Service is a DISTRIBUTION gate, not a curve change: below
+// 24 months of service nothing is distributable ("to receive any token at all you must stay 24
+// months; those months count inside the 4-year vest"). Capacity changes and intra-group
+// transfers do NOT break Continuous Service (RTA semantics) — serviceMonths is the caller's to
+// compute from the unbroken service start. The gate is a term of the RTA INSTRUMENT (the token
+// award agreement), so it keys on instrument — never on the curve shape, which reconcile
+// deliberately allows to mismatch (review finding: an rta/cert-v3 grant must still be gated).
+export function distributableFrac(grant: Grant, m: number, serviceMonths: number, years = 4, cliff = 12) {
+  if (grant.instrument === 'rta' && !(ok(serviceMonths) && serviceMonths >= 24)) return 0;
+  return vestedAtMonths(grant, m, years, cliff);
+}

@@ -7,7 +7,6 @@ import { useEditor } from "../composables/useEditor";
 import {
   fUSD,
   fPct,
-  fNum,
   fMult,
   scenKeys,
   baseScenKey,
@@ -65,18 +64,18 @@ function rowMenu(a: any) {
   ];
 }
 
-const kpis = computed(() => [
-  { l: "Advisors", v: fNum(board.value.rows.length), accent: false, sub: "" },
-  { l: "Net cost · base", v: fUSD(board.value.cost[baseKey.value] || 0), accent: true, sub: "" },
-  {
-    l: `Range ${S.value.plan.scenarios[sk.value[0]].label}→${S.value.plan.scenarios[sk.value[sk.value.length - 1]].label}`,
-    v: `${fUSD(board.value.cost[sk.value[0]] || 0)} – ${fUSD(board.value.cost[sk.value[sk.value.length - 1]] || 0)}`,
-    accent: false,
-    sub: "",
-  },
-  { l: "Equity of company", v: fPct(baseEqSum.value, 2), accent: false, sub: "base, pre-uplift" },
-  { l: "Tokens of supply", v: fPct(board.value.sumTk, 2), accent: false, sub: "earned" },
-  { l: "Annual cash", v: fUSD(board.value.sumCash), accent: false, sub: "" },
+// COM-113: ONE hero figure (the decision number) + a quiet supporting strip. The Advisors count
+// tile is gone — the roster directly below answers it.
+const heroCost = computed(() => fUSD(board.value.cost[baseKey.value] || 0));
+const rangeText = computed(
+  () =>
+    `${S.value.plan.scenarios[sk.value[0]].label} → ${S.value.plan.scenarios[sk.value[sk.value.length - 1]].label} · ` +
+    `${fUSD(board.value.cost[sk.value[0]] || 0)} – ${fUSD(board.value.cost[sk.value[sk.value.length - 1]] || 0)}`,
+);
+const supporting = computed(() => [
+  { l: "Equity of company", v: fPct(baseEqSum.value, 2), sub: "base, pre-uplift" },
+  { l: "Tokens of supply", v: fPct(board.value.sumTk, 2), sub: "earned" },
+  { l: "Annual cash", v: fUSD(board.value.sumCash), sub: "" },
 ]);
 
 const flags = computed(() => {
@@ -129,22 +128,22 @@ const hasBudget = computed(() => flags.value.some((f) => f.t === "budget"));
       /></template>
     </PageHeader>
 
-    <!-- KPI band -->
-    <div
-      class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-px bg-surface-gray-2 rounded overflow-hidden border border-outline-gray-1"
-    >
-      <div
-        v-for="k in kpis"
-        :key="k.l"
-        class="p-4"
-        :class="k.accent ? 'bg-surface-amber-2' : 'bg-surface-white'"
-      >
-        <div class="text-xs mb-1" :class="k.accent ? 'text-ink-amber-strong' : 'text-ink-gray-6'">
-          {{ k.l }}
-        </div>
-        <div class="figure-sm text-ink-gray-9">{{ k.v }}</div>
-        <div v-if="k.sub" class="text-xs mt-1 text-ink-gray-6">{{ k.sub }}</div>
+    <!-- COM-113: ONE hero figure + a quiet supporting strip on the white canvas (the six-up tile
+         band is gone). Amber ink marks the current-case conclusion — the page's one amber moment. -->
+    <div class="flex flex-wrap items-end justify-between gap-x-10 gap-y-4">
+      <div>
+        <div class="text-xs mb-1.5 text-ink-amber-strong">Net cost · base</div>
+        <div class="figure-lg text-ink-gray-9">{{ heroCost }}</div>
+        <div class="text-p-xs mt-2 tabular-nums text-ink-gray-6">{{ rangeText }}</div>
       </div>
+      <dl class="flex flex-wrap gap-x-10 gap-y-3 pb-1">
+        <div v-for="s in supporting" :key="s.l">
+          <dt class="text-xs mb-1 text-ink-gray-6">{{ s.l }}</dt>
+          <dd class="text-sm tabular-nums text-ink-gray-9">
+            {{ s.v }}<span v-if="s.sub" class="ml-1 text-xs text-ink-gray-6">{{ s.sub }}</span>
+          </dd>
+        </div>
+      </dl>
     </div>
 
     <div class="grid lg:grid-cols-3 gap-6">

@@ -146,8 +146,8 @@ const refLines = computed(() => {
     <p class="text-p-xs mt-1 text-ink-gray-6">
       Equity vests 25%/yr after a 1-year cliff; uplift vests from the chosen month; tokens from TGE.
       Voluntary exit before the 2-year Bad-Leaver line forfeits even vested options. No exit by year
-      9 → a ≥90-day exercise window opens (backstop). Change-of-control acceleration is at Board
-      discretion, not guaranteed.
+      9 → a ≥90-day exercise window opens (backstop). No change-of-control acceleration under the
+      plan (v9); an acquirer may roll over awards.
     </p>
   </div>
 </template>

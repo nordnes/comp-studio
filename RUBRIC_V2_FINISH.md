@@ -202,10 +202,20 @@ Every flow is driven end-to-end with assertions; a flow that cannot complete = F
       contains every panel's committed verdicts; the LAST TWO full panels show zero FAILs (new or
       repeat); `git log -p -- RUBRIC_V2_FINISH.md` since this file's first frosty commit shows
       only tightening changes and protocol-compliant waiver entries.
-- [ ] **R8.5** **Production matches:** `https://comp-studio-one.vercel.app` serves the frosty-tip
-      bundle (compare the built asset hash against the served HTML's asset references via URL
-      fetch) and — post-COM-34 — renders NO confidential figure pre-auth (fetch the HTML +
-      app-shell payload; the DOM rule of R3.10 applies to prod too).
+- [ ] **R8.5** **Production matches:** `https://comp-studio-one.vercel.app` serves the frosty
+      tip, verified by BOTH of: (a) the GitHub deployments API — the most recent
+      `environment: "Production"` deployment's `ref` equals the frosty tip SHA and its latest
+      status is `success` (`gh api repos/nordnes/comp-studio/deployments` + statuses); AND
+      (b) a content marker — a string introduced by the tip's most recent UI-touching commit is
+      present in the served JS (fetch the asset the prod HTML references and grep). Post-COM-34,
+      prod additionally renders NO confidential figure pre-auth (fetch the HTML + app-shell
+      payload; the DOM rule of R3.10 applies to prod too). *Method corrected 2026-06-10 (panel
+      005): the original check compared the LOCAL build's asset hash to prod's — but Vercel's
+      build of the identical tree produces different chunking/hashes (probed: prod's bundle
+      contained the tip-only string "Working scenarios" while its index hash differed from the
+      local build), so hash equality was a false-negative generator, mechanically unsound under
+      the protocol's checkability clause. The corrected method is stricter: two independent
+      checks (deploy-ref + content marker) instead of one invalid one.*
 
 — Authored 2026-06-10 from Lance Martin's loop-design recipe (rubric-as-goal + independent
 graders), then adversarially graded and hardened by a fresh-context panel the same day. Tighten in

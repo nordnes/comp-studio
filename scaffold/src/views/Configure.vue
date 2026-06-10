@@ -22,6 +22,7 @@ import {
 } from "../engine";
 import { CAT_OPTIONS } from "../constants";
 import NumIn from "../components/NumIn.vue";
+import PageHeader from "../components/PageHeader.vue";
 
 const {
   store,
@@ -79,20 +80,13 @@ const msOpts = () => S.S.plan.milestones.map((m) => ({ label: m.label, value: m.
        panel). Inputs use semantic tokens, so dropping the dark theme lightens the whole view cleanly. -->
   <div class="mx-auto w-full max-w-reading px-3 sm:px-5 text-ink-gray-9">
     <div class="space-y-6">
-      <!-- header -->
-      <div class="flex justify-between items-center gap-3 flex-wrap">
-        <div>
-          <div class="section-label">Configure</div>
-          <h1 class="font-display text-2xl mt-1 text-ink-gray-9">Plan basis &amp; controls</h1>
-        </div>
-        <Button
-          variant="solid"
-          theme="gray"
-          icon-left="lucide-check"
-          label="Done"
-          route="/overview"
-        />
-      </div>
+      <!-- COM-127: the shared editorial PageHeader; the solid "Done" (mere navigation posing as a
+           primary) demotes to a ghost back-link -->
+      <PageHeader title="The plan everything is measured against.">
+        <template #actions>
+          <Button variant="ghost" theme="gray" label="Back to overview" route="/overview" />
+        </template>
+      </PageHeader>
 
       <!-- COM-95: two-column settings layout — left group rail, right form column -->
       <div class="lg:flex lg:gap-8">

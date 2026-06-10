@@ -2538,3 +2538,15 @@ Iraj iterating; Bang/Mehta modeled; Robin/Luke no rows); store fresh-init + Rese
 Probe note: fresh boards persist on FIRST EDIT (store contract) — probes must mutate before
 reading localStorage; intro UI surface = COM-161 (COM-146 was engine-only). 5/5 live. vp 0/10 ·
 22/22 · 233/0/0 · build 0. Next: COM-157 (Trajectory view F15).
+
+## 2026-06-10 — COM-157 (Trajectory F15 — the headline surface) DONE [W3 #4]
+
+**COM-157 (L→1 PR, ~430 LOC, PR #93) — DONE + MERGED.** Engine trajectoryBand (vested band
+floor→base→ceil: equity staircase + qualifying-gated RTA ramp + linear cashAnnualEq) +
+trajectoryEvents (REAL dates only — rounds undated until COM-162). TrajectoryView = the LEADING
+Advisors tab (flagged: tab not route). Collision-aware stacked event labels (3 events share m12).
+**Distilled rule (2nd of the kind): pin POSITION, not presence — equityCliff is MONTHS(12) and
+`cliff*12`→m144 passed a presence-only vector; assert e.m === 12. Same family as the COM-152
+formula-mirror rule: a vector that can't fail under the actual bug is decoration.** 12/12 live ·
+vp 0/10 · 22/22 · 238/0/0 · build 0. Next: COM-158 (review workflow F16 — the wizard over
+COM-155's Review entity; the Trajectory readout is its entry point).

@@ -2152,3 +2152,103 @@ CLAUDE.md exception note rewritten to name Plan v9 / spec Appendix C as the sour
 line. Proof: bundle grep 0 for the old sentence, both new strings present; rendered live on
 /proposition + /advisors, 0 console errors. vp 0 · 22/22 both · build 0. **Merge gate: Charlie (GC)
 wording sign-off — Robin pinged in the PR body. propText() carries no CoC line (no change needed).**
+## 2026-06-10 — COM-141 (Governance surface, first M12 slice) DONE [M9 finish-loop W7 #2]
+
+**COM-141 (P2 High, ~416 LOC, 5 files) — DONE + MERGED.** /governance route: the Governance Table
+v4 as a RED/AMBER/GREEN checklist — ten C.5 rows verbatim + the four C.6 open items not covered by
+a v4 row ([7] MFN notifications — distinct from C-7's drafting check, [10] HMRC SAV, [11]
+corporate-wallet RTA audit, [12] Series-A releases) = 14 ComplianceItems in five workstream groups.
+**Architecture call: the `gov` slice persists BESIDE the board map** (sibling localStorage key —
+company-level fact shared across saved boards, never inside engine State or #s=) with its own
+additive id-keyed reconcile in governance.ts (canonical text seed-only; status/owner/evidence/note
+survive; new rows auto-appear). Seed RAG defaults: red = hard pre-condition, amber =
+verification/drafting/conditional/later-stage (flagged in PR as prompt-set defaults). Evidence
+links guarded to http(s) — javascript: renders as plain text (verified live both ways). Nav: joins
+the Board group (avoids a one-item group). **Tripwire caught: `vp check --fix` auto-"fixed" the
+FROZEN engine.ts (spread simplifications) — reverted before commit; both suites stayed 22/22.**
+Verified: 14 rows + verbatim strings rendered, status flip → persist → reload survival, mobile
+stacks controls under text (fixed half-width squeeze), 0 console errors. vp 0 · 22/22 both ·
+build 0. NO gating semantics (follow-on issue).
+
+## 2026-06-10 — ★ M9 GATE PASSED — M9 · UX/UI v2 complete (modulo the COM-139 hold)
+
+**The M9-finish goal loop is done.** This session shipped 44 issues + 1 cancelled (COM-124) across
+waves 1–7, PRs #26–#67 + #69 all merged to frosty; COM-139 built + HELD on PR #68 (Charlie/GC
+wording sign-off — Robin pinged; Linear stays In Progress). M9 milestone: every issue Done except
+COM-139. COM-141 (first M12 surface) shipped → M12 at ~17%.
+
+**Gate sweep at frosty tip (9b34b84):** `npm run build` exit 0 · engine 22/22 BOTH suites · clean
+tree · all 7 routes smoke-passed on :4173 (overview hero+roster · board table+FF+ranges · compare ·
+governance 14 rows · advisors tabs · proposition statement+corpus · configure rail+two-col) · 0
+console errors/warnings · mobile (375px) spot-checks clean (drawer collapsed, no overflow, board
+table fits, governance stacks). **Known-stale at tip (by design):** the CoC line still reads the
+reference wording until PR #68 merges. **Print-PDF: not machine-verifiable from the preview harness
+— Robin: print Proposition + Board pack to PDF from the browser once, per the M9 print rules
+(break-inside, running header tokens, 10mm bottom pad all shipped + CSS-verified in COM-112/134).**
+
+**Linear:** project status update posted (on track); CLAUDE.md live-prompt pointer flipped to "M10
+RFC prep" (ULTRACODE_M9_FINISH.md is a completed predecessor). **Next:** author the M10 RFC
+(COM-140 gate scope — engine-unfreeze reconciliation suite), then the M10 run-prompt. Open human
+items: Charlie's COM-139 sign-off → merge PR #68; COM-33/34 public-URL remediation; COM-36
+merge-to-main; pool-sizing blanks (spec Part 17).
+
+## 2026-06-10 — Post-gate continuation: main synced (COM-36 git half) + M10 RFC authored (COM-140)
+
+**COM-36 (git half DONE, Vercel half → Robin).** `main` merged up to the gated M9 frosty state
+(merge commit 93d6073, prior-pattern parity with 4a6473b): 44 M9 issues, spec v2, DESIGN_SYSTEM,
+/governance. QA at the merge: build 0 · 22/22 both · engine.ts byte-identical. COM-139's wording
+NOT included (still held on PR #68). Vercel Production-Branch flip → Robin (comp-studio's Vercel
+project is NOT in the Raiku Labs team scope — `raiku-advisor` there is a different Next.js app;
+COM-71 stands). Linear commented; issue stays In Progress on the Vercel half.
+
+**COM-140 (M10 gate) — RFC + reconciliation suite MERGED (PR #70); Linear stays In Progress —
+Robin flipping it Done IS the unfreeze sign-off.** engine/ENGINE_V2_RFC.md (domain model w/
+lifecycle-vs-docStatus split, additive-SCHEMA-5 → single-SCHEMA-6 migration, five-condition
+unfreeze rule, landing order 142→143→144→145→150→153→151→152→146→154→v6) +
+engine/engine.v2.test.mjs (**37 passed / 0 failed / 6 pending(v2)**: T1 workbook parity to the
+dollar incl. Robin-% chain + headline cells; T2 pins v1 vestedFrac — it is ALREADY the Cert v3
+annual staircase; T3 RTA 75%/36 curve + 24-mo qualifying gate; T4 value→quantity; T5 pending
+API bindings). 22/22 untouched both copies. Adversarial 4-agent verify: 0 blockers; fixed-in:
+v1 already prices strike off grantRound (COM-144 = multi-grant, not round-strike), COM-153's
+export name `modelDeparture` adopted, cocAccelPct deletion sequenced behind PR #68, **15% pool
+cell 8,523 is ~3.5 shares short of its own arithmetic (8,526.49 exact)** — COM-142 footnote +
+flagged to Robin on COM-140. Scope comment posted on COM-151 (Part 10 #7 carve-out doc note).
+**Next:** Robin sign-offs (COM-140 = unfreeze; COM-139 wording via Charlie; COM-36 Vercel flip),
+then encode §8 as Linear blocking relations and author the M10 run-prompt.
+
+## 2026-06-10 — ULTRACODE_V2_FINISH authored: the finish-everything run is armed
+
+**Robin's authorization (2026-06-10, verbatim): "finish all of the work (all remaining tickets which is
+implementation work). Nothing is blocked."** Acted on it: **COM-140 flipped Done (= the engine-unfreeze
+sign-off, comment quotes Robin)** · the RFC §8 landing order is now ENCODED as Linear blocking relations
+(143←142, 144←143, 145←144, 150←144, 153←144+145, 151←144, 152←143, 146←144, 154←150, 147/148←143,
+149←145) · **COM-171 created** (the single SCHEMA-6 bump, blockedBy 150 + 139) · **ULTRACODE_V2_FINISH.md
+written** (35-issue queue in 7 waves: W0 merge PR #68 → W1 M10 engine under RFC §7 → W2 M10 UI → W3 M11
+155→159→160→157→158→162→163→161→164→156→165 → W4 M12 166→167→168→169→170 → W5 legacy triage
+28/21/31/61 + epics 5/7 close-with-evidence → W6 M6 hardening 34/35 w/ mandatory security-review →
+W7 final gate) · CLAUDE.md updated: **engine clause now GATED-not-frozen** (RFC §7 pointer; never
+`vp check --fix`) + live-prompt pointer → ULTRACODE_V2_FINISH.md. COM-139's hold is LIFTED by the same
+authorization — W0 merges #68. Excluded: COM-36 (Robin: later) + human-only COM-33/71. **Next session:
+paste the §6 kickoff block from ULTRACODE_V2_FINISH.md.**
+
+## 2026-06-10 — ULTRACODE_V2_FINISH v2: rubric-as-goal + grader loops (the Lance Martin recipe)
+
+**Robin commissioned the perfection upgrade** after sharing Lance Martin's "Designing loops with
+Fable 5" (x.com/RLanceMartin/article/2064397389189071163): rubric-as-goal environment feedback ·
+INDEPENDENT grader sub-agents over self-critique (fresh context windows) · grader confirms ALL
+criteria before stopping · structural-over-scalar fixes · the fail→investigate→verify→distill→
+consult memory progression. Applied literally: **`RUBRIC_V2_FINISH.md`** (the goal — 8 sections,
+~50 checkable criteria: build completeness incl. M6, engine integrity, 19 end-to-end functional
+flows, UI/UX perfection bar, testing depth incl. RLS proof, perf budgets, memory distillation,
+final-gate hygiene + a committed verdict trail in docs/rubric-grades/) + **ULTRACODE_V2_FINISH.md
+v2** (three nested loops: per-issue inner · wave-boundary scoped grader + prod-deploy check ·
+Wave-7 perfection loop until two consecutive panels return zero FAILs new-or-repeat · Wave-8.5
+closing grader so the final gate can't self-certify). **Dogfooded: a 3-grader fresh-context panel
+adversarially graded both drafts pre-commit — 5 blockers caught** (M6 absent from R1 = skippable
+wave; 7 features with no functional criterion = invisible to the loop; final gate self-certified;
+2 unexecutable check methods) **+ 14 minors** (ungradeable phrasings, gameable samples, rubric-
+loosening loophole, missing RLS criterion, no prod verification) — all folded in. Graders also
+refuted the "root suite needs dangerouslyDisableSandbox" claim (ran it sandboxed 22/22) and
+confirmed baselines to the byte (bundle 824,954 B / gzip 241,008 B; vp warnings = 10). **Distilled
+rule: a rubric criterion without an executable check method is a rubric bug — graders proved 2 of
+mine unexecutable by actually attempting all of them.** Next session: paste the §6 kickoff.

@@ -6,6 +6,7 @@ import Configure from "./views/Configure.vue";
 import Board from "./views/Board.vue";
 import Compare from "./views/Compare.vue";
 import Proposition from "./views/Proposition.vue";
+import Governance from "./views/Governance.vue";
 import { NAV } from "./nav";
 
 // COM-93: route order + titles come from the shared nav model; only the component map lives here.
@@ -13,6 +14,7 @@ const views: Record<string, Component> = {
   "/overview": Overview,
   "/board": Board,
   "/compare": Compare,
+  "/governance": Governance,
   "/advisors": Advisors,
   "/proposition": Proposition,
   "/configure": Configure,

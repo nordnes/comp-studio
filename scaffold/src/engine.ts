@@ -1355,6 +1355,10 @@ export function capitalRollup(advisors: Advisor[], plan: Plan, tiers: Tier[], ob
     };
   });
   const t = (f: (r: any) => number) => rows.reduce((s, r) => s + f(r), 0);
+  // v2 (COM-161/panel 006): the raise-coverage ratio is MONEY MATH and belongs here — the O15
+  // measure is (earned + gated) against the live raise target (the bridge raise, "bridge $5m+").
+  const raiseTargetUSD = plan.bridge?.raise ?? 0;
+  const earnedPlusGated = t(r => r.earned) + t(r => r.gated);
   return {
     rows,
     totals: {
@@ -1363,6 +1367,8 @@ export function capitalRollup(advisors: Advisor[], plan: Plan, tiers: Tier[], ob
       earnedUpliftValue: t(r => r.earnedUpliftValue),
       potentialUpliftValue: t(r => r.potentialUpliftValue),
     },
+    raiseTargetUSD,
+    coverage: safeDiv(earnedPlusGated, raiseTargetUSD),
     schedule: { per: cu.per, pct: cu.pct, cap: cu.cap, gate: cu.gate, gateReached: stageReached(plan, cu.gate) },
   };
 }

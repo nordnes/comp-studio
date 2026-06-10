@@ -1556,6 +1556,22 @@ console.log('\nT23 · Generosity guardrails: the Sjöström check (COM-156):');
     })());
 }
 
+// panel 006 (R2.5): the raise-coverage ratio moved INTO the engine — pinned here
+{
+  const dflt = ENG.DEFAULT();
+  const a = JSON.parse(JSON.stringify(dflt.advisors));
+  a[0].introductions = [
+    { id: 'e', amountUSD: 3e6, round: 'bridge', status: 'earned' },
+    { id: 'g', amountUSD: 2e6, round: 'seriesA', status: 'gated' },
+    { id: 't', amountUSD: 9e6, round: 'seriesA', status: 'targeted' },
+  ];
+  const roll = ENG.capitalRollup(a, dflt.plan, dflt.tiers, dflt.objectives);
+  A('capitalRollup exports raiseTargetUSD (the bridge raise) + coverage = (earned+gated)/target — targeted EXCLUDED',
+    roll.raiseTargetUSD === dflt.plan.bridge.raise
+    && near(roll.coverage, (3e6 + 2e6) / dflt.plan.bridge.raise, 1e-12)
+    && roll.coverage < (3e6 + 2e6 + 9e6) / dflt.plan.bridge.raise);
+}
+
 // ---- T24: the Ispahani 9-step decision artefacts (COM-165 — live-bound) ----
 console.log('\nT24 · Grant decisions: the B.3 verbatim steps + artefacts (COM-165):');
 {

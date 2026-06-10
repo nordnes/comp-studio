@@ -3,6 +3,7 @@
 // dark fill = earned/used, light = ceiling, red when ceiling exceeds budget. CSS bars (no chart engine).
 import { computed } from "vue";
 import { fPct } from "../engine";
+import Panel from "./Panel.vue";
 
 const props = defineProps<{ board: any; committed: number }>();
 
@@ -29,7 +30,7 @@ const over = (s: { ceil: number; budget: number }) => s.ceil > s.budget + 1e-9;
 </script>
 
 <template>
-  <div class="bg-surface-white rounded border border-outline-gray-1 p-5 space-y-4">
+  <Panel class="space-y-4">
     <div class="text-sm text-ink-gray-6">Pool allocation</div>
     <div v-for="s in segments" :key="s.label">
       <div class="flex justify-between text-sm mb-1.5">
@@ -54,5 +55,5 @@ const over = (s: { ceil: number; budget: number }) => s.ceil > s.budget + 1e-9;
       Solid = earned · light = ceiling. The board's token bucket is ring-fenced and scalable,
       separate from the 5% ecosystem advisor pool (~{{ fPct(committed, 2) }} committed there).
     </p>
-  </div>
+  </Panel>
 </template>

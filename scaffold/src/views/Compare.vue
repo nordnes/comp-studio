@@ -10,6 +10,7 @@ import { SCEN_TOKENS, chartHex, shortName } from "../constants";
 import PageHeader from "../components/PageHeader.vue";
 import FrappeChart from "../components/FrappeChart.vue";
 import EmptyState from "../components/EmptyState.vue";
+import Panel from "../components/Panel.vue";
 
 const { store, board, select, flash, addAdvisor } = useStudio();
 // COM-136: chart/heading labels disambiguate duplicate first names (mononym/empty guarded).
@@ -129,10 +130,7 @@ const scenColors = computed(() =>
     />
 
     <!-- COM-86: head-to-head panel — appears when ≥2 advisors are pinned (transient, never persisted) -->
-    <div
-      v-if="pinned.length >= 2"
-      class="bg-surface-white rounded border border-outline-gray-1 p-5 space-y-4 no-print"
-    >
+    <Panel v-if="pinned.length >= 2" class="space-y-4 no-print">
       <div class="flex items-center justify-between flex-wrap gap-2">
         <div class="text-sm text-ink-gray-6">
           Head-to-head · {{ pinned.map((r: any) => sn(r.a.name)).join(" vs ") }}
@@ -196,9 +194,9 @@ const scenColors = computed(() =>
         :options="chartOpts"
         :aria-label="`Grouped bar comparing ${pinned.map((r: any) => sn(r.a.name)).join(', ')} net value per scenario, in millions of dollars.`"
       />
-    </div>
+    </Panel>
 
-    <div class="bg-surface-white rounded border border-outline-gray-1 overflow-auto max-h-[70vh]">
+    <Panel :padded="false" class="overflow-auto max-h-[70vh]">
       <table class="w-full text-sm" style="min-width: 760px">
         <!-- COM-58: sticky header keeps the column labels readable on a tall/wide scroll -->
         <thead class="sticky top-0 z-[1] bg-surface-white">
@@ -340,13 +338,14 @@ const scenColors = computed(() =>
           </tr>
         </tbody>
       </table>
-    </div>
+    </Panel>
 
     <div>
       <div class="text-sm text-ink-gray-6 mb-3">
         Net value across scenarios <span class="text-ink-gray-6">· $M</span>
       </div>
-      <div class="bg-surface-white rounded border border-outline-gray-1 p-6">
+      <!-- COM-108: p-6 was the one drifted padding — unified to the Panel default -->
+      <Panel>
         <FrappeChart
           type="bar"
           :data="chart"
@@ -355,7 +354,7 @@ const scenColors = computed(() =>
           :options="chartOpts"
           aria-label="Grouped bar of each advisor net value across scenarios, in millions of dollars."
         />
-      </div>
+      </Panel>
     </div>
   </div>
 </template>

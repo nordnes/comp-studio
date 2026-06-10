@@ -9,6 +9,7 @@
 import { computed, ref, watch } from "vue";
 import { fUSD } from "../engine";
 import { useStudio } from "../store";
+import Panel from "./Panel.vue";
 // printLine needs an explicit default: Vue casts an ABSENT Boolean-typed prop to false
 // (HTML boolean-attribute semantics), which would silently drop the print sentence.
 const props = withDefaults(defineProps<{ c: any; sel?: any; printLine?: boolean }>(), {
@@ -75,7 +76,7 @@ const tickPct = (i: number) => (maxPos.value ? (i / maxPos.value) * 100 : 0);
 </script>
 
 <template>
-  <div class="no-print bg-surface-white rounded border border-outline-gray-1 p-5">
+  <Panel class="no-print">
     <div class="flex items-baseline justify-between gap-3 mb-3 flex-wrap">
       <div class="text-sm text-ink-gray-6">Explore the exit · drag to feel the upside</div>
       <div class="text-xs text-ink-gray-5">net of strike &amp; dilution · not a forecast</div>
@@ -112,7 +113,7 @@ const tickPct = (i: number) => (maxPos.value ? (i / maxPos.value) * 100 : 0);
         >{{ s.label }}</span
       >
     </div>
-  </div>
+  </Panel>
   <!-- COM-84: the chosen outcome survives into print (the control above is no-print). Hosts that
        carry their own in-document sentence (Proposition) pass :print-line="false". -->
   <p v-if="printLine !== false" class="print-only text-p-sm text-ink-gray-7">

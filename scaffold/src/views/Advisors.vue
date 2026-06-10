@@ -33,6 +33,7 @@ import MixBreakdown from "../components/MixBreakdown.vue";
 import DilutionPath from "../components/DilutionPath.vue";
 import Term from "../components/Term.vue";
 import EmptyState from "../components/EmptyState.vue";
+import Panel from "../components/Panel.vue";
 
 const { store, selected, setAdvisorCase, addAdvisor } = useStudio();
 const { openEditor } = useEditor();
@@ -120,7 +121,7 @@ function toProp() {
     <ContextStrip />
 
     <!-- COM-76: read-only package summary (the editable terms, recapped); Edit opens the Dialog -->
-    <div class="bg-surface-white rounded border border-outline-gray-1 p-5 no-print">
+    <Panel class="no-print">
       <div class="flex items-center justify-between mb-3">
         <div class="text-sm text-ink-gray-6">Package · {{ sel.name }}</div>
         <Button
@@ -182,7 +183,7 @@ function toProp() {
           </dd>
         </div>
       </dl>
-    </div>
+    </Panel>
 
     <!-- full-width decision projection (COM-88: space-y-8 gives the de-boxed groups their rhythm) -->
     <div class="space-y-8 print-area">

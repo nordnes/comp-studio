@@ -10,6 +10,7 @@ import { roundLabel, fUSD, BENCH, safeDiv } from "../engine";
 import FrappeChart from "./FrappeChart.vue";
 import Term from "./Term.vue";
 import { chartHex } from "../constants";
+import Panel from "./Panel.vue";
 const props = defineProps<{ c: any; markerExit?: number | null }>();
 const tkColors = computed(() => [chartHex("--chart-customer")]);
 const { store } = useStudio();
@@ -71,7 +72,7 @@ const tkChart = computed(() => {
 </script>
 
 <template>
-  <div class="bg-surface-white rounded border border-outline-gray-1 p-5">
+  <Panel>
     <div class="text-sm text-ink-gray-6 mb-3">
       Upside · what an outcome is worth (<Term k="netOfStrike">net of strike</Term>)
     </div>
@@ -217,5 +218,5 @@ const tkChart = computed(() => {
         </p>
       </div>
     </div>
-  </div>
+  </Panel>
 </template>

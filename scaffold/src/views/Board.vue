@@ -30,6 +30,7 @@ import RosterTable from "../components/roster/RosterTable.vue";
 import RosterRow from "../components/roster/RosterRow.vue";
 import RosterIdentity from "../components/roster/RosterIdentity.vue";
 import TierBadge from "../components/roster/TierBadge.vue";
+import Panel from "../components/Panel.vue";
 
 const { store, board, select, addAdvisor, delAdvisor, setPath } = useStudio();
 const { openEditor } = useEditor();
@@ -395,8 +396,8 @@ const caseTotalSum = computed(() =>
          (the roster + what it costs us); the dense graphics are the supporting read. -->
     <div class="grid lg:grid-cols-2 gap-6">
       <!-- valuation staircase -->
-      <div
-        class="bg-surface-white rounded border border-outline-gray-1 p-5 print-area"
+      <Panel
+        class="print-area"
         role="img"
         :aria-label="`Valuation path base case. TGE FDV ${fUSD(stairFdv)}.`"
       >
@@ -422,11 +423,11 @@ const caseTotalSum = computed(() =>
           Median = 2025 market post-money by stage ({{ BENCH.postMoneySrc }}). Raiku's plan runs
           above median — an ambitious path.
         </p>
-      </div>
+      </Panel>
 
       <!-- potential scatter -->
-      <div
-        class="bg-surface-white rounded border border-outline-gray-1 p-5 print-area"
+      <Panel
+        class="print-area"
         role="img"
         :aria-label="`Advisor potential under ${S.plan.scenarios[bc].label}: net value (x) vs headroom to ceiling (y); bubble size is capital introduced.`"
       >
@@ -560,7 +561,7 @@ const caseTotalSum = computed(() =>
           >
           <span class="ml-auto">top-left = most headroom, modest today</span>
         </div>
-      </div>
+      </Panel>
     </div>
   </div>
 </template>

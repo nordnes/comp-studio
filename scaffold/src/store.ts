@@ -11,6 +11,7 @@ import {
   computeBoard,
   computeAdvisor,
   effectiveGrants,
+  hasExplicitGrants,
   scenKeys,
   baseScenKey,
   roadmapToCSV,
@@ -90,20 +91,31 @@ function bootstrap(): Store {
   }
 
   const persisted = lsGet();
+  let migrated = false;
   if (persisted && typeof persisted === "object") {
     if (persisted.scenarios && !persisted.plan) {
       // Named-board map shape (reference parity): { scenarios: {name: State}, last: name }.
+      // COM-171: EVERY map member migrates at load (v5 → v6) — not just the active board —
+      // and the upgraded map writes straight back so the on-disk shape is v6 immediately.
       Object.keys(persisted.scenarios).forEach((n) => {
-        saved[n] = persisted.scenarios[n];
+        const raw = persisted.scenarios[n];
+        saved[n] = reconcile(raw);
+        if (raw?.version !== saved[n].version) migrated = true;
       });
       last = persisted.last && saved[persisted.last] ? persisted.last : Object.keys(saved)[0] || "";
-      if (last && saved[last]) S = reconcile(saved[last]);
+      // The working board must NOT alias its saved-map entry (Save-as would then corrupt the
+      // original board through the shared object — review finding); clone like loadBoard does.
+      if (last && saved[last]) S = clone(saved[last]);
     } else if (persisted.plan || persisted.advisors) {
       // Legacy raw State (old scaffold) under the same key → migrate into the map so reconcile is safe.
       S = reconcile(persisted);
       last = S.name || "Imported board";
       saved[last] = S;
+      migrated = true;
     }
+  }
+  if (migrated && storageOk) {
+    lsSet({ scenarios: saved, last, governance: persisted?.governance });
   }
   // A #s= URL hash (raw State) is a one-off shared link — load it over whatever was persisted.
   try {
@@ -285,23 +297,35 @@ export function useStudio() {
     undoToast("advisor");
   }
 
-  // ---- grants (COM-144: ADD/UPDATE/DEL — materialise-on-first-edit per RFC §5/D3) ----
-  // The first explicit edit converts the implicit package to explicit Grant rows so value is
-  // preserved; hasCash clears at that moment because the implicit-cash row now carries it (the
-  // fold sums advisor cash AND cash grants — keeping both would double-count).
+  // ---- grants (COM-144/171: ADD/UPDATE/DEL — claim-on-first-edit) ----
+  // The first explicit edit CLAIMS the package as explicit rows so value is preserved: derived
+  // flags strip (the v6 migration's snapshot rows become real), and the parametric cash fields
+  // clear because cash rows now carry them (the fold sums advisor cash AND cash grants —
+  // keeping both would double-count; same for the elected cash floor).
   function materialiseGrants(a: any) {
-    if (Array.isArray(a.grants)) return;
-    a.grants = effectiveGrants(a, store.S.plan, store.S.tiers, store.S.objectives).map((g) => ({
-      ...g,
-    }));
+    if (hasExplicitGrants(a)) return;
+    // ALWAYS derive FRESH — never claim the load-time snapshot: in-session plan/package edits
+    // refresh the live derivation but not the persisted snapshot, and claiming stale rows
+    // silently re-prices the package against what is on screen (review finding 2026-06-10).
+    const { grants: _snapshot, ...parametric } = a;
+    const rows = effectiveGrants(parametric, store.S.plan, store.S.tiers, store.S.objectives);
+    a.grants = rows.map((g: any) => {
+      const { derived: _derived, ...rest } = g;
+      return { ...rest };
+    });
     if (a.hasCash) {
       a.hasCash = false;
       a.cashAnnual = 0;
     }
+    // The floor election clears ONLY when its cash row was actually claimed (policy enabled —
+    // the row exists in the fresh derivation). A dormant election under a disabled policy must
+    // survive the claim (review finding: one grant edit destroyed a negotiated floor).
+    if (a.cashFloorAnnualUSD && store.S.plan.cashFloor?.enabled) delete a.cashFloorAnnualUSD;
   }
   function addGrant(advisorId: string, instrument: Instrument = "option") {
     const a: any = store.S.advisors.find((x) => x.id === advisorId);
     if (!a) return;
+    pushUndo(); // the claim is a package conversion — make it undoable
     materialiseGrants(a);
     // Default to the LATEST round — the Part 5.3 top-up story: later grants price at later
     // valuations; the engine derives the strike from the round.
@@ -334,8 +358,8 @@ export function useStudio() {
   function removeGrant(advisorId: string, grantId: string) {
     const a: any = store.S.advisors.find((x) => x.id === advisorId);
     if (!a) return;
+    pushUndo(); // BEFORE the claim — Undo must restore the pre-claim parametric state
     materialiseGrants(a);
-    pushUndo();
     a.grants = a.grants.filter((x: any) => x.id !== grantId);
     persist();
     undoToast("grant");

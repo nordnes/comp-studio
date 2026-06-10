@@ -21,6 +21,7 @@ import {
   fDate,
   roundList,
   effectiveGrants,
+  hasExplicitGrants,
   computeGrant,
   GRANT_LIFECYCLES,
   EXERCISE_MECHANICS,
@@ -83,7 +84,9 @@ function toProp() {
 }
 // COM-144: per-grant rows — explicit grants when the advisor has them, else the derived implicit
 // package (the engine's §5 shim). All pricing comes from computeGrant; the view renders rows.
-const isExplicit = computed(() => Array.isArray(sel.value?.grants));
+// COM-171: derived (migration-snapshot) rows still read as the parametric package — the panel
+// shows derived rows read-only with the make-explicit note; the first edit claims them.
+const isExplicit = computed(() => sel.value && hasExplicitGrants(sel.value));
 const grantRows = computed(() =>
   effectiveGrants(sel.value, S.value.plan, S.value.tiers, S.value.objectives).map((g) => ({
     g,

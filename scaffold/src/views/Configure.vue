@@ -8,6 +8,7 @@ import { useRoute } from "vue-router";
 // the date; NumIn stays (the deliberate click-to-edit numeric). setPath wiring unchanged.
 import { Button, Select, Switch, TextInput, FormControl } from "frappe-ui";
 import { useStudio } from "../store";
+import { confirmDestroy } from "../confirm";
 import {
   walkScenario,
   tgeFdvFor,
@@ -72,6 +73,24 @@ const esopOpts = [
 ];
 const anchorOpts = () =>
   roundList(S.S.plan).map((r) => ({ label: roundLabel(S.S.plan, r), value: r }));
+// COM-107: the two widest cascades get a confirm that names the blast radius (counts derived
+// here in the view; the store stays a pure reducer).
+function confirmDelRound(rd: any) {
+  const granted = S.S.advisors.filter((a: any) => a.grantRound === rd.id).length;
+  confirmDestroy(
+    "Delete round",
+    `Delete ${rd.label}? ${granted ? `${granted} advisor grant${granted === 1 ? " is" : "s are"} made at this round and will be reassigned.` : "No advisor grants reference it."}`,
+    () => delRound(rd.id),
+  );
+}
+function confirmDelMilestone(m: any) {
+  const gated = S.S.objectives.filter((o: any) => o.gate === m.id).length;
+  confirmDestroy(
+    "Delete milestone",
+    `Delete ${m.label}? ${gated ? `${gated} objective${gated === 1 ? " is" : "s are"} gated on it and will be reassigned.` : "No objectives are gated on it."}`,
+    () => delMilestone(m.id),
+  );
+}
 const msOpts = () => S.S.plan.milestones.map((m) => ({ label: m.label, value: m.id }));
 </script>
 
@@ -225,8 +244,9 @@ const msOpts = () => S.S.plan.milestones.map((m) => ({ label: m.label, value: m.
                   <button
                     v-if="S.S.plan.rounds.length > 1"
                     aria-label="Delete round"
+                    title="Deleting a round reassigns grants made at it"
                     class="inline-flex shrink-0 items-center justify-center size-8 rounded hover:bg-surface-gray-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-gray-6)] text-ink-gray-6 hover:text-ink-red-3"
-                    @click="delRound(rd.id)"
+                    @click="confirmDelRound(rd)"
                   >
                     <span class="lucide-trash-2 size-3.5" aria-hidden="true" />
                   </button>
@@ -299,6 +319,7 @@ const msOpts = () => S.S.plan.milestones.map((m) => ({ label: m.label, value: m.
                       <button
                         v-if="Object.keys(S.S.plan.scenarios).length > 1"
                         aria-label="Delete scenario"
+                        title="Deleting a scenario removes it from every projection"
                         class="inline-flex shrink-0 items-center justify-center size-8 rounded hover:bg-surface-gray-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-gray-6)] text-ink-gray-6 hover:text-ink-red-3"
                         @click="delScenario(sk)"
                       >
@@ -568,6 +589,7 @@ const msOpts = () => S.S.plan.milestones.map((m) => ({ label: m.label, value: m.
                   </div>
                   <button
                     aria-label="Delete objective"
+                    title="Deleting an objective scrubs it from every advisor"
                     class="sm:col-span-1 justify-self-end inline-flex shrink-0 items-center justify-center size-8 rounded hover:bg-surface-gray-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-gray-6)] text-ink-gray-6 hover:text-ink-red-3"
                     @click="delObjective(o.id)"
                   >
@@ -607,6 +629,7 @@ const msOpts = () => S.S.plan.milestones.map((m) => ({ label: m.label, value: m.
                     <button
                       v-if="S.S.tiers.length > 1"
                       aria-label="Delete tier"
+                      title="Deleting a tier re-clamps advisors assigned to it"
                       class="inline-flex shrink-0 items-center justify-center size-8 rounded hover:bg-surface-gray-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-gray-6)] text-ink-gray-6 hover:text-ink-red-3"
                       @click="delTier(i)"
                     >
@@ -668,8 +691,9 @@ const msOpts = () => S.S.plan.milestones.map((m) => ({ label: m.label, value: m.
                   <button
                     v-if="S.S.plan.milestones.length > 1"
                     aria-label="Delete milestone"
+                    title="Deleting a milestone reassigns the objectives gated on it"
                     class="inline-flex shrink-0 items-center justify-center size-8 rounded hover:bg-surface-gray-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-gray-6)] text-ink-gray-6 hover:text-ink-red-3"
-                    @click="delMilestone(m.id)"
+                    @click="confirmDelMilestone(m)"
                   >
                     <span class="lucide-trash-2 size-3.5" aria-hidden="true" />
                   </button>

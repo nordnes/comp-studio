@@ -267,6 +267,7 @@ export function useStudio() {
     } as any);
     store.selId = id;
     persist();
+    flash("Advisor added — edit the package"); // COM-107: feedback after the write
   }
   function delAdvisor(id: string) {
     pushUndo();

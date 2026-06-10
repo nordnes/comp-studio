@@ -3,7 +3,7 @@
 // (mounted once in App.vue). Edits the currently-selected advisor live via setPath (autosave); snapshots
 // on open and restores on Cancel. Carries the COM-73 field set + COM-77 FormLabel/:description/clamp stack.
 import { ref, reactive, computed, watch } from "vue";
-import { Dialog, Button, Checkbox, TabButtons, Divider, FormControl, FormLabel } from "frappe-ui";
+import { Dialog, Button, Switch, TabButtons, Divider, FormControl, FormLabel } from "frappe-ui";
 import { useStudio } from "../store";
 import { useEditor } from "../composables/useEditor";
 import {
@@ -267,13 +267,12 @@ function setObjState(id: string, st: string) {
             </div>
           </template>
           <Divider />
-          <label class="flex items-center gap-2 text-sm text-ink-gray-7"
-            ><Checkbox
-              :model-value="sel.hasCash"
-              @update:model-value="(v) => setField('hasCash', v)"
-            />
-            Cash retainer (post-Series A)</label
-          >
+          <!-- COM-99: a settings-style toggle (it gates the Annual cash field) is a Switch -->
+          <Switch
+            :model-value="sel.hasCash"
+            label="Cash retainer (post-Series A)"
+            @update:model-value="(v: boolean) => setField('hasCash', v)"
+          />
           <div v-if="sel.hasCash" class="space-y-1.5">
             <FormLabel label="Annual cash (USD)" />
             <NumIn

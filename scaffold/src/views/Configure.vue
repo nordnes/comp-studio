@@ -6,7 +6,7 @@ import { ref } from "vue";
 import { useRoute } from "vue-router";
 // COM-106: Configure joins the Advisors form idiom — TextInput for inline labels, FormControl for
 // the date; NumIn stays (the deliberate click-to-edit numeric). setPath wiring unchanged.
-import { Button, Select, Checkbox, TextInput, FormControl } from "frappe-ui";
+import { Button, Select, Switch, TextInput, FormControl } from "frappe-ui";
 import { useStudio } from "../store";
 import {
   walkScenario,
@@ -363,13 +363,13 @@ const msOpts = () => S.S.plan.milestones.map((m) => ({ label: m.label, value: m.
                     @update:model-value="(v) => setP('exitMultiple', v)"
                   />
                 </div>
-                <label class="flex items-end gap-2 text-sm pb-1 text-ink-gray-7"
-                  ><Checkbox
-                    :model-value="S.S.plan.showBenchmarks"
-                    @update:model-value="(v) => setP('showBenchmarks', v)"
-                  />
-                  Show industry benchmarks ($1B FDV caution)</label
-                >
+                <!-- COM-99: a settings-style toggle is a Switch, not a form Checkbox -->
+                <Switch
+                  class="pb-1"
+                  :model-value="S.S.plan.showBenchmarks"
+                  label="Show industry benchmarks ($1B FDV caution)"
+                  @update:model-value="(v: boolean) => setP('showBenchmarks', v)"
+                />
               </div>
               <div class="text-p-xs mt-2 flex items-center gap-1 text-ink-amber-strong">
                 <span class="lucide-triangle-alert size-3" aria-hidden="true" /> TGE multipliers are

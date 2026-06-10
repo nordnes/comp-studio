@@ -137,7 +137,11 @@ const hasBudget = computed(() => flags.value.some((f) => f.t === "budget"));
           <Term k="netOfStrike">Net cost</Term> · base
         </div>
         <div class="figure-lg text-ink-gray-9">{{ heroCost }}</div>
-        <div class="text-p-xs mt-2 tabular-nums text-ink-gray-6">{{ rangeText }}</div>
+        <!-- COM-125: a one-scenario plan has no range — hide the degenerate "$X – $X" line
+             (Robin's prompt-set default: HIDE) -->
+        <div v-if="sk.length > 1" class="text-p-xs mt-2 tabular-nums text-ink-gray-6">
+          {{ rangeText }}
+        </div>
       </div>
       <dl class="flex flex-wrap gap-x-10 gap-y-3 pb-1">
         <div v-for="s in supporting" :key="s.l">

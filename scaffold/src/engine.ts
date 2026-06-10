@@ -183,7 +183,23 @@ export interface ScenarioSet {
   id: string; label: string; starred?: boolean; note?: string;
   scenarios: Record<string, Scenario>; baseScenario: string;
 }
-export interface State { version: number; name: string; plan: Plan; tiers: Tier[]; objectives: Objective[]; advisors: Advisor[] }
+export interface State { version: number; name: string; plan: Plan; tiers: Tier[]; objectives: Objective[]; advisors: Advisor[]; decisions?: GrantDecision[] }
+
+// v2 (COM-165): the Ispahani 9-step grant-decision process (B.3, VERBATIM) as a guided flow —
+// each run leaves an ARTEFACT ("the strongest possible answer to 'defend it in a board
+// conversation'"). Steps are the fixed verbatim sequence; answers are the operator's record.
+export const ISPAHANI_STEPS = [
+  'Determine what performance/returns make each level of dilution and cost acceptable',
+  'Set total dilution + employment cost acceptable per year over the foreseeable future given strategy/financial position/investor expectations, and obtain approvals',
+  'Set eligibility criteria for employees, consultants, directors',
+  'Assess the "franchise situation" — how critical and how replaceable is the individual',
+  'Build the total compensation picture per participant: base, bonus opportunity, benefits, token allocation, options',
+  'Compare each total to market',
+  'Compare totals and elements to existing and anticipated internal comparators',
+  "Allocate the year's share of awards, keeping a reserve for future hires",
+  'Iterate for sustainability',
+] as const;
+export interface GrantDecision { id: string; atISO: string; advisorId?: string; subject: string; answers: string[]; decidedBy?: string }
 
 // ===== guards & formatters =====
 export const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
@@ -612,6 +628,23 @@ export function reconcile(l: any): State {
       return adv;
     }) : d.advisors,
   };
+  // v2 (COM-165): decision artefacts — id + date + the answers array (strings, padded/truncated
+  // to the 9 steps); junk entries drop; id-dedupe first-wins.
+  if (Array.isArray(l.decisions)) {
+    out.decisions = l.decisions
+      .filter((x: any) => x && typeof x === 'object' && x.id && typeof x.atISO === 'string' && x.atISO)
+      .map((x: any) => ({
+        id: String(x.id), atISO: x.atISO,
+        ...(typeof x.advisorId === 'string' && x.advisorId ? { advisorId: x.advisorId } : {}),
+        subject: typeof x.subject === 'string' && x.subject ? x.subject : 'Grant decision',
+        answers: Array.from({ length: ISPAHANI_STEPS.length }, (_, i) =>
+          (Array.isArray(x.answers) && typeof x.answers[i] === 'string') ? x.answers[i] : ''),
+        ...(typeof x.decidedBy === 'string' && x.decidedBy ? { decidedBy: x.decidedBy } : {}),
+      }))
+      .filter((x: any, i: number, arr: any[]) => arr.findIndex(y => y.id === x.id) === i);
+  } else if ('decisions' in out) {
+    delete (out as any).decisions;
+  }
   // v2 (COM-171): the v5→v6 migration. (1) cocAccelPct is DELETED (inert — Plan v9 removed Rule
   // 9.2; the ...p spread above may have carried it in). (2) grants[] MATERIALISE for parametric
   // advisors as derived-flagged rows — refreshed on every load so the snapshot can't go stale;

@@ -1775,3 +1775,14 @@ print wrappers (roster table overflow div, range stack, staircase card, scatter 
 `<caption>` on the roster table. **Spec-faithful CSS — no real print dialog under the preview MCP
 (COM-59 caveat): Robin should eyeball one Board-pack + one Proposition PDF.** Verified in-DOM on :4173
 (4 print-areas, 4 ff-rows, caption hidden) + rules present in the built css. vp 0 · 22/22 both · build 0.
+
+## 2026-06-10 — COM-137 (independent alerts + not-saved badge) DONE [M9 finish-loop W2 #3]
+
+**COM-137 (P3 Med, 12/1 LOC, App.vue) — DONE + MERGED.** Header alerts are sibling `v-if`s (storage
+yellow first, budget red second — both can show); plus a persistent sidebar strip under the brand row
+(`v-if="!store.storageOk"`, amber-1 bg + amber-strong ink, "Not saved — export to keep" + title tooltip).
+- Verified the budget path live (localStorage surgery: baseGrant.equityPct→5% → "At ceiling, board
+  equity 65.50% exceeds the 10% ESOP pool" banner rendered standalone; restored after). The
+  storage-blocked path is untestable from the preview without actually breaking localStorage — trivial
+  v-if, code-reviewed. vp 0 · 22/22 both · build 0. Engine warnings cap at 3 kinds → shapes COM-138
+  (full list, no disclosure needed).

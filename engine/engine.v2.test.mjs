@@ -291,6 +291,23 @@ console.log('\nT7 · Scenario sets & composed walk (COM-143):');
         && ss[1].label === 'b' && ss[1].baseScenario === 'x' && ss[1].scenarios.x.label === 'x'
         && ss[1].scenarios.x.tgeMult === 1;
     })());
+  // COM-148: the side-by-side set diff (per-advisor net + board totals + founder/pool deltas)
+  A('diffSets: working vs a $300m-exit set — per-advisor deltas + cost/founder totals line up',
+    (() => {
+      const d = ENG.DEFAULT();
+      const floorSet = ENG.makeScenarioSet('floor', '$90m floor', d.plan);
+      floorSet.scenarios.base.seriesC.post = 300e6; // a cheaper exit in the saved set
+      const planWith = { ...d.plan, scenarioSets: [floorSet] };
+      const diff = ENG.diffSets(d.advisors, planWith, d.tiers, d.objectives, '', 'floor');
+      const c0a = ENG.computeAdvisor(d.advisors[0], planWith, d.tiers, d.objectives);
+      const c0b = ENG.computeAdvisor(d.advisors[0], ENG.planWithSet(planWith, 'floor'), d.tiers, d.objectives);
+      return diff.rows.length === 4
+        && near(diff.rows[0].aTotal, c0a.baseCaseTotal, 1e-6)
+        && near(diff.rows[0].bTotal, c0b.baseCaseTotal, 1e-6)
+        && near(diff.rows[0].delta, c0b.baseCaseTotal - c0a.baseCaseTotal, 1e-6)
+        // a cheaper exit with the SAME raise dilutes harder: cost falls AND founder % falls
+        && diff.deltas.cost < 0 && diff.b.founderPct < diff.a.founderPct;
+    })());
   // COM-147: the workbook's auto-callouts, engine-generated (A.3 headline observations)
   A('headlineObservations: founder walk 77.72% → 65.63% (−12.09pp) + the ESOP-driver line (10% vs 5.6%)',
     (() => {

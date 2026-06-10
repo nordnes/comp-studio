@@ -183,5 +183,120 @@ console.log('\nT6 · Constitutional baseline & Rule 13.10 guardrail (COM-142):')
     && ENG.poolGuardrail({ ...dflt.plan, constitution: { authorised: 37550, issued: 37550, poolAvailable: 0 }, advisorPoolShares: 1 }).level === 'breach');
 }
 
+// ---- T7: scenario sets + walk-forward composition (COM-143 — live-bound) ----
+// A.3 generalised: ScenarioSet bundles, the composed walk's "base prior" column, the verbatim
+// methodology notes, and the workbook parity cells (bridge price range $952–$2,691; Robin
+// pre-bridge 77.72% → 65.63%, −12.09pp at the $90m/10% cell).
+console.log('\nT7 · Scenario sets & composed walk (COM-143):');
+{
+  const dflt = ENG.DEFAULT();
+  const plan = dflt.plan;
+  // notes verbatim + the caveat survives
+  A('METHOD_NOTES carries all six A.3 notes incl. the not-modeled caveat',
+    ENG.METHOD_NOTES.length === 6
+    && ENG.METHOD_NOTES[1].includes('no top-up if already above')
+    && ENG.METHOD_NOTES[5].includes('real outcomes will differ'));
+  // composed-walk parity: all-top-up path equals walkScenario step for step
+  const w1 = ENG.walkScenario(plan, 'base'), w2 = ENG.walkComposed(plan, 'base');
+  A('walkComposed(base) ≡ walkScenario(base) on the all-top-up A.3 path (±1e-6 per step)',
+    w1.steps.length === w2.steps.length
+    && w1.steps.every((st, i) => near(st.N, w2.steps[i].N, 1e-6) && near(st.esopShares, w2.steps[i].esopShares, 1e-6)));
+  // re-base: conservative walk with its Series A cell taken from base
+  const rb = ENG.walkComposed(plan, 'conservative', { seriesA: 'base' });
+  A('re-base: conservative walk over the base Series A cell → A = 75,359 (±1)', near(rb.byId.seriesA.N, 75359, 1));
+  {
+    // reference maths for the next step (conservative B post 150m/raise 40m/esop 15% off base-A):
+    const prevN = rb.byId.seriesA.N, prevEsop = rb.byId.seriesA.esopShares;
+    const refB = (prevN - prevEsop) / (1 - 40e6 / 150e6 - 0.15);
+    A('re-base: the following round walks off the re-based prior (B ref ±1)', near(rb.byId.seriesB.N, refB, 1));
+  }
+  // note 2's no-top-up branch: carried pool above the round's target → pool shares preserved
+  const noTop = JSON.parse(JSON.stringify(plan));
+  noTop.scenarios.base.seriesB = { post: 300e6, raise: 40e6, esop: 0.05 };
+  const wn = ENG.walkComposed(noTop, 'base');
+  {
+    const prevN = wn.byId.seriesA.N, prevEsop = wn.byId.seriesA.esopShares;
+    const refN = prevN / (1 - 40e6 / 300e6);
+    A('no-top-up: 13% carried vs 5% target → N = prevN/(1−raise/post), pool shares preserved',
+      wn.byId.seriesB.topUp === false && near(wn.byId.seriesB.N, refN, 1e-6)
+      && near(wn.byId.seriesB.esopShares, prevEsop, 1e-6));
+  }
+  // workbook parity cells
+  const cellPrice = (post, esop) => post / (FD_CURRENT / (1 - safeDiv(5e6, post) - esop));
+  A('bridge price/share range $952–$2,691 across the A.3 grid (±$1)',
+    near(cellPrice(60e6, 0.15), 952, 1) && near(cellPrice(150e6, 0.10), 2691, 1));
+  A('headline: Robin pre-bridge 77.72% → 65.63% at $90m/10% (−12.09pp, ±0.01pp)',
+    near(ROBIN / FD_CURRENT, 0.7772, 0.0001) && near(ROBIN / walk[0].N, 0.6563, 0.0001)
+    && near(ROBIN / FD_CURRENT - ROBIN / walk[0].N, 0.1209, 0.0001));
+  // scenario-set machinery
+  const set = ENG.makeScenarioSet('floor90', '$90m floor per strategy memo', plan);
+  A('makeScenarioSet captures a DEEP copy (later live edits do not leak in)',
+    (() => { const before = set.scenarios.base.seriesA.post; plan.scenarios.base.seriesA.post = 1; const okSet = set.scenarios.base.seriesA.post === before; plan.scenarios.base.seriesA.post = 120e6; return okSet; })());
+  const withSet = { ...plan, scenarioSets: [set] };
+  const swapped = ENG.planWithSet({ ...withSet, scenarios: { only: { label: 'Only', tgeMult: 1 } }, baseScenario: 'only' }, 'floor90');
+  A('planWithSet swaps the active scenarios non-mutating; unknown id is a no-op',
+    swapped.scenarios.base && swapped.baseScenario === 'base'
+    && ENG.planWithSet(plan, 'nope') === plan);
+  // round-trips
+  const pre143 = JSON.parse(JSON.stringify(dflt));
+  delete pre143.plan.scenarioSets;
+  A('round-trip: a pre-COM-143 payload seeds scenarioSets [] and walks identically',
+    (() => { const r = ENG.reconcile(pre143); return Array.isArray(r.plan.scenarioSets) && r.plan.scenarioSets.length === 0 && near(ENG.walkScenario(r.plan, 'base').exit.N, 118707, 1); })());
+  const savedSets = JSON.parse(JSON.stringify(dflt));
+  savedSets.plan.scenarioSets = [
+    { id: 'a', label: 'Memo floor', starred: true, note: '$90m floor', scenarios: { base: { label: 'Base', tgeMult: 5, seriesA: { post: 120e6, raise: 20e6, esop: 0.15 } } }, baseScenario: 'base' },
+    { id: 'b', scenarios: { x: { seriesA: { post: 1e6, raise: 1, esop: 0 } } }, baseScenario: 'missing' },
+    'junk', { id: 'c' }, { id: 'd', scenarios: {} },
+  ];
+  A('round-trip: saved sets survive (starred/note kept, label defaults, baseScenario healed, junk dropped)',
+    (() => {
+      const r = ENG.reconcile(savedSets); const ss = r.plan.scenarioSets;
+      return ss.length === 2 && ss[0].starred === true && ss[0].note === '$90m floor'
+        && ss[1].label === 'b' && ss[1].baseScenario === 'x' && ss[1].scenarios.x.label === 'x'
+        && ss[1].scenarios.x.tgeMult === 1;
+    })());
+  // Review findings 2026-06-10 (one panel-confirmed + six self-verified by node probe) — pinned:
+  A('activation isolation: planWithSet deep-copies — editing the active map never rewrites the set',
+    (() => {
+      const s2 = ENG.makeScenarioSet('s2', 'S2', plan);
+      const act = ENG.planWithSet({ ...plan, scenarioSets: [s2] }, 's2');
+      act.scenarios.base.seriesA.post = 1;
+      return s2.scenarios.base.seriesA.post !== 1;
+    })());
+  A('trust boundary: junk cell numerics in saved sets re-default (string post · negative raise · string esop)',
+    (() => {
+      const j = JSON.parse(JSON.stringify(dflt));
+      j.plan.scenarioSets = [{ id: 'a', scenarios: { base: { seriesA: { post: '120m', raise: -5e6, esop: '15%' } } }, baseScenario: 'base' }];
+      const cell = ENG.reconcile(j).plan.scenarioSets[0].scenarios.base.seriesA;
+      return cell.post === 0 && cell.raise === 0 && cell.esop === 0;
+    })());
+  A('forward-compat: unknown ScenarioSet fields (createdAt) round-trip loss-free',
+    (() => {
+      const f = JSON.parse(JSON.stringify(dflt));
+      f.plan.scenarioSets = [{ id: 'f', createdAt: '2026-06-10', scenarios: { b: { seriesA: { post: 1e8, raise: 1e6, esop: 0.1 } } }, baseScenario: 'b' }];
+      return ENG.reconcile(f).plan.scenarioSets[0].createdAt === '2026-06-10';
+    })());
+  A('cellFrom honesty: an unknown override key reports the FALLBACK source, not the lie',
+    ENG.walkComposed(plan, 'base', { seriesA: 'agressive' }).byId.seriesA.cellFrom === 'base');
+  A('override lacking the round cell falls back to scenKey (4 steps, honest provenance, base maths)',
+    (() => {
+      const px = JSON.parse(JSON.stringify(plan)); delete px.scenarios.conservative.seriesB;
+      const wf = ENG.walkComposed(px, 'base', { seriesB: 'conservative' });
+      return wf.steps.length === 4 && wf.byId.seriesB.cellFrom === 'base'
+        && near(wf.byId.seriesB.N, ENG.walkScenario(px, 'base').byId.seriesB.N, 1e-6);
+    })());
+  A('prototype keys are not scenario names: baseScenario "constructor" heals to the first own key',
+    (() => {
+      const pj = JSON.parse(JSON.stringify(dflt));
+      pj.plan.scenarioSets = [{ id: 'p', scenarios: { real: { seriesA: { post: 1e8, raise: 1e6, esop: 0.1 } } }, baseScenario: 'constructor' }];
+      return ENG.reconcile(pj).plan.scenarioSets[0].baseScenario === 'real';
+    })());
+  A('degenerate cell (raise = post) never emits a non-finite N from the composed walk',
+    (() => {
+      const pi = JSON.parse(JSON.stringify(plan)); pi.scenarios.base.seriesB = { post: 40e6, raise: 40e6, esop: 0 };
+      return ENG.walkComposed(pi, 'base').steps.every(st => Number.isFinite(st.N));
+    })());
+}
+
 console.log(`\n${pass} passed, ${fail} failed, ${pending} pending(v2).`);
 process.exit(fail ? 1 : 0);

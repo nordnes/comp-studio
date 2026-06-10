@@ -2013,3 +2013,10 @@ header zone, 128, 130+131, 129).
 (mode-specific copy; "…preserved when you switch"); value mode shows "Resolves to X% eq · Y% tok at the
 base-case path" from c.baseEq/baseTk. Verified both modes live in the editor dialog (resolved line read
 0.22% eq · 0.017% tok). vp 0 · 22/22 both · build 0.
+
+## 2026-06-10 — COM-79 (tier list selector) DONE [M9 finish-loop W5 #2]
+
+**COM-79 (P4 Low, ~26/24 LOC, PackageEditor.vue) — DONE + MERGED.** 3-up tier cards → bordered
+divide-y list, `grid-cols-[1fr_4rem_10rem]` slots (name | ×mult | eq·tok right), selected =
+amber-2 bg + aria-pressed (plain buttons, not broken radio semantics). Verified: ×mult column
+pixel-aligned; select Strategic → restore Anchor round-trip. vp 0 · 22/22 both · build 0.

@@ -2097,3 +2097,10 @@ token track/thumb, webkit gradient + moz-range-progress fill via `--slider-pct`,
 ExitSlider + the editor's split slider consume it w/ per-host :style pct. **frappe-ui Slider UNFIT —
 recorded in style.css: hardcoded aria-label="Volume", number[] v-model.** Verified: 50%→100% fill +
 aria "Aggressive, net $21.4M" on synthetic drag; restored. vp 0 · 22/22 both · build 0.
+
+## 2026-06-10 — COM-111 (--overlay token) DONE [M9 finish-loop W6 #3]
+
+**COM-111 (P4 Low, 5 LOC, 2 files) — DONE + MERGED.** `--overlay: rgb(23 23 23 / 0.3)` in :root; the
+drawer scrim → `bg-[var(--overlay)]`. The palette's scrim clause was already satisfied by COM-105 (lib
+Dialog backdrop). grep: zero bg-black in src. Verified scrim computed rgba(23,23,23,0.3) at 375px.
+vp 0 · 22/22 both · build 0.

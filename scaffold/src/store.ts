@@ -14,6 +14,8 @@ import {
   hasExplicitGrants,
   scenKeys,
   baseScenKey,
+  walkScenario,
+  currentRoundStep,
   roadmapToCSV,
   parseRoadmapCSV,
   todayISO,
@@ -556,6 +558,85 @@ export function useStudio() {
     flash(`Stage → ${stage}`);
   }
 
+  // COM-158 (F16): the review workflow — "start everyone the same; review and top up the
+  // keepers", ON THE RECORD. Scheduling creates an open Review; completing one records
+  // inputs/outcome/approver and applies the outcome: a top-up appends a NEW grant priced at
+  // the THEN-CURRENT round (the COM-144 growth story); a roll-off hands to the F18 pipeline.
+  function scheduleReview(
+    advisorId: string,
+    data: { scheduledISO: string; trigger?: string; eventNote?: string },
+  ) {
+    const a: any = store.S.advisors.find((x) => x.id === advisorId);
+    if (!a || !data.scheduledISO) return;
+    a.reviews = [
+      ...(Array.isArray(a.reviews) ? a.reviews : []),
+      {
+        id: uid("rv"),
+        scheduledISO: data.scheduledISO,
+        trigger: data.trigger === "event" ? "event" : "scheduled",
+        ...(data.eventNote ? { eventNote: data.eventNote } : {}),
+      },
+    ];
+    persist();
+    flash(`Review scheduled · ${data.scheduledISO}`);
+  }
+  function completeReview(
+    advisorId: string,
+    reviewId: string,
+    data: {
+      inputs?: string;
+      outcome: string;
+      approver: string;
+      note?: string;
+      topUpQuantity?: number;
+      topUpValueUSD?: number;
+    },
+  ) {
+    const a: any = store.S.advisors.find((x) => x.id === advisorId);
+    const r = a && (a.reviews || []).find((x: any) => x.id === reviewId && !x.completedISO);
+    if (!a || !r) return false;
+    // B.1 #5: no one decides their own comp — the approver must be a named OTHER person.
+    const approver = (data.approver || "").trim();
+    if (!approver || approver.toLowerCase() === (a.name || "").trim().toLowerCase()) {
+      flash("Approver required — no one signs off their own comp (B.1 #5)");
+      return false;
+    }
+    pushUndo();
+    r.outcome = data.outcome;
+    r.approver = approver;
+    r.completedISO = todayISO();
+    if (data.inputs) r.inputs = data.inputs;
+    if (data.note) r.note = data.note;
+    if (data.outcome === "top-up" && (data.topUpQuantity || data.topUpValueUSD)) {
+      materialiseGrants(a);
+      // the then-current round prices the strike — exactly how packages grow with fundraising
+      const w = walkScenario(store.S.plan, baseScenKey(store.S.plan));
+      const round = currentRoundStep(store.S.plan, w).id || "bridge";
+      a.grants.push({
+        id: uid("g"),
+        instrument: "option",
+        round,
+        ...(data.topUpValueUSD
+          ? { valueUSD: data.topUpValueUSD }
+          : { quantity: data.topUpQuantity }),
+        curve: "cert-v3",
+        vestStartISO: todayISO(),
+        lifecycle: "draft",
+        docStatus: "in-draft",
+      });
+    }
+    if (data.outcome === "roll-off") {
+      a.stage = "rolled-off";
+      a.stageHistory = [
+        ...(Array.isArray(a.stageHistory) ? a.stageHistory : []),
+        { stage: "rolled-off", atISO: todayISO(), note: `Review ${reviewId}: roll-off` },
+      ];
+    }
+    persist();
+    undoToast(`review (${data.outcome})`);
+    return true;
+  }
+
   // COM-148: same-advisor A/B — fork a candidate package (offer v2) for one person.
   function duplicateAdvisor(id: string) {
     const src: any = store.S.advisors.find((a) => a.id === id);
@@ -805,6 +886,8 @@ export function useStudio() {
     activateSet,
     duplicateAdvisor,
     setStage,
+    scheduleReview,
+    completeReview,
     setAdvisorCase,
     setAdvisorTargetExit,
     setGovItem,

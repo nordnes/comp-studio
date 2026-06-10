@@ -24,6 +24,7 @@ declare module 'vue' {
     PageHeader: typeof import('./src/components/PageHeader.vue')['default']
     Panel: typeof import('./src/components/Panel.vue')['default']
     PoolAllocation: typeof import('./src/components/PoolAllocation.vue')['default']
+    ReviewPanel: typeof import('./src/components/ReviewPanel.vue')['default']
     RosterIdentity: typeof import('./src/components/roster/RosterIdentity.vue')['default']
     RosterRow: typeof import('./src/components/roster/RosterRow.vue')['default']
     RosterTable: typeof import('./src/components/roster/RosterTable.vue')['default']

@@ -1958,3 +1958,11 @@ gray-2 editorial frame (recorded in Panel's header).
 **COM-119 (P3 Med, 8/5 LOC) — DONE + MERGED.** Band amber-2 → surface-gray-3; base tick gray-7 2px →
 surface-amber-3 3px. Verified computed on BOTH call sites (Board rows ×4 + Advisors hero): band
 #EDEDED, tick #DB7706 3px. vp 0 · 22/22 both · build 0.
+
+## 2026-06-10 — COM-120 (range rows on a fixed grid) DONE [M9 finish-loop W4 #3]
+
+**COM-120 (P4 Low, ~16 LOC, Board.vue) — DONE + MERGED.** Range rows → `grid-cols-[8rem_1fr_7rem]`
+(name truncates · label-less FootballField · right-aligned tabular range); ff-row class moved to the
+grid wrapper (COM-134 break-inside intact). FootballField's no-label mode WAS the lighter API — no
+component change needed. Verified: all 4 rows' bars start x=400 and values end x=858 (pixel-aligned).
+vp 0 · 22/22 both · build 0.

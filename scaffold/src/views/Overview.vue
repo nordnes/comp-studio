@@ -116,7 +116,7 @@ const hasBudget = computed(() => flags.value.some((f) => f.t === "budget"));
   <div v-else class="mx-auto w-full max-w-reading px-3 sm:px-5 space-y-8">
     <PageHeader
       title="The advisory board, at a glance."
-      desc="A live snapshot against the company plan — net of strike and dilution. Open Configure to edit the baseline; click an advisor to model their package."
+      desc="A live snapshot against the company plan. Click an advisor to model their package."
     >
       <template #actions
         ><Button

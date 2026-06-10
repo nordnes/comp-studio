@@ -177,9 +177,7 @@ const hi = (r: any) => Math.max(r.from, r.to);
         Ceiling
       </text>
     </svg>
-    <p class="text-p-xs mt-1 text-ink-gray-6">
-      The band between Current and Ceiling is the remaining potential — earn it by hitting gated
-      objectives.
-    </p>
+    <!-- COM-130: the footer sentence restated what the inline Current/Ceiling labels + legend
+         already say — cut -->
   </Panel>
 </template>

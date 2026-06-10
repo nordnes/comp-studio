@@ -1786,3 +1786,12 @@ yellow first, budget red second — both can show); plus a persistent sidebar st
   storage-blocked path is untestable from the preview without actually breaking localStorage — trivial
   v-if, code-reviewed. vp 0 · 22/22 both · build 0. Engine warnings cap at 3 kinds → shapes COM-138
   (full list, no disclosure needed).
+
+## 2026-06-10 — COM-138 (complete budget alert) DONE [M9 finish-loop W2 #4]
+
+**COM-138 (P3 Med, 14/7 LOC, App.vue) — DONE + MERGED.** The engine emits ≤3 warnings (verified in
+frozen engine.ts boardCalc), so the Alert renders ALL of them as a ul (plural title when >1) — no
+disclosure machinery needed, the dead "(+N more)" is gone — plus a "Review the pool on the Board"
+router-link (PoolAllocation makes the breach visible there). Verified live with a two-warning state
+(equity + token pools both bombed via localStorage surgery; link navigated to /board; data restored).
+vp 0 · 22/22 both · build 0.

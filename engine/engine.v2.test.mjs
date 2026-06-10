@@ -113,7 +113,10 @@ A('vestedFracRTA(m) equals the T3 reference across months 0–60 (live engine)',
   A('distributableFrac(grant, m, serviceMonths) applies the 24-month qualifying gate (live engine)',
     ENG.distributableFrac(rtaG, 23, 23) === 0 && near(ENG.distributableFrac(rtaG, 36, 36), 0.75, 1e-9));
 }
-P('valueToQuantity(grant, scenario) equals the T4 reference, restated per scenario');
+A('valueToQuantity equals the T4 reference (117.08 options · null underwater · 166,666.67 tokens)',
+  near(ENG.valueToQuantity(50000, 'option', { fmvPps: 2000, strikePps: STRIKE }), 117.08, 0.01)
+  && ENG.valueToQuantity(50000, 'option', { fmvPps: 1500, strikePps: STRIKE }) === null
+  && near(ENG.valueToQuantity(10000, 'rta', { tgeFdv: 600e6, tokenSupply: 10e9 }), 166666.67, 0.01));
 {
   const plan = ENG.DEFAULT().plan;
   const mk = (over) => ({ id: 'g', instrument: 'option', round: 'bridge', quantity: 100, curve: 'cert-v3', vestStartISO: '2026-06-01', lifecycle: 'granted', ...over });
@@ -490,6 +493,94 @@ console.log('\nT9 · Dual vesting curves & the qualifying gate (COM-145):');
   A('vestedAtDate honours the legal anniversary: the cliff does NOT credit 29 days early',
     ENG.vestedAtDate({ ...mkg('rta'), vestStartISO: '2026-06-30' }, '2027-06-01') === 0
     && near(ENG.vestedAtDate({ ...mkg('rta'), vestStartISO: '2026-06-30' }, '2027-06-30'), 0.25, 1e-9));
+}
+
+// ---- T10: value-denominated grants + dollar bands (COM-150 / Δ1 — live-bound) ----
+// Denominate in $, deliver in instruments, restate per scenario; percent is an OUTPUT.
+console.log('\nT10 · Value→quantity in the money path & value bands (COM-150):');
+{
+  const dflt = ENG.DEFAULT();
+  const plan = dflt.plan;
+  const mkv = (over) => ({ id: 'v' + JSON.stringify(over).length, instrument: 'option', round: 'bridge', valueUSD: 50000, curve: 'cert-v3', vestStartISO: '2026-06-01', lifecycle: 'granted', ...over });
+  // a value-denominated bridge option at currentStage 'tge' (FMV = Series A price > strike)
+  const pTge = { ...plan, currentStage: 'tge' };
+  const w = ENG.walkScenario(pTge, 'base');
+  const fmv = 120e6 / w.byId.seriesA.N, strike = w.byId.bridge.price;
+  const g = ENG.computeGrant(mkv({}), pTge, 'base');
+  A('option count derives per scenario: $50K ÷ (FMV − strike) at the live walk prices',
+    g.derived === true && near(g.quantity, 50000 / (fmv - strike), 0.01));
+  A('zero FMV spread (currentStage = grant round) → underwater flag, zero count, never Infinity',
+    (() => { const z = ENG.computeGrant(mkv({}), plan, 'base'); return z.quantity === 0 && z.underwater === true && Number.isFinite(z.value); })());
+  A('explicit quantity OVERRIDES the value derivation',
+    ENG.computeGrant(mkv({ quantity: 42 }), pTge, 'base').quantity === 42);
+  A('token grant derives from TGE FDV ÷ supply, restated per scenario (base 0.06 vs aggressive 0.144)',
+    (() => {
+      const tb = ENG.computeGrant(mkv({ instrument: 'rta', curve: 'rta' }), plan, 'base');
+      const ta = ENG.computeGrant(mkv({ instrument: 'rta', curve: 'rta' }), plan, 'aggressive');
+      return near(tb.quantity, 50000 / 0.06, 1) && near(ta.quantity, 50000 / ((12 * 150e6) / 10e9), 1)
+        && tb.quantity > ta.quantity;
+    })());
+  A('the fold heads count DERIVED quantities (equityShares from the base-scenario rows)',
+    (() => {
+      const c = ENG.computeAdvisor({ ...dflt.advisors[0], grants: [mkv({})] }, pTge, dflt.tiers, dflt.objectives);
+      return near(c.equityShares, 50000 / (fmv - strike), 0.01) && c.scen.every(s => near(s.equity, s.netEqAt(c.eqPct, s.exitVal), 0.01));
+    })());
+  A('VALUE_BANDS_DEFAULT: Base $50K · Strategic $100K · Anchor $150K (open decision #2 defaults)',
+    ENG.VALUE_BANDS_DEFAULT.map(b => b.annualUSD).join(',') === '50000,100000,150000');
+  A('round-trip: edited band anchors survive; junk re-defaults; user bands kept; timeCommitment string-guarded',
+    (() => {
+      const rt = JSON.parse(JSON.stringify(dflt));
+      rt.plan.valueBands = [{ id: 'strategic', annualUSD: 120000 }, { id: 'custom', label: 'Custom', annualUSD: 'lots' }, { id: 'base', annualUSD: -5 }];
+      rt.advisors[0].grants = [mkv({ timeCommitment: '~10 hrs/mo' }), mkv({ id: 'tj', timeCommitment: 42 })];
+      const r = ENG.reconcile(rt);
+      const bands = Object.fromEntries(r.plan.valueBands.map(b => [b.id, b]));
+      return bands.strategic.annualUSD === 120000 && bands.base.annualUSD === 50000
+        && bands.anchor.annualUSD === 150000 && bands.custom.annualUSD === 0
+        && r.advisors[0].grants[0].timeCommitment === '~10 hrs/mo'
+        && r.advisors[0].grants[1].timeCommitment == null;
+    })());
+  A('round-trip: a pre-COM-150 payload seeds the default bands and computes identically',
+    (() => {
+      const pre = JSON.parse(JSON.stringify(dflt)); delete pre.plan.valueBands;
+      const r = ENG.reconcile(pre);
+      return r.plan.valueBands.length === 3 && near(ENG.walkScenario(r.plan, 'base').exit.N, 118707, 1);
+    })());
+  // Review-panel pins (2026-06-10 — base-null fold consistency, duplicate ids, lapsed flags,
+  // failed-token-derivation flag):
+  A('fold consistency survives a base-null derivation: other scenarios keep netEqAt ≡ equity and flag their own underwater',
+    (() => {
+      const pCons = { ...pTge, baseScenario: 'conservative' };
+      const c = ENG.computeAdvisor({ ...dflt.advisors[0], grants: [mkv({})] }, pCons, dflt.tiers, dflt.objectives);
+      const base = c.scen.find(s => s.key === 'base'), cons = c.scen.find(s => s.key === 'conservative');
+      return c.eqPct === 0 && base.equity > 0 && near(base.netEqAt(c.eqPct, base.exitVal), base.equity, 0.01)
+        && cons.underwater === true && base.underwater === false;
+    })());
+  A('duplicate ids never survive reconcile (bands, pools, sets: one entry per id)',
+    (() => {
+      const rt2 = JSON.parse(JSON.stringify(dflt));
+      rt2.plan.valueBands = [{ id: 'dup', annualUSD: 1 }, { id: 'dup', annualUSD: 2 }];
+      rt2.plan.tokenPools = [{ id: 'extra', poolPct: 0.01, allocatedPct: 0 }, { id: 'extra', poolPct: 0.02, allocatedPct: 0 }];
+      rt2.plan.scenarioSets = [
+        { id: 's', scenarios: { a: { seriesA: { post: 1e8, raise: 1e6, esop: 0.1 } } }, baseScenario: 'a' },
+        { id: 's', scenarios: { b: { seriesA: { post: 2e8, raise: 1e6, esop: 0.1 } } }, baseScenario: 'b' },
+      ];
+      const r = ENG.reconcile(rt2);
+      return r.plan.valueBands.filter(b => b.id === 'dup').length === 1
+        && r.plan.tokenPools.filter(t => t.id === 'extra').length === 1
+        && r.plan.scenarioSets.filter(s => s.id === 's').length === 1;
+    })());
+  A('a lapsed value grant flags NOTHING (derived false · underwater false — its zero is the lifecycle)',
+    (() => {
+      const l1 = ENG.computeGrant(mkv({ lifecycle: 'lapsed' }), pTge, 'base');
+      const l2 = ENG.computeGrant(mkv({ lifecycle: 'lapsed' }), plan, 'base');
+      return l1.derived === false && l1.underwater === false && l2.derived === false && l2.underwater === false;
+    })());
+  A('a failed TOKEN derivation flags underwater (degenerate FDV/supply ≠ granted nothing)',
+    (() => {
+      const pJunk = { ...plan, tokenSupply: 0 };
+      const t = ENG.computeGrant(mkv({ instrument: 'rta', curve: 'rta' }), pJunk, 'base');
+      return t.quantity === 0 && t.underwater === true;
+    })());
 }
 
 console.log(`\n${pass} passed, ${fail} failed, ${pending} pending(v2).`);

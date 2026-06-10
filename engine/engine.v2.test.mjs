@@ -125,7 +125,17 @@ A('valueToQuantity equals the T4 reference (117.08 options · null underwater ·
   A('computeGrant() prices strike per GRANT (bridge $1,572.95 vs Series A $1,592.37 ±$0.01)',
     near(gBridge.strikePps, 1572.95, 0.01) && near(gA.strikePps, 120e6 / 75359.215, 0.05) && gA.strikePps > gBridge.strikePps);
 }
-P('modelDeparture(): Bad Leaver → vested+unvested options lapse, tokens forfeit (COM-153)');
+{
+  const d5 = ENG.DEFAULT();
+  const adv = { ...d5.advisors[0], startDate: '2026-06-01', grants: [
+    { id: 'e', instrument: 'option', round: 'bridge', quantity: 100, curve: 'cert-v3', vestStartISO: '2026-06-01', lifecycle: 'granted' },
+    { id: 't', instrument: 'rta', round: 'bridge', quantity: 1e6, curve: 'rta', vestStartISO: '2026-06-01', lifecycle: 'granted' },
+  ] };
+  const dep = ENG.modelDeparture(adv, 'bad', '2029-06-01', d5.plan, d5.tiers, d5.objectives);
+  A('modelDeparture(): Bad Leaver → vested+unvested options lapse, tokens forfeit (live engine)',
+    dep.optionsRetained === 0 && dep.optionsLapsed === 100 && dep.tokensForfeited === 1e6
+    && dep.tokensRetained === 0 && dep.boardDiscretion === false);
+}
 
 // ---- T6: constitutional baseline + 13.10 pool guardrail (COM-142 — live-bound) ----
 // Spec truth: authorised 50,000 · issued 37,550 · 12,450 cancelled-and-available (A.1);
@@ -580,6 +590,142 @@ console.log('\nT10 · Value→quantity in the money path & value bands (COM-150)
       const pJunk = { ...plan, tokenSupply: 0 };
       const t = ENG.computeGrant(mkv({ instrument: 'rta', curve: 'rta' }), pJunk, 'base');
       return t.quantity === 0 && t.underwater === true;
+    })());
+}
+
+// ---- T11: leaver engine (COM-153 — live-bound) ----
+// Plan v9 Rule 5.8 + RTA: Bad Leaver = total lapse/forfeit; non-Bad = vested retained under
+// Board discretion (flag, never auto-vest); 24-month qualifying gate binds token vested-to-date.
+console.log('\nT11 · Leaver engine (COM-153):');
+{
+  const dflt = ENG.DEFAULT();
+  const plan = dflt.plan;
+  const mkAdv = (start, grants) => ({ ...dflt.advisors[0], startDate: start, grants });
+  const eOpt = { id: 'e', instrument: 'option', round: 'bridge', quantity: 100, curve: 'cert-v3', vestStartISO: '2026-06-01', lifecycle: 'granted' };
+  const tRta = { id: 't', instrument: 'rta', round: 'bridge', quantity: 1e6, curve: 'rta', vestStartISO: '2026-06-01', lifecycle: 'granted' };
+  const cCash = { id: 'c', instrument: 'cash', round: 'bridge', valueUSD: 100000, curve: 'cert-v3', vestStartISO: '2026-06-01', lifecycle: 'granted' };
+  const adv = mkAdv('2026-06-01', [eOpt, tRta, cCash]);
+  A('BAD_LEAVER_LIMBS: the six limbs, RTA-aligned (resignation<2yr · fiduciary · disclosure · solicitation · Developed Protocol · cause)',
+    ENG.BAD_LEAVER_LIMBS.length === 6 && ENG.BAD_LEAVER_LIMBS[4].label.includes('Developed Protocol')
+    && ENG.BAD_LEAVER_LIMBS[0].label.includes('2 years'));
+  // good leaver at month 30: equity staircase 50% vested · token curve 62.5% · service 30 ≥ 24
+  const good = ENG.modelDeparture(adv, 'good', '2028-12-01', plan, dflt.tiers, dflt.objectives);
+  A('good leaver: vested-to-date retained (options 50 · tokens 625,000), unvested lapses',
+    near(good.optionsRetained, 50, 1e-9) && near(good.optionsLapsed, 50, 1e-9)
+    && near(good.tokensRetained, 625000, 1) && near(good.tokensForfeited, 375000, 1));
+  A('good leaver: Board-discretion FLAG set + the Andersen warnings surface (never auto-vest)',
+    good.boardDiscretion === true && good.warnings.length === 3
+    && good.warnings[0].includes('acceleration'));
+  A('cash accrued is retained pro-rata for a good leaver (month 30 of 48 → $62.5K)',
+    near(good.cashRetained, 100000 * (30 / 48), 1));
+  // bad leaver at the same date: everything lapses except accrued cash
+  const bad = ENG.modelDeparture(adv, 'bad', '2028-12-01', plan, dflt.tiers, dflt.objectives);
+  A('Bad Leaver (Rule 5.8): VESTED and unvested options lapse; tokens forfeit; no discretion flag; no warnings',
+    bad.optionsRetained === 0 && bad.optionsLapsed === 100 && bad.tokensRetained === 0
+    && bad.tokensForfeited === 1e6 && bad.boardDiscretion === false && bad.warnings.length === 0);
+  A('Bad Leaver: accrued cash is NOT clawed back ($62.5K stands)', near(bad.cashRetained, 100000 * (30 / 48), 1));
+  A('pool delta: lapsed option shares return to pool headroom (bad 100 · good 50)',
+    bad.poolReturned === 100 && near(good.poolReturned, 50, 1e-9));
+  // the 24-month qualifying gate inside the leaver calc: departure at month 23
+  const early = ENG.modelDeparture(adv, 'good', '2028-05-01', plan, dflt.tiers, dflt.objectives);
+  A('RTA qualifying rule binds vested-to-date: good leaver at month 23 retains ZERO tokens (curve says 47.92%)',
+    early.tokensForfeited === 1e6 && early.tokensRetained === 0
+    && near(early.optionsRetained, 25, 1e-9));
+  // death: never a Bad Leaver (the carve-out) — same retained shape as good, discretion flagged
+  const death = ENG.modelDeparture(adv, 'death', '2028-12-01', plan, dflt.tiers, dflt.objectives);
+  A('death is never a Bad Leaver: vested retained under discretion (the carve-out)',
+    near(death.optionsRetained, 50, 1e-9) && death.boardDiscretion === true);
+  // implicit-package advisors work through the shim
+  const v1adv = dflt.advisors[0];
+  const v1dep = ENG.modelDeparture(v1adv, 'good', '2028-06-01', plan, dflt.tiers, dflt.objectives);
+  const v1c = ENG.computeAdvisor(v1adv, plan, dflt.tiers, dflt.objectives);
+  A('implicit-package advisor models through the shim (vested 50% of the derived option count at month 24)',
+    near(v1dep.optionsRetained, v1c.equityShares * 0.5, 0.01));
+  A('PLAN_DISQUALIFICATION_WARNINGS: the Andersen list is engine data (3 entries, acceleration first)',
+    ENG.PLAN_DISQUALIFICATION_WARNINGS.length === 3);
+  // lapsed grants contribute nothing
+  const withLapsed = mkAdv('2026-06-01', [eOpt, { ...tRta, id: 'dead', lifecycle: 'lapsed' }]);
+  const dl = ENG.modelDeparture(withLapsed, 'good', '2028-12-01', plan, dflt.tiers, dflt.objectives);
+  A('already-lapsed grants contribute nothing to a departure', dl.tokensForfeited === 0 && dl.tokensRetained === 0);
+  // Review-panel pins (2026-06-10 — mutation-tested gaps, all closed):
+  A('classifyLeaver: death + limbs is NEVER bad (the carve-out, executable); limbs alone → bad; clean → good',
+    ENG.classifyLeaver(true, [1, 2]) === 'death' && ENG.classifyLeaver(false, [5]) === 'bad'
+    && ENG.classifyLeaver(false, []) === 'good');
+  A('death retains TOKENS too: month 30 → 625,000 under discretion; month 18 → 0 (the gate binds estates)',
+    (() => {
+      const d30 = ENG.modelDeparture(adv, 'death', '2028-12-01', plan, dflt.tiers, dflt.objectives);
+      const d18 = ENG.modelDeparture(adv, 'death', '2027-12-01', plan, dflt.tiers, dflt.objectives);
+      return near(d30.tokensRetained, 625000, 1) && d30.warnings.length >= 3
+        && d18.tokensRetained === 0 && near(d18.optionsRetained, 25, 1e-9);
+    })());
+  A('pre-cliff good leaver (month 6): options 0/100 lapse, pool 100, cash accrues linearly ($12.5K of $100K)',
+    (() => {
+      const d6 = ENG.modelDeparture(adv, 'good', '2026-12-01', plan, dflt.tiers, dflt.objectives);
+      return d6.optionsRetained === 0 && d6.optionsLapsed === 100 && d6.poolReturned === 100
+        && near(d6.cashRetained, 100000 * (6 / 48), 1);
+    })());
+  A('cash accrues over the ENGAGEMENT term: a 2-year retainer fully served retains 100% (never 24/48ths)',
+    (() => {
+      const a2 = { ...dflt.advisors[0], startDate: '2026-06-01', years: 2, hasCash: true, cashAnnual: 50000, grants: undefined };
+      delete a2.grants;
+      const d24 = ENG.modelDeparture(a2, 'bad', '2028-06-01', plan, dflt.tiers, dflt.objectives);
+      return near(d24.cashRetained, 100000, 1);
+    })());
+  A('exercised options are issued shares: never lapse, never re-enter the pool, retained even for a Bad Leaver',
+    (() => {
+      const ax = mkAdv('2026-06-01', [{ ...eOpt, id: 'ex', lifecycle: 'exercised' }]);
+      const dx = ENG.modelDeparture(ax, 'bad', '2028-12-01', plan, dflt.tiers, dflt.objectives);
+      return dx.optionsLapsed === 0 && dx.poolReturned === 0 && dx.optionsRetained === 100 && dx.forfeitedValue === 0;
+    })());
+  A('value-denominated grants derive INSIDE departures: $50K at tge lapses ~2,574.78 derived options for a Bad Leaver',
+    (() => {
+      const pT = { ...plan, currentStage: 'tge' };
+      const av = mkAdv('2026-06-01', [{ id: 'v', instrument: 'option', round: 'bridge', valueUSD: 50000, curve: 'cert-v3', vestStartISO: '2026-06-01', lifecycle: 'granted' }]);
+      const dv = ENG.modelDeparture(av, 'bad', '2029-06-01', pT, dflt.tiers, dflt.objectives);
+      return near(dv.optionsLapsed, 2574.78, 0.01) && dv.poolReturned > 0;
+    })());
+  A('failed derivation is LOUD in a departure: flags on the row, failedDerivation true, a warning names it',
+    (() => {
+      const av = mkAdv('2026-06-01', [{ id: 'v', instrument: 'option', round: 'bridge', valueUSD: 50000, curve: 'cert-v3', vestStartISO: '2026-06-01', lifecycle: 'granted' }]);
+      const dv = ENG.modelDeparture(av, 'bad', '2029-06-01', plan, dflt.tiers, dflt.objectives);
+      return dv.failedDerivation === true && dv.rows[0].underwater === true
+        && dv.warnings.some(w => w.includes('derivation failure'));
+    })());
+  A('both value bases reported: exit-basis forfeit ~$132K vs today-FMV $0 at the bridge stage (good leaver m30)',
+    (() => {
+      const g30 = ENG.modelDeparture(mkAdv('2026-06-01', [eOpt]), 'good', '2028-12-01', plan, dflt.tiers, dflt.objectives);
+      return near(g30.forfeitedValue, 50 * (4212.04 - 1572.95), 5) && g30.forfeitedValueToday === 0
+        && g30.rows[0].basis === 'exit-vs-fmv';
+    })());
+  A('cash-only departure: NO discretion flag and NO Andersen banner (nothing to accelerate); mixed keeps both',
+    (() => {
+      const ac = mkAdv('2026-06-01', [cCash]);
+      const dc = ENG.modelDeparture(ac, 'good', '2028-12-01', plan, dflt.tiers, dflt.objectives);
+      return dc.boardDiscretion === false && dc.warnings.length === 0
+        && good.boardDiscretion === true && good.warnings.length >= 3;
+    })());
+  A('the 24-month anniversary binds through DATE arithmetic: 2028-06-01 retains 500K · 2028-05-31 retains 0',
+    (() => {
+      const d24 = ENG.modelDeparture(adv, 'good', '2028-06-01', plan, dflt.tiers, dflt.objectives);
+      const d23 = ENG.modelDeparture(adv, 'good', '2028-05-31', plan, dflt.tiers, dflt.objectives);
+      return near(d24.tokensRetained, 500000, 1) && d23.tokensRetained === 0;
+    })());
+  A('day-aware service: started 2026-06-15, departing 2028-06-01 → 23 service months → tokens gated to 0',
+    (() => {
+      const a15 = mkAdv('2026-06-15', [{ ...tRta, vestStartISO: '2026-06-15' }]);
+      return ENG.modelDeparture(a15, 'good', '2028-06-01', plan, dflt.tiers, dflt.objectives).tokensRetained === 0;
+    })());
+  A('top-up grant anchors: gate on SERVICE (advisor start), curve on the grant VCD (m13 of a 43-month engagement distributes)',
+    (() => {
+      const at = mkAdv('2026-06-01', [{ ...tRta, id: 'top', vestStartISO: '2028-12-01' }]);
+      const dt = ENG.modelDeparture(at, 'good', '2030-01-01', plan, dflt.tiers, dflt.objectives);
+      return near(dt.tokensRetained, 1e6 * (0.25 + 1 * (0.75 / 36)), 1);
+    })());
+  A('plan-parameterised vest threads into departures: 3yr/6mo plan, month-7 good leaver retains 1/3 of options',
+    (() => {
+      const p36 = { ...plan, equityVestYears: 3, equityCliff: 6 };
+      const d7 = ENG.modelDeparture(mkAdv('2026-06-01', [eOpt]), 'good', '2027-01-01', p36, dflt.tiers, dflt.objectives);
+      return near(d7.optionsRetained, 100 / 3, 0.01);
     })());
 }
 

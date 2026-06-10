@@ -795,3 +795,118 @@ export function distributableFrac(grant: Grant, m: number, serviceMonths: number
   if (grant.instrument === 'rta' && !(ok(serviceMonths) && serviceMonths >= 24)) return 0;
   return vestedAtMonths(grant, m, years, cliff);
 }
+
+// ===== v2: leaver engine (COM-153 — Plan v9 Rule 5.8 · the RTA · Appendix F) =====
+// Bad Leaver (RTA-aligned): any cessation other than death PLUS any of the six limbs.
+export const BAD_LEAVER_LIMBS = [
+  { limb: 1, label: 'Resignation within the first 2 years of the Vesting Commencement Date' },
+  { limb: 2, label: 'Serious breach of directorship or fiduciary duties' },
+  { limb: 3, label: 'Unauthorised disclosure of confidential information or IP' },
+  { limb: 4, label: 'Solicitation in breach of the agreement' },
+  { limb: 5, label: 'Competing via a Developed Protocol function (the enumerated (a)–(g) list; Developed Protocol = Solana or any protocol the Company actively develops on)' },
+  { limb: 6, label: 'Material breach, or dismissal for cause' },
+] as const;
+export type LeaverType = 'bad' | 'good' | 'death';
+
+// The classification rule, executable (suite-pinnable): Bad Leaver = any cessation OTHER THAN
+// DEATH plus at least one limb. Death with limbs ticked is still NOT a Bad Leaver — the
+// definition's carve-out. UIs classify through this, never ad hoc.
+export const classifyLeaver = (death: boolean, limbs: number[]): LeaverType =>
+  death ? 'death' : (limbs && limbs.length ? 'bad' : 'good');
+
+// The Andersen don't-do list (Appendix F): discretion exercised these ways risks disqualifying a
+// tax-approved plan. The engine SURFACES the warnings — it never computes an accelerated outcome.
+export const PLAN_DISQUALIFICATION_WARNINGS = [
+  'Vesting acceleration by discretion is a plan-disqualification risk — never accelerate; vested-to-date is the ceiling.',
+  'Discretionary cash substitution for lapsed awards can disqualify the plan — model cash separately, never as a swap.',
+  'Retesting or re-pricing awards for a leaver outside the plan rules risks disqualification — only the written rules apply.',
+] as const;
+
+// modelDeparture(advisor, leaverType, date) — per the issue (RFC-conformed name/signature).
+// Bad Leaver → vested AND unvested options lapse on cessation (Rule 5.8); tokens forfeit.
+// Death is never a Bad Leaver (the definition's carve-out) — treated like Board-discretion.
+// Non-Bad Leaver → Board-discretion outcome carried as a FLAG over vested-to-date positions
+// (good leavers MAY keep vested awards — the Quantnight/Mios precedent); never auto-vested.
+// The RTA 24-month qualifying rule binds token vested-to-date (service = advisor start → date).
+// Quantities come from the base-scenario rows (value-denominated grants derive there — COM-150).
+export function modelDeparture(advisor: Advisor, leaverType: LeaverType, dateISO: string, plan: Plan, tiers: Tier[], objectives: Objective[]) {
+  const grants = effectiveGrants(advisor, plan, tiers, objectives);
+  const baseKey = baseScenKey(plan);
+  const bad = leaverType === 'bad';
+  const rows = grants.map(g => {
+    const r = computeGrant(g, plan, baseKey);
+    const zeroRow = { grant: g, instrument: g.instrument, qty: 0, vestedQty: 0, unvestedQty: 0, retainedQty: 0, lapsedQty: 0, forfeitedValue: 0, retainedValue: 0, forfeitedValueToday: 0, retainedValueToday: 0, boardDiscretion: false, pricePerUnit: 0, fmvPerUnit: 0, basis: 'none', underwater: false, derived: false };
+    if (g.lifecycle === 'lapsed') return zeroRow;
+    // An EXERCISED option is issued shares — it cannot lapse (Rule 5.8 lapses OPTIONS) and its
+    // shares never re-enter the available pool headroom (review finding). It rides through a
+    // departure fully retained, outside discretion and outside the pool delta.
+    const qty = g.instrument === 'cash' ? (r.value || 0) : (r.quantity || 0);
+    const pricePerUnit = g.instrument === 'option'
+      ? Math.max(0, (r.exitPps ?? 0) - (r.strikePps ?? 0))
+      : g.instrument === 'rta' ? (r.tokenPps ?? 0) : 1;
+    // fmvPerUnit: the TODAY basis (current-stage FMV net of strike per Cert v3 4.5(c)); tokens
+    // have no today print besides the TGE-derived price; cash is already today-dollars. Every
+    // value field comes in BOTH bases, labelled — a departure decided today must never show
+    // exit-dollars as the only stake (review finding: mixed bases misstate a Board decision).
+    const fmvPerUnit = g.instrument === 'option'
+      ? Math.max(0, (r.fmvPps ?? 0) - (r.strikePps ?? 0))
+      : g.instrument === 'rta' ? (r.tokenPps ?? 0) : 1;
+    const basis = g.instrument === 'option' ? 'exit-vs-fmv' : g.instrument === 'rta' ? 'tge-fdv' : 'today';
+    if (g.instrument === 'option' && g.lifecycle === 'exercised') {
+      return { ...zeroRow, qty, vestedQty: qty, retainedQty: qty, retainedValue: qty * pricePerUnit, retainedValueToday: qty * fmvPerUnit, pricePerUnit, fmvPerUnit, basis, exercised: true };
+    }
+    const m = fullMonthsBetween(g.vestStartISO, dateISO);
+    // serviceMonths: unbroken Continuous Service from the advisor's engagement start (capacity
+    // changes and intra-group transfers don't break it — prompt-set anchoring, pinned by vector:
+    // a top-up grant's gate keys on SERVICE while its curve keys on the grant's own VCD).
+    const serviceMonths = fullMonthsBetween(advisor.startDate || g.vestStartISO, dateISO);
+    // Cash accrues over the term its dollar total was denominated in — the advisor's engagement
+    // (cashAnnual × years), NEVER the plan's equity vest period (review finding: a 2-year
+    // retainer fully served at month 24 must retain 100%, not 24/48ths).
+    const cashYears = Math.max(advisor.years || 4, 1e-9);
+    const vestedFracAt = g.instrument === 'cash'
+      ? clamp(m / (cashYears * 12), 0, 1)
+      : distributableFrac(g, m, serviceMonths, plan.equityVestYears ?? 4, plan.equityCliff ?? 12);
+    const vestedQty = qty * vestedFracAt;
+    const unvestedQty = qty - vestedQty;
+    const flags = { underwater: !!r.underwater, derived: !!r.derived };
+    if (bad) {
+      // Rule 5.8: vested and unvested LAPSE; tokens forfeit; accrued cash is not clawed back.
+      const retainedQty = g.instrument === 'cash' ? vestedQty : 0;
+      const lapsedQty = qty - retainedQty;
+      return { grant: g, instrument: g.instrument, qty, vestedQty, unvestedQty, retainedQty, lapsedQty, forfeitedValue: lapsedQty * pricePerUnit, retainedValue: retainedQty * pricePerUnit, forfeitedValueToday: lapsedQty * fmvPerUnit, retainedValueToday: retainedQty * fmvPerUnit, boardDiscretion: false, pricePerUnit, fmvPerUnit, basis, ...flags };
+    }
+    // Good leaver / death: unvested lapses; vested-to-date is RETAINED subject to Board
+    // discretion (flagged) — never auto-vested beyond the curve (the Appendix F guardrail).
+    return { grant: g, instrument: g.instrument, qty, vestedQty, unvestedQty, retainedQty: vestedQty, lapsedQty: unvestedQty, forfeitedValue: unvestedQty * pricePerUnit, retainedValue: vestedQty * pricePerUnit, forfeitedValueToday: unvestedQty * fmvPerUnit, retainedValueToday: vestedQty * fmvPerUnit, boardDiscretion: g.instrument !== 'cash', pricePerUnit, fmvPerUnit, basis, ...flags };
+  });
+  const sum = (f: (r: any) => number) => rows.reduce((s, r) => s + f(r), 0);
+  const optionsLapsed = sum(r => (r.instrument === 'option' ? r.lapsedQty : 0));
+  const anyDiscretion = !bad && rows.some(r => r.boardDiscretion);
+  // A value-denominated grant whose derivation failed must never read as "nothing at stake" —
+  // the rows carry the flags and the result says it out loud (review finding).
+  const failedDerivation = rows.some(r => r.underwater && r.qty === 0);
+  const warnings: string[] = [];
+  // Andersen warnings surface where discretion EXISTS to exercise — a pure-cash departure has
+  // no award to accelerate, so the legal banner stays off (pinned both ways).
+  if (anyDiscretion) warnings.push(...PLAN_DISQUALIFICATION_WARNINGS);
+  if (failedDerivation) warnings.push('A value-denominated grant could not derive a count at the current FMV (spread ≤ 0) — the zero at-stake figures are a derivation failure, not an empty award.');
+  return {
+    leaverType, dateISO, rows,
+    optionsRetained: sum(r => (r.instrument === 'option' ? r.retainedQty : 0)),
+    optionsLapsed,
+    tokensForfeited: sum(r => (r.instrument === 'rta' ? r.lapsedQty : 0)),
+    tokensRetained: sum(r => (r.instrument === 'rta' ? r.retainedQty : 0)),
+    cashRetained: sum(r => (r.instrument === 'cash' ? r.retainedQty : 0)),
+    forfeitedValue: sum(r => r.forfeitedValue),
+    retainedValue: sum(r => r.retainedValue),
+    forfeitedValueToday: sum(r => r.forfeitedValueToday),
+    retainedValueToday: sum(r => r.retainedValueToday),
+    // pool/cap-table delta: lapsed option shares return to the pool's available headroom
+    // (exercised shares are issued — they never re-enter the pool).
+    poolReturned: optionsLapsed,
+    boardDiscretion: anyDiscretion,
+    failedDerivation,
+    warnings,
+  };
+}

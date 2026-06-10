@@ -2117,3 +2117,11 @@ defined unconditioned (#525252) → resolves under @media print. String untouche
 about its anchor) + centered x "Current net value". **Sizing lesson: 12 viewBox units rendered 10.5px
 (below the COM-49 floor — the card scales the 460-unit viewBox ~0.875×); bumped to 13 → 11.4px
 measured.** ink-gray-6 over the issue's gray-5 (M7 floor wins). vp 0 · 22/22 both · build 0.
+
+## 2026-06-10 — COM-125 (degenerate single-scenario guards) DONE [M9 finish-loop W6 #6]
+
+**COM-125 (P4 Low, ~14 LOC, 2 files) — DONE + MERGED.** Overview hides the range subline at
+sk.length===1 (prompt default: HIDE); Board's cost panel drops floor/ceiling + the FF bar (base
+figure only). The issue's grid-cols-3 surfaces no longer exist (COM-114 table rows / COM-115 range —
+both count-adaptive by shape). Verified by scenario surgery (3→1: range hidden, single $23.0M,
+case Select auto-hidden as before; restored). vp 0 · 22/22 both · build 0.

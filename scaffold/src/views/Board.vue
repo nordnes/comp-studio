@@ -384,9 +384,10 @@ const caseTotalSum = computed(() =>
             board
           </div>
           <!-- COM-115: one RANGE, not three equal tiles — floor and ceiling quiet at the ends,
-               the projected case bold in the middle, the shared FootballField idiom beneath -->
+               the projected case bold in the middle, the shared FootballField idiom beneath.
+               COM-125: with a single scenario there IS no range — only the base figure renders. -->
           <div class="flex items-end justify-between gap-4">
-            <div>
+            <div v-if="scenKeys(S.plan).length > 1">
               <div class="text-xs text-ink-gray-6 mb-1">{{ costRange.floor.label }}</div>
               <div class="text-sm tabular-nums text-ink-gray-7">
                 {{ fUSD(costRange.floor.v) }}
@@ -396,12 +397,13 @@ const caseTotalSum = computed(() =>
               <div class="text-xs text-ink-amber-strong mb-1">{{ costRange.base.label }}</div>
               <div class="figure-md text-ink-gray-9">{{ fUSD(costRange.base.v) }}</div>
             </div>
-            <div class="text-right">
+            <div v-if="scenKeys(S.plan).length > 1" class="text-right">
               <div class="text-xs text-ink-gray-6 mb-1">{{ costRange.ceil.label }}</div>
               <div class="text-sm tabular-nums text-ink-gray-7">{{ fUSD(costRange.ceil.v) }}</div>
             </div>
           </div>
           <FootballField
+            v-if="scenKeys(S.plan).length > 1"
             :lo="costRange.floor.v"
             :base="costRange.base.v"
             :hi="costRange.ceil.v"

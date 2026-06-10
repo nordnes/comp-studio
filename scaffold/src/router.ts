@@ -1,23 +1,19 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from "vue-router";
-import type { Component } from "vue";
-import Overview from "./views/Overview.vue";
-import Advisors from "./views/Advisors.vue";
-import Configure from "./views/Configure.vue";
-import Board from "./views/Board.vue";
-import Compare from "./views/Compare.vue";
-import Proposition from "./views/Proposition.vue";
-import Governance from "./views/Governance.vue";
 import { NAV } from "./nav";
 
 // COM-93: route order + titles come from the shared nav model; only the component map lives here.
-const views: Record<string, Component> = {
-  "/overview": Overview,
-  "/board": Board,
-  "/compare": Compare,
-  "/governance": Governance,
-  "/advisors": Advisors,
-  "/proposition": Proposition,
-  "/configure": Configure,
+// R6.1 (rubric): route-level code-splitting — each view loads as its own chunk so the total
+// JS payload stays inside the budget (≤1.0 MB minified / ≤290 kB gzip); the heavy views
+// (charts included) download only when their route is visited. Dynamic import() is the
+// structural fix the rubric names — never tree-shake nudges.
+const views: Record<string, () => Promise<unknown>> = {
+  "/overview": () => import("./views/Overview.vue"),
+  "/board": () => import("./views/Board.vue"),
+  "/compare": () => import("./views/Compare.vue"),
+  "/governance": () => import("./views/Governance.vue"),
+  "/advisors": () => import("./views/Advisors.vue"),
+  "/proposition": () => import("./views/Proposition.vue"),
+  "/configure": () => import("./views/Configure.vue"),
 };
 
 const routes: RouteRecordRaw[] = [

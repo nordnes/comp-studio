@@ -4,13 +4,14 @@
 // position [COM-139/Δ4 — Plan v9 supersedes the reference TSX on that line], s431/409A by
 // residency, HMRC SAV, 9-yr/90-day backstop, investor consents). propText() = plain-text clipboard.
 import { computed } from "vue";
-import { Avatar, Button, Divider } from "frappe-ui";
+import { Avatar, Badge, Button, Divider } from "frappe-ui";
 import { useStudio } from "../store";
 import {
   fUSD,
   fPct,
   fNum,
   fMult,
+  fDate,
   baseScenKey,
   roundLabel,
   FUNDING_ROUND_CARVEOUT,
@@ -22,10 +23,13 @@ import Term from "../components/Term.vue";
 import EmptyState from "../components/EmptyState.vue";
 import PageHeader from "../components/PageHeader.vue";
 
-const { store, selected, flash, addAdvisor } = useStudio();
+const { store, selected, flash, addAdvisor, snapshotProposition, removeProposition } = useStudio();
 const S = computed(() => store.S);
 const sel = computed(() => selected.value?.a);
 const c = computed(() => selected.value?.c);
+// COM-164 (Δ12): the version register — figures FROZEN at snapshot; the delta line compares the
+// live computed base against each sent version (current minus sent).
+const versions = computed(() => ((sel.value as any)?.propositions || []) as any[]);
 const sb = computed(() => c.value?.base);
 const ms = computed(() => Object.fromEntries(S.value.plan.milestones.map((m) => [m.id, m.label])));
 const shown = computed(() => {
@@ -151,8 +155,54 @@ const targetLine = computed(
             label="Copy"
             @click="copyProp"
           />
+          <Button
+            variant="ghost"
+            theme="gray"
+            icon-left="lucide-git-commit-horizontal"
+            :label="`Save v${(versions[versions.length - 1]?.version || 0) + 1}`"
+            title="Snapshot this proposition as the next sent version (Δ12 — the straw-man artefact)"
+            @click="snapshotProposition(sel.id)"
+          />
         </template>
       </PageHeader>
+    </div>
+
+    <!-- COM-164 (Δ12): the version register — what was SENT, frozen; the negotiation's audit
+         trail. Screen chrome only (no-print: the letter stays clean). -->
+    <div v-if="versions.length" class="no-print">
+      <div class="section-label mb-2">Proposition versions · the straw-man trail</div>
+      <div class="divide-y divide-outline-gray-1 text-sm">
+        <div v-for="v in versions" :key="v.id" class="py-2 flex items-center gap-3 flex-wrap">
+          <Badge theme="gray" variant="subtle">v{{ v.version }}</Badge>
+          <span class="tabular-nums text-ink-gray-9 w-24 shrink-0">{{ fDate(v.atISO) }}</span>
+          <span class="tabular-nums text-p-xs text-ink-gray-7">
+            {{ fUSD(v.figures.baseCaseTotal) }} base · {{ fUSD(v.figures.baseCaseCeil) }} ceiling ·
+            {{ fPct(v.figures.eqPct, 2) }} eq · {{ fPct(v.figures.tkPct, 2) }} tok
+          </span>
+          <span
+            class="tabular-nums text-p-xs"
+            :class="
+              c.baseCaseTotal - v.figures.baseCaseTotal >= 0 ? 'text-ink-green-3' : 'text-ink-red-3'
+            "
+          >
+            {{ c.baseCaseTotal - v.figures.baseCaseTotal >= 0 ? "+" : ""
+            }}{{ fUSD(c.baseCaseTotal - v.figures.baseCaseTotal) }} vs current
+          </span>
+          <span v-if="v.note" class="text-p-xs text-ink-gray-6">{{ v.note }}</span>
+          <button
+            aria-label="Remove proposition version"
+            class="ml-auto inline-flex shrink-0 items-center justify-center size-7 rounded hover:bg-surface-gray-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-gray-6)] text-ink-gray-6 hover:text-ink-red-3"
+            @click="removeProposition(sel.id, v.id)"
+          >
+            <span class="lucide-trash-2 size-3.5" aria-hidden="true" />
+          </button>
+        </div>
+      </div>
+      <p class="text-p-xs text-ink-gray-6 mt-1">
+        Figures are frozen at send time — the plan keeps moving under a live negotiation, so each
+        version records exactly what went out (and the delta shows how far the live package has
+        drifted since).
+      </p>
     </div>
 
     <!-- COM-47: exit-valuation explorer (no-print) — lets the recipient feel the upside on screen.

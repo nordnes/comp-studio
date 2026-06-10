@@ -112,6 +112,23 @@ export interface Advisor {
   // appends to stageHistory (date + optional note/doc link). Departures hand off to F18.
   stage?: AdvisorStage;
   stageHistory?: StageEvent[];
+  // v2 (COM-164/Δ12): versioned propositions — the straw-man artefacts as SENT (via Iraj).
+  // Each version snapshots the package INPUTS and the COMPUTED figures at send time, because
+  // the plan keeps moving under a live negotiation: "what we sent" must stay reproducible even
+  // after scenarios/rounds change.
+  propositions?: PropositionVersion[];
+}
+
+// v2 (COM-164): the version record. figures are FROZEN AT SNAPSHOT (computed then, stored) —
+// historical record, never recomputed.
+export interface PropositionVersion {
+  id: string;
+  version: number;
+  atISO: string;
+  note?: string;
+  scenKey: string;
+  package: { mode?: string; tier?: number; annualValue?: number; years?: number; splitOptions?: number; grantRound?: string; hasCash?: boolean; cashAnnual?: number };
+  figures: { baseCaseTotal: number; baseCaseCeil: number; eqPct: number; tkPct: number; equityShares: number; strikePps: number; cashTotal: number };
 }
 
 // v2 (COM-159): the offer-pipeline stages — modeled → proposed (straw-man via Iraj) →
@@ -552,6 +569,28 @@ export function reconcile(l: any): State {
           .filter((r: any, i: number, arr: any[]) => arr.findIndex(x => x.id === r.id) === i);
       } else if ('reviews' in adv) {
         delete adv.reviews;
+      }
+      // v2 (COM-164): propositions — historical record; versions need id + a positive version
+      // number + a date; figures re-default numerically (a junk figure must never render as a
+      // sent number); duplicate ids dedupe first-wins; sorted by version.
+      if (Array.isArray(a.propositions)) {
+        adv.propositions = a.propositions
+          .filter((v: any) => v && typeof v === 'object' && v.id && ok(v.version) && v.version > 0 && typeof v.atISO === 'string' && v.atISO)
+          .map((v: any) => ({
+            ...v, id: String(v.id), version: Math.round(v.version),
+            scenKey: typeof v.scenKey === 'string' && v.scenKey ? v.scenKey : 'base',
+            package: (v.package && typeof v.package === 'object') ? v.package : {},
+            figures: (() => {
+              const f: any = (v.figures && typeof v.figures === 'object') ? v.figures : {};
+              const out: any = {};
+              for (const k of ['baseCaseTotal', 'baseCaseCeil', 'eqPct', 'tkPct', 'equityShares', 'strikePps', 'cashTotal']) out[k] = ok(f[k]) ? f[k] : 0;
+              return out;
+            })(),
+          }))
+          .filter((v: any, i: number, arr: any[]) => arr.findIndex(x => x.id === v.id) === i)
+          .sort((x: any, y: any) => x.version - y.version);
+      } else if ('propositions' in adv) {
+        delete adv.propositions;
       }
       // v2 (COM-159): the pipeline stage heals by deletion (unknown reads 'modeled'); history
       // entries need a valid stage + date string; docUrl is http(s)-guarded like grants'.
@@ -1181,6 +1220,25 @@ export function computeBoard(advisors: Advisor[], plan: Plan, tiers: Tier[], obj
 // Uplift-owed values are LINEAR reads of the base-case package (netEqAt is linear in pct above
 // water), so owedValue = upliftFraction × baseCaseBase — engine-derived, no new semantics.
 // Advisors without introductions[] contribute their v1 perf capital as 'earned' (one bucket).
+// v2 (COM-164): build the next proposition version from the LIVE package + plan (pure; the
+// store appends it and owns the numbering).
+export function makeProposition(a: Advisor, plan: Plan, tiers: Tier[], objectives: Objective[], id: string, version: number, atISO: string, note?: string): PropositionVersion {
+  const c: any = computeAdvisor(a, plan, tiers, objectives);
+  return {
+    id, version, atISO, ...(note ? { note } : {}),
+    scenKey: baseScenKey(plan),
+    package: {
+      mode: a.mode, tier: a.tier, annualValue: a.annualValue, years: a.years,
+      splitOptions: a.splitOptions, grantRound: a.grantRound, hasCash: a.hasCash, cashAnnual: a.cashAnnual,
+    },
+    figures: {
+      baseCaseTotal: c.baseCaseTotal, baseCaseCeil: c.baseCaseCeil,
+      eqPct: c.eqPct, tkPct: c.tkPct, equityShares: c.equityShares,
+      strikePps: c.strikePps, cashTotal: c.cashTotal,
+    },
+  };
+}
+
 // v2 (COM-162): a round close CRYSTALLISES gated capital-introduction uplifts — every intro
 // gated on the closed round flips to earned. Pure: returns NEW advisor objects + the count
 // (the store wraps it in Undo and persists). Intros gated on OTHER rounds are untouched.

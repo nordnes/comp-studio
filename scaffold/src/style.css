@@ -6,18 +6,94 @@
   font-family: "Fraunces", Georgia, serif;
   letter-spacing: -0.02em;
 }
-.font-mono {
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
-}
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
-.eyebrow {
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 10px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
+/* COM-116: THE numeric-figure scale — every headline number is one of these three tiers (Fraunces at
+   the 350 sub-normal weight, tight leading, tabular). Editorial Fraunces strings (letterhead, names,
+   page titles) keep .font-display. NOTE: these load after the Tailwind utilities, so they beat
+   leading-* — a host needing different leading (the Proposition h1's fluid clamp) overrides inline. */
+.figure-sm,
+.figure-md,
+.figure-lg {
+  font-family: "Fraunces", Georgia, serif;
+  font-weight: 350;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+.figure-sm {
+  font-size: 1.5rem;
+}
+/* COM-100: the ONE native-range treatment. frappe-ui Slider is UNFIT here (recorded decision): its
+   SliderThumb hardcodes aria-label="Volume" with no override and its v-model expects number[] —
+   adopting it would break the dynamic accessible labels and the 0.01-step float interpolation.
+   Espresso tokens replace the per-instance accent-color escape; the dragged portion fills via
+   --slider-pct (set per-host from the bound value). */
+.range-input {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 16px;
+  background: transparent;
+  cursor: pointer;
+}
+.range-input::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 9999px;
+  background: linear-gradient(
+    to right,
+    var(--surface-gray-7) 0%,
+    var(--surface-gray-7) var(--slider-pct, 50%),
+    var(--surface-gray-3) var(--slider-pct, 50%),
+    var(--surface-gray-3) 100%
+  );
+}
+.range-input::-moz-range-track {
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--surface-gray-3);
+}
+.range-input::-moz-range-progress {
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--surface-gray-7);
+}
+.range-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  margin-top: -5px;
+  border-radius: 9999px;
+  background: var(--surface-white);
+  border: 1px solid var(--outline-gray-3);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.15);
+}
+.range-input::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 9999px;
+  background: var(--surface-white);
+  border: 1px solid var(--outline-gray-3);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.15);
+}
+.range-input:focus-visible {
+  outline: 2px solid var(--ink-gray-6);
+  outline-offset: 2px;
+}
+/* COM-117: THE section-label treatment — one quiet convention for every label-above-content
+   (sentence case in the markup; amber is never a heading color per COM-118). */
+.section-label {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
   font-weight: 500;
+  color: var(--ink-gray-7);
+}
+.figure-md {
+  font-size: 1.875rem;
+}
+.figure-lg {
+  font-size: 2.5rem;
 }
 /* COM-38 (a11y): accessible accent-label amber. Espresso's amber ink-scale stops at ink-amber-3
    (#DB7706 = 2.93:1 on surface-amber-2 / 3.16:1 on white — fails AA for small text). `ink-amber-strong`
@@ -29,16 +105,17 @@
      dark-OS UA otherwise paints dark chrome on the light doc. */
   color-scheme: light;
   --ink-amber-strong: #8a4b08;
+  /* COM-111: the ONE overlay scrim — ink-gray-9-based, not raw black (the palette/dialogs inherit
+     frappe-ui's own themed backdrop; this token covers the app's hand-rolled drawer scrim). */
+  --overlay: rgb(23 23 23 / 0.3);
 } /* 6.3:1 on amber-2, 6.8:1 on white */
-[data-theme="dark"] {
-  color-scheme: dark; /* COM-109: paired with the dormant dark token branch (charts are light-only in v1) */
-  --ink-amber-strong: #e79913;
-} /* = ink-amber-3 dark, so the Configure panel is visually unchanged */
+/* COM-110 (Robin's call 2026-06-09): the app is LIGHT-ONLY — the dead [data-theme=dark] token
+   branches were deleted (nothing set the attribute since COM-72). A future dark milestone re-adds
+   them deliberately; see the cancelled COM-124 for the audit trail. */
 /* COM-56: chart / category / scenario / tier palette as ONE source of truth (semantic tokens).
-   Light values = the verified v1 hexes (no visual change). Dark values are forward-looking — charts
-   are light-only in v1; this layer is required before any dark-chart work. Custom-SVG + DOM fills
-   reference var(--chart-*) directly (native theme flip); frappe-charts color arrays resolve these to
-   concrete hex via chartHex() in constants.ts (with a light-literal fallback). */
+   Light values = the verified v1 hexes. Custom-SVG + DOM fills reference var(--chart-*) directly;
+   frappe-charts color arrays resolve these to concrete hex via chartHex() in constants.ts (with a
+   light-literal fallback). */
 :root {
   --chart-capital: #9c4a0c;
   --chart-customer: #c46a1f;
@@ -50,18 +127,6 @@
   --chart-cash: #87807a;
   --chart-warning: #8c3a2b;
   --chart-median: #6e7a8a; /* COM-50: median benchmark series — muted slate, ~4.4:1 on white */
-}
-[data-theme="dark"] {
-  --chart-capital: #e08a3c;
-  --chart-customer: #e89a5c;
-  --chart-partnership: #7da0c4;
-  --chart-governance: #9fb3a0;
-  --chart-uplift: #5bb3a3;
-  --chart-alt: #c2a082;
-  --chart-tint: #b08a4a;
-  --chart-cash: #b0a89f;
-  --chart-warning: #e07a6a;
-  --chart-median: #a6b0c0;
 }
 /* frappe-ui orange-subtle Badge ("Internal" + tier pills) colors its text via text-ink-amber-3 on a
    light amber-1 surface (3.02:1, fails AA). Re-point just the pill badges to the accessible amber —
@@ -83,8 +148,13 @@ svg g[tabindex]:focus {
 .print-running {
   display: none;
 }
+/* COM-84: print-only line (the target-outcome sentence) — the slider CONTROL stays no-print, but the
+   chosen outcome survives into the printed page. Revives the reference's .print-only with a real user. */
+.print-only {
+  display: none;
+}
 /* Print paths: Advisors "Print", Board "Board pack", Proposition "Print". Ported from the reference's
-   @media print (the dead .print-only rule is intentionally dropped). */
+   @media print. */
 @media print {
   body {
     background: #fff !important;
@@ -92,9 +162,26 @@ svg g[tabindex]:focus {
   .no-print {
     display: none !important;
   }
+  .print-only {
+    display: block !important;
+  }
   .print-area {
     box-shadow: none !important;
     border: none !important;
+    /* COM-134: reserve clearance for the fixed .print-running band (~7mm) so the final page's
+       content — the dense legal corpus especially — never runs under it */
+    padding-bottom: 10mm;
+  }
+  /* COM-134: nothing fragments across the fold — rows, range bars, framed charts; table headers
+     repeat on every printed page */
+  .print-area,
+  table,
+  tr,
+  .ff-row {
+    break-inside: avoid;
+  }
+  thead {
+    display: table-header-group;
   }
   main {
     padding: 0 !important;
@@ -111,12 +198,14 @@ svg g[tabindex]:focus {
     justify-content: space-between;
     gap: 1.5rem;
     padding: 1.5mm 2mm 0;
-    background: #fff;
-    border-top: 0.5pt solid #d6d3d1;
+    /* COM-112: the confidential mark reads in the same ink family as the app — Espresso tokens,
+       not raw hex (:root custom properties resolve under @media print; same document). */
+    background: var(--surface-white);
+    border-top: 0.5pt solid var(--outline-gray-2);
     font-size: 7.5pt;
     line-height: 1.4;
     letter-spacing: 0.01em;
-    color: #57534e;
+    color: var(--ink-gray-7);
   }
   @page {
     margin: 14mm;

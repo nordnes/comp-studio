@@ -6,7 +6,9 @@ Standing rules for any agent working in this repo. Read this first, every sessio
 Raiku Labs' **Advisory Board Compensation Studio** — an **internal & confidential** web app that models
 advisory-board equity + token compensation **net of strike**. Output is a **discussion draft, not a binding
 offer**. Re-implementation of the single-file React artifact in `reference/advisor-comp-studio.tsx` as a
-**Vue 3 + Vite static SPA on Vercel**.
+**Vue 3 + Vite static SPA on Vercel**. **Product spec: `COMP_STUDIO_SPEC_v2.md` (adopted 2026-06-09)** —
+objectives O1–O16, the Comp Trajectory system, scenario sets, governance scope, and the M10–M12 build
+mapping; for NEW scope and the Δ4 legal correction, the spec supersedes the reference artifact.
 
 ## The stack (LOCKED — decided in Phase-0 + Robin's post-gate call; do not re-litigate)
 - **UI: `frappe-ui` is ADOPTED as-is (Espresso/Inter).** Use its components + the **Espresso preset** +
@@ -50,7 +52,8 @@ current.
 ## Non-negotiables
 - Engine frozen (above). `reference/advisor-comp-studio.tsx` is the **UX source of truth** for
   features/labels/legal copy/IA (the *visual* design is now Espresso, but behaviour + the legal corpus match
-  the reference, ported **verbatim**).
+  the reference, ported **verbatim**). **Exception (spec v2 Δ4 / COM-139):** the reference's CoC-acceleration
+  sentence is stale — Plan rules v9 deleted Rule 9.2; on that line the corpus follows Plan v9 / spec Appendix C.
 - **Internal & confidential**; every equity figure **net of strike**; **"discussion draft, not a binding
   offer."**
 - **≤ 450 LOC per Linear (COM-*) issue** — split the issue if larger. One issue = one PR linking its issue;
@@ -61,13 +64,20 @@ current.
 - `TECH_BRIEF.md` — the adopted stack rationale + frappe-ui integration recipe + chart decisions.
 - `research/FINDINGS.md` — the reconciled Phase-0 evidence (+ the post-gate adoption banner).
 - `research/EMPIRICAL.md` — the verified frappe-ui standalone recipe (sandbox ground truth).
-- `DEV_WORKFLOW.md` — commands + the per-issue loop. `ULTRACODE_PROMPT.md` — the build-run prompt.
+- `COMP_STUDIO_SPEC_v2.md` — **the product spec (v2)**: philosophy, O1–O16, domain model, trajectory +
+  governance scope, M10–M12 build mapping, detail appendices A–F (the granular numbers/legal/session register).
+- `DESIGN_SYSTEM.md` — **the design handoff**: tokens, layout grammar (reading column · borders earn their
+  place · settings two-column), frappe-ui idioms/gotchas, chart + a11y + print rules. Build new surfaces inside it.
+- `DEV_WORKFLOW.md` — commands + the per-issue loop. **Next build run: M10 RFC prep** (the M10 RFC
+  issue — COM-140 gate scope — gates every other M10 issue; no live run-prompt until it's authored).
+  `ULTRACODE_M9_FINISH.md` + `ULTRACODE_M9_PD2.md` are completed predecessors (M9 gated 2026-06-10:
+  all issues Done except COM-139, built + HELD on PR #68 for Charlie's wording sign-off).
 - `engine/` — frozen maths + spec. `scaffold/` — the wired, build-green project root.
 - Linear: **COM** project "Advisor Comp Studio — Web App (Frappe/Vercel)" — https://linear.app/raiku/team/COM/overview
 
-## Open product decisions (resolve before/at M0–M1 — see research/FINDINGS.md §9)
-1. Named multi-board `Mgr` ([COM-32]) — port or descope for v1? (Sets the localStorage schema.)
-2. localStorage schema collision (`raiku-advisor-comp-v5`: `{scenarios,last}` vs raw `State`).
-3. Share: clipboard Copy/Paste (reference) vs the scaffold-only `#s=` URL hash.
-4. Valuation staircase: frappe-charts grouped bar vs a custom true-step SVG.
-5. Section numbering: adopt the nav order (I–VI) and fix the duplicate "Section I".
+## Open product decisions
+The five M0-era decisions previously listed here were ALL resolved on 2026-06-08 (Robin's calls — see
+`memory.md`). The live open-decision register is now **`COMP_STUDIO_SPEC_v2.md` Part 17**: pool sizing blanks
+(10% ≈ 5,368 vs 15% ≈ 8,523), advisor value-band anchors, cash-floor policy, review cadence, advisor-pool
+source (ESOP vs the 1.83% token headroom), Robin's own grant sequencing (Pantera consent), the M10
+engine-unfreeze gate scope (→ COM-140), and public-URL remediation (→ COM-33/34).

@@ -10,8 +10,10 @@ import { CONFIDENTIAL_EYEBROW } from "../constants";
 import AdvisorPicker from "../components/AdvisorPicker.vue";
 import ExitSlider from "../components/ExitSlider.vue";
 import Term from "../components/Term.vue";
+import EmptyState from "../components/EmptyState.vue";
+import PageHeader from "../components/PageHeader.vue";
 
-const { store, selected, flash } = useStudio();
+const { store, selected, flash, addAdvisor } = useStudio();
 const S = computed(() => store.S);
 const sel = computed(() => selected.value?.a);
 const c = computed(() => selected.value?.c);
@@ -48,6 +50,7 @@ function propText(): string {
     `  Earned: +${(cc.earnedUplift * 100).toFixed(0)}% · ceiling +${(cc.ceilUplift * 100).toFixed(0)}%.`,
     "",
     `Net value by scenario: ${cc.scen.map((s: any) => `${s.label} ${fUSD(s.total)}`).join(" · ")}.`,
+    targetLine.value,
     `Equity is options struck at the bridge price; values net of exercise cost and dilution through future rounds. A discussion draft, not a binding offer.`,
   ]
     .filter(Boolean)
@@ -72,37 +75,81 @@ const residencyLine = computed(() =>
       ? "As a US grantee, s83(b)/409A treatment applies."
       : "Tax treatment depends on residency.",
 );
+
+// COM-84: the advisor's target outcome for the printed doc — mirrors ExitSlider's lerp over the
+// engine's per-scenario exports (no new money math); defaults to the base case when no target is set.
+const targetView = computed(() => {
+  const s = [...(c.value?.scen || [])].sort((a: any, b: any) => a.exitVal - b.exitVal);
+  const base = c.value?.base;
+  if (!s.length || !base) return { exitVal: 0, total: 0 };
+  const t = (sel.value as any)?.targetExit;
+  if (t == null) {
+    const row = s.find((x: any) => x.key === base.key) || s[0];
+    return { exitVal: row.exitVal, total: row.total };
+  }
+  if (t <= s[0].exitVal) return { exitVal: s[0].exitVal, total: s[0].total };
+  for (let i = 0; i < s.length - 1; i++) {
+    const a = s[i],
+      b = s[i + 1];
+    if (t <= b.exitVal) {
+      const f = b.exitVal > a.exitVal ? (t - a.exitVal) / (b.exitVal - a.exitVal) : 0;
+      return { exitVal: t, total: a.total + (b.total - a.total) * f };
+    }
+  }
+  return { exitVal: s[s.length - 1].exitVal, total: s[s.length - 1].total };
+});
+const targetLine = computed(
+  () =>
+    `At a ~${fUSD(targetView.value.exitVal)} exit, this package is worth ~${fUSD(targetView.value.total)} net — net of strike & dilution · not a forecast.`,
+);
 </script>
 
 <template>
-  <div v-if="!sel || !c" class="text-center py-24 text-ink-gray-6">
-    Add an advisor to prepare a proposition.
-  </div>
-  <div v-else class="space-y-8">
-    <div class="flex justify-between items-center flex-wrap gap-3 no-print">
-      <div class="text-sm text-ink-gray-6">Proposition</div>
-      <div class="flex items-center gap-2">
-        <AdvisorPicker />
-        <Button
-          variant="subtle"
-          theme="gray"
-          icon-left="lucide-printer"
-          label="Print"
-          @click="print"
-        />
-        <Button
-          variant="subtle"
-          theme="gray"
-          icon-left="lucide-copy"
-          label="Copy"
-          @click="copyProp"
-        />
-      </div>
+  <!-- COM-133: the shared teaching empty state replaces the bare one-liner -->
+  <EmptyState
+    v-if="!sel || !c"
+    icon="lucide-file-text"
+    title="No advisor to propose to yet."
+    body="Add an advisor and the proposition letter builds itself from their live package — net of strike, ready to print."
+  >
+    <Button
+      variant="solid"
+      theme="gray"
+      icon-left="lucide-plus"
+      label="Add advisor"
+      class="mt-2"
+      @click="addAdvisor"
+    />
+  </EmptyState>
+  <div v-else class="mx-auto w-full max-w-reading px-3 sm:px-5 space-y-8">
+    <!-- COM-127: the shared editorial PageHeader (screen chrome only — no-print keeps the printed
+         letter to its own masthead). Print is the page's ONE primary; Copy demotes to ghost. -->
+    <div class="no-print">
+      <PageHeader title="The proposition.">
+        <template #actions>
+          <AdvisorPicker />
+          <Button
+            variant="solid"
+            theme="gray"
+            icon-left="lucide-printer"
+            label="Print"
+            @click="print"
+          />
+          <Button
+            variant="ghost"
+            theme="gray"
+            icon-left="lucide-copy"
+            label="Copy"
+            @click="copyProp"
+          />
+        </template>
+      </PageHeader>
     </div>
 
-    <!-- COM-47: exit-valuation explorer (no-print) — lets the recipient feel the upside on screen;
-         the printed document keeps its static Base/Current/Ceiling figures. -->
-    <ExitSlider :c="c" />
+    <!-- COM-47: exit-valuation explorer (no-print) — lets the recipient feel the upside on screen.
+         COM-84: it now persists the chosen exit (sel.targetExit); the DOCUMENT carries its own
+         target-outcome sentence below, so the component's print line is suppressed here. -->
+    <ExitSlider :c="c" :sel="sel" :print-line="false" tone="quiet" />
 
     <div class="print-area bg-surface-white rounded border border-outline-gray-2">
       <div class="px-8 sm:px-12 py-10 border-b border-outline-gray-1">
@@ -128,9 +175,11 @@ const residencyLine = computed(() =>
           <div class="text-sm text-ink-amber-strong mb-6">
             An invitation to the founding advisory board
           </div>
+          <!-- COM-116: .figure-lg with the fluid clamp + display leading kept as the inline override
+               (figure utilities set line-height:1, right for numbers, too tight for this 3-line h1) -->
           <h1
-            class="font-display leading-tight text-ink-gray-9"
-            style="font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 350"
+            class="figure-lg text-ink-gray-9"
+            style="font-size: clamp(2rem, 4vw, 3.2rem); line-height: 1.25"
           >
             A {{ sel.years }}-year engagement,<br /><span
               class="font-display italic text-ink-amber-3"
@@ -145,10 +194,11 @@ const residencyLine = computed(() =>
           </p>
         </div>
 
+        <!-- COM-118: explainer is structure, not the current case — quiet neutral panel -->
         <div
-          class="p-5 text-p-sm max-w-3xl rounded bg-surface-amber-2 border border-outline-amber-2 text-ink-gray-7 leading-relaxed"
+          class="p-5 text-p-sm max-w-3xl rounded bg-surface-gray-1 border border-outline-gray-1 text-ink-gray-7 leading-relaxed"
         >
-          <div class="text-sm text-ink-amber-strong mb-2">How to read this</div>
+          <div class="section-label mb-2">How to read this</div>
           Your options are priced at today's share value, so their <b>net</b> worth is the upside
           <i>above</i> that price — at a modest exit they can be worth little, which is normal for
           options; the value is in the climb. Tokens are a fixed share of supply with no exercise
@@ -157,86 +207,78 @@ const residencyLine = computed(() =>
           scenarios are a deliberately wide range, not a forecast.
         </div>
 
-        <!-- COM-64: the proposition's hero band diverges from the dashboard KPI bands — hairline-only
-             (no amber fill), more generous spacing, larger Fraunces — so the document reads calmer and
-             more letterpress than the working tool. Current stays marked by amber INK, not a fill block. -->
-        <div class="grid md:grid-cols-3 border-y border-outline-gray-1">
-          <div class="p-10 border-r border-outline-gray-1">
-            <div class="flex items-baseline gap-3 mb-6">
-              <span class="text-xs text-ink-gray-5">i</span
-              ><span class="text-sm text-ink-gray-6">Base · net</span>
-            </div>
-            <div
-              class="font-display tabular-nums text-ink-gray-9"
-              style="font-size: 2.8rem; font-weight: 350; line-height: 1"
-            >
-              {{ fUSD(c.baseCaseBase) }}
-            </div>
-            <div class="text-p-xs mt-6 text-ink-gray-6">
+        <!-- COM-64 → COM-114: ONE statement + ONE data read. The guaranteed base is the document's
+             only headline; growth (Current/Ceiling) and the scenario spread are a single quiet
+             reference table — a letter's enclosure, not a second dashboard. Current stays marked by
+             amber INK; the roman ordinals are gone. Layout only — the legal corpus is untouched. -->
+        <div class="border-y border-outline-gray-1 py-10 space-y-8">
+          <div>
+            <div class="section-label mb-3">Guaranteed base · net of strike</div>
+            <div class="figure-lg text-ink-gray-9">{{ fUSD(c.baseCaseBase) }}</div>
+            <div class="text-p-sm mt-3 text-ink-gray-6">
               {{ fPct(c.baseEq, 2) }} equity + {{ fPct(c.baseTk, 3) }} tokens
             </div>
           </div>
-          <div class="p-10 border-r border-outline-gray-1">
-            <div class="flex items-baseline gap-3 mb-6">
-              <span class="text-xs text-ink-amber-strong">ii</span
-              ><span class="text-sm text-ink-amber-strong">Current · earned</span>
-            </div>
-            <div
-              class="font-display tabular-nums text-ink-gray-9"
-              style="font-size: 2.8rem; font-weight: 350; line-height: 1"
-            >
-              {{ fUSD(c.baseCaseTotal) }}
-            </div>
-            <div class="text-p-xs mt-6 text-ink-gray-6">
-              {{
-                c.earnedUplift > 0
-                  ? `+${(c.earnedUplift * 100).toFixed(0)}% earned`
-                  : "no uplift yet"
-              }}
-            </div>
-          </div>
-          <div class="p-10">
-            <div class="flex items-baseline gap-3 mb-6">
-              <span class="text-xs text-ink-gray-5">iii</span
-              ><span class="text-sm text-ink-gray-6">Ceiling</span>
-            </div>
-            <div
-              class="font-display tabular-nums text-ink-gray-9"
-              style="font-size: 2.8rem; font-weight: 350; line-height: 1"
-            >
-              {{ fUSD(c.baseCaseCeil) }}
-            </div>
-            <div class="text-p-xs mt-6 text-ink-gray-6">
-              +{{ (c.ceilUplift * 100).toFixed(0) }}% over base
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <div class="text-sm text-ink-gray-6 mb-2">
-            Net value across outcomes · <Term k="netOfStrike">net of strike</Term> & dilution
-          </div>
-          <div class="grid grid-cols-3 gap-px bg-surface-gray-2 rounded overflow-hidden">
-            <div
-              v-for="s in c.scen"
-              :key="s.key"
-              class="p-6"
-              :class="s.key === baseScenKey(S.plan) ? 'bg-surface-amber-2' : 'bg-surface-white'"
-            >
-              <div
-                class="text-xs mb-2"
-                :class="s.key === baseScenKey(S.plan) ? 'text-ink-amber-strong' : 'text-ink-gray-6'"
-              >
-                {{ s.label }} · {{ fPct(s.retention, 0) }} kept
-              </div>
-              <div class="font-display text-2xl tabular-nums text-ink-gray-9">
-                {{ fUSD(s.total) }}
-              </div>
-              <div class="text-p-xs mt-2 text-ink-gray-6">
-                eq {{ s.underwater ? "underwater" : fUSD(s.equity) }} · tok {{ fUSD(s.token) }}
-              </div>
-            </div>
-          </div>
+          <table class="w-full max-w-2xl text-sm">
+            <tbody class="divide-y divide-outline-gray-1">
+              <tr>
+                <td class="py-2.5 pr-4 text-ink-amber-strong">Current · earned</td>
+                <td
+                  class="py-2.5 tabular-nums text-right font-medium text-ink-gray-9 whitespace-nowrap"
+                >
+                  {{ fUSD(c.baseCaseTotal) }}
+                </td>
+                <td class="py-2.5 pl-6 text-p-xs text-ink-gray-6 hidden sm:table-cell">
+                  {{
+                    c.earnedUplift > 0
+                      ? `+${(c.earnedUplift * 100).toFixed(0)}% earned`
+                      : "no uplift yet"
+                  }}
+                </td>
+              </tr>
+              <tr>
+                <td class="py-2.5 pr-4 text-ink-gray-7">Ceiling · all objectives</td>
+                <td
+                  class="py-2.5 tabular-nums text-right font-medium text-ink-gray-9 whitespace-nowrap"
+                >
+                  {{ fUSD(c.baseCaseCeil) }}
+                </td>
+                <td class="py-2.5 pl-6 text-p-xs text-ink-gray-6 hidden sm:table-cell">
+                  +{{ (c.ceilUplift * 100).toFixed(0) }}% over base
+                </td>
+              </tr>
+            </tbody>
+            <tbody>
+              <tr>
+                <td colspan="3" class="pt-6 pb-1 text-sm text-ink-gray-6">
+                  Net value across outcomes ·
+                  <Term k="netOfStrike">net of strike</Term> &amp; dilution
+                </td>
+              </tr>
+            </tbody>
+            <tbody class="divide-y divide-outline-gray-1">
+              <tr v-for="s in c.scen" :key="s.key">
+                <td
+                  class="py-2.5 pr-4"
+                  :class="
+                    s.key === baseScenKey(S.plan) ? 'text-ink-amber-strong' : 'text-ink-gray-7'
+                  "
+                >
+                  {{ s.label }} · {{ fPct(s.retention, 0) }} kept
+                </td>
+                <td
+                  class="py-2.5 tabular-nums text-right font-medium text-ink-gray-9 whitespace-nowrap"
+                >
+                  {{ fUSD(s.total) }}
+                </td>
+                <td class="py-2.5 pl-6 text-p-xs text-ink-gray-6 hidden sm:table-cell">
+                  eq {{ s.underwater ? "underwater" : fUSD(s.equity) }} · tok {{ fUSD(s.token) }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <!-- COM-84: the explored target outcome survives into the document the advisor keeps -->
+          <p class="text-p-sm text-ink-gray-7">{{ targetLine }}</p>
         </div>
 
         <Divider class="my-4" />

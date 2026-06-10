@@ -1,31 +1,28 @@
 <script setup lang="ts">
-// Advisors (Section II) — the hero / live-edit view. Left: profile, base/tier, performance controls.
-// Right (print-area): potential strip, growth waterfall, upside curve, and a detail expander
-// (vesting, scenario range, mix, dilution, instruments). All money from the engine via the store.
+// Advisors (Section II) — the per-advisor read view. A compact read-only package summary + the
+// full-width decision projection (potential strip, growth waterfall, upside curve, detail expander).
+// Editing lives in the global "Edit package" Dialog (COM-76, components/PackageEditor.vue). All money
+// from the engine via the store.
 import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
-import { Button, Badge, Checkbox, TabButtons, Divider, FormControl } from "frappe-ui";
+import { Badge, Button, Select, Tabs } from "frappe-ui";
 import { useStudio } from "../store";
+import { useEditor } from "../composables/useEditor";
 import {
   fUSD,
   fPct,
   fNum,
   fTok,
   fMult,
-  roundList,
   roundLabel,
-  SECTORS,
-  stageReached,
   todayISO,
+  scenKeys,
+  baseScenKey,
 } from "../engine";
-import { CAT } from "../constants";
 import PageHeader from "../components/PageHeader.vue";
 import ContextStrip from "../components/ContextStrip.vue";
-import StageBadge from "../components/StageBadge.vue";
 import AdvisorPicker from "../components/AdvisorPicker.vue";
-import NumIn from "../components/NumIn.vue";
-import EquityBenchmark from "../components/EquityBenchmark.vue";
-import PotentialStrip from "../components/PotentialStrip.vue";
+import ScenarioTable from "../components/ScenarioTable.vue";
 import GrowthWaterfall from "../components/GrowthWaterfall.vue";
 import UpsideCurve from "../components/UpsideCurve.vue";
 import ExitSlider from "../components/ExitSlider.vue";
@@ -34,45 +31,39 @@ import FootballField from "../components/FootballField.vue";
 import MixBreakdown from "../components/MixBreakdown.vue";
 import DilutionPath from "../components/DilutionPath.vue";
 import Term from "../components/Term.vue";
+import EmptyState from "../components/EmptyState.vue";
+import Panel from "../components/Panel.vue";
 
-const { store, selected, setPath } = useStudio();
+const { store, selected, setAdvisorCase, addAdvisor } = useStudio();
+const { openEditor } = useEditor();
 const router = useRouter();
 const S = computed(() => store.S);
 const sel = computed(() => selected.value?.a as any);
 const c = computed(() => selected.value?.c as any);
-const i = computed(() => S.value.advisors.findIndex((a: any) => a.id === sel.value?.id));
-const showDetail = ref(false);
+// COM-81: per-advisor case override — '' = match board (no override). The store re-bases the
+// projection via a shallow plan clone; the global Case lens is untouched.
+const caseOptions = computed(() => [
+  { label: "Match board", value: "" },
+  ...scenKeys(S.value.plan).map((k) => ({
+    label: S.value.plan.scenarios[k].label || k,
+    value: k,
+  })),
+]);
+const advisorCase = computed({
+  get: () => sel.value?.caseOverride || "",
+  set: (v: string) => setAdvisorCase(sel.value.id, v || null),
+});
+const overrideDiverged = computed(
+  () => !!sel.value?.caseOverride && sel.value.caseOverride !== baseScenKey(S.value.plan),
+);
+// COM-91: granular disclosure — Tabs replace the all-or-nothing detail dump (one surface at a time).
+const detailTab = ref(0);
 // COM-47: the exit slider publishes the selected exit value; UpsideCurve marks it on the equity curve.
 const exitMarker = ref<number | null>(null);
 
-function setField(k: string, v: any) {
-  setPath(["advisors", i.value, k], v);
-}
-function setPerfField(k: string, v: any) {
-  const perf: any = { ...sel.value.performance };
-  perf[k] = v;
-  setPath(["advisors", i.value, "performance"], perf);
-}
-function objState(id: string) {
-  const p: any = sel.value.performance || {};
-  return p.achieved?.includes(id) ? "earned" : p.targeted?.includes(id) ? "targeted" : "off";
-}
-function setObjState(id: string, st: string) {
-  const p: any = sel.value.performance || { achieved: [], targeted: [] };
-  const a = new Set<string>(p.achieved || []);
-  const t = new Set<string>(p.targeted || []);
-  a.delete(id);
-  t.delete(id);
-  if (st === "earned") a.add(id);
-  if (st === "targeted") t.add(id);
-  setPath(["advisors", i.value, "performance"], { ...p, achieved: [...a], targeted: [...t] });
-}
 function printPage() {
   window.print();
 }
-const ms = computed(() =>
-  Object.fromEntries(S.value.plan.milestones.map((m: any) => [m.id, m.label])),
-);
 const ff = computed(() => {
   const t = c.value.scen.map((s: any) => s.total);
   return { lo: Math.min(...t), base: c.value.baseCaseTotal, hi: Math.max(...t) };
@@ -83,333 +74,165 @@ function toProp() {
 </script>
 
 <template>
-  <div v-if="!sel || !c" class="text-center py-24 text-ink-gray-6">
-    No advisor selected. Add one on the Board.
-  </div>
-  <div v-else class="space-y-8">
-    <div class="flex justify-between items-center flex-wrap gap-3 no-print">
-      <PageHeader title="Base, then performance." />
-      <div class="flex items-center gap-2 flex-wrap">
-        <StageBadge /><AdvisorPicker /><Button
+  <!-- COM-133: the shared teaching empty state replaces the bare one-liner -->
+  <EmptyState
+    v-if="!sel || !c"
+    icon="lucide-user"
+    title="No advisor selected."
+    body="Add your first advisor to start a package, or pick one from the Board roster — the package builds on the uniform base, net of strike and dilution."
+  >
+    <Button
+      variant="solid"
+      theme="gray"
+      icon-left="lucide-plus"
+      label="Add advisor"
+      class="mt-2"
+      @click="addAdvisor"
+    />
+  </EmptyState>
+  <div v-else class="mx-auto w-full max-w-reading px-3 sm:px-5 space-y-8">
+    <!-- COM-127: the actions ride PageHeader's #actions teleport (#app-header on desktop) —
+         the bespoke flex row that bypassed the shared action zone is gone -->
+    <PageHeader title="Base, then performance.">
+      <!-- COM-128: the locked framing, in-frame on the highest-screenshot-risk view (the verbatim
+           non-negotiable phrases; presentation placement only) -->
+      <template #desc>
+        <p class="mt-3 text-p-xs text-ink-gray-6">
+          Internal &amp; confidential · net of strike, pre-tax · discussion draft, not a binding
+          offer.
+        </p>
+      </template>
+      <template #actions>
+        <Button
+          variant="solid"
+          theme="gray"
+          icon-left="lucide-pen"
+          label="Edit package"
+          @click="openEditor"
+        />
+        <AdvisorPicker />
+        <label class="flex items-center gap-1.5">
+          <span class="text-xs text-ink-gray-6">This advisor's case</span>
+          <Select v-model="advisorCase" :options="caseOptions" />
+        </label>
+        <Badge v-if="overrideDiverged" theme="orange" variant="subtle"
+          >Override: {{ S.plan.scenarios[sel.caseOverride]?.label || sel.caseOverride }}</Badge
+        >
+        <Button
           variant="subtle"
           theme="gray"
           icon-left="lucide-printer"
           label="Print"
           @click="printPage"
         />
-      </div>
-    </div>
+      </template>
+    </PageHeader>
     <ContextStrip />
 
-    <div class="grid lg:grid-cols-12 gap-8">
-      <!-- LEFT CONTROLS -->
-      <div class="lg:col-span-5 space-y-6 no-print">
-        <div class="bg-surface-white rounded border border-outline-gray-1 p-5 space-y-4">
-          <div class="text-sm text-ink-gray-6">Profile</div>
-          <!-- COM-72: bare inputs / Selects → frappe-ui FormControl (label association replaces aria-label;
-               helper text would go in #description). NumIn (the click-to-edit numeric primitive) stays. -->
-          <FormControl
-            type="text"
-            label="Name"
-            size="sm"
-            :model-value="sel.name"
-            @update:model-value="(v) => setField('name', v)"
-          />
-          <FormControl
-            type="select"
-            label="Sector"
-            size="sm"
-            :model-value="sel.sector"
-            :options="SECTORS.map((s) => ({ label: s, value: s }))"
-            @update:model-value="(v) => setField('sector', v)"
-          />
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <div class="text-xs text-ink-gray-6 mb-1">Engagement (yrs)</div>
-              <NumIn
-                :model-value="sel.years"
-                :min="1"
-                :max="10"
-                aria-label="Years"
-                @update:model-value="(v) => setField('years', v)"
-              />
-            </div>
-            <FormControl
-              type="date"
-              label="Start date"
-              size="sm"
-              :model-value="sel.startDate || todayISO()"
-              @update:model-value="(v) => setField('startDate', v)"
-            />
-          </div>
-          <div class="grid grid-cols-2 gap-4">
-            <FormControl
-              type="select"
-              label="Granted at"
-              size="sm"
-              :model-value="sel.grantRound || 'bridge'"
-              :options="roundList(S.plan).map((r) => ({ label: roundLabel(S.plan, r), value: r }))"
-              @update:model-value="(v) => setField('grantRound', v)"
-            />
-            <FormControl
-              type="select"
-              label="Tax residency"
-              size="sm"
-              :model-value="sel.taxResidency || 'Other'"
-              :options="['UK', 'US', 'Other'].map((t) => ({ label: t, value: t }))"
-              @update:model-value="(v) => setField('taxResidency', v)"
-            />
-          </div>
-          <FormControl
-            type="textarea"
-            label="Notes"
-            size="sm"
-            :rows="2"
-            :model-value="sel.notes"
-            @update:model-value="(v) => setField('notes', v)"
-          />
-        </div>
-
-        <div class="bg-surface-white rounded border border-outline-gray-1 p-5 space-y-4">
-          <div class="flex items-center justify-between">
-            <div class="text-sm text-ink-gray-6">Base — denomination</div>
-            <TabButtons
-              :model-value="sel.mode"
-              :buttons="[
-                { label: 'By tier', value: 'tier' },
-                { label: 'By $ value', value: 'value' },
-              ]"
-              @update:model-value="(v) => setField('mode', v)"
-            />
-          </div>
-          <template v-if="sel.mode === 'tier'">
-            <div
-              class="flex items-center gap-2 text-xs px-3 py-2 rounded bg-surface-amber-2 text-ink-amber-strong"
-            >
-              <span class="lucide-layers size-3.5" aria-hidden="true" /> Uniform base
-              {{ fPct(S.plan.baseGrant.equityPct, 2) }} eq ·
-              {{ fPct(S.plan.baseGrant.tokenPct, 2) }} tok, <Term k="tierMultiplier">×tier</Term>
-            </div>
-            <div class="grid grid-cols-3 gap-2">
-              <button
-                v-for="(t, ti) in S.tiers"
-                :key="ti"
-                class="p-3 text-left rounded border focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--ink-gray-6)]"
-                :class="
-                  sel.tier === ti
-                    ? 'bg-surface-amber-2 border-outline-amber-2'
-                    : 'border-outline-gray-2 hover:bg-surface-gray-1'
-                "
-                @click="setField('tier', ti)"
-              >
-                <div class="flex items-baseline justify-between">
-                  <div class="font-display text-base text-ink-gray-9">{{ t.name }}</div>
-                  <div class="text-xs text-ink-amber-strong">
-                    <Term k="tierMultiplier">{{ fMult(t.mult) }}</Term>
-                  </div>
-                </div>
-                <div class="text-xs mt-1 tabular-nums text-ink-gray-6">
-                  {{ fPct(S.plan.baseGrant.equityPct * t.mult, 1) }} eq ·
-                  {{ fPct(S.plan.baseGrant.tokenPct * t.mult, 1) }} tok
-                </div>
-              </button>
-            </div>
-            <EquityBenchmark :sel="sel" :c="c" />
-          </template>
-          <template v-else>
-            <div>
-              <div class="text-xs text-ink-gray-6 mb-1">Annual value (USD)</div>
-              <NumIn
-                :model-value="sel.annualValue"
-                fmt="usd"
-                :min="0"
-                aria-label="Annual value"
-                @update:model-value="(v) => setField('annualValue', v)"
-              />
-            </div>
-            <div>
-              <div class="flex justify-between text-sm mb-1">
-                <span class="text-ink-gray-7">Options / tokens split</span
-                ><span class="tabular-nums text-ink-gray-9"
-                  >{{ fPct(sel.splitOptions, 0) }} / {{ fPct(1 - sel.splitOptions, 0) }}</span
-                >
-              </div>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.05"
-                :value="sel.splitOptions"
-                aria-label="Options / tokens split"
-                :aria-valuetext="`${fPct(sel.splitOptions, 0)} options, ${fPct(1 - sel.splitOptions, 0)} tokens`"
-                class="w-full"
-                style="accent-color: var(--chart-capital)"
-                @input="
-                  (e) => setField('splitOptions', Number((e.target as HTMLInputElement).value))
-                "
-              />
-            </div>
-          </template>
-          <Divider />
-          <label class="flex items-center gap-2 text-sm text-ink-gray-7"
-            ><Checkbox
-              :model-value="sel.hasCash"
-              @update:model-value="(v) => setField('hasCash', v)"
-            />
-            Cash retainer (post-Series A)</label
-          >
-          <div v-if="sel.hasCash">
-            <div class="text-xs text-ink-gray-6 mb-1">Annual cash (USD)</div>
-            <NumIn
-              :model-value="sel.cashAnnual"
-              fmt="usd"
-              :min="0"
-              aria-label="Cash"
-              @update:model-value="(v) => setField('cashAnnual', v)"
-            />
-          </div>
-        </div>
-
-        <div class="rounded border border-outline-amber-2 bg-surface-amber-2 p-5 space-y-4">
-          <div class="flex items-center gap-2">
-            <span class="lucide-trending-up size-4 text-ink-amber-strong" aria-hidden="true" />
-            <div class="text-sm text-ink-amber-strong">Performance uplift</div>
-          </div>
-          <div>
-            <div class="flex justify-between text-sm mb-1">
-              <span class="text-ink-gray-7">Capital introduced · by channel</span
-              ><span
-                class="font-display tabular-nums"
-                :class="c.capEarned > 0 ? 'text-ink-green-3' : 'text-ink-amber-strong'"
-                >+{{ (c.capRaw * 100).toFixed(0) }}%<span
-                  v-if="c.capEarned < c.capRaw"
-                  class="ml-1 text-xs font-sans text-ink-amber-strong"
-                  ><Term k="awaitingGate">pending</Term></span
-                ></span
-              >
-            </div>
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <div class="text-xs text-ink-gray-6 mb-1">Equity round</div>
-                <NumIn
-                  :model-value="sel.performance?.capitalEquity || 0"
-                  fmt="usd"
-                  :min="0"
-                  aria-label="Capital equity round"
-                  @update:model-value="(v) => setPerfField('capitalEquity', v)"
-                />
-              </div>
-              <div>
-                <div class="text-xs text-ink-gray-6 mb-1">Token OTC (Foundation)</div>
-                <NumIn
-                  :model-value="sel.performance?.capitalToken || 0"
-                  fmt="usd"
-                  :min="0"
-                  aria-label="Capital token OTC"
-                  @update:model-value="(v) => setPerfField('capitalToken', v)"
-                />
-              </div>
-            </div>
-            <p class="text-p-xs mt-1 text-ink-gray-6">
-              {{ fUSD(S.plan.capitalUplift.per) }} introduced → +{{
-                (S.plan.capitalUplift.pct * 100).toFixed(0)
-              }}% of base, cap +{{ (S.plan.capitalUplift.cap * 100).toFixed(0) }}% · gate
-              {{ ms[S.plan.capitalUplift.gate] }} · counts both channels
-            </p>
-          </div>
-          <div class="space-y-2 pt-2 border-t border-outline-amber-2">
-            <div class="text-xs text-ink-gray-6">Objectives · off / target / earned</div>
-            <div
-              v-for="o in S.objectives"
-              :key="o.id"
-              class="p-3 rounded border bg-surface-white"
-              :class="
-                objState(o.id) === 'earned' && !stageReached(S.plan, o.gate)
-                  ? 'border-outline-amber-2'
-                  : objState(o.id) === 'earned'
-                    ? 'border-outline-green-2'
-                    : objState(o.id) === 'targeted'
-                      ? 'border-outline-amber-2'
-                      : 'border-outline-gray-1'
-              "
-            >
-              <div class="flex items-center gap-2">
-                <span
-                  class="inline-block size-2 rounded-full"
-                  :style="{ background: CAT[o.category]?.color }"
-                /><span class="text-sm font-medium text-ink-gray-9">{{ o.label }}</span
-                ><span class="text-xs tabular-nums text-ink-green-3"
-                  >+{{ (o.uplift * 100).toFixed(0) }}%</span
-                >
-              </div>
-              <div class="text-p-xs mt-1 text-ink-gray-6 leading-snug">
-                {{ o.trigger }} · gate: {{ ms[o.gate]
-                }}<span
-                  v-if="objState(o.id) === 'earned' && !stageReached(S.plan, o.gate)"
-                  class="text-ink-amber-strong"
-                >
-                  · <Term k="awaitingGate">awaiting gate</Term></span
-                >
-              </div>
-              <div class="mt-2">
-                <TabButtons
-                  :model-value="objState(o.id)"
-                  :buttons="[
-                    { label: 'Off', value: 'off' },
-                    { label: 'Target', value: 'targeted' },
-                    { label: 'Earned', value: 'earned' },
-                  ]"
-                  @update:model-value="(v) => setObjState(o.id, v)"
-                />
-              </div>
-            </div>
-            <p class="text-p-xs pt-1 text-ink-gray-6">
-              Earned: <span class="text-ink-green-3">+{{ (c.earnedUplift * 100).toFixed(0) }}%</span
-              ><span v-if="c.pendingUplift > 0">
-                · pending gate:
-                <span class="text-ink-amber-strong"
-                  >+{{ (c.pendingUplift * 100).toFixed(0) }}%</span
-                ></span
-              >
-              · ceiling +{{ (c.ceilUplift * 100).toFixed(0) }}%
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <!-- RIGHT HERO -->
-      <div class="lg:col-span-7 space-y-6 print-area">
-        <PotentialStrip :c="c" />
-        <GrowthWaterfall :c="c" :sel="sel" />
-        <ExitSlider :c="c" @exit="(v) => (exitMarker = v)" />
-        <UpsideCurve :c="c" :marker-exit="exitMarker ?? undefined" />
+    <!-- COM-76: read-only package summary (the editable terms, recapped); Edit opens the Dialog -->
+    <Panel class="no-print">
+      <div class="flex items-center justify-between mb-3">
+        <div class="section-label">Package · {{ sel.name }}</div>
         <Button
-          class="w-full no-print"
           variant="subtle"
           theme="gray"
-          :label="
-            showDetail
-              ? '− Hide detail'
-              : '+ Show detail · vesting, scenario range, mix, instruments'
-          "
-          @click="showDetail = !showDetail"
+          size="sm"
+          icon-left="lucide-pen"
+          label="Edit package"
+          @click="openEditor"
         />
-        <template v-if="showDetail">
-          <VestingTimeline :c="c" :sel="sel" />
-          <div class="bg-surface-white rounded border border-outline-gray-1 p-5">
-            <div class="text-sm text-ink-gray-6 mb-3">Scenario range · net value (low → high)</div>
-            <FootballField :lo="ff.lo" :base="ff.base" :hi="ff.hi" :max="ff.hi" />
-            <div class="flex justify-between text-xs mt-2 tabular-nums text-ink-gray-6">
-              <span>Low {{ fUSD(ff.lo) }}</span
-              ><span class="text-ink-amber-strong">Base {{ fUSD(ff.base) }}</span
-              ><span>High {{ fUSD(ff.hi) }}</span>
-            </div>
-          </div>
-          <MixBreakdown :c="c" />
-          <div class="grid sm:grid-cols-2 gap-6">
-            <DilutionPath :c="c" />
-            <div class="bg-surface-white rounded border border-outline-gray-1 p-5">
-              <div class="text-sm text-ink-gray-6 mb-3">
+      </div>
+      <dl class="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-3 text-sm">
+        <div>
+          <dt class="text-xs text-ink-gray-6">Base</dt>
+          <dd class="text-ink-gray-9">
+            {{
+              sel.mode === "value"
+                ? fUSD(sel.annualValue) + "/yr"
+                : (S.tiers[sel.tier]?.name || "—") + " · " + fMult(S.tiers[sel.tier]?.mult || 1)
+            }}
+          </dd>
+        </div>
+        <div>
+          <dt class="text-xs text-ink-gray-6">Options / tokens</dt>
+          <dd class="tabular-nums text-ink-gray-9">
+            {{ fPct(sel.splitOptions, 0) }} / {{ fPct(1 - sel.splitOptions, 0) }}
+          </dd>
+        </div>
+        <div>
+          <dt class="text-xs text-ink-gray-6">Sector</dt>
+          <dd class="text-ink-gray-9 truncate">{{ sel.sector.split("—")[0].trim() }}</dd>
+        </div>
+        <div>
+          <dt class="text-xs text-ink-gray-6">Engagement</dt>
+          <dd class="text-ink-gray-9">
+            {{ sel.years }} yrs · from {{ sel.startDate || todayISO() }}
+          </dd>
+        </div>
+        <div>
+          <dt class="text-xs text-ink-gray-6">Granted at</dt>
+          <dd class="text-ink-gray-9">{{ roundLabel(S.plan, sel.grantRound || "bridge") }}</dd>
+        </div>
+        <div>
+          <dt class="text-xs text-ink-gray-6">Tax residency</dt>
+          <dd class="text-ink-gray-9">{{ sel.taxResidency || "Other" }}</dd>
+        </div>
+        <div>
+          <dt class="text-xs text-ink-gray-6">Cash</dt>
+          <dd class="text-ink-gray-9">{{ sel.hasCash ? fUSD(sel.cashAnnual) + "/yr" : "—" }}</dd>
+        </div>
+        <div>
+          <dt class="text-xs text-ink-gray-6">Performance</dt>
+          <dd class="tabular-nums">
+            <span class="text-ink-green-3">+{{ (c.earnedUplift * 100).toFixed(0) }}%</span
+            ><span v-if="c.pendingUplift > 0" class="text-ink-amber-strong">
+              · +{{ (c.pendingUplift * 100).toFixed(0) }}% pending</span
+            >
+            · ceil +{{ (c.ceilUplift * 100).toFixed(0) }}%
+          </dd>
+        </div>
+      </dl>
+    </Panel>
+
+    <!-- full-width decision projection (COM-88: space-y-8 gives the de-boxed groups their rhythm) -->
+    <div class="space-y-8 print-area">
+      <!-- COM-83: one across-cases tabulation (replaces the PotentialStrip restatements) -->
+      <ScenarioTable :c="c" />
+      <!-- COM-83: FootballField promoted out of the detail expander — the range belongs beside the table.
+           COM-88: static read-out, de-boxed (the label carries it). -->
+      <div>
+        <div class="section-label mb-3">Scenario range · net value (low → high)</div>
+        <FootballField :lo="ff.lo" :base="ff.base" :hi="ff.hi" :max="ff.hi" />
+        <div class="flex justify-between text-xs mt-2 tabular-nums text-ink-gray-6">
+          <span>Low {{ fUSD(ff.lo) }}</span
+          ><span class="text-ink-amber-strong">Base {{ fUSD(ff.base) }}</span
+          ><span>High {{ fUSD(ff.hi) }}</span>
+        </div>
+      </div>
+      <GrowthWaterfall :c="c" :sel="sel" />
+      <ExitSlider :c="c" :sel="sel" @exit="(v) => (exitMarker = v)" />
+      <UpsideCurve :c="c" :marker-exit="exitMarker ?? undefined" />
+      <!-- COM-91: frappe-ui Tabs (Vesting · Mix · Dilution · Instruments) replace the single
+           "+ Show detail" toggle that dumped four surfaces at once — jump straight to one.
+           no-print keeps parity with the old collapsed-by-default print behaviour. -->
+      <Tabs
+        v-model="detailTab"
+        class="no-print"
+        :tabs="[
+          { label: 'Vesting' },
+          { label: 'Mix' },
+          { label: 'Dilution' },
+          { label: 'Instruments' },
+        ]"
+      >
+        <template #tab-panel="{ tab }">
+          <div class="w-full pt-6">
+            <VestingTimeline v-if="tab.label === 'Vesting'" :c="c" :sel="sel" />
+            <MixBreakdown v-else-if="tab.label === 'Mix'" :c="c" />
+            <DilutionPath v-else-if="tab.label === 'Dilution'" :c="c" />
+            <!-- COM-88: static read-out — label + divide-y rows, no frame -->
+            <div v-else>
+              <div class="section-label mb-3">
                 Instruments · <Term k="netOfStrike">net of strike</Term>
               </div>
               <div class="divide-y divide-outline-gray-1 text-sm">
@@ -454,15 +277,15 @@ function toProp() {
             </div>
           </div>
         </template>
-        <Button
-          class="w-full no-print"
-          variant="solid"
-          theme="gray"
-          icon-right="lucide-arrow-right"
-          :label="`View ${sel.name.split(' ')[0]}'s proposition`"
-          @click="toProp"
-        />
-      </div>
+      </Tabs>
+      <Button
+        class="w-full no-print"
+        variant="solid"
+        theme="gray"
+        icon-right="lucide-arrow-right"
+        :label="`View ${sel.name.split(' ')[0]}'s proposition`"
+        @click="toProp"
+      />
     </div>
   </div>
 </template>

@@ -3,28 +3,37 @@
 // grouped bar, Robin's call) and potential scatter (custom SVG — frappe-charts has no scatter in 1.6.2).
 import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
-import { Avatar, Button, Badge } from "frappe-ui";
+import { Button, Badge, Dropdown, TabButtons } from "frappe-ui";
 import { useStudio } from "../store";
+import { confirmDestroy } from "../confirm";
+import { useEditor } from "../composables/useEditor";
 import {
   fUSD,
   fPct,
   walkScenario,
   baseScenKey,
+  scenKeys,
   tgeFdvFor,
   roundLabel,
   fMult,
   BENCH,
 } from "../engine";
-import { TIER_COLOR, chartHex } from "../constants";
+import { TIER_COLOR, chartHex, shortName } from "../constants";
 import PageHeader from "../components/PageHeader.vue";
 import PoolAllocation from "../components/PoolAllocation.vue";
 import ContextStrip from "../components/ContextStrip.vue";
-import StageBadge from "../components/StageBadge.vue";
 import FootballField from "../components/FootballField.vue";
 import FrappeChart from "../components/FrappeChart.vue";
 import Term from "../components/Term.vue";
+import EmptyState from "../components/EmptyState.vue";
+import RosterTable from "../components/roster/RosterTable.vue";
+import RosterRow from "../components/roster/RosterRow.vue";
+import RosterIdentity from "../components/roster/RosterIdentity.vue";
+import TierBadge from "../components/roster/TierBadge.vue";
+import Panel from "../components/Panel.vue";
 
-const { store, board, select, addAdvisor, delAdvisor } = useStudio();
+const { store, board, select, addAdvisor, delAdvisor, setPath } = useStudio();
+const { openEditor } = useEditor();
 const router = useRouter();
 const S = computed(() => store.S);
 
@@ -32,9 +41,71 @@ function open(id: string) {
   select(id);
   router.push("/advisors");
 }
+// COM-75: per-row kebab — change tier in-context (writes via setPath; switches to tier mode so it
+// takes effect), open the package, or remove. Shared shape with Overview. Engine untouched.
+function rowMenu(a: any) {
+  const idx = S.value.advisors.findIndex((x: any) => x.id === a.id);
+  return [
+    {
+      label: "Change tier",
+      icon: "lucide-layers",
+      submenu: S.value.tiers.map((t: any, ti: number) => ({
+        label: `${t.name} · ${fMult(t.mult)}`,
+        icon: a.mode !== "value" && a.tier === ti ? "lucide-check" : null,
+        onClick: () => {
+          setPath(["advisors", idx, "mode"], "tier");
+          setPath(["advisors", idx, "tier"], ti);
+        },
+      })),
+    },
+    {
+      label: "Edit package",
+      icon: "lucide-pen",
+      onClick: () => {
+        select(a.id);
+        openEditor();
+      },
+    },
+    {
+      label: "Remove",
+      icon: "lucide-trash-2",
+      theme: "red",
+      // COM-107: a whole package is confirm-worthy (parity with Reset)
+      onClick: () =>
+        confirmDestroy(
+          "Remove advisor",
+          `Remove ${a.name}? Their package and objective progress are deleted.`,
+          () => delAdvisor(a.id),
+        ),
+    },
+  ];
+}
 function boardPack() {
   window.print();
 }
+
+// COM-85: Board-LOCAL scenario projection — a presentation ref, NOT a store mutation, so the
+// global Case lens and every other route stay untouched. '' = follow the board's base case.
+const boardCase = ref("");
+const bc = computed(() =>
+  boardCase.value && S.value.plan.scenarios[boardCase.value]
+    ? boardCase.value
+    : baseScenKey(S.value.plan),
+);
+const caseButtons = computed(() =>
+  scenKeys(S.value.plan).map((k) => ({
+    label: S.value.plan.scenarios[k].label || k,
+    value: k,
+  })),
+);
+// The chosen scenario row for an advisor (falls back to the engine's base case).
+const sFor = (c: any) => c.scen.find((x: any) => x.key === bc.value) || c.base;
+// Per-scenario ceiling has no engine export — mirror engine.ts baseCaseCeil exactly
+// (netEqAt(eqPctCeil, exitVal) + tkPctCeil × fdv) over already-exported fields (PD2 §2 rule 3).
+const ceilFor = (c: any) => {
+  const s = sFor(c);
+  return s.netEqAt(c.eqPctCeil, s.exitVal) + c.tkPctCeil * s.fdv;
+};
 
 // --- valuation staircase (grouped bar: Raiku vs market median per stage) ---
 const stair = computed(() => {
@@ -65,15 +136,20 @@ const stairColors = computed(() => [chartHex("--chart-capital"), chartHex("--cha
 const PAD = { l: 52, r: 16, t: 16, b: 28 };
 const VW = 460;
 const VH = 280;
+// COM-136: chart labels disambiguate duplicate first names (and guard mononyms/empty).
+const rosterNames = computed(() => board.value.rows.map((r: any) => r.a.name));
 const scatter = computed(() =>
-  board.value.rows.map(({ a, c }: any) => ({
-    name: a.name.split(" ")[0],
-    x: c.baseCaseTotal,
-    y: Math.max(0, c.baseCaseCeil - c.baseCaseTotal),
-    z: Math.max(c.capTotal || 0, 1),
-    tier: a.tier || 0,
-    id: a.id,
-  })),
+  board.value.rows.map(({ a, c }: any) => {
+    const s = sFor(c); // COM-85: scatter re-keys to the board-local case
+    return {
+      name: shortName(a.name, rosterNames.value),
+      x: s.total,
+      y: Math.max(0, ceilFor(c) - s.total),
+      z: Math.max(c.capTotal || 0, 1),
+      tier: a.tier || 0,
+      id: a.id,
+    };
+  }),
 );
 const xMax = computed(() => Math.max(1, ...scatter.value.map((d) => d.x)));
 const yMax = computed(() => Math.max(1, ...scatter.value.map((d) => d.y)));
@@ -121,12 +197,25 @@ const scatterPlaced = computed(() => {
   return pts.sort((a, b) => (a.id === hoverId.value ? 1 : 0) - (b.id === hoverId.value ? 1 : 0));
 });
 
+// COM-115: the company cost as ONE range (floor · base · ceiling over the board-local case),
+// not three equal tiles — selection over the engine's exported board.cost, no new math.
+const costRange = computed(() => {
+  const keys = scenKeys(S.value.plan);
+  const first = keys[0];
+  const last = keys[keys.length - 1];
+  return {
+    floor: { label: S.value.plan.scenarios[first].label, v: board.value.cost[first] || 0 },
+    base: { label: S.value.plan.scenarios[bc.value].label, v: board.value.cost[bc.value] || 0 },
+    ceil: { label: S.value.plan.scenarios[last].label, v: board.value.cost[last] || 0 },
+  };
+});
+
 // --- per-advisor scenario range ---
 const ranges = computed(() =>
   board.value.rows.map(({ a, c }: any) => {
     const totals = c.scen.map((s: any) => s.total);
     return {
-      name: a.name.split(" ")[0],
+      name: shortName(a.name, rosterNames.value),
       lo: Math.min(...totals),
       base: c.baseCaseTotal,
       hi: Math.max(...totals),
@@ -135,19 +224,37 @@ const ranges = computed(() =>
 );
 const rangeMax = computed(() => Math.max(1, ...ranges.value.map((r) => r.hi)));
 const baseEqSum = computed(() => board.value.rows.reduce((s: number, r: any) => s + r.c.baseEq, 0));
-const baseTotalSum = computed(() =>
-  board.value.rows.reduce((s: number, r: any) => s + r.c.baseCaseTotal, 0),
+// COM-85: roster value column + board total follow the local case (s.total per advisor).
+const caseTotalSum = computed(() =>
+  board.value.rows.reduce((s: number, r: any) => s + sFor(r.c).total, 0),
 );
 </script>
 
 <template>
-  <div class="space-y-8">
+  <!-- COM-89: dense tables opt OUT of the reading column — Board keeps the wide canvas -->
+  <!-- COM-133: teach instead of rendering empty axes + a zeroed total -->
+  <EmptyState
+    v-if="!board.rows.length"
+    icon="lucide-users"
+    title="No advisors on the board yet."
+    body="Add your first advisor to model a package — a uniform base that grows with performance, net of strike and dilution against the company plan."
+  >
+    <Button
+      variant="solid"
+      theme="gray"
+      icon-left="lucide-plus"
+      label="Add advisor"
+      class="mt-2"
+      @click="addAdvisor"
+    />
+  </EmptyState>
+
+  <div v-else class="mx-auto w-full max-w-7xl px-3 sm:px-5 space-y-8">
     <PageHeader
       title="The board, and what it costs us."
       desc="Uniform base × tier, grown by gated performance. Equity is net of strike and scenario dilution; tokens are valued at the scenario's TGE FDV."
     >
       <template #actions>
-        <StageBadge />
         <Button
           variant="subtle"
           theme="gray"
@@ -166,15 +273,177 @@ const baseTotalSum = computed(() =>
     </PageHeader>
     <ContextStrip />
 
+    <!-- COM-85: board-local scenario projection (presentation-only; the global Case is untouched) -->
+    <div class="flex items-center gap-2.5 flex-wrap no-print">
+      <span class="text-xs text-ink-gray-6">Project the board under</span>
+      <TabButtons
+        :buttons="caseButtons"
+        :model-value="bc"
+        @update:model-value="boardCase = $event"
+      />
+      <Badge v-if="bc !== baseScenKey(S.plan)" theme="orange" variant="subtle"
+        >Projected: {{ S.plan.scenarios[bc].label }}</Badge
+      >
+    </div>
+
+    <div class="grid lg:grid-cols-12 gap-8">
+      <div class="lg:col-span-8 space-y-6">
+        <!-- roster table -->
+        <!-- COM-88 de-boxed · COM-96: chrome + row a11y live in the shared roster primitives;
+             the engine values keep rendering here (values arrive as props, no math inside) -->
+        <RosterTable
+          :columns="[
+            { label: 'Advisor' },
+            { label: 'Tier' },
+            { label: 'Base eq', align: 'right' },
+            { label: 'Earned', align: 'right' },
+            { label: `Net · ${S.plan.scenarios[bc].label}`, align: 'right' },
+            { label: '', noPrint: true },
+          ]"
+          caption="Advisory board roster — base equity, earned uplift and net value per advisor, with the board total."
+        >
+          <RosterRow
+            v-for="{ a, c } in board.rows"
+            :key="a.id"
+            :aria-label="`Open ${a.name}`"
+            @open="open(a.id)"
+          >
+            <td class="px-4 py-3">
+              <RosterIdentity :name="a.name" :sector="a.sector.split('—')[0].trim()" />
+            </td>
+            <td class="px-4 py-3">
+              <TierBadge :mode="a.mode" :tier-name="S.tiers[a.tier]?.name" />
+            </td>
+            <td class="px-4 py-3 tabular-nums text-right text-ink-gray-8">
+              {{ fPct(c.baseEq, 2) }}
+            </td>
+            <td
+              class="px-4 py-3 tabular-nums text-right"
+              :class="c.earnedUplift > 0 ? 'text-ink-green-3' : 'text-ink-gray-6'"
+            >
+              +{{ (c.earnedUplift * 100).toFixed(0) }}%<span
+                v-if="c.pendingUplift > 0"
+                class="text-ink-amber-strong"
+              >
+                +{{ (c.pendingUplift * 100).toFixed(0)
+                }}<Term k="awaitingGate"
+                  ><span class="ml-1 text-xs font-sans">pending</span></Term
+                ></span
+              >
+            </td>
+            <td class="px-4 py-3 tabular-nums text-right font-medium text-ink-gray-9">
+              {{ fUSD(sFor(c).total) }}
+            </td>
+            <td class="px-2 py-3 no-print">
+              <Dropdown :options="rowMenu(a)" placement="right">
+                <template #trigger>
+                  <button
+                    aria-label="Advisor actions"
+                    class="inline-flex shrink-0 items-center justify-center size-8 rounded hover:bg-surface-gray-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-gray-6)] text-ink-gray-6"
+                    @click.stop
+                    @keydown.stop
+                  >
+                    <span class="lucide-ellipsis size-4" aria-hidden="true" />
+                  </button>
+                </template>
+              </Dropdown>
+            </td>
+          </RosterRow>
+          <!-- COM-118: the total is a sum, not the current case — the primitive renders the
+               neutral band; amber stays reserved for the company-cost conclusion below -->
+          <template #total>
+            <td class="px-4 py-3 font-medium text-ink-gray-9">Board · {{ board.rows.length }}</td>
+            <td />
+            <td class="px-4 py-3 tabular-nums text-right font-medium text-ink-gray-9">
+              {{ fPct(baseEqSum, 2) }}
+            </td>
+            <td />
+            <td class="px-4 py-3 tabular-nums text-right font-medium text-ink-gray-9">
+              {{ fUSD(caseTotalSum) }}
+            </td>
+            <td class="no-print" />
+          </template>
+        </RosterTable>
+        <!-- scenario range by advisor -->
+        <div class="print-area">
+          <div class="section-label mb-3">Scenario range by advisor · net value</div>
+          <!-- COM-88: static list — the section label gives context; no frame.
+               COM-120: fixed-width columns (name · bar · range) so the labels align down the
+               list instead of jittering with name/value width; the bar is label-less. -->
+          <div class="space-y-3">
+            <div
+              v-for="r in ranges"
+              :key="r.name"
+              class="ff-row grid grid-cols-[8rem_1fr_7rem] items-center gap-3"
+            >
+              <span class="text-xs text-ink-gray-7 min-w-0 truncate" :title="r.name">{{
+                r.name
+              }}</span>
+              <FootballField :lo="r.lo" :base="r.base" :hi="r.hi" :max="rangeMax" compact />
+              <span class="text-xs tabular-nums text-ink-gray-6 text-right"
+                >{{ fUSD(r.lo) }} – {{ fUSD(r.hi) }}</span
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="lg:col-span-4 space-y-6">
+        <PoolAllocation :board="board" :committed="S.plan.committedAdvisorTokenPct" />
+        <div class="rounded border border-outline-amber-2 bg-surface-amber-2 p-5 space-y-3">
+          <div class="text-sm text-ink-amber-strong flex items-center gap-2">
+            <span class="lucide-building-2 size-3.5" aria-hidden="true" /> Company cost · net to the
+            board
+          </div>
+          <!-- COM-115: one RANGE, not three equal tiles — floor and ceiling quiet at the ends,
+               the projected case bold in the middle, the shared FootballField idiom beneath.
+               COM-125: with a single scenario there IS no range — only the base figure renders. -->
+          <div class="flex items-end justify-between gap-4">
+            <div v-if="scenKeys(S.plan).length > 1">
+              <div class="text-xs text-ink-gray-6 mb-1">{{ costRange.floor.label }}</div>
+              <div class="text-sm tabular-nums text-ink-gray-7">
+                {{ fUSD(costRange.floor.v) }}
+              </div>
+            </div>
+            <div class="text-center">
+              <div class="text-xs text-ink-amber-strong mb-1">{{ costRange.base.label }}</div>
+              <div class="figure-md text-ink-gray-9">{{ fUSD(costRange.base.v) }}</div>
+            </div>
+            <div v-if="scenKeys(S.plan).length > 1" class="text-right">
+              <div class="text-xs text-ink-gray-6 mb-1">{{ costRange.ceil.label }}</div>
+              <div class="text-sm tabular-nums text-ink-gray-7">{{ fUSD(costRange.ceil.v) }}</div>
+            </div>
+          </div>
+          <FootballField
+            v-if="scenKeys(S.plan).length > 1"
+            :lo="costRange.floor.v"
+            :base="costRange.base.v"
+            :hi="costRange.ceil.v"
+            :max="costRange.ceil.v"
+            compact
+          />
+          <p class="text-p-xs text-ink-gray-6">
+            Total net value across the board at each scenario.
+          </p>
+          <div class="pt-2 border-t border-outline-amber-2 text-sm flex justify-between">
+            <span class="text-ink-gray-6">Annual cash</span
+            ><span class="tabular-nums text-ink-gray-9">{{ fUSD(board.sumCash) }}/yr</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COM-90: analysis charts sit BELOW the roster — the page leads with its subject
+         (the roster + what it costs us); the dense graphics are the supporting read. -->
     <div class="grid lg:grid-cols-2 gap-6">
       <!-- valuation staircase -->
-      <div
-        class="bg-surface-white rounded border border-outline-gray-1 p-5"
+      <Panel
+        class="print-area"
         role="img"
         :aria-label="`Valuation path base case. TGE FDV ${fUSD(stairFdv)}.`"
       >
         <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
-          <div class="text-sm text-ink-gray-6">
+          <div class="section-label">
             Valuation path · base case{{ S.plan.showBenchmarks ? " vs market median" : "" }}
             <span class="text-ink-gray-6">· post-money $M</span>
           </div>
@@ -195,15 +464,15 @@ const baseTotalSum = computed(() =>
           Median = 2025 market post-money by stage ({{ BENCH.postMoneySrc }}). Raiku's plan runs
           above median — an ambitious path.
         </p>
-      </div>
+      </Panel>
 
       <!-- potential scatter -->
-      <div
-        class="bg-surface-white rounded border border-outline-gray-1 p-5"
+      <Panel
+        class="print-area"
         role="img"
-        aria-label="Advisor potential: current net value (x) vs headroom to ceiling (y); bubble size is capital introduced."
+        :aria-label="`Advisor potential under ${S.plan.scenarios[bc].label}: net value (x) vs headroom to ceiling (y); bubble size is capital introduced.`"
       >
-        <div class="text-sm text-ink-gray-6 mb-3">
+        <div class="section-label mb-3">
           Untapped potential · current net (x) vs <Term k="headroom">headroom</Term> (y) · bubble =
           capital introduced
         </div>
@@ -260,6 +529,27 @@ const baseTotalSum = computed(() =>
             font-size="11"
           >
             {{ fUSD(xMax) }}
+          </text>
+          <!-- COM-122: on-axis titles so the chart teaches itself (13 in the viewBox ≈ 11.4px
+               rendered at the card's ~0.875 scale — above the COM-49 floor; ink-gray-6 per M7) -->
+          <text
+            :x="(PAD.l + VW - PAD.r) / 2"
+            :y="VH - 6"
+            text-anchor="middle"
+            class="fill-current text-ink-gray-6"
+            font-size="13"
+          >
+            Current net value
+          </text>
+          <text
+            :x="12"
+            :y="(PAD.t + VH - PAD.b) / 2"
+            text-anchor="middle"
+            class="fill-current text-ink-gray-6"
+            font-size="13"
+            :transform="`rotate(-90, 12, ${(PAD.t + VH - PAD.b) / 2})`"
+          >
+            Headroom to ceiling
           </text>
           <g
             v-for="d in scatterPlaced"
@@ -333,149 +623,7 @@ const baseTotalSum = computed(() =>
           >
           <span class="ml-auto">top-left = most headroom, modest today</span>
         </div>
-      </div>
-    </div>
-
-    <div class="grid lg:grid-cols-12 gap-8">
-      <div class="lg:col-span-8 space-y-6">
-        <!-- roster table -->
-        <div class="bg-surface-white rounded border border-outline-gray-1 overflow-x-auto">
-          <table class="w-full text-sm" style="min-width: 560px">
-            <thead>
-              <tr class="border-b border-outline-gray-2 text-left text-ink-gray-6">
-                <th class="px-4 py-3 font-normal">Advisor</th>
-                <th class="px-4 py-3 font-normal">Tier</th>
-                <th class="px-4 py-3 font-normal text-right">Base eq</th>
-                <th class="px-4 py-3 font-normal text-right">Earned</th>
-                <th class="px-4 py-3 font-normal text-right">Net base-case</th>
-                <th class="px-2 py-3 no-print" />
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="{ a, c } in board.rows"
-                :key="a.id"
-                tabindex="0"
-                role="button"
-                :aria-label="`Open ${a.name}`"
-                class="border-b border-outline-gray-1 cursor-pointer hover:bg-surface-gray-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--ink-gray-6)] focus-visible:bg-surface-gray-1"
-                @click="open(a.id)"
-                @keydown.enter="open(a.id)"
-                @keydown.space.prevent="open(a.id)"
-              >
-                <td class="px-4 py-3">
-                  <div class="flex items-center gap-2.5">
-                    <Avatar :label="a.name" size="sm" />
-                    <div>
-                      <div class="font-medium text-ink-gray-9">{{ a.name }}</div>
-                      <div class="text-xs text-ink-gray-6">
-                        {{ a.sector.split("—")[0].trim() }}
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td class="px-4 py-3">
-                  <Badge
-                    :label="a.mode === 'value' ? '$value' : S.tiers[a.tier]?.name || '—'"
-                    theme="orange"
-                    variant="subtle"
-                    size="sm"
-                  />
-                </td>
-                <td class="px-4 py-3 tabular-nums text-right text-ink-gray-8">
-                  {{ fPct(c.baseEq, 2) }}
-                </td>
-                <td
-                  class="px-4 py-3 tabular-nums text-right"
-                  :class="c.earnedUplift > 0 ? 'text-ink-green-3' : 'text-ink-gray-6'"
-                >
-                  +{{ (c.earnedUplift * 100).toFixed(0) }}%<span
-                    v-if="c.pendingUplift > 0"
-                    class="text-ink-amber-strong"
-                  >
-                    +{{ (c.pendingUplift * 100).toFixed(0)
-                    }}<Term k="awaitingGate"
-                      ><span class="ml-1 text-xs font-sans">pending</span></Term
-                    ></span
-                  >
-                </td>
-                <td class="px-4 py-3 tabular-nums text-right font-medium text-ink-gray-9">
-                  {{ fUSD(c.baseCaseTotal) }}
-                </td>
-                <td class="px-2 py-3 no-print">
-                  <button
-                    aria-label="Remove advisor"
-                    class="inline-flex shrink-0 items-center justify-center size-8 rounded hover:bg-surface-gray-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-gray-6)] text-ink-gray-6 hover:text-ink-red-3"
-                    @click.stop="delAdvisor(a.id)"
-                  >
-                    <span class="lucide-trash-2 size-3.5" aria-hidden="true" />
-                  </button>
-                </td>
-              </tr>
-              <tr class="bg-surface-amber-2">
-                <td class="px-4 py-3 font-medium text-ink-gray-9">
-                  Board · {{ board.rows.length }}
-                </td>
-                <td />
-                <td class="px-4 py-3 tabular-nums text-right font-medium text-ink-gray-9">
-                  {{ fPct(baseEqSum, 2) }}
-                </td>
-                <td />
-                <td class="px-4 py-3 tabular-nums text-right font-medium text-ink-gray-9">
-                  {{ fUSD(baseTotalSum) }}
-                </td>
-                <td class="no-print" />
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <!-- scenario range by advisor -->
-        <div>
-          <div class="text-sm text-ink-gray-6 mb-3">Scenario range by advisor · net value</div>
-          <div class="bg-surface-white rounded border border-outline-gray-1 p-5 space-y-3">
-            <FootballField
-              v-for="r in ranges"
-              :key="r.name"
-              :lo="r.lo"
-              :base="r.base"
-              :hi="r.hi"
-              :max="rangeMax"
-              :label="r.name"
-              compact
-            />
-          </div>
-        </div>
-      </div>
-
-      <div class="lg:col-span-4 space-y-6">
-        <PoolAllocation :board="board" :committed="S.plan.committedAdvisorTokenPct" />
-        <div class="rounded border border-outline-amber-2 bg-surface-amber-2 p-5 space-y-3">
-          <div class="text-sm text-ink-amber-strong flex items-center gap-2">
-            <span class="lucide-building-2 size-3.5" aria-hidden="true" /> Company cost · net to the
-            board
-          </div>
-          <div class="grid grid-cols-3 gap-px bg-surface-gray-2 rounded overflow-hidden">
-            <div
-              v-for="k in Object.keys(S.plan.scenarios)"
-              :key="k"
-              class="p-3"
-              :class="k === baseScenKey(S.plan) ? 'bg-surface-white' : 'bg-surface-amber-2'"
-            >
-              <div class="text-xs text-ink-gray-6 mb-1">{{ S.plan.scenarios[k].label }}</div>
-              <div class="font-display text-base tabular-nums text-ink-gray-9">
-                {{ fUSD(board.cost[k] || 0) }}
-              </div>
-            </div>
-          </div>
-          <p class="text-p-xs text-ink-gray-6">
-            Total net value across the board at each scenario.
-          </p>
-          <div class="pt-2 border-t border-outline-amber-2 text-sm flex justify-between">
-            <span class="text-ink-gray-6">Annual cash</span
-            ><span class="tabular-nums text-ink-gray-9">{{ fUSD(board.sumCash) }}/yr</span>
-          </div>
-        </div>
-      </div>
+      </Panel>
     </div>
   </div>
 </template>

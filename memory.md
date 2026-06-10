@@ -1268,3 +1268,963 @@ package; move `upliftStartMonth`'s editor out of VestingTimeline into Advisors) 
 presentation/state over the frozen engine via `setPath`; snapshot locally (pushUndo is module-private). Then PD2
 (COM-82→81→85→83→84→86), clean-layout (88/89/90/95), the adopt cluster (per decisions above), then
 visual/charts/editorial/hardening. STOP at the merge gate unless Robin says merge.
+
+## 2026-06-09 — COM-73 (consolidate the per-advisor package editor; move upliftStartMonth in) DONE [M9 PD1 #1]
+
+**COM-73 (P2 High, ~37 LOC actual) — DONE.** First PD1-spine issue: made the per-advisor package one coherent
+editor. Renamed the three left-column section eyebrows to **Identity / Base grant / Performance**
+(presentation copy only — Profile→Identity, "Base — denomination"→"Base grant", "Performance uplift"→
+"Performance"; legal/benchmark strings untouched). **Moved `upliftStartMonth`** out of the `VestingTimeline`
+chart header — previously the ONLY place it was editable, buried in the collapsed "+ Show detail" expander —
+into the Performance section as a labelled NumIn beside the capital fields, wired via
+`setField('upliftStartMonth', v)` (= existing `setPath(['advisors', i, k], v)`). `VestingTimeline` now shows a
+**read-only marker** ("Uplift earned · month N") and drops its now-dead `NumIn` import + `setPath`/`idx`
+wiring; chart math unchanged (still reads `clamp(sel.upliftStartMonth ?? 6, 0, 48)`). 2 files, +19/−18
+(`Advisors.vue`, `VestingTimeline.vue`). **ENGINE UNTOUCHED** — `upliftStartMonth` is already a first-class
+`Advisor` field (engine.ts:18); pure UI relocation over the frozen engine via `setPath`. New field uses the
+bare-label idiom so **COM-77** can FormControl-wrap it next.
+- **Verified:** both engine tests **22/22** (`node scaffold/engine.test.mjs` + `node engine/engine.test.mjs`)
+  · `( cd scaffold && npm run build )` exit **0** · `vp check` **0 errors** for my 2 files (oxfmt-formatted via
+  `vp fmt <paths> --write`; the pre-existing ~26-file drift + 12 frozen-engine warnings untouched/expected).
+  Preview :4173 /advisors: sections read Identity / Base grant / Performance ✓; relocated NumIn edits live
+  (6→12 → Performance field + chart read-only marker + persisted localStorage ALL tracked to 12, then reset to
+  6) ✓; expand "+ Show detail" → `VestingTimeline` header is read-only (no input) ✓; no console errors.
+  Screenshot captured. Reverted `components.d.ts` build churn before commit.
+- /code-review: clean (presentation-only; no auth/tenancy/money/legal surface → no /security-review). Branch
+  `robinandre/com-73-…` off **frosty** (first PD1 issue; first-wins already merged to frosty), PR **`Fixes
+  COM-73`**. **STOPPED at the merge gate — Robin merges.**
+
+**Next PD1:** COM-77 (FormControl `:description` + clamp `:error` on load-bearing fields) → COM-74 (dirty/Saved
++ per-advisor Revert) → COM-75 (Board roster kebab: tier select + edit) → COM-76 (promote package editing into
+a Dialog/drawer; watch the 450 cap). Then PD2 (COM-82→81→85→83→84→86), clean-layout, the adopt cluster.
+
+## 2026-06-09 — COM-77 (FormControl :description + transient clamp :error feedback) DONE [M9 PD1 #2]
+
+**COM-77 (P3 Med, ~37 net LOC) — DONE.** Stacked on COM-73. Teach + validate at the package input boundary.
+- **API finding (matters for COM-76):** frappe-ui **FormControl has NO `error` prop/slot and NO default slot
+  for a custom control** — it renders its own input by `type`, exposing only `label` + `description` (prop or
+  `#description` slot, rendered `text-p-xs text-ink-gray-5`). So COM-77's literal "wrap NumIn in FormControl /
+  FormControl `:error`" is NOT achievable; implemented the **intent** instead. `FormLabel` IS exported from
+  frappe-ui (renders `<label class="block text-xs text-ink-gray-5">`).
+- **`:description`** on the 3 load-bearing FormControls — Granted at → "Sets the strike basis & dilution path";
+  Start date → "Anchors vesting & TGE offset"; Tax residency → "Recorded for the offer; not modelled". Native
+  FormControl support.
+- **NumIn `clamp` emit** added to `commit()` (presentation-only; `clamp` stays imported from the engine): when
+  a value is coerced (`c !== v`) it emits a teaching message — "Adjusted to {val} (allowed {min}–{max})", or
+  one-sided "(min …)"/"(max …)" for unbounded ends. Refactored `disp()` to share a `fmtVal()` formatter.
+- **Transient red helper** `<p role="alert" class="text-p-xs text-ink-red-3">` under the field (Advisors holds
+  `clampMsgs` reactive + per-key 4s `clampTimers`). `role="alert"` → screen readers announce the coercion
+  (issue's a11y label). The 3 bare-label NumIn rows (Engagement yrs / Annual value / Annual cash) converted to
+  a **FormLabel + `space-y-1.5` + error `<p>`** stack so the card reads as one consistent FormControl stack.
+  2 files, +49/−12 (`Advisors.vue`, `NumIn.vue`).
+- **Verified:** engine **22/22** both · build **0** · `vp check` **0 errors** for my files. :4173 /advisors: 3
+  descriptions render ✓; Engagement label now FormLabel (`label.text-ink-gray-5`) ✓; clamp 99→10 → "Adjusted to
+  10 (allowed 1–10)", 0→1 → "Adjusted to 1 (allowed 1–10)", `<p role="alert">` ✓ (captured on rAF to beat the
+  4s transient timer — the message is correctly short-lived); no console errors. Reverted `components.d.ts`.
+- /code-review clean (presentation-only; no auth/tenancy/money/legal → no /security-review). Branch
+  `robinandre/com-77-…` **stacked on COM-73**; PR **`Fixes COM-77`** (base = COM-73 branch; GitHub
+  auto-retargets to frosty when COM-73 merges). **STOPPED at the merge gate.**
+
+**Carry into COM-76:** when extracting `PackageEditor`, move the FormLabel+description/error stack AND the
+`clampMsgs`/`onClamp` helper with it. **Next:** COM-74 (dirty/Saved + per-advisor Revert).
+
+## 2026-06-09 — COM-74 (per-advisor edit checkpoint: dirty/Saved + Revert) DONE [M9 PD1 #3]
+
+**COM-74 (P2 High, ~58 net LOC) — DONE.** Stacked on COM-77. Component-local edit checkpoint in
+`Advisors.vue` only (no `store.ts` change — `pushUndo` is module-private, per the issue).
+- `markEdited()` (called at the top of setField/setPerfField/setObjState) snapshots the advisor into a local
+  ref on its **first edit**; `isDirty` = `JSON(sel) !== JSON(snapshot)`. Header shows amber **"Edited" +
+  "Revert"** (lucide-rotate-ccw) when dirty, plus a transient green **"Saved ✓"** tick (`aria-live=polite`)
+  ~450ms after an edit settles, hidden after 1.5s. **Revert** = `setPath(['advisors', i], cloneAdv(snapshot))`
+  + `flash("Reverted")` + clears the snapshot. A `watch` on `sel.id` clears the checkpoint on advisor switch.
+- **GOTCHA (important — fix any future structuredClone use):** `structuredClone(sel.value)` **throws
+  `DataCloneError` on Vue's reactive proxy**. The run-prompt/issue literally said `structuredClone(sel)`, but
+  it fails in practice — the edit silently no-op'd (value didn't update, no indicator) and the console showed
+  repeated `DataCloneError`. Fixed with the proven JSON deep-clone `cloneAdv = a => JSON.parse(JSON.stringify(a))`
+  (same idiom as store.ts's private `clone`). **For reactive advisor objects, JSON-clone, not structuredClone.**
+- 1 file, +58/−4 (`Advisors.vue`).
+- **Verified:** engine **22/22** both · build **0** · `vp check` **0 errors** for `Advisors.vue`. :4173
+  /advisors: edit Years 1→5 → "Edited"+"Revert"+transient "Saved" appear and the value persists; Revert →
+  restores baseline (5→1), persists, clears the indicator; live bundle (`index-CbQx6MGz.js`) has **no**
+  `structuredClone` (the `DataCloneError`s left in the console buffer are stale, from the now-deleted pre-fix
+  bundle). Screenshot captured.
+- /code-review clean (presentation/state over the frozen engine; no auth/tenancy/money/legal → no
+  /security-review). Branch `robinandre/com-74-…` **stacked on COM-77**; PR **`Fixes COM-74`**. **STOPPED at
+  the merge gate.**
+
+**Carry into COM-76:** the snapshot/isDirty/Revert + Saved-tick checkpoint moves into `PackageEditor` with the
+field set. **Next:** COM-75 (Board roster inline kebab — tier Select + Open/Remove).
+
+## 2026-06-09 — COM-75 (inline roster kebab: change tier + open + remove) DONE [M9 PD1 #4]
+
+**COM-75 (P3 Med, ~80 net LOC) — DONE.** Stacked on COM-74. Edit-in-context from the roster on Board + Overview.
+- Per-row frappe-ui **Dropdown** (kebab, `lucide-ellipsis` trigger, portals to body so it escapes the roster's
+  `overflow-x-auto`): **Change tier** (submenu over `S.tiers` — "{name} · {mult}×", lucide-check on the active
+  tier; `onClick` sets `mode='tier'` + `tier` via setPath so it takes effect even from `$value` mode), **Open
+  package** (→ /advisors), **Remove** (theme red → delAdvisor). Identical `rowMenu(a)` in each view (idx by id).
+  Dropdown `icon` accepts a `lucide-*` class string (frappe-ui `isLucideIconString`).
+- **Board.vue:** replaced the Remove-only button cell with the kebab; trigger has `@click.stop`/`@keydown.stop`
+  so it doesn't fire the row's open.
+- **Overview.vue:** converted the card `<button>` → `<div role="button" tabindex=0>` (+ enter/space handlers)
+  so the kebab isn't a **nested interactive** (per the issue); kebab sits beside the Badge with `@click.stop`.
+  Card body still navigates. (Closing `</button>`→`</div>` too — easy to miss when swapping the tag.)
+- 2 files, +~80/−15 (`Board.vue`, `Overview.vue`). No engine; store stays a pure reducer.
+- **Verified:** engine **22/22** both · build **0** · `vp check` **0 errors** for both files. :4173 — Board: kebab
+  opens [Change tier ▸ Base/Strategic/Anchor · Open package · Remove]; picking "Base · 1×" flipped Iraj
+  `$value`→`Base` and **persisted** `mode:tier, tier:0`; kebab click stays on /board. Overview: kebab opens
+  (stays /overview), card body click → /advisors. **No NEW console errors** (the 16 `DataCloneError`s in the
+  buffer are stale from COM-74's deleted pre-fix bundle — count stayed 16 through all COM-75 interaction).
+  Screenshot. Reverted `components.d.ts`.
+- /code-review clean (presentation; no security surface). Branch `robinandre/com-75-…` **stacked on COM-74**;
+  PR **`Fixes COM-75`**. **STOPPED at the merge gate.**
+
+**Next (last PD1):** COM-76 (promote package editing into a Dialog/drawer; extract a reusable `PackageEditor` —
+carry the COM-73 field set + COM-77 FormLabel/`:description`/clamp stack + COM-74 checkpoint; **L ~280, watch the
+450 cap**).
+
+## 2026-06-09 — COM-76 (Edit package Dialog; extract PackageEditor) DONE [M9 PD1 #5 — ★ PD1 COMPLETE]
+
+**COM-76 (P3 Med, L — ~445 new + ~504-line relocation) — DONE.** Stacked on COM-75. PD1 capstone: editing moves
+from the inline Advisors column into a **global frappe-ui Dialog**. Robin approved **one PR** (structural-move
+exception) and **retiring COM-74's inline indicator** (revert preserved via the Dialog's Cancel).
+- **NEW `components/PackageEditor.vue`** — the COM-73 field set + COM-77 FormLabel/`:description`/clamp stack,
+  relocated into `<Dialog v-model="open" :options="{title:'Edit package · '+name, size:'lg'}">` with
+  `#body-content` (Identity / Base grant / Performance / Objectives) + `#actions="{close}"` footer (Cancel / Save
+  + an "Edited" hint). Edits the **selected** advisor live via setPath (autosave); snapshots `cloneAdv(sel)` on
+  open (`watch(open)`); **Cancel** restores via `setPath(['advisors',i], clone)` + close; **Save** closes. JSON
+  clone (structuredClone throws on the reactive proxy).
+- **NEW `composables/useEditor.ts`** — module-level singleton (`open` ref + openEditor/closeEditor); keeps
+  store.ts pure (the only cross-component state). Callers `select(id)` then `openEditor()`.
+- **`App.vue`** mounts `<PackageEditor />` once inside FrappeUIProvider (next to the Mgr Dialog) → overlays ANY route.
+- **`Advisors.vue`** — removed the left 5/12 editor column + the COM-74 inline checkpoint script; now a
+  full-width read projection + a compact read-only **Package summary** (`<dl>` of the editable terms) + an "Edit
+  package" button (header + summary). ~660 lines changed (mostly deletion).
+- **`Board.vue` + `Overview.vue`** — kebab "Open package" (navigate) → **"Edit package"** (`select(a.id);
+  openEditor()` → opens the Dialog overlaid, no navigation — the PD1 "edit from the roster" goal).
+- 4 modified + 2 new files. Engine frozen; store pure; no data layer.
+- **Verified:** engine **22/22** both · build **0** · `vp check` **0 errors** (run from `scaffold/` — from repo
+  root it aborts on the sandbox-denied root `engine/engine.ts`). :4173: Advisors full-width read layout + summary;
+  "Edit package" opens the Dialog; tier edit live 0→2 → **Cancel restored to 0** / **Save kept (1) + closed**;
+  Board kebab → Edit package opens the Dialog **overlaid, path stays /board**; no new console errors. Screenshot.
+  Reverted `components.d.ts`/`auto-imports.d.ts`. **Verify-quirk:** a frappe-ui Dialog's teleported content
+  lingers briefly after close — judge open/closed by the reka `role="dialog"` element, not by button/title text.
+- /code-review clean (presentation; no `/security-review`). Branch `robinandre/com-76-…` **stacked on COM-75**;
+  PR **`Fixes COM-76`** (base = COM-75 branch). **STOPPED at the merge gate.**
+
+**★ PD1 SPINE COMPLETE — 73 → 77 → 74 → 75 → 76, five stacked PRs #9–#13 into frosty.** Merge order
+#9→#10→#11→#12→#13; GitHub auto-retargets each to frosty as its parent lands. **Next = PD2** (per-advisor scenario
+projection: COM-82 state spine → 81 → 85 → 83 → 84 → 86; **COM-87 engine override stays DEFERRED**). Reusable
+gotchas logged this run: FormControl has no `:error`; `structuredClone` throws on reactive proxies (JSON-clone);
+the preview console buffer is cumulative across reloads (stale errors persist — check the bundle hash / count).
+
+## 2026-06-09 — ★ PD1 MERGED TO PROD + ULTRACODE_M9_PD2 authored
+
+**Robin lifted the merge gate ("merge all open PRs").** Merged the 5-issue PD1 stack into `frosty` (prod) in stacked
+order, retargeting each child PR's base to frosty then `gh pr merge --merge`: #9 COM-73 (`380428d`) → #10 COM-77
+(`6337f3a`) → #11 COM-74 (`6d7f4b5`) → #12 COM-75 (`0db7f12`) → #13 COM-76 (`1d53353`). **frosty HEAD = `1d53353`.**
+Post-merge verified: `git diff origin/frosty <com-76 tip> -- scaffold/src` **empty** (byte-identical), both engine tests
+**22/22**, `npm run build` exit **0** — prod green. **0 open PRs.** Flipped all 5 Linear issues **Done** manually
+(`save_issue state:"Done"` — the `Fixes` keyword doesn't auto-flip here). **M9 = 11 Done / 55 Backlog.**
+
+**Authored `ULTRACODE_M9_PD2.md`** (committed to frosty; docs-only, not in `scaffold/` so no Vercel-build impact) via a
+7-agent Workflow that distilled COM-82/81/85/83/84/86/87 from Linear in parallel. PD2 findings baked into the prompt:
+COM-82 is the hard-prerequisite **state spine** (81 needs `caseOverride`, 84 needs `targetExit`, 86 needs `pinnedIds`);
+COM-82 is the ONLY PD2 issue that edits `engine.ts` — **additive optional `Advisor` types + reconcile defaults, scaffold
+copy ONLY** (root `engine/engine.ts` is read-denied/frozen; both tests still 22/22); `pinnedIds` is TRANSIENT Store
+state (not `State`/localStorage); view-side arithmetic that mirrors an engine formula over exported fields is allowed
+(COM-85 scatter ceiling); **COM-87 stays DEFERRED** (maximal engine risk — surface for sign-off, don't build). PD2
+issues quote pre-COM-76 line numbers — locate by symbol, not line.
+
+**NEXT (new session): PD2, build order 82 → 81 → 85 → 83 → 84 → 86.** Start with `ULTRACODE_M9_PD2.md` §8 kickoff.
+
+## 2026-06-09 — ★ SPEC v2 ADOPTED: gap analysis → Linear re-baselined (M10–M12, COM-139–170) + docs patched
+
+**Robin delivered `COMP_STUDIO_SPEC_v2.md`** (the comprehensive product spec: provenance Part 0, philosophy,
+O1–O16, domain model, the Comp Trajectory system Part 5, scenario sets Part 6, personas, surfaces incl. NEW
+Trajectory + Governance, flows F15–F23, engine-v2 mechanics Part 10, governance Part 11, benchmarks Part 12,
+build mapping Part 14, appendices A–F with every canonical number/legal clause/session decision). Instruction:
+analyse what's missing, sync Linear, adjust the run-prompt, then build. Done this session:
+
+- **Gap analysis (spec vs the 138-issue backlog):** v1+M7–M9 cover the six original surfaces well; the spec's
+  NEW scope had zero Linear coverage — the trajectory/growth system (Δ2), scenario sets + walk-forwards (Δ3),
+  dollar-denominated value bands (Δ1), dual vesting curves (Δ5), exercise windows/backstop (Δ6), governance/
+  consent state (Δ7), constitutional defaults (Δ8), roster seed (Δ9), lifecycle pipeline (Δ11), proposition
+  versioning (Δ12), leaver engine, capital rollup (O15), benchmarks/guardrails (Part 12), audit log. Plus ONE
+  live bug the spec flags: **the Proposition still ships the v8 CoC-acceleration line that Plan v9 DELETED (Δ4)**.
+- **Linear:** created milestones **M10 · Engine v2** (target 30 Sep; unfreeze ONLY behind a reconciliation
+  gate), **M11 · Trajectory & lifecycle** (30 Nov), **M12 · Governance & compliance** (31 Oct; presentation-first
+  may start before M10). Created **32 issues COM-139…170** (each ≤450 LOC, spec-tagged, blockedBy-wired):
+  COM-139 = the Δ4 legal fix (M9, High); M10 = 140 (RFC gate) · 142–154; M11 = 155–165; M12 = 141 · 166–170.
+  Updated existing: **COM-87 → moved to M10, marked SUPERSEDED by 140/143 (still do-not-build)**; COM-33/34
+  (spec re-confirms public-URL = top risk; auth = portal + audit-log prerequisite); COM-92 (build pluggable →
+  COM-148 extends to scenario sets). Posted a project status update.
+- **Docs (this commit):** `COMP_STUDIO_SPEC_v2.md` committed to the repo root (NOT in scaffold/ — no build
+  impact). `ULTRACODE_M9_PD2.md` patched: spec-adoption header, the COM-139 sanctioned legal-corpus exception,
+  the After-M9 roadmap. `CLAUDE.md` patched: spec in "What this is" + "Where things live", the Δ4 corpus
+  exception, the open-decisions section now points at spec Part 17 (the M0-era five were resolved 2026-06-08).
+- **PD2 itself is unchanged by the spec** (it is presentation/state over the frozen engine; Part 14 keeps the
+  engine frozen through M9). **NEXT = COM-82 → 81 → 85 → 83 → 84 → 86**, same session, single linear stack
+  off this docs commit, STOP at the merge gate.
+
+## 2026-06-09 — COM-82 (PD2 state spine: caseOverride / targetExit / pinnedIds) DONE [M9 PD2 #1]
+
+**COM-82 (P2 High, 43 net LOC) — DONE.** Stacked on the spec-v2 docs commit (PR #15). The sanctioned additive
+engine touch per ULTRACODE_M9_PD2 §2 rule 1 — scaffold copy ONLY, money path untouched.
+- **engine.ts:** `caseOverride?: string` + `targetExit?: number` on the `Advisor` interface; reconcile's advisor
+  mapper drops an **orphan caseOverride** (key gone from the reconciled `scn`) and a **non-numeric targetExit**
+  (`ok()` guard). Also added `name`/`sector` defaults to the same mapper line — **a pre-existing trust-boundary
+  gap found during verification:** a hand-crafted/imported board whose advisor lacked `sector` crashed EVERY view
+  (`undefined.split`) into a blank app; reconcile's contract is "normalises every advisor with defaults", so the
+  fix belongs to this issue. (Found by seeding a minimal 2-field advisor via localStorage on :4173.)
+- **store.ts:** transient `pinnedIds: string[]` on the reactive `Store` interface (NOT `State` — never persisted,
+  never in `#s=`); scrubbed against the live roster in `fixSel()` (covers delAdvisor/loadState/loadBoard/undo;
+  `reset()` now calls fixSel too). `delScenario` cascades the per-advisor `caseOverride` (parity with
+  delMilestone/delRound/delTier). New `persist()`-wrapped reducers `setAdvisorCase(id, key|null)` (validates the
+  key exists) + `setAdvisorTargetExit(id, v)` (finite > 0 else delete), both returned from `useStudio`.
+- **Verified:** BOTH engine suites **22/22** (root via dangerouslyDisableSandbox) · an **8/8 node-level reconcile
+  check** (esbuild-transpiled scaffold engine: orphan dropped / valid kept / legacy advisors gain NO keys /
+  defaults intact) · `vp check` 0 errors (11 frozen-engine warnings = the expected set) · build exit 0 ·
+  **:4173**: seeded minimal board renders (was blank pre-fix), default board restored + renders ($23.0M anchor,
+  screenshot), **no errors citing the live bundle** (`index-zs_lQg8P.js`; the buffered `.split` errors cite the
+  deleted pre-fix bundle — cumulative-console gotcha as documented).
+- **Gotchas re-confirmed:** zsh heredoc mangles `!!` even in non-interactive mode (write verify scripts with the
+  Write tool); zsh noclobber `>` onto an existing file exits 1 ("file exists") — rm -f first.
+- Branch `robinandre/com-82-…` stacked on `claude/spec-v2-adoption` (PR #15); PR `Fixes COM-82`. **STOPPED at
+  the merge gate — Robin merges #15 → #16 in order.** Next: COM-81 (per-advisor case override).
+
+## 2026-06-09 — COM-81 (per-advisor case override) DONE [M9 PD2 #2]
+
+**COM-81 (P2 High, 46 net LOC) — DONE.** Stacked on COM-82. Re-base ONE advisor without flipping the board.
+- **store.ts `selected` computed:** when `a.caseOverride` is set AND the key exists,
+  `computeAdvisor(a, {...store.S.plan, baseScenario: a.caseOverride}, …)` — a **shallow plan clone**, never a
+  mutation; `board` (and every other consumer) keeps reading `store.S.plan` untouched.
+- **Advisors.vue header:** "This advisor's case" frappe-ui `Select` (options = "Match board" + scenario labels;
+  writable computed → `setAdvisorCase(id, v || null)`) + orange `Badge` "Override: <Label>" shown only when the
+  override diverges from the global `baseScenKey`.
+- **Preview-verified end-to-end on :4173 (REAL UI path):** set Iraj → Aggressive via the actual dropdown — hero
+  re-based **$7.67M → $21.4M** (PotentialStrip/waterfall/ExitSlider all follow), badge rendered, localStorage
+  persisted `caseOverride:"aggressive"`; **/board UNCHANGED** (Iraj row $7.67M, total $23.0M, plan.baseScenario
+  "base"); reverted via "Match board" → $7.67M restored, badge gone, **key deleted (not nulled)** from the
+  persisted advisor. Screenshot captured. 0 console errors on the live bundle.
+- **PREVIEW GOTCHA UPGRADE (supersedes the COM-46 note):** the frappe-ui `Select` (reka button-dropdown,
+  `role=combobox`) CAN be driven synthetically — `PointerEvent('pointerdown')` on the trigger OPENS the listbox
+  (plain `.click()` does not), then **`KeyboardEvent('keydown', {key:'Enter'})` on the focused `[role=option]`
+  SELECTS it** (pointer events on the option do NOT select). Full synthetic open→select→close now possible.
+- QA: engine 22/22 both · `vp check` 0 errors on my files · build 0. Branch `robinandre/com-81-…` stacked on
+  COM-82; PR `Fixes COM-81`. **STOPPED at the merge gate.** Next: COM-85 (Board-local scenario selector).
+
+## 2026-06-09 — COM-85 (Board-local scenario selector) DONE [M9 PD2 #3]
+
+**COM-85 (P3 Med, 59 net LOC) — DONE.** Stacked on COM-81. Project the whole board under a chosen case from
+the Board surface — presentation ref only, NO store mutation, global Case untouched.
+- **Board.vue:** `boardCase` ref ('' = follow base) + guarded `bc` computed; "Project the board under"
+  `TabButtons` over `scenKeys` + orange "Projected: <label>" Badge when diverged. `sFor(c)` =
+  `c.scen.find(key===bc) || c.base` re-keys: roster value cell + board total (header relabels to
+  "Net · <label>"), the scatter (x = `s.total`, y = headroom where the **per-scenario ceiling is mirrored
+  in-view** per §2 rule 3: `s.netEqAt(c.eqPctCeil, s.exitVal) + c.tkPctCeil * s.fdv` — exactly engine.ts
+  `baseCaseCeil` line 282 over exported fields), and the company-cost **white-card highlight** (`k === bc`).
+  Scatter aria-label carries the projected case label. Staircase + FootballField ranges stay base/min-max
+  (out of the issue's three named surfaces).
+- **Preview-verified on :4173:** click Aggressive → header "Net · Aggressive", Iraj $21.4M / others $14.3M,
+  **board total $64.3M == the cost panel's Aggressive cell** (internal consistency proof), white card moved,
+  badge on, `plan.baseScenario` still "base" in localStorage; click Base → all restored, badge gone.
+  Screenshot captured. TabButtons select via plain `.click()` (real buttons — no reka dance needed).
+- QA: engine 22/22 · `vp check` 0 errors on Board.vue · build 0. Branch `robinandre/com-85-…` stacked on
+  COM-81; PR `Fixes COM-85`. **STOPPED at the merge gate.** Next: COM-83 (ScenarioTable small-multiples).
+
+## 2026-06-09 — COM-83 ("Across scenarios" small-multiples on the Advisors hero) DONE [M9 PD2 #4]
+
+**COM-83 (P3 Med, 118 net LOC) — DONE.** Stacked on COM-85. One across-cases tabulation replaces the four
+PotentialStrip restatements ("impeccable distill").
+- **NEW `components/ScenarioTable.vue`:** top = the base-case **Floor → Current → Ceiling** progression strip
+  (the old PotentialStrip numbers + captions, same accent semantics); below = **rows = scenarios from
+  `c.scen[]`**, cols Net / Equity / Tokens (tabular-nums right-aligned; Equity/Tokens hide <sm), amber row +
+  outline "base" Badge where `key === c.base.key`, red "equity underwater" Badge from `scen.underwater`.
+  All engine exports — zero view math.
+- **Advisors.vue:** PotentialStrip swapped for ScenarioTable (the "Best case" tile IS the aggressive row now;
+  component file kept — no other usages); the **FootballField range card promoted out of the "Show detail"
+  expander** to sit under the table; expander relabelled "+ Show detail · vesting, mix, instruments".
+- **Preview-verified on :4173:** rows reconcile to the anchors — Conservative $1.87M ($73K eq + $1.80M tok) ·
+  Base $7.67M ($2.27M + $5.40M) · Aggressive $21.4M ($5.23M + $16.2M); progression strip + base badge render;
+  range card sits above the expander; expander label updated. Screenshot. No new console errors.
+- QA: engine 22/22 · `vp check` 0 errors on both files · build 0. Branch `robinandre/com-83-…` stacked on
+  COM-85; PR `Fixes COM-83`. **STOPPED at the merge gate.** Next: COM-84 (target outcome that prints).
+
+## 2026-06-09 — COM-84 (per-advisor target outcome that survives to print) DONE [M9 PD2 #5]
+
+**COM-84 (P3 Med, 85 net LOC) — DONE.** Stacked on COM-83. The ExitSlider what-if is no longer ephemeral.
+- **ExitSlider.vue:** new `sel` prop → thumb initialises from `sel.targetExit` (`posFromExit` inverse-lerp over
+  the sorted scen exitVals; re-inits on advisor/scen-set change, NOT on every drag) and the `change` event
+  (release, not per-frame) persists `view.exitVal` via `setAdvisorTargetExit` (COM-82). A **print-only**
+  sentence ("At a ~$X exit, this package is worth ~$Y net — net of strike & dilution · not a forecast",
+  qualifier VERBATIM) renders as a second fragment root; the slider control stays `no-print`.
+- **style.css:** revived the reference's `.print-only` utility (display:none on screen; block in @media print).
+- **Proposition.vue:** in-document target line after the scenario band (mirror lerp over `c.scen` exports,
+  defaults to base when no target) + appended to `propText()`; its ExitSlider passes `:print-line="false"` so
+  the doc doesn't print the sentence twice. Advisors passes `:sel="sel"`.
+- **⚠️ VUE GOTCHA (cost a debug loop — record):** Vue casts an **ABSENT Boolean-typed prop to `false`**
+  (HTML boolean-attribute semantics), so `printLine?: boolean` + `v-if="printLine !== false"` silently never
+  rendered. Fix: `withDefaults(..., { printLine: true })`. Symptom: compiled vnode correct in the bundle, DOM
+  missing the node — check prop CASTING before suspecting the build.
+- **Preview-verified on :4173:** drag to pos 1.6 → `targetExit: 650000000` persisted (lerp $500M→$750M ✓);
+  reload → thumb restored to 1.6; print-only sentence in DOM (display:none on screen) reading "~$650.0M exit
+  … ~$15.9M net"; /proposition: slider inits 1.6, **in-doc line shows the identical $650M/$15.9M** (mirror
+  lerp agrees), component print-line suppressed (0 .print-only). localStorage cleared after (pristine default).
+  Print-media flip is CSS-deterministic (`display:block !important` in @media print) — same spec-faithful
+  caveat as COM-59 (no real print dialog in the preview); Robin eyeballs an actual print at the gate.
+- QA: engine 22/22 · `vp check` 0 errors on the 4 files · build 0. Branch `robinandre/com-84-…` stacked on
+  COM-83; PR `Fixes COM-84`. **STOPPED at the merge gate.** Next: COM-86 (Compare Spread + pin-to-compare).
+
+## 2026-06-09 — COM-86 (Compare Spread + pin-to-compare) DONE [M9 PD2 #6 — ★ PD2 COMPLETE]
+
+**COM-86 (P3 Med, 160 net LOC) — DONE.** Stacked on COM-84. The PD2 capstone on Compare.
+- **Spread column** (sortable; desc → asc → roster order; `aria-sort` + ↓/↑ glyph on the header button):
+  `max(scen.total) − min(scen.total)` per row — engine totals only.
+- **Pin column** (Button Pin/Pinned, `aria-pressed`, `@click.stop` off the row-open) toggling the **transient
+  `store.pinnedIds`** (COM-82); cap 3 with a toast past the cap. **Head-to-head panel** above the matrix when
+  ≥2 pinned: transposed table (rows = scenarios w/ amber base row, cols = pinned advisors, cells = net + the
+  COM-58 Δ shape) + a 2–3-series grouped bar reusing FrappeChart/SCEN_TOKENS/chartHex + "Unpin all". Panel is
+  `no-print` (the printed Compare matrix stays canonical).
+- **Preview-verified on :4173:** Spread renders ($19.6M Iraj / $13.0M others = max−min ✓); pin Iraj+Martin →
+  "Head-to-head · Iraj vs Martin" with correct transposed nets/Δ + grouped bar SVG; pinned a 3rd, a 4th was
+  REJECTED (count stayed 3); **`pinnedIds` does NOT appear in localStorage** (transience contract ✓);
+  sort asc moved Iraj (largest spread) LAST + `aria-sort=ascending`; Unpin all + sort reset after. Screenshot.
+- **Stack-wide /code-review (all 6 PD2 issues, frosty…COM-86):** clean. One benign edge recorded: a
+  hand-imported NEGATIVE `targetExit` survives reconcile (`ok()` checks finite, not >0) but every consumer
+  clamps to the floor — cosmetic; fold a `> 0` guard into a future hardening issue rather than rebase the
+  pushed stack. Also noted: `togglePin`/Unpin-all mutate the transient `store.pinnedIds` from the view —
+  sanctioned (transient UI state per the issue; `State` mutations still go through reducers only).
+
+**★ PD2 COMPLETE — 82 → 81 → 85 → 83 → 84 → 86, six stacked PRs #16–#21 into frosty (on top of the spec-v2
+docs PR #15).** Merge order #15 → #16 → … → #21; GitHub auto-retargets each child as its parent lands.
+Engine frozen + 22/22 throughout; every issue preview-verified on :4173; Linear issues sit In Progress and
+flip Done at merge (Robin is the merge actor). **Next after merge: ③ clean layout & IA (COM-88/89/90/95) →
+④ the frappe-ui adopt cluster (§6 decisions) — or COM-139 (the Δ4 legal fix, GC wording sign-off) any time.**
+
+## 2026-06-09 — ★ SPEC-v2 DOCS + PD2 MERGED TO PROD (#15–#21) · design phase begins
+
+**Robin lifted the merge gate ("merge all the PRs once you are happy with them and that they are meeting your
+QAs") and asked for the design skills (/design-critique · /frontend-skill · /design-handoff · /design-system)
+to drive the next implementation work.** Pre-merge QA re-proven at the stack tip (both engine suites 22/22,
+build 0, tree clean), then merged **#15 → #16 → #17 → #18 → #19 → #20 → #21** in stacked order (retarget →
+`gh pr merge --merge`). **frosty HEAD = `cb22e7d`** (Merge #21). Post-merge verified: `git diff origin/frosty
+<tip> -- scaffold/src` **empty** (byte-identical to the verified stack tip) — the tip's engine 22/22 + build 0
+therefore hold on frosty. Prod redeploys from frosty. Flipped **COM-82/81/85/83/84/86 → Done** (M9 now
+17 Done / 49 open). 0 open PRs.
+
+**Robin's standing authorization for THIS session:** merge each subsequent PR once it passes the full QA gate
+(no per-PR gate stop). **NEXT: design phase** — /design-critique over the merged app on :4173, then the
+clean-layout & IA cluster (COM-88 de-box · COM-89 ~940px reading column · COM-90 Board roster-first ·
+COM-95 Configure two-column) under the /frontend-skill + /design-system lenses, one PR per issue, merged
+when green; /design-handoff artifact at the end.
+
+## 2026-06-09 — COM-89 (reading column; dense tables opt out) DONE [M9 design #1]
+
+**COM-89 (P3 Med, 27 net LOC) — DONE + MERGED.** First clean-layout issue (the canvas the rest paint on).
+- **Design-critique first** (full app on :4173, all six routes): confirmed all four cluster issues against the
+  live build — Board's inverted reading order, ~19 equal-weight cards, 120ch prose lines, Configure's flat
+  8-section scroll. /frontend-skill + /design-system lenses loaded for the implementation.
+- **tailwind.config.js:** new `maxWidth: { reading: "60rem" }` token (960px — tokenised per the design-system
+  lens instead of scattering `max-w-[960px]` arbitraries).
+- **App.vue:** `<main>` full-bleed (was max-w-7xl); footer inner → `max-w-reading`. **Views own their column:**
+  Overview/Advisors/Configure/Proposition roots (incl. empty states) = `mx-auto w-full max-w-reading px-3
+  sm:px-5`; Board/Compare self-apply `max-w-7xl` (dense tables keep the wide canvas).
+- **Verified at a 1680px viewport** (resize + getBoundingClientRect): main 1440 (full-bleed minus sidebar);
+  Overview/Advisors/Configure/Proposition/footer = **960** ✓; Board/Compare = **1280** ✓. Overview screenshot:
+  centred column, KPI band + roster + right rail intact, prose at readable measure. vp 0 errors on my files ·
+  engine 22/22 · build 0. **Preview gotcha:** one `preview_screenshot` returned `UnknownVizError` — transient;
+  immediate retry succeeded.
+
+## 2026-06-09 — COM-90 (Board leads with the roster) DONE [M9 design #2]
+
+**COM-90 (P3 Med, a pure block move) — DONE + MERGED.** Board's reading order un-inverted: PageHeader →
+ContextStrip → COM-85 selector → **roster + company-cost grid** → the two analysis charts below. DOM-order
+verified on :4173 (header/context/selector/ROSTER-GRID/CHARTS-GRID) + screenshot: roster + cost panel above
+the fold. **Documented trade-off:** kept the charts' half-width `lg:grid-cols-2` pairing instead of the
+issue's full-width option — the scatter's fixed 460×280 viewBox letterboxes at full width and, on mobile,
+a wider viewBox would scale its text BELOW the COM-49 ≥11px floor. Reading order was the load-bearing fix.
+- **Gotcha (2nd occurrence — now a rule):** zsh heredocs (even `<<'EOF'` to python) escape `!` → `\!` in
+  generated text. NEVER emit `!` through Bash heredocs; use the Write/Edit tools for content with bangs.
+- QA: vp 0 errors on Board.vue · engine 22/22 · build 0 · no new console errors.
+
+## 2026-06-09 — COM-88 (de-box static sections) DONE [M9 design #3]
+
+**COM-88 (P3 Med, 18 net LOC across 6 files) — DONE + MERGED.** Borders now earn their place.
+- **De-boxed** (label + content on the white canvas — App bg is `bg-surface-white`, so row hovers stay
+  visible): Board roster (row `border-b` + amber total row separate it; wrapper keeps only
+  `overflow-x-auto`), both scenario-range lists, the Instruments read-out (label + `divide-y`),
+  `MixBreakdown`/`DilutionPath`/`VestingTimeline` roots, and `ContextStrip` (frame+gray bg dropped → a
+  quiet metadata line; affects every route consistently).
+- **Kept framed** (interactive/conclusion surfaces): staircase + scatter chart cards, the amber
+  company-cost panel, `ScenarioTable` (the hero tabulation, post-dates the issue), the package-summary
+  card (carries the Edit action), ExitSlider/UpsideCurve/GrowthWaterfall.
+- Advisors projection rhythm `space-y-6` → `space-y-8` per the issue.
+- **Verified by computed style on :4173** (borders are sub-pixel in screenshots): vesting/mix/instruments/
+  ranges/ContextStrip = `border 0 / transparent bg`; ScenarioTable + both charts + cost panel = `1px`.
+  vp clean (one fmt round on ContextStrip) · engine 22/22 · build 0.
+
+## 2026-06-09 — COM-95 (Configure settings two-column IA) DONE [M9 design #4 — ★ clean-layout cluster COMPLETE]
+
+**COM-95 (P4 Low, L) — DONE + MERGED.** The flat 8-section scroll becomes the frappe-ui settings pattern.
+- **Left rail** (`nav aria-label="Configure sections"`, sticky `lg:top-20`, horizontal scroll strip <lg with
+  descriptions hidden): **Cap table** (Roadmap CSV + Bridge + Rounds + Scenario paths) · **Grants & pools**
+  (Uniform base + Capital schedule) · **Performance** (Objectives + Tiers + Milestones). Active state reuses
+  the sidebar idiom (`bg-surface-gray-3` + medium). Only the active group renders (`v-if` per group); a local
+  `group` ref — zero store involvement.
+- **Scope decision:** the gray form-group boxes KEPT their frames — they wrap interactive field clusters,
+  which is precisely a border earning its place (COM-88's rule); the issue's "static lists → divide-y" had
+  no real static lists here (rounds/milestones are editable chips). The "sequence after COM-127/106" note was
+  advisory — the IA layer is independent of the inner control types; COM-106 (FormControl conversion) can
+  proceed inside the new groups unchanged.
+- **Verified on :4173:** rail renders; cap default; Performance click → its 3 sections swap in, others
+  unmount, `aria-current` tracks; **edit round-trip through the new layout persisted** (tier rename hit
+  localStorage live, reverted); mobile (375px) rail is horizontal with descs hidden; whole-group-per-screen
+  screenshot. vp clean · engine 22/22 · build 0. Diff is 599/532 because wrapping re-indented the template —
+  the semantic delta is the rail + three `<template v-if>` wrappers (~60 LOC).
+
+**★ Clean-layout & IA cluster COMPLETE (COM-89 → 90 → 88 → 95), all merged to frosty same-session under
+Robin's standing authorization.** M9 = 21 Done / 45 open.
+
+## 2026-06-09 — ★ Design phase closed: DESIGN_SYSTEM.md handoff committed (/design-handoff)
+
+Authored **`DESIGN_SYSTEM.md`** (repo root) per Robin's /design-handoff request — the durable distillation of
+the M7→M9 design grammar for future contributors/agents: foundations (Espresso tokens + the custom
+`--ink-amber-strong`/`--chart-*`/`max-w-reading` set), the four clean-layout rules (reading column · borders
+earn their place · lead with the subject · settings two-column), the VERIFIED frappe-ui 0.1.278 idioms +
+Vue gotchas (boolean-prop cast, structuredClone), chart rules ($M axes, ≥11px floor, non-color channel,
+geometry-never-rounded), the M7 a11y floor, the print/confidentiality system, and a Do/Don't table.
+`CLAUDE.md` "Where things live" points at it. Committed straight to frosty (docs-only).
+
+**Session totals (2026-06-09, this session):** spec v2 adopted + Linear re-baselined (M10–M12, COM-139–170,
+32 new issues) · PD2 complete (COM-82/81/85/83/84/86) · clean-layout cluster complete (COM-89/90/88/95) ·
+**25 PRs #15–#25 all merged to frosty/prod** · M9 = 21 Done / 45 open. **Next:** ④ the frappe-ui adopt
+cluster (COM-104 Sidebar · COM-105 CommandPalette · COM-96 RosterTable · COM-121 type cleanup · COM-110 dead
+dark branch — §6 decisions all pre-made) — or **COM-139** (the Δ4 legal fix; needs Charlie's wording
+sign-off) — or start **M12 COM-141** (Governance checklist, presentation-first). COM-33 (Deployment
+Protection) remains the open human action.
+
+## 2026-06-09 — ★ ULTRACODE_M9_FINISH authored (the next-session goal loop) + Linear current
+
+**Robin asked for (1) Linear fully updated and (2) an ultracode goal-loop prompt for Fable 5 to tackle a
+big batch next session.** Done:
+- **Linear:** second project status update of the day posted (PD2 + clean-layout merges itemised; M9 17%→32%
+  on the milestone bar; next-batch pointers; COM-33/71 human actions). All 10 of today's built issues sit
+  Done; COM-139/141 framing confirmed in their issues.
+- **`ULTRACODE_M9_FINISH.md`** (repo root, committed to frosty) — the goal-loop run-prompt for **Fable 5**:
+  drive M9 from 21/66 → 66/66 plus COM-139 (build-and-HOLD for Charlie) and COM-141 (first M12 surface).
+  Authored from a **6-agent verified sweep** (5 Linear distillation lanes over the 45 open issues + 1 repo
+  ground-truth lane at the frosty tip — ~505k subagent tokens). Key contents: §0 verified repo ground truth
+  (App.vue 431-line map; the TWO dead dark blocks at style.css :33-36/:54-65; COM-78/79/80's targets now
+  live in PackageEditor.vue; index.html ships IBM Plex Sans that NOTHING uses — fold into COM-121); §2 the
+  merge-on-green goal loop (per-issue DoD → merge → Done-flip → memory; frosty re-verify at wave
+  boundaries; hold-list = COM-139/legal/engine); §3 a 7-wave dependency-verified order for all 45 issues
+  (foundations 93/135/116/118/110 first; 110 obsoletes COM-124 → cancel it); §4 pre-made decisions + the
+  prompt-set defaults (COM-92 = sidebar placement; COM-101 root = board name; COM-125 = hide); §5 the full
+  verified gotcha register (boolean-prop cast, zsh `!` heredocs, reka Select driving, UnknownVizError
+  retry, stale-line rule). CLAUDE.md's live-prompt pointer updated to it.
+- **Loop discipline encoded:** issues branch independently off frosty (merge-on-green kills the stack need)
+  EXCEPT marked same-region pairs (137→138, 102→101, 119→120, 78→79→80) which stack; COM-96's Compare
+  adoption may split; COM-141 may split seed-vs-UI.
+
+**NEXT SESSION: paste ULTRACODE_M9_FINISH.md §6 kickoff.** Open human items unchanged: COM-33 (Deployment
+Protection — URL still public), Charlie's COM-139 wording sign-off, COM-71 (Vercel MCP scope).
+
+## 2026-06-10 — COM-93 (nav single-source) DONE [M9 finish-loop W1 #1]
+
+**COM-93 (P4 Low, S, 52/38 LOC) — DONE + MERGED.** First issue of the ULTRACODE_M9_FINISH goal loop (wave 1).
+- New `src/nav.ts`: `NAV: {to,label,icon,group}[]` + derived `navGroups` (Board/Advisor; Configure excluded)
+  + `configureItem`. App.vue's inline navGroups const (COM-62) replaced by the import; CommandPalette's local
+  ROUTES deleted — its "Go to" group consumes NAV and shows the workflow group as the row hint (skipped when
+  it would repeat the label: Board, Configure); router.ts iterates NAV for order+titles over a local
+  `views` component map (components stay out of nav.ts so the palette/sidebar don't pull view chunks).
+- Verified on :4173: sidebar order = NAV order; palette "Go to" hints Board/Board/—/Advisor/Advisor/—;
+  palette click routes (→/proposition); all six routes resolve; zero console errors. vp 0 errors ·
+  engine 22/22 both · build 0.
+- Gates COM-104 (Sidebar adopt) + COM-105 (palette rebuild), which consume nav.ts.
+
+## 2026-06-10 — COM-135 (mobile drawer inert + focus trap) DONE [M9 finish-loop W1 #2]
+
+**COM-135 (P2 HIGH, 39/3 LOC, App.vue only) — DONE + MERGED.**
+- `isMobile` matchMedia ref at `(max-width: 1023.98px)` (Tailwind lg boundary), listeners cleaned on
+  unmount. `<aside :inert="isMobile && !navOpen">` kills the phantom tab-walk; the content column takes
+  `:inert="isMobile && navOpen"` while open — inert IS the focus trap (no manual trap loop). Window
+  keydown Esc closes; toggle gets `aria-expanded`.
+- **Gotcha learned: Vue watch fires pre-flush, so `.focus()` on an element inside a still-`inert`
+  subtree is a silent no-op — wrap BOTH focus moves in `nextTick`.** (First Esc test failed exactly
+  there; fixed + re-verified.) Also: the issue's `@keydown.esc.window` is Alpine syntax — Vue has no
+  `.window` modifier; use a window listener.
+- Verified at 375px on :4173: closed → drawer's 11 focusables unreachable (hamburger → page content
+  directly); open → focus lands on Search, content inert, scrim up, aria-expanded true; Esc → closed,
+  focus back on the hamburger. Desktop 1193px: nothing inert, sidebar tabbable. Zero console errors.
+  vp 0 errors · engine 22/22 both · build 0.
+- Known minor: Esc with palette AND drawer open closes both (palette teleports to body) — flagged in PR.
+
+## 2026-06-10 — COM-116 (the figure scale) DONE [M9 finish-loop W1 #3]
+
+**COM-116 (P3 Med, 35/29 LOC, 6 files) — DONE + MERGED.** `.figure-sm/md/lg` (1.5/1.875/2.5rem, Fraunces
+350, lh 1, tabular-nums, -.02em) in style.css as plain classes — NOT `@layer components` (this stylesheet
+has no Tailwind directives; they live in frappe-ui's built css, and style.css imports AFTER it so figure
+rules beat leading-* utilities — that's load-bearing: the Proposition h1 keeps clamp + `line-height:1.25`
+inline as the documented override). Migrated: PotentialStrip + ScenarioTable (sm), ExitSlider 2rem→md
+1.875, Proposition tier trio 2.8rem→lg 2.5 + scenario band text-2xl→sm, Overview KPI + roster text-xl→sm
+(1.25→1.5rem bump). ScenarioTable was an unlisted 7th 350-site (grep > issue cites). Editorial Fraunces
+(letterhead/recipient/PageHeader/Configure h1) untouched. Verified by computed style on :4173: sm 24px ·
+md 30px · lg 40px, all weight 350 tabular; h1 47.72px/59.65px at 1193w; Proposition screenshot — reads
+identical. vp 0 · 22/22 both · build 0. Gates COM-113/114/117.
+
+## 2026-06-10 — COM-118 (amber = ONE meaning) DONE [M9 finish-loop W1 #4]
+
+**COM-118 (P3 Med, 31/28 LOC, 7 files) — DONE + MERGED.** Amber now = current/active case + status only.
+- **Demoted:** 10 Configure headers → ink-gray-7 (one bulk replace on `text-sm text-ink-amber-strong` —
+  exactly the 10; the ★ base toggle :281 + TGE caution :379 are conditionals/text-p-xs so untouched);
+  Board + Compare total rows → surface-gray-1 + border-t (sticky td bg matched); PackageEditor
+  Performance card → gray-1 surface w/ amber icon as the warmth accent, Uniform-base chip → gray,
+  per-tier ×mult ink → gray-6; Proposition "How to read this" → gray panel; UpsideCurve's 2 chart
+  eyebrows → gray-7.
+- **Kept (one meaning):** accent/base cells everywhere, tier-selected, base ★, TGE caution,
+  pending/awaiting-gate/Edited status inks, EquityBenchmark offer band, Board company-cost panel +
+  Proposition hero as each page's single amber moment. **Objective state borders kept** — amber=pending
+  is the documented status color, not decoration (flagged in PR). FootballField band left for COM-119.
+- DESIGN_SYSTEM §2.5 updated (ink-gray-7 group headers; amber never a heading color).
+- Verified on :4173 by computed color sweep per page: Configure cap+perf groups → zero amber text but
+  the caution; Proposition → only current-case markers; PackageEditor card gray-1/icon-amber. Board
+  screenshot: total row neutral, cost panel pops. vp 0 · 22/22 both · build 0. Gates COM-114/115/117.
+
+## 2026-06-10 — COM-110 (dead dark branch deleted) DONE + COM-124 cancelled [M9 finish-loop W1 #5 — ★ WAVE 1 COMPLETE]
+
+**COM-110 (P4 Low, 15/29 LOC, 4 files) — DONE + MERGED.** Robin's pre-made call (2026-06-09): DELETE.
+- Both `[data-theme="dark"]` blocks removed from style.css (amber-strong + the 10 --chart-*) with an
+  audit-trail comment in their place; `:root{color-scheme:light}` KEPT (COM-109). Stale dark comments
+  fixed in NumIn.vue, constants.ts, Configure.vue header. Tokens verified resolving on :4173
+  (#8a4b08 / #9c4a0c, color-scheme light), zero console errors. vp 0 · 22/22 both · build 0.
+- **COM-124 cancelled** as obsolete with the prescribed comment (re-open with any future dark milestone).
+
+**★ WAVE 1 (foundations) COMPLETE: COM-93 → 135 → 116 → 118 → 110, PRs #26–#30 all merged to frosty.**
+M9 = 26 Done / 40 open. Next: wave-boundary frosty re-verify, then WAVE 2 hardening (COM-133 EmptyState,
+COM-134 print, COM-137→138 alerts stack, COM-136 truncation).
+
+## 2026-06-10 — COM-133 (shared EmptyState) DONE [M9 finish-loop W2 #1]
+
+**COM-133 (P2 HIGH, 96/24 LOC, 6 files) — DONE + MERGED.** `components/EmptyState.vue` (icon medallion +
+title + body + CTA slot, max-w-reading centered) extracted from Overview's donor block; Board + Compare now
+gate their whole template on `board.rows.length` (charts/total rows suppressed), Advisors + Proposition
+upgraded from bare one-liners. CTAs call `addAdvisor` (it self-selects → Advisors/Proposition render the
+new package immediately); Overview keeps its route-to-/board CTA (pure refactor of the donor).
+- **Verified by actually emptying the board on :4173** (localStorage surgery on `raiku-advisor-comp-v5` —
+  the persisted shape is `{scenarios: savedBoardsMap, last}`, NOT {S,saved}; backup → sessionStorage →
+  restore): all four views show the teaching state, Board screenshot clean, CTA on Proposition created
+  "New advisor" + rendered the letter; original 4-advisor board restored after. Zero console errors.
+  vp 0 · 22/22 both · build 0.
+
+## 2026-06-10 — COM-134 (print hardening) DONE [M9 finish-loop W2 #2]
+
+**COM-134 (P2 HIGH, 23/4 LOC, 2 files) — DONE + MERGED.** (1) `.print-area{padding-bottom:10mm}` in
+@media print (the running band is ~7mm — the final page's legal corpus clears it); (2) Board's four
+print wrappers (roster table overflow div, range stack, staircase card, scatter card) carry `print-area`;
+(3) `break-inside:avoid` on `.print-area, table, tr, .ff-row` + `thead{display:table-header-group}`;
+`ff-row` class added on Board's FootballField rows (attr-inherits to the component root); sr-only
+`<caption>` on the roster table. **Spec-faithful CSS — no real print dialog under the preview MCP
+(COM-59 caveat): Robin should eyeball one Board-pack + one Proposition PDF.** Verified in-DOM on :4173
+(4 print-areas, 4 ff-rows, caption hidden) + rules present in the built css. vp 0 · 22/22 both · build 0.
+
+## 2026-06-10 — COM-137 (independent alerts + not-saved badge) DONE [M9 finish-loop W2 #3]
+
+**COM-137 (P3 Med, 12/1 LOC, App.vue) — DONE + MERGED.** Header alerts are sibling `v-if`s (storage
+yellow first, budget red second — both can show); plus a persistent sidebar strip under the brand row
+(`v-if="!store.storageOk"`, amber-1 bg + amber-strong ink, "Not saved — export to keep" + title tooltip).
+- Verified the budget path live (localStorage surgery: baseGrant.equityPct→5% → "At ceiling, board
+  equity 65.50% exceeds the 10% ESOP pool" banner rendered standalone; restored after). The
+  storage-blocked path is untestable from the preview without actually breaking localStorage — trivial
+  v-if, code-reviewed. vp 0 · 22/22 both · build 0. Engine warnings cap at 3 kinds → shapes COM-138
+  (full list, no disclosure needed).
+
+## 2026-06-10 — COM-138 (complete budget alert) DONE [M9 finish-loop W2 #4]
+
+**COM-138 (P3 Med, 14/7 LOC, App.vue) — DONE + MERGED.** The engine emits ≤3 warnings (verified in
+frozen engine.ts boardCalc), so the Alert renders ALL of them as a ul (plural title when >1) — no
+disclosure machinery needed, the dead "(+N more)" is gone — plus a "Review the pool on the Board"
+router-link (PoolAllocation makes the breach visible there). Verified live with a two-warning state
+(equity + token pools both bombed via localStorage surgery; link navigated to /board; data restored).
+vp 0 · 22/22 both · build 0.
+
+## 2026-06-10 — COM-136 (names: truncate + disambiguate) DONE [M9 finish-loop W2 #5 — ★ WAVE 2 COMPLETE]
+
+**COM-136 (P3 Med, ~40 LOC, 4 files) — DONE + MERGED.** `shortName(name, all)` in constants.ts (first
+name; + last-token initial when duplicated; mononym kept; empty → "—"). Board scatter/ranges +
+Compare's 5 label sites (datasets, axis labels, h2h heading/cols, aria-label) consume it via a local
+`sn()`. Board roster cell capped `max-w-[14rem]` + truncate + :title (the max-w cap is what makes
+truncate bite in table-auto layout); Compare sticky col 12rem; FootballField label span truncates
+(callers pass short names anyway).
+- Verified with a fixture ("Martin Aleksander Bergström-Holmenkollen III" + "Martin Keller"): ranges
+  + scatter + Compare charts show "Martin I." / "Martin K.", unique names stay first-only, cells
+  truncate at 224px w/ full-name title. Restored after. vp 0 · 22/22 both · build 0.
+
+**★ WAVE 2 (hardening) COMPLETE: COM-133/134/137/138/136, PRs #31–#35.** M9 = 31 Done / 34 open.
+Next: wave-boundary frosty re-verify → WAVE 3 (the frappe-ui adopt cluster: 104 → 105 → 94 → 121 →
+103 → 102 → 101 → 106 → 96; §4 decisions pre-made).
+
+## 2026-06-10 — COM-104 (frappe-ui Sidebar adopt) DONE [M9 finish-loop W3 #1]
+
+**COM-104 (P3 Med, L, 119/96 LOC, App.vue) — DONE + MERGED.** Robin's pre-made call: adopt the primitive,
+KEEP the hand-rolled scrim+translate drawer as the wrapper. The aside keeps only drawer mechanics
+(fixed/translate/inert per COM-135); `<Sidebar :sections disable-collapse>` inside renders the canonical
+rail (menu-bar #F8F8F8 bg · surface-selected #FFF active card + shadow · sentence-case h3 section labels —
+COM-121's sidebar half landed free). Header slot = wordmark/badge/COM-137-strip/Search/Saved/Case;
+footer-items = Configure + Share/More.
+- **frappe-ui 0.1.278 Sidebar API facts (verified from source):** exports Sidebar/SidebarHeader/
+  SidebarItem/SidebarSection; `SidebarItem.to` navigates via **router.replace** (history-erasing — pass
+  `onClick: () => router.push(to)` instead); a STRING `icon` prop renders as literal text (use the
+  `#sidebar-item`/`#icon` slots for css-class lucide icons); `~icons/lucide/*` imports inside the lib
+  resolve via the frappeui vite plugin (lucideIcons.js — our config comment already says the plugin is
+  required for exactly this); `disableCollapse` kills BOTH the collapse toggle and the <sm icon-rail
+  (`shouldCollapse = (collapsed || isMobile) && !disableCollapse`); aria-current is NOT set by the lib —
+  pass it as a fallthrough attr onto SidebarItem (lands on the Button root). Also verified existing:
+  CommandPalette+Item, KeyboardShortcut, Switch, Breadcrumbs, Tabs, ListView family (NO ItemListRow —
+  COM-103 must use ListView/ListRow or keep markup).
+- Verified: desktop rail + active card + aria-current tracking + history GROWS on nav (push); 375px
+  COM-135 cycle intact (inert/scrim/focus/Esc); ⌘K trigger + Case select + Share/More functional; zero
+  console errors. vp 0 · 22/22 both · build 0.
+- **New zsh gotcha: backticks inside a double-quoted `git commit -m "..."` get command-substituted**
+  (ate a word; amended). Single-quote commit messages or use Write+`-F`.
+
+## 2026-06-10 — COM-105 (palette rebuild) DONE — ★ UPSTREAM BUG FOUND [M9 finish-loop W3 #2]
+
+**COM-105 (P3 Med, L, 164/183 LOC) — DONE + MERGED.**
+- **★ frappe-ui 0.1.278 CommandPalette is BROKEN AS SHIPPED:** its SFC root is a DOUBLED `<template>` —
+  the bare inner one compiles to a native INERT template element (verified with @vue/compiler-sfc:
+  `createElementBlock("template")`), so its Dialog renders into inert DOM and never teleports. Symptom:
+  show flips true, nothing appears, zero console errors. **The lib's CommandPaletteItem is fine.**
+- Fix shape: ported the lib component's template verbatim into our CommandPalette.vue with the root
+  fixed — frappe-ui Dialog (`{size:'xl',position:'top'}` + @after-leave clears query) + CommandPaletteItem
+  (`{name,title,description,disabled}` items; `component: markRaw(CommandPaletteItem)` per group) +
+  @headlessui/vue Combobox (now an EXPLICIT dep ^1.7.23 — it was already in the tree via frappe-ui; 1-line
+  package.json+lock delta kept deliberately). Parent owns filtering (the lib palette filters NOTHING),
+  the open-command-palette event, and the Import file input. Global watcher: Cmd/Ctrl+K opens (note: only
+  opens, no toggle — Frappe behavior), Esc closes. App.vue trigger glyph → `<KeyboardShortcut combo="Mod+K">`
+  (renders ⌘K on Mac, Ctrl+K elsewhere; aria "Shortcut Command + K").
+- **Keyboard regression pass on :4173:** ⌘K opens + input autofocused (headlessui), 16 cmds in 4 groups,
+  type→filter, ↓ activates (aria-activedescendant — NOTE: activation lands a TICK later; same-tick
+  synthetic ↓+↵ silently no-ops — two-eval it), ↵ selects→navigates→closes, Esc closes, "No matches"
+  disabled item renders. Dialog leave transition ≈300ms (a "closed" check right after Esc reads stale).
+- For COM-94 (palette Actions): write new verbs in the `{name,title,description,run}` shape.
+
+## 2026-06-10 — COM-94 (palette editing verbs) DONE [M9 finish-loop W3 #3]
+
+**COM-94 (P4 Low, ~55 LOC, 2 files) — DONE + MERGED.** Actions group now leads with: Add advisor
+(addAdvisor → openEditor — the composable targets store.selId, which addAdvisor sets), New scenario
+(→ /configure?group=cap), New objective (→ /configure?group=perf). Configure reads `?group=` into its
+COM-95 rail ref (guarded against junk values). Row-level focus skipped — the add* reducers append last,
+which the group deep-link makes visible; flagged in PR.
+- **Driving gotcha confirmed for headlessui ComboboxOption: bare .click() does NOTHING — dispatch the
+  full pointerdown→mousedown→pointerup→mouseup→click sequence on the LI.** Verified live (backup→
+  restore): New objective added a row + landed on the Performance group; Add advisor opened the editor
+  on "New advisor". vp 0 · 22/22 both · build 0 · zero console errors.
+
+## 2026-06-10 — COM-121 (Plex dropped, Fraunces only) DONE [M9 finish-loop W3 #4]
+
+**COM-121 (P4 Low, 10/13 LOC, 2 files) — DONE + MERGED.** index.html css2 → Fraunces only (Plex Mono had
+zero painted usages; Plex Sans was fetched but used NOWHERE); dead `.font-mono` + `.eyebrow` deleted from
+style.css (grep: only comment mentions remain — constants.ts "eyebrow" is the COM-126 STRING, untouched).
+The uppercase label half was already retired by COM-104/105 (lib sentence-case labels); grep zero
+`uppercase tracking-wider`. Verified on :4173: ONE googleapis stylesheet (Fraunces), font loads + paints
+(figures + wordmark). The issue's (c) Fraunces-on-data question is settled in practice by COM-116's
+figure scale (Robin kept Fraunces for figures). vp 0 · 22/22 both · build 0.
+
+## 2026-06-10 — COM-103 (Mgr list on ListView) DONE [M9 finish-loop W3 #5]
+
+**COM-103 (P4 Low, ~60 LOC, App.vue) — DONE + MERGED.** ItemListRow does NOT exist in 0.1.278 → the
+issue's fallback: minimal composed `ListView` + `ListRows` + `ListRow` (default scoped slot) +
+`ListRowItem` (#prefix = current check in a fixed slot, #suffix = delete w/ @click.stop, `ml-auto` to
+right-align — suffix otherwise hugs the label). Row click loads via `options.onRowClick`;
+`selectable:false` kills the checkbox column.
+- **frappe-ui gotcha (a11y): icon-only Buttons bind `:aria-label="label"` internally — a fallthrough
+  `aria-label` attr is CLOBBERED (renders without a name). Pass `label` (it renders sr-only on icon
+  buttons).** Fixed the Mgr delete + the pre-existing More-actions button in the same file.
+- Verified: dialog renders the row (check + label + right-aligned delete, 40px ListRow), row click
+  loads, delete → confirmDestroy → dismissed via × → board intact. vp 0 · 22/22 both · build 0.
+
+## 2026-06-10 — COM-102 (board-identity switcher) DONE [M9 finish-loop W3 #6]
+
+**COM-102 (P3 Med, ~40 LOC, App.vue) — DONE + MERGED.** "Saved · N" → Dropdown triggered by
+`store.S.name` (truncating subtle Button, title tooltip): saved boards as load items (lucide-check on
+current) + grouped "Manage boards…" → toggleMgr (divider renders between groups). Breadcrumb root
+"Studio" → the board name (COM-101 consumes this next).
+- Verified: trigger shows the name; menu renders both items; breadcrumb "Advisory board — working
+  draft › Overview". The Manage onClick is the same Dropdown :options mechanism as the proven
+  Share/More menus — **preview gotcha: headlessui Menu popovers do NOT reliably survive between
+  preview_eval calls (open-state parity gets lost); verify item RENDERING in the eval right after the
+  trigger click, don't chain interactions across evals.** vp 0 · 22/22 both · build 0.
+
+## 2026-06-10 — COM-101 (Breadcrumbs adopt) DONE [M9 finish-loop W3 #7]
+
+**COM-101 (P3 Med, ~20 LOC, App.vue) — DONE + MERGED.** breadcrumb computed → breadcrumbItems
+`[{label, route?}]`; `<Breadcrumbs>` inside the existing nav landmark. Root = board name → /overview;
+view crumb → its own path; advisor crumb routeless (no :id route yet). Lib look: text-lg medium, "/"
+separators, last crumb ink-gray-9, built-in overflow dropdown for >2 crumbs on narrow widths.
+- Verified on /advisors: 2 links + routeless advisor crumb; root click navigated to /overview.
+  vp 0 · 22/22 both · build 0 · zero console errors.
+
+## 2026-06-10 — COM-106 (Configure TextInput sweep) DONE [M9 finish-loop W3 #8]
+
+**COM-106 (P3 Med, ~70/90 LOC, Configure.vue) — DONE + MERGED.** 7 bare inputs → TextInput sm (aria-labels
+kept, flex/grid classes on the component root, setPath unchanged via @update:model-value); TGE date →
+FormControl type=date label="TGE date" (the PackageEditor idiom). Scenario/tier inputs lose their
+font-display styling — ONE form idiom beats the editorial accent on an editing control (flagged in PR).
+Only the hidden CSV file input remains bare.
+- Verified live: tier rename through TextInput persisted to localStorage + reverted; FormControl date
+  renders in the grants group w/ stored value 2027-06-30. vp 0 · 22/22 both · build 0 · zero console errors.
+
+## 2026-06-10 — COM-96 (roster primitives, option B) DONE — ★ WAVE 3 COMPLETE [M9 finish-loop W3 #9]
+
+**COM-96 (P3 Med, L, ~230 LOC, 6 files) — DONE + MERGED.** Robin's pre-made call: local primitives, NOT
+ListView (decision recorded in RosterTable.vue's header — its single-row-object model fights dynamic
+scenario columns/col-spans/aggregate footers). `components/roster/`: RosterIdentity (avatar+name+sector,
+owns COM-136 truncation), TierBadge ($value logic centralized), RosterTable (chrome + tfoot total band —
+COM-118 neutral, NOT the prompt's stale "amber total row"), RosterRow (the M7 focusable-row contract).
+Board table + Overview cards consume; values stay view-computed. **Compare adoption deferred** (sticky
+col + Spread/Pin) — commented on the issue per the sanctioned split.
+- Verified: headers/4 rows/caption/tfoot band identical; row Enter → /advisors w/ breadcrumb name;
+  Overview cards render via primitives; screenshot cohesive. vp 0 · 22/22 both · build 0.
+
+**★ WAVE 3 (frappe-ui adopt cluster) COMPLETE: COM-104/105/94/121/103/102/101/106/96, PRs #36–#44.**
+M9 = 40 Done / 25 open. Next: WAVE 4 visual system (108 Panel → 119/120 FootballField → 113 Overview
+hero → 115 Board cost range → 114 Proposition hero → 117 MetricBand LAST).
+
+## 2026-06-10 — COM-108 (the Panel primitive) DONE [M9 finish-loop W4 #1]
+
+**COM-108 (P3 Med, ~120 LOC churn, 10 files) — DONE + MERGED.** `components/Panel.vue` (frame +
+`padded` default-true via withDefaults — the COM-84 boolean gotcha) replaced 13 of the 14 remaining
+literals (19 at issue-writing; COM-88/118 had removed five). Unpadded mode for ScenarioTable
+(overflow-hidden) + Compare's matrix scroller; Overview's interactive roster card rides Panel with
+behaviour classes falling through (p-4 compact kept); Board's chart cards keep role/aria/print-area
+as fallthrough attrs. p-6 drift on Compare's chart unified to p-5. Exception kept: Proposition's
+gray-2 editorial frame (recorded in Panel's header).
+- Tag-swap mechanics: opening div→Panel via python, then each matching closer </div>→</Panel> by
+  hand — the vue compiler catches any mismatch at vp/build (it did not need to). Verified live:
+  computed border 1px #EDEDED · 20px padding · same 8px preset radius · zero console errors.
+  vp 0 · 22/22 both · build 0.
+
+## 2026-06-10 — COM-119 (FootballField weight inversion) DONE [M9 finish-loop W4 #2]
+
+**COM-119 (P3 Med, 8/5 LOC) — DONE + MERGED.** Band amber-2 → surface-gray-3; base tick gray-7 2px →
+surface-amber-3 3px. Verified computed on BOTH call sites (Board rows ×4 + Advisors hero): band
+#EDEDED, tick #DB7706 3px. vp 0 · 22/22 both · build 0.
+
+## 2026-06-10 — COM-120 (range rows on a fixed grid) DONE [M9 finish-loop W4 #3]
+
+**COM-120 (P4 Low, ~16 LOC, Board.vue) — DONE + MERGED.** Range rows → `grid-cols-[8rem_1fr_7rem]`
+(name truncates · label-less FootballField · right-aligned tabular range); ff-row class moved to the
+grid wrapper (COM-134 break-inside intact). FootballField's no-label mode WAS the lighter API — no
+component change needed. Verified: all 4 rows' bars start x=400 and values end x=858 (pixel-aligned).
+vp 0 · 22/22 both · build 0.
+
+## 2026-06-10 — COM-113 (Overview hero) DONE [M9 finish-loop W4 #4]
+
+**COM-113 (P3 Med, ~35/30 LOC, Overview.vue) — DONE + MERGED.** kpis[] (6 tiles) → heroCost
+(.figure-lg, label ink-amber-strong = the page's amber moment as INK not wash) + rangeText subline
+(Conservative → Aggressive · $5.62M – $64.3M) + supporting dl ×3 (de-boxed, text-sm tabular).
+Advisors-count tile deleted; fNum import dropped. Screenshot: real hierarchy at last. vp 0 ·
+22/22 both · build 0 · zero console errors. COM-117's MetricBand will absorb this shape as a variant.
+
+## 2026-06-10 — COM-115 (company-cost range) DONE [M9 finish-loop W4 #5]
+
+**COM-115 (P3 Med, ~40/16 LOC, Board.vue) — DONE + MERGED.** The 3-tile grid inside the amber panel →
+floor (quiet) · base (.figure-md, amber-strong label, tracks the board-local bc case) · ceiling (quiet)
++ the shared FootballField beneath (max=ceiling → full-track; COM-119's amber tick marks the base).
+costRange computed = pure selection over board.cost. Panel amber framing kept (the page's one amber
+moment). Screenshot: Board fully coherent — aligned range rows + the range-shaped conclusion.
+vp 0 · 22/22 both · build 0 · zero console errors.
+
+## 2026-06-10 — COM-114 (Proposition hero collapse) DONE [M9 finish-loop W4 #6]
+
+**COM-114 (P2 HIGH, 68/69 LOC, Proposition.vue) — DONE + MERGED.** The two stacked 3-up grids → ONE
+statement (Guaranteed base $7.67M, .figure-lg, quiet label) + ONE reference table (multi-tbody: Current
+amber-ink / Ceiling rows · "Net value across outcomes" group caption row · 3 scenario rows w/ eq·tok
+notes, base row amber-ink). Roman i/ii/iii deleted. **In-PR judgment (prompt-set default): the compact
+reference TABLE over a bar — reads as a letter's enclosure.** targetLine kept inside the bordered
+section. Legal corpus + propText byte-untouched (diff grep = 0 hits). Screenshots: document-grade.
+vp 0 · 22/22 both · build 0 · zero console errors.
+
+## 2026-06-10 — COM-117 (.section-label; MetricBand dissolved) DONE — ★ WAVE 4 COMPLETE [M9 finish-loop W4 #7]
+
+**COM-117 (P4 Low, ~50 LOC churn, 16 files) — DONE + MERGED.** `.section-label` token (text-sm/500/
+ink-gray-7) swapped into all 33 label sites (21 gray-6 + the 12 COM-118 gray-7 headers; python
+line-targeted sweep — letterhead metadata kept gray-6). **MetricBand NOT extracted — the premise
+dissolved: 113/114/115 removed 3 of the 4 bands; one survivor (ScenarioTable's progression band) ≠ a
+component.** Dead PotentialStrip.vue deleted (unmounted since COM-83). DESIGN_SYSTEM §2.5 → the one
+treatment. Verified: Board labels 14px/500/#525252. vp 0 · 22/22 both · build 0.
+
+**★ WAVE 4 (visual system) COMPLETE: COM-108/119/120/113/115/114/117, PRs #45–#51.** M9 = 47 Done /
+18 open. Next: WAVE 5 (editorial & package editor: 78→79→80 stack in PackageEditor, 91 Tabs, 92+127
+header zone, 128, 130+131, 129).
+
+## 2026-06-10 — COM-78 (denomination helper) DONE [M9 finish-loop W5 #1]
+
+**COM-78 (P3 Med, ~20 LOC, PackageEditor.vue) — DONE + MERGED.** Helper line under the mode TabButtons
+(mode-specific copy; "…preserved when you switch"); value mode shows "Resolves to X% eq · Y% tok at the
+base-case path" from c.baseEq/baseTk. Verified both modes live in the editor dialog (resolved line read
+0.22% eq · 0.017% tok). vp 0 · 22/22 both · build 0.
+
+## 2026-06-10 — COM-79 (tier list selector) DONE [M9 finish-loop W5 #2]
+
+**COM-79 (P4 Low, ~26/24 LOC, PackageEditor.vue) — DONE + MERGED.** 3-up tier cards → bordered
+divide-y list, `grid-cols-[1fr_4rem_10rem]` slots (name | ×mult | eq·tok right), selected =
+amber-2 bg + aria-pressed (plain buttons, not broken radio semantics). Verified: ×mult column
+pixel-aligned; select Strategic → restore Anchor round-trip. vp 0 · 22/22 both · build 0.
+
+## 2026-06-10 — COM-80 (objective rows) DONE [M9 finish-loop W5 #3]
+
+**COM-80 (P3 Med, ~40/45 LOC, PackageEditor.vue) — DONE + MERGED.** Nested objective cards →
+divide-y rows, `grid-cols-[0.625rem_1fr_3.5rem_auto]` (dot | label+trigger | +uplift% | state
+TabButtons). State borders deleted — state = TabButtons + amber awaiting-gate note only. (The
+wrapper's off-amber half landed in COM-118.) Verified: 5 rows, uplift column aligned, zero nested
+cards; TabButtons wiring unchanged. vp 0 · 22/22 both · build 0.
+
+## 2026-06-10 — COM-91 (detail Tabs) DONE [M9 finish-loop W5 #4]
+
+**COM-91 (P3 Med, ~35/30 LOC, Advisors.vue) — DONE + MERGED.** "+ Show detail" toggle → frappe-ui
+Tabs (Vesting · Mix · Dilution · Instruments), indexed v-model + one #tab-panel slot branching on
+tab.label; no-print (parity with collapsed-by-default printing). **Driving gotcha: reka TabsTrigger
+ignores bare .click() — full pointerdown→…→click sequence required (same family as the Select/
+Combobox gotchas).** Verified: 4 triggers, Vesting default, Instruments switch shows the $1572.95
+strike row. vp 0 · 22/22 both · build 0.
+
+## 2026-06-10 — COM-92 (lens co-location) DONE [M9 finish-loop W5 #5]
+
+**COM-92 (P3 Med, ~30/25 LOC, 3 files + 1 deleted) — DONE + MERGED.** Stage joins Case in the sidebar
+lens block (prompt-set default placement, flagged for veto): same label idiom (w-9 label column so the
+two Selects align), `currentStage` computed over the existing setPath. stageOptions/scenarioOptions are
+the pluggable single supply points for COM-148 (M10 sets = data change). StageBadge.vue DELETED (its 2
+mounts retired). Verified: Case+Stage render in the shell on /overview AND /configure (a route that
+never had Stage); wiring is the identical setPath mechanism. vp 0 · 22/22 both · build 0.
+
+## 2026-06-10 — COM-127 (one action zone) DONE [M9 finish-loop W5 #6]
+
+**COM-127 (P3 Med, ~70 LOC churn, 3 views) — DONE + MERGED.** Advisors' bespoke flex row → PageHeader
+#actions (Edit/Picker/case-override/Print teleport to #app-header on desktop); Proposition gets
+PageHeader "The proposition." wrapped no-print (the printed letter keeps its own masthead) w/ Print
+SOLID + Copy ghost; Configure gets PageHeader "The plan everything is measured against." + ghost
+"Back to overview" (solid Done deleted). Verified per route: #app-header carries each view's actions;
+Print bg rgb(23,23,23) vs Copy transparent; no Done remains. vp 0 · 22/22 both · build 0.
+
+## 2026-06-10 — COM-128 (Advisors confidentiality mark) DONE [M9 finish-loop W5 #7]
+
+**COM-128 (P3 Med, 8 LOC, Advisors.vue) — DONE + MERGED.** The issue's exact line ("Internal &
+confidential · net of strike, pre-tax · discussion draft, not a binding offer.") under the title via
+PageHeader's #desc slot (printable — the running mark already covers print, harmless duplicate).
+Verified in-DOM under the h1. vp 0 · 22/22 both · build 0.
+
+## 2026-06-10 — COM-130 + COM-131 (copy trims + slider tone) DONE [M9 finish-loop W5 #8 — one PR, sanctioned]
+
+**COM-130 (P4) + COM-131 (P4), ~25 LOC, 5 files — DONE + MERGED (one PR per the run-prompt).**
+Waterfall footer sentence cut · ExitSlider label = "Explore the exit" (drag-coaching gone) with
+`tone="quiet"` → "The package across outcomes" on the Proposition · Overview desc trimmed to
+view-specific copy · footer heading → "How to read these figures" (.section-label). PotentialStrip
+clause moot (deleted in COM-117). Verified per host on :4173. vp 0 · 22/22 both · build 0.
+
+## 2026-06-10 — COM-129 (Overview Term tooltips) DONE — ★ WAVE 5 COMPLETE [M9 finish-loop W5 #9]
+
+**COM-129 (P4 Low, ~25 LOC, 2 files) — DONE + MERGED.** GLOSSARY += fast, advisoryPool (explanatory
+copy; citations byte-identical). Wired: netOfStrike on the hero "Net cost", headroom on the roster
+"potential at ceiling" ×4, fast + advisoryPool on the Benchmark card. 8 Term triggers verified in-DOM.
+vp 0 · 22/22 both · build 0.
+
+**★ WAVE 5 (editorial & package editor) COMPLETE: COM-78/79/80/91/92/127/128/130+131/129, PRs #52–#60.**
+M9 = 57 Done / 8 open (the W6 seven + COM-139/141 in W7). Next: WAVE 6 smalls (99 Switch · 100 range
+tokens · 107 toast/confirm · 111 --overlay · 112 print-running tokens · 122 scatter axes · 125 adaptive
+grids), then W7: COM-139 (BUILD + HOLD for Charlie), COM-141 (M12 governance surface), the M9 gate.
+
+## 2026-06-10 — COM-99 (Switch toggles) DONE [M9 finish-loop W6 #1]
+
+**COM-99 (P4 Low, ~16 LOC, 2 files) — DONE + MERGED.** Both label+Checkbox toggles → `<Switch
+:model-value label @update:model-value>` (benchmarks in Configure cap group; hasCash in the editor).
+Verified the benchmarks Switch round-trip incl. localStorage (true→false→true; reka switch needs the
+full pointer sequence). vp 0 · 22/22 both · build 0.
+
+## 2026-06-10 — COM-100 (.range-input tokens + fill) DONE [M9 finish-loop W6 #2]
+
+**COM-100 (P4 Low, ~70 LOC, 3 files) — DONE + MERGED.** `.range-input` in style.css (appearance:none,
+token track/thumb, webkit gradient + moz-range-progress fill via `--slider-pct`, focus-visible outline);
+ExitSlider + the editor's split slider consume it w/ per-host :style pct. **frappe-ui Slider UNFIT —
+recorded in style.css: hardcoded aria-label="Volume", number[] v-model.** Verified: 50%→100% fill +
+aria "Aggressive, net $21.4M" on synthetic drag; restored. vp 0 · 22/22 both · build 0.
+
+## 2026-06-10 — COM-111 (--overlay token) DONE [M9 finish-loop W6 #3]
+
+**COM-111 (P4 Low, 5 LOC, 2 files) — DONE + MERGED.** `--overlay: rgb(23 23 23 / 0.3)` in :root; the
+drawer scrim → `bg-[var(--overlay)]`. The palette's scrim clause was already satisfied by COM-105 (lib
+Dialog backdrop). grep: zero bg-black in src. Verified scrim computed rgba(23,23,23,0.3) at 375px.
+vp 0 · 22/22 both · build 0.
+
+## 2026-06-10 — COM-112 (print-running tokens) DONE [M9 finish-loop W6 #4]
+
+**COM-112 (P4 Low, 5 LOC) — DONE + MERGED.** .print-running hex → var(--ink-gray-7)/
+var(--outline-gray-2)/var(--surface-white). Verified: refs present in built css + --ink-gray-7
+defined unconditioned (#525252) → resolves under @media print. String untouched. vp 0 · 22/22 · build 0.
+
+## 2026-06-10 — COM-122 (scatter axis titles) DONE [M9 finish-loop W6 #5]
+
+**COM-122 (P3 Med, ~26 LOC, Board.vue) — DONE + MERGED.** Rotated y "Headroom to ceiling" (rotate(-90)
+about its anchor) + centered x "Current net value". **Sizing lesson: 12 viewBox units rendered 10.5px
+(below the COM-49 floor — the card scales the 460-unit viewBox ~0.875×); bumped to 13 → 11.4px
+measured.** ink-gray-6 over the issue's gray-5 (M7 floor wins). vp 0 · 22/22 both · build 0.
+
+## 2026-06-10 — COM-125 (degenerate single-scenario guards) DONE [M9 finish-loop W6 #6]
+
+**COM-125 (P4 Low, ~14 LOC, 2 files) — DONE + MERGED.** Overview hides the range subline at
+sk.length===1 (prompt default: HIDE); Board's cost panel drops floor/ceiling + the FF bar (base
+figure only). The issue's grid-cols-3 surfaces no longer exist (COM-114 table rows / COM-115 range —
+both count-adaptive by shape). Verified by scenario surgery (3→1: range hidden, single $23.0M,
+case Select auto-hidden as before; restored). vp 0 · 22/22 both · build 0.
+
+## 2026-06-10 — COM-107 (confirm + feedback parity) DONE — ★ WAVE 6 COMPLETE [M9 finish-loop W6 #7]
+
+**COM-107 (P3 Med, ~70 LOC, 4 files) — DONE + MERGED.** Remove advisor → confirmDestroy (both
+kebabs); addAdvisor → flash("Advisor added — edit the package") in the store (beside the existing
+flash users); Configure round/milestone deletes → confirm w/ view-derived blast-radius counts
+("Delete Series A? No advisor grants reference it." verified live + cancelled); titles on the other
+3 trashes. Verified: add → 5 rows (flash auto-dismissed pre-check; same toast mechanism as Copied),
+round-confirm dialog + cancel; test advisor cleaned. vp 0 · 22/22 both · build 0.
+
+**★ WAVE 6 COMPLETE: COM-99/100/111/112/122/125/107, PRs #61–#67.** M9 = 64 Done / 1 open (COM-87
+deferred-by-decision is NOT in M9 scope... correction: remaining = COM-139 + COM-141 in W7 + the gate.)
+
+## 2026-06-10 — COM-141 (Governance surface, first M12 slice) DONE [M9 finish-loop W7 #2]
+
+**COM-141 (P2 High, ~416 LOC, 5 files) — DONE + MERGED.** /governance route: the Governance Table
+v4 as a RED/AMBER/GREEN checklist — ten C.5 rows verbatim + the four C.6 open items not covered by
+a v4 row ([7] MFN notifications — distinct from C-7's drafting check, [10] HMRC SAV, [11]
+corporate-wallet RTA audit, [12] Series-A releases) = 14 ComplianceItems in five workstream groups.
+**Architecture call: the `gov` slice persists BESIDE the board map** (sibling localStorage key —
+company-level fact shared across saved boards, never inside engine State or #s=) with its own
+additive id-keyed reconcile in governance.ts (canonical text seed-only; status/owner/evidence/note
+survive; new rows auto-appear). Seed RAG defaults: red = hard pre-condition, amber =
+verification/drafting/conditional/later-stage (flagged in PR as prompt-set defaults). Evidence
+links guarded to http(s) — javascript: renders as plain text (verified live both ways). Nav: joins
+the Board group (avoids a one-item group). **Tripwire caught: `vp check --fix` auto-"fixed" the
+FROZEN engine.ts (spread simplifications) — reverted before commit; both suites stayed 22/22.**
+Verified: 14 rows + verbatim strings rendered, status flip → persist → reload survival, mobile
+stacks controls under text (fixed half-width squeeze), 0 console errors. vp 0 · 22/22 both ·
+build 0. NO gating semantics (follow-on issue).
+
+## 2026-06-10 — ★ M9 GATE PASSED — M9 · UX/UI v2 complete (modulo the COM-139 hold)
+
+**The M9-finish goal loop is done.** This session shipped 44 issues + 1 cancelled (COM-124) across
+waves 1–7, PRs #26–#67 + #69 all merged to frosty; COM-139 built + HELD on PR #68 (Charlie/GC
+wording sign-off — Robin pinged; Linear stays In Progress). M9 milestone: every issue Done except
+COM-139. COM-141 (first M12 surface) shipped → M12 at ~17%.
+
+**Gate sweep at frosty tip (9b34b84):** `npm run build` exit 0 · engine 22/22 BOTH suites · clean
+tree · all 7 routes smoke-passed on :4173 (overview hero+roster · board table+FF+ranges · compare ·
+governance 14 rows · advisors tabs · proposition statement+corpus · configure rail+two-col) · 0
+console errors/warnings · mobile (375px) spot-checks clean (drawer collapsed, no overflow, board
+table fits, governance stacks). **Known-stale at tip (by design):** the CoC line still reads the
+reference wording until PR #68 merges. **Print-PDF: not machine-verifiable from the preview harness
+— Robin: print Proposition + Board pack to PDF from the browser once, per the M9 print rules
+(break-inside, running header tokens, 10mm bottom pad all shipped + CSS-verified in COM-112/134).**
+
+**Linear:** project status update posted (on track); CLAUDE.md live-prompt pointer flipped to "M10
+RFC prep" (ULTRACODE_M9_FINISH.md is a completed predecessor). **Next:** author the M10 RFC
+(COM-140 gate scope — engine-unfreeze reconciliation suite), then the M10 run-prompt. Open human
+items: Charlie's COM-139 sign-off → merge PR #68; COM-33/34 public-URL remediation; COM-36
+merge-to-main; pool-sizing blanks (spec Part 17).

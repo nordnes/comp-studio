@@ -6,6 +6,7 @@ import { computed } from "vue";
 import { useStudio } from "../store";
 import { stageReached, fUSD } from "../engine";
 import { CAT } from "../constants";
+import Panel from "./Panel.vue";
 const props = defineProps<{ c: any; sel: any }>();
 const { store } = useStudio();
 
@@ -94,9 +95,9 @@ const hi = (r: any) => Math.max(r.from, r.to);
 </script>
 
 <template>
-  <div class="bg-surface-white rounded border border-outline-gray-1 p-5">
+  <Panel>
     <div class="flex items-center justify-between mb-1 flex-wrap gap-2">
-      <div class="text-sm text-ink-gray-6">How the package grows · base-case net value</div>
+      <div class="section-label">How the package grows · base-case net value</div>
       <div class="text-xs text-ink-gray-6">
         solid earned · faded pending gate · outline available
       </div>
@@ -176,9 +177,7 @@ const hi = (r: any) => Math.max(r.from, r.to);
         Ceiling
       </text>
     </svg>
-    <p class="text-p-xs mt-1 text-ink-gray-6">
-      The band between Current and Ceiling is the remaining potential — earn it by hitting gated
-      objectives.
-    </p>
-  </div>
+    <!-- COM-130: the footer sentence restated what the inline Current/Ceiling labels + legend
+         already say — cut -->
+  </Panel>
 </template>

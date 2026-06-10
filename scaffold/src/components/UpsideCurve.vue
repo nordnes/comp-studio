@@ -10,6 +10,7 @@ import { roundLabel, fUSD, BENCH, safeDiv } from "../engine";
 import FrappeChart from "./FrappeChart.vue";
 import Term from "./Term.vue";
 import { chartHex } from "../constants";
+import Panel from "./Panel.vue";
 const props = defineProps<{ c: any; markerExit?: number | null }>();
 const tkColors = computed(() => [chartHex("--chart-customer")]);
 const { store } = useStudio();
@@ -71,13 +72,13 @@ const tkChart = computed(() => {
 </script>
 
 <template>
-  <div class="bg-surface-white rounded border border-outline-gray-1 p-5">
-    <div class="text-sm text-ink-gray-6 mb-3">
+  <Panel>
+    <div class="section-label mb-3">
       Upside · what an outcome is worth (<Term k="netOfStrike">net of strike</Term>)
     </div>
     <div class="grid lg:grid-cols-2 gap-4">
       <div>
-        <div class="text-xs text-ink-amber-strong mb-2">
+        <div class="text-xs text-ink-gray-7 mb-2">
           Equity · net vs exit company value <span class="text-ink-gray-6">· $M</span>
         </div>
         <svg
@@ -196,7 +197,7 @@ const tkChart = computed(() => {
         </p>
       </div>
       <div>
-        <div class="text-xs text-ink-amber-strong mb-2">
+        <div class="text-xs text-ink-gray-7 mb-2">
           Tokens · value vs <Term k="tgeFdv">TGE FDV</Term>
           <span class="text-ink-gray-6">· $M</span>
         </div>
@@ -217,5 +218,5 @@ const tkChart = computed(() => {
         </p>
       </div>
     </div>
-  </div>
+  </Panel>
 </template>

@@ -19,6 +19,7 @@ import {
   type State,
   type Scenario,
 } from "./engine";
+import { reconcileGovernance, type ComplianceItem, type Governance } from "./governance";
 
 const KEY = "raiku-advisor-comp-v5";
 type SavedMap = Record<string, State>;
@@ -67,6 +68,12 @@ interface Store {
   last: string;
   showMgr: boolean;
   storageOk: boolean;
+  // COM-82: transient pin-to-compare selection (COM-86 reads it) — UI-only, NEVER enters
+  // State/persist/#s= hash; scrubbed against the live roster in fixSel().
+  pinnedIds: string[];
+  // COM-141: the Governance Table v4 checklist — company-level fact, so it lives BESIDE the
+  // board map (one slice per storage key, shared across saved boards) and outside State/#s=.
+  gov: Governance;
 }
 
 function bootstrap(): Store {
@@ -110,7 +117,16 @@ function bootstrap(): Store {
   if (!S) S = DEFAULT();
   if (!last) last = S.name;
   if (!saved[last]) saved[last] = S;
-  return { S, selId: S.advisors[0]?.id || "", saved, last, showMgr: false, storageOk };
+  return {
+    S,
+    selId: S.advisors[0]?.id || "",
+    saved,
+    last,
+    showMgr: false,
+    storageOk,
+    pinnedIds: [],
+    gov: reconcileGovernance(persisted?.governance),
+  };
 }
 
 const store = reactive<Store>(bootstrap());
@@ -139,11 +155,13 @@ function validImport(o: any): boolean {
 function persist() {
   store.saved[store.S.name] = store.S;
   store.last = store.S.name;
-  if (!lsSet({ scenarios: store.saved, last: store.last })) store.storageOk = false;
+  if (!lsSet({ scenarios: store.saved, last: store.last, governance: store.gov }))
+    store.storageOk = false;
 }
 function fixSel() {
   if (!store.S.advisors.find((a) => a.id === store.selId))
     store.selId = store.S.advisors[0]?.id || "";
+  store.pinnedIds = store.pinnedIds.filter((id) => store.S.advisors.some((a) => a.id === id));
 }
 
 // COM-70: lightweight Undo for reversible list deletes. Snapshot the whole working board before the
@@ -190,7 +208,14 @@ const board = computed(() =>
 );
 const selected = computed(() => {
   const a = store.S.advisors.find((x) => x.id === store.selId) || store.S.advisors[0];
-  return a ? { a, c: computeAdvisor(a, store.S.plan, store.S.tiers, store.S.objectives) } : null;
+  if (!a) return null;
+  // COM-81: an advisor's caseOverride re-bases THIS projection via a SHALLOW PLAN CLONE — never a
+  // mutation of store.S.plan, so Board/Compare/Overview keep reading the global lens untouched.
+  const plan =
+    a.caseOverride && store.S.plan.scenarios[a.caseOverride]
+      ? { ...store.S.plan, baseScenario: a.caseOverride }
+      : store.S.plan;
+  return { a, c: computeAdvisor(a, plan, store.S.tiers, store.S.objectives) };
 });
 
 export function useStudio() {
@@ -213,6 +238,7 @@ export function useStudio() {
     pushUndo();
     store.S = DEFAULT();
     store.selId = store.S.advisors[0]?.id || "";
+    fixSel();
     persist();
     toast.create({
       message: "Reset to baseline",
@@ -247,6 +273,7 @@ export function useStudio() {
     } as any);
     store.selId = id;
     persist();
+    flash("Advisor added — edit the package"); // COM-107: feedback after the write
   }
   function delAdvisor(id: string) {
     pushUndo();
@@ -364,8 +391,40 @@ export function useStudio() {
     delete store.S.plan.scenarios[key];
     if (store.S.plan.baseScenario === key)
       store.S.plan.baseScenario = Object.keys(store.S.plan.scenarios)[0];
+    // COM-82 cascade parity with delMilestone/delRound: a deleted case must not leave a
+    // dangling per-advisor override (reconcile also drops orphans on import/paste).
+    store.S.advisors.forEach((a) => {
+      if (a.caseOverride === key) delete a.caseOverride;
+    });
     persist();
     undoToast("scenario");
+  }
+
+  // ---- per-advisor projection (PD2 / COM-82): case override + target exit ----
+  function setAdvisorCase(id: string, key: string | null) {
+    const a = store.S.advisors.find((x) => x.id === id);
+    if (!a) return;
+    if (key && store.S.plan.scenarios[key]) a.caseOverride = key;
+    else delete a.caseOverride;
+    persist();
+  }
+  function setAdvisorTargetExit(id: string, v: number | null) {
+    const a = store.S.advisors.find((x) => x.id === id);
+    if (!a) return;
+    if (v != null && isFinite(v) && v > 0) a.targetExit = v;
+    else delete a.targetExit;
+    persist();
+  }
+
+  // ---- governance checklist (COM-141) — the four user-owned fields; canonical text is seed-only ----
+  function setGovItem(
+    id: string,
+    patch: Partial<Pick<ComplianceItem, "status" | "owner" | "evidence" | "note">>,
+  ) {
+    const it = store.gov.items.find((i) => i.id === id);
+    if (!it) return;
+    Object.assign(it, patch);
+    persist();
   }
 
   // ---- roadmap CSV (SET_ROADMAP merge) ----
@@ -424,7 +483,7 @@ export function useStudio() {
   function delBoard(name: string) {
     delete store.saved[name];
     if (store.last === name) store.last = Object.keys(store.saved)[0] || "";
-    lsSet({ scenarios: store.saved, last: store.last });
+    lsSet({ scenarios: store.saved, last: store.last, governance: store.gov });
   }
   function toggleMgr(v?: boolean) {
     store.showMgr = v == null ? !store.showMgr : v;
@@ -567,6 +626,9 @@ export function useStudio() {
     delRound,
     addScenario,
     delScenario,
+    setAdvisorCase,
+    setAdvisorTargetExit,
+    setGovItem,
     setRoadmap,
     importRoadmap,
     downloadRoadmap,

@@ -1,7 +1,7 @@
 <script setup lang="ts">
-// Inline click-to-edit numeric editor (the reference's NumIn + DField, unified). Theme-aware via semantic
-// tokens — renders light in normal views and dark inside a [data-theme="dark"] panel (Configure). Formats:
-// usd / pct / pps / mult / num. Clamps to min/max. Enter commits, Escape cancels.
+// Inline click-to-edit numeric editor (the reference's NumIn + DField, unified). Semantic tokens
+// throughout; the app is light-only (COM-72 made Configure light, COM-110 deleted the dark branch).
+// Formats: usd / pct / pps / mult / num. Clamps to min/max. Enter commits, Escape cancels.
 import { ref, nextTick } from "vue";
 import { fUSD, fPct, fMult, fNum, ok, clamp } from "../engine";
 
@@ -15,14 +15,18 @@ const props = withDefaults(
   }>(),
   { fmt: "num", min: -Infinity, max: Infinity },
 );
-const emit = defineEmits<{ (e: "update:modelValue", v: number): void }>();
+const emit = defineEmits<{
+  (e: "update:modelValue", v: number): void;
+  // COM-77: fired when commit() coerces an out-of-range value, so the parent can show a
+  // transient FormControl-style helper. Presentation feedback only — clamp stays the engine's.
+  (e: "clamp", message: string): void;
+}>();
 
 const edit = ref(false);
 const draft = ref("");
 const inputEl = ref<HTMLInputElement | null>(null);
 
-function disp(): string {
-  const v = props.modelValue;
+function fmtVal(v: number): string {
   return props.fmt === "usd"
     ? fUSD(v)
     : props.fmt === "pct"
@@ -32,6 +36,9 @@ function disp(): string {
         : props.fmt === "mult"
           ? fMult(v)
           : fNum(v);
+}
+function disp(): string {
+  return fmtVal(props.modelValue);
 }
 async function start() {
   const mv = props.modelValue ?? 0; // undefined scenario fields edit from 0, not "NaN"/"undefined"
@@ -45,7 +52,15 @@ function commit() {
   let v = parseFloat(draft.value.replace(/[^0-9.-]/g, ""));
   if (!isNaN(v)) {
     if (props.fmt === "pct") v /= 100;
-    emit("update:modelValue", clamp(v, props.min!, props.max!));
+    const c = clamp(v, props.min!, props.max!);
+    if (c !== v) {
+      const lo = isFinite(props.min!) ? fmtVal(props.min!) : null;
+      const hi = isFinite(props.max!) ? fmtVal(props.max!) : null;
+      const range =
+        lo && hi ? ` (allowed ${lo}–${hi})` : lo ? ` (min ${lo})` : hi ? ` (max ${hi})` : "";
+      emit("clamp", `Adjusted to ${fmtVal(c)}${range}`);
+    }
+    emit("update:modelValue", c);
   }
   edit.value = false;
 }

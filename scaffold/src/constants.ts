@@ -2,10 +2,10 @@
 // presentation data, NOT engine logic (the engine stays frozen).
 //
 // COM-56: the chart / category / scenario / tier palette is ONE source of truth — semantic CSS custom
-// properties declared in style.css (:root + [data-theme=dark]). Custom-SVG and DOM fills reference
-// var(--chart-*) directly so they flip with the theme; frappe-charts takes concrete color values, so
-// resolve tokens to hex with chartHex() (light-literal fallback below). SCEN_COLORS was moved OUT of
-// the frozen engine.ts to here (engine logic unchanged).
+// properties declared in style.css (:root; light-only since COM-110 deleted the dead dark branch).
+// Custom-SVG and DOM fills reference var(--chart-*) directly; frappe-charts takes concrete color
+// values, so resolve tokens to hex with chartHex() (light-literal fallback below). SCEN_COLORS was
+// moved OUT of the frozen engine.ts to here (engine logic unchanged).
 const v = (token: string) => `var(${token})`;
 
 // COM-126: the confidentiality eyebrow — ONE canonical casing, reused on screen, in the clipboard, and in
@@ -53,6 +53,16 @@ const CHART_HEX: Record<string, string> = {
 };
 
 // Resolve a --chart-* token to a concrete hex for libraries that take color values (frappe-charts).
+// COM-136: chart-label shortener — first name, plus a last initial when two advisors share it;
+// mononyms keep their single name and an empty name guards to "—". Presentation only.
+export function shortName(name: string, all: string[]): string {
+  const firstOf = (n: string) => (n || "").trim().split(/\s+/)[0] || "—";
+  const parts = (name || "").trim().split(/\s+/).filter(Boolean);
+  const f = firstOf(name);
+  const dup = all.filter((n) => firstOf(n) === f).length > 1;
+  return dup && parts.length > 1 ? `${f} ${parts[parts.length - 1][0]}.` : f;
+}
+
 export function chartHex(token: string): string {
   const name = token.startsWith("--") ? token : `--${token}`;
   if (typeof window !== "undefined" && typeof getComputedStyle === "function") {
@@ -85,5 +95,15 @@ export const GLOSSARY = {
   awaitingGate: {
     term: "awaiting gate",
     text: "Earned, but its milestone gate hasn't been reached yet — so the uplift doesn't count toward the package's current value until the company hits that milestone.",
+  },
+  // COM-129: explanatory entries for the Overview benchmark terms (the benchmark citation strings
+  // themselves stay byte-identical — only the tooltip trigger wraps the term token).
+  fast: {
+    term: "FAST",
+    text: "The Founder Institute's Founder/Advisor Standard Template — the market-standard grid for advisor equity by engagement level; the per-head benchmark used here.",
+  },
+  advisoryPool: {
+    term: "advisory pool",
+    text: "The total equity a company sets aside for all advisors combined — benchmarked at roughly 5% of fully-diluted supply.",
   },
 } as const;

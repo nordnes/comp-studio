@@ -33,6 +33,14 @@ export interface Plan {
   milestones: Milestone[]; showBenchmarks: boolean;
   // v2 (COM-142): constitutional baseline — additive, SCHEMA stays 5; reconcile() defaults them.
   constitution?: Constitution; tokenPools?: TokenPool[]; advisorPoolShares?: number;
+  // v2 (COM-143): saved scenario-set bundles; plan.scenarios stays the ACTIVE set (RFC §3).
+  scenarioSets?: ScenarioSet[];
+}
+
+// A named bundle of per-round assumptions — the dilution workbook generalised (COM-143).
+export interface ScenarioSet {
+  id: string; label: string; starred?: boolean; note?: string;
+  scenarios: Record<string, Scenario>; baseScenario: string;
 }
 export interface State { version: number; name: string; plan: Plan; tiers: Tier[]; objectives: Objective[]; advisors: Advisor[] }
 
@@ -171,6 +179,7 @@ export const DEFAULT = (): State => ({
     constitution: { ...CONSTITUTION_DEFAULT },
     tokenPools: TOKEN_POOLS_DEFAULT.map(p => ({ ...p })),
     advisorPoolShares: POOL_PRESETS[0].printed,
+    scenarioSets: [],
   },
   tiers: [{ name: 'Base', mult: 1, days: 1 }, { name: 'Strategic', mult: 2, days: 2 }, { name: 'Anchor', mult: 3, days: 3 }],
   objectives: [
@@ -222,6 +231,38 @@ export function reconcile(l: any): State {
         });
         const known = new Set(tokenPools.map(t => t.id));
         saved.forEach(t => { if (t && typeof t === 'object' && t.id && !known.has(t.id)) tokenPools.push({ ...t, label: t.label ?? t.id, poolPct: numOr(t.poolPct, 0), allocatedPct: numOr(t.allocatedPct, 0) }); });
+        // COM-143: saved sets — drop malformed entries; sanitize every cell numeric at this trust
+        // boundary (sets get ACTIVATED into the money walk via planWithSet, so junk here is junk
+        // in the walk); keep unknown fields (...s) so newer payloads round-trip loss-free;
+        // baseScenario must name an OWN scenario of its set (prototype keys don't count).
+        const scenarioSets = (Array.isArray(p.scenarioSets) ? p.scenarioSets : [])
+          .filter((s: any) => s && typeof s === 'object' && s.id && s.scenarios
+            && typeof s.scenarios === 'object' && !Array.isArray(s.scenarios))
+          .map((s: any) => {
+            const sScn: Record<string, Scenario> = {};
+            Object.keys(s.scenarios).forEach(k => {
+              const src = s.scenarios[k];
+              if (!src || typeof src !== 'object' || Array.isArray(src)) return;
+              const cell: any = { ...src, label: typeof src.label === 'string' && src.label ? src.label : k, tgeMult: numOr(src.tgeMult, 1) };
+              Object.keys(cell).forEach(rk => {
+                const rc = cell[rk];
+                if (rc && typeof rc === 'object' && !Array.isArray(rc) && ('post' in rc || 'raise' in rc || 'esop' in rc)) {
+                  cell[rk] = { ...rc, post: numOr(rc.post, 0), raise: numOr(rc.raise, 0), esop: clamp(numOr(rc.esop, 0), 0, 1) };
+                }
+              });
+              sScn[k] = cell;
+            });
+            if (!Object.keys(sScn).length) return null;
+            const out: any = {
+              ...s, id: String(s.id),
+              label: typeof s.label === 'string' && s.label ? s.label : String(s.id),
+              starred: !!s.starred, scenarios: sScn,
+              baseScenario: (typeof s.baseScenario === 'string' && Object.prototype.hasOwnProperty.call(sScn, s.baseScenario)) ? s.baseScenario : Object.keys(sScn)[0],
+            };
+            if (typeof out.note !== 'string' || !out.note) delete out.note;
+            return out;
+          })
+          .filter(Boolean);
         return {
           constitution: {
             authorised: numOr(sc.authorised, CONSTITUTION_DEFAULT.authorised),
@@ -230,6 +271,7 @@ export function reconcile(l: any): State {
           },
           tokenPools,
           advisorPoolShares: numOr(p.advisorPoolShares, d.plan.advisorPoolShares as number),
+          scenarioSets,
         };
       })(),
     },
@@ -275,6 +317,34 @@ export function roadmapToCSV(plan: Plan) {
   return rows.map(r => r.join(',')).join('\n');
 }
 
+// ===== v2: scenario sets (COM-143 — spec v2 Part 6 · Δ3 · Appendix A.3) =====
+// The A.3 methodology notes, engine-canonical and VERBATIM into any UI that walks the cap table.
+export const METHOD_NOTES = [
+  'Pre-money pool shuffle at every round — ESOP creation and new money both dilute pre-money holders.',
+  'ESOP top-up sized to hit the target % post-money; no top-up if already above.',
+  'Bridge modeled as converted preferred at the bridge post-money cap.',
+  'Pantera as a discrete row, converted in line with the cap.',
+  "Robin's share count is fixed across all scenarios — only the percentage declines.",
+  'Anti-dilution, warrants, secondary and MFN are not modeled — real outcomes will differ.',
+] as const;
+
+export const setList = (plan: Plan): ScenarioSet[] => (plan && plan.scenarioSets) || [];
+const hasOwn = (o: object, k: string) => Object.prototype.hasOwnProperty.call(o, k);
+// Non-mutating: the plan with a saved set made ACTIVE. The set's scenarios are DEEP-COPIED in —
+// in-place edits to the active map must never rewrite the saved bundle (capture is also a deep
+// copy; activation has to be symmetric or the snapshot guarantee is one-way only).
+export function planWithSet(plan: Plan, setId: string): Plan {
+  const s = setList(plan).find(x => x.id === setId);
+  if (!s) return plan;
+  const scenarios = JSON.parse(JSON.stringify(s.scenarios));
+  const baseScenario = hasOwn(scenarios, s.baseScenario) ? s.baseScenario : Object.keys(scenarios)[0];
+  return { ...plan, scenarios, baseScenario };
+}
+// Capture the ACTIVE scenarios as a saved set (deep copy — later edits don't leak in).
+export const makeScenarioSet = (id: string, label: string, plan: Plan): ScenarioSet => ({
+  id, label, scenarios: JSON.parse(JSON.stringify(plan.scenarios)), baseScenario: baseScenKey(plan),
+});
+
 // ===== cap-table walk =====
 // Fixed bridge for all scenarios; scenarios diverge from the first round.
 // N_k = (N_{k-1} − ESOP_{k-1}) / (1 − raise_k/post_k − esop_k); ESOP_k = esop_k × N_k.
@@ -291,6 +361,36 @@ export function walkScenario(plan: Plan, scenKey: string) {
     const N = (prevN - prevEsop) / (1 - safeDiv(r.raise, r.post) - r.esop);
     const esopSh = r.esop * N;
     steps.push({ id: rd.id, label: rd.label, post: r.post, esopPct: r.esop, N, esopShares: esopSh, price: r.post / N });
+    prevN = N; prevEsop = esopSh;
+  });
+  const byId = Object.fromEntries(steps.map(st => [st.id, st]));
+  return { steps, byId, exit: steps[steps.length - 1] };
+}
+
+// COM-143: the composed walk — the workbook's "base prior" column. Each round may take its cell
+// from a DIFFERENT scenario (cellOverrides[roundId] = scenKey), so any walk can re-base on any
+// prior cell. Implements the A.3 notes verbatim, including note 2's no-top-up branch: when the
+// carried pool already meets the round's target % post-money, no new ESOP shares are created
+// (v1 walkScenario stays byte-identical — T1 pins it; on an all-top-up path the two walks agree).
+export function walkComposed(plan: Plan, scenKey: string, cellOverrides: Record<string, string> = {}) {
+  const bridgeEsop = plan.esopStart ?? plan.bridge.esop ?? 0.10;
+  const steps: any[] = [];
+  const N1 = plan.fdPreESOP / (1 - safeDiv(plan.bridge.raise, plan.bridge.post) - bridgeEsop);
+  let prevN = N1, prevEsop = bridgeEsop * N1;
+  steps.push({ id: 'bridge', label: 'Bridge', post: plan.bridge.post, esopPct: bridgeEsop, N: N1, esopShares: prevEsop, price: plan.bridge.post / N1, cellFrom: 'bridge', topUp: true });
+  (plan.rounds || []).forEach(rd => {
+    // Resolve the effective cell source ONCE: an override only applies when that scenario exists
+    // AND carries this round's cell; otherwise fall back to scenKey's cell. cellFrom reports what
+    // was actually used — provenance must never name a cell the maths didn't take.
+    const ovKey = cellOverrides[rd.id];
+    const ovHasCell = !!(ovKey && hasOwn(plan.scenarios, ovKey) && (plan.scenarios[ovKey] as any)[rd.id]);
+    const from = ovHasCell ? ovKey : scenKey;
+    const r = (plan.scenarios[from] || ({} as Scenario))[rd.id]; if (!r) return;
+    const noTopUpN = safeDiv(prevN, 1 - safeDiv(r.raise, r.post));
+    const topUp = safeDiv(prevEsop, noTopUpN) < r.esop - 1e-12;
+    const N = topUp ? (prevN - prevEsop) / (1 - safeDiv(r.raise, r.post) - r.esop) : noTopUpN;
+    const esopSh = topUp ? r.esop * N : prevEsop;
+    steps.push({ id: rd.id, label: rd.label, post: r.post, esopPct: safeDiv(esopSh, N), N, esopShares: esopSh, price: safeDiv(r.post, N), cellFrom: from, topUp });
     prevN = N; prevEsop = esopSh;
   });
   const byId = Object.fromEntries(steps.map(st => [st.id, st]));

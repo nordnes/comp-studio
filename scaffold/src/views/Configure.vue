@@ -566,6 +566,38 @@ const poolOpts = computed(() => {
           </template>
 
           <template v-if="group === 'grants'">
+            <!-- COM-150 (Δ1): dollar value bands — the negotiation unit; % is an output.
+                 Anchors are open decision #2 (pending Robin + Carl review). -->
+            <div>
+              <div class="section-label mb-3">Value bands · annual $ (the negotiation unit)</div>
+              <div class="divide-y divide-outline-gray-1">
+                <div
+                  v-for="(b, bi) in S.S.plan.valueBands"
+                  :key="b.id"
+                  class="flex items-center justify-between py-1.5 text-sm gap-4"
+                >
+                  <span class="text-ink-gray-7">{{ b.label }}</span>
+                  <span class="flex items-center gap-1.5">
+                    <NumIn
+                      :model-value="b.annualUSD"
+                      fmt="usd"
+                      :min="0"
+                      :aria-label="`${b.label} band annual value`"
+                      @update:model-value="
+                        (v) => setPath(['plan', 'valueBands', bi, 'annualUSD'], v)
+                      "
+                    />
+                    <span class="text-xs text-ink-gray-6">/yr</span>
+                  </span>
+                </div>
+              </div>
+              <p class="text-p-xs text-ink-gray-6 mt-2">
+                Anchor numbers are pending Robin + Carl Sjöström review (open decision #2) —
+                packages denominate in dollars and deliver in instruments; percent-of-company is an
+                output, never the negotiation unit.
+              </p>
+            </div>
+
             <!-- uniform base + pools -->
             <div class="rounded border border-outline-gray-2 bg-surface-gray-2 p-4">
               <div class="section-label mb-3">Uniform base · tokens &amp; pools</div>

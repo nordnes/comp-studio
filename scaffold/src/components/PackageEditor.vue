@@ -223,6 +223,25 @@ function setObjState(id: string, st: string) {
             <EquityBenchmark :sel="sel" :c="c" />
           </template>
           <template v-else>
+            <!-- COM-150 (Δ1): the value bands as quick-selects — the negotiation unit is dollars;
+                 anchors are open decision #2 (Configure-editable, pending Robin + Carl). -->
+            <div class="flex items-center gap-2 flex-wrap">
+              <button
+                v-for="b in S.plan.valueBands"
+                :key="b.id"
+                type="button"
+                :aria-pressed="sel.annualValue === b.annualUSD"
+                class="text-xs px-2.5 py-1 rounded border focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--ink-gray-6)]"
+                :class="
+                  sel.annualValue === b.annualUSD
+                    ? 'border-outline-amber-2 bg-surface-amber-2 text-ink-gray-9'
+                    : 'border-outline-gray-3 text-ink-gray-7 hover:bg-surface-gray-1'
+                "
+                @click="setField('annualValue', b.annualUSD)"
+              >
+                {{ b.label }} · {{ fUSD(b.annualUSD) }}/yr
+              </button>
+            </div>
             <div class="space-y-1.5">
               <FormLabel label="Annual value (USD)" />
               <NumIn

@@ -1952,3 +1952,9 @@ gray-2 editorial frame (recorded in Panel's header).
   hand — the vue compiler catches any mismatch at vp/build (it did not need to). Verified live:
   computed border 1px #EDEDED · 20px padding · same 8px preset radius · zero console errors.
   vp 0 · 22/22 both · build 0.
+
+## 2026-06-10 — COM-119 (FootballField weight inversion) DONE [M9 finish-loop W4 #2]
+
+**COM-119 (P3 Med, 8/5 LOC) — DONE + MERGED.** Band amber-2 → surface-gray-3; base tick gray-7 2px →
+surface-amber-3 3px. Verified computed on BOTH call sites (Board rows ×4 + Advisors hero): band
+#EDEDED, tick #DB7706 3px. vp 0 · 22/22 both · build 0.

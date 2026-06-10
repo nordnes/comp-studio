@@ -2664,3 +2664,13 @@ clear). Overview chips + Advisors outstanding line + the criterion-#6 Propositio
 (printable ALWAYS; triple diagonal crop-proof + amber banner INSIDE .print-area; lifts on green —
 verified both directions). 8/8 live. vp 0/10 · 22/22 · 254/0/0 · build 0. LINEAR DEBT: +COM-167.
 Next: COM-168 (SAV/409A valuation record F22, S).
+
+## 2026-06-11 — COM-168 (SAV/409A valuation F22) DONE [W4 #3]
+
+**COM-168 (S, 171 LOC, PR #104) — MERGED.** plan.valuation (heals AS A UNIT — junk deletes the
+record, fail toward round-derived) · computeGrant: vPps prices un-overridden strikes + IS the FMV
+print; EXPLICIT strikePps wins so granted/derived rows never move (anchors pinned byte-for-byte;
+the derived rows carry explicit strikes from effectiveGrants — that's WHY the v1 money holds) ·
+$-grants derive off the agreed spread · Configure form + Instruments caption (explicit-wins said
+out loud) + Proposition fine-print swap w/ fallback. 8/8 live. vp 0/10 · 22/22 · 258/0/0 ·
+build 0. LINEAR DEBT: +COM-168. Next: COM-169 (exercise runbook F23 over 151/153/168).

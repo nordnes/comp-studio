@@ -12,9 +12,12 @@ import { useStudio } from "../store";
 import Panel from "./Panel.vue";
 // printLine needs an explicit default: Vue casts an ABSENT Boolean-typed prop to false
 // (HTML boolean-attribute semantics), which would silently drop the print sentence.
-const props = withDefaults(defineProps<{ c: any; sel?: any; printLine?: boolean }>(), {
-  printLine: true,
-});
+// COM-131: `tone` matches the host's register — 'explore' (Advisors, the working tool) vs
+// 'quiet' (the Proposition document). Copy only; behaviour identical.
+const props = withDefaults(
+  defineProps<{ c: any; sel?: any; printLine?: boolean; tone?: "explore" | "quiet" }>(),
+  { printLine: true, tone: "explore" },
+);
 const emit = defineEmits<{ (e: "exit", v: number): void }>();
 const { setAdvisorTargetExit } = useStudio();
 
@@ -78,7 +81,11 @@ const tickPct = (i: number) => (maxPos.value ? (i / maxPos.value) * 100 : 0);
 <template>
   <Panel class="no-print">
     <div class="flex items-baseline justify-between gap-3 mb-3 flex-wrap">
-      <div class="section-label">Explore the exit · drag to feel the upside</div>
+      <!-- COM-130: "drag to feel the upside" hand-held an obvious slider — cut. COM-131: the
+           Proposition instance reads in the document's register via `tone`. -->
+      <div class="section-label">
+        {{ tone === "quiet" ? "The package across outcomes" : "Explore the exit" }}
+      </div>
       <div class="text-xs text-ink-gray-5">net of strike &amp; dilution · not a forecast</div>
     </div>
     <div class="flex items-end gap-4 mb-4 flex-wrap">

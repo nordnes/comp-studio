@@ -149,7 +149,7 @@ const targetLine = computed(
     <!-- COM-47: exit-valuation explorer (no-print) — lets the recipient feel the upside on screen.
          COM-84: it now persists the chosen exit (sel.targetExit); the DOCUMENT carries its own
          target-outcome sentence below, so the component's print line is suppressed here. -->
-    <ExitSlider :c="c" :sel="sel" :print-line="false" />
+    <ExitSlider :c="c" :sel="sel" :print-line="false" tone="quiet" />
 
     <div class="print-area bg-surface-white rounded border border-outline-gray-2">
       <div class="px-8 sm:px-12 py-10 border-b border-outline-gray-1">

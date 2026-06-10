@@ -451,9 +451,8 @@ const openCmdK = () => window.dispatchEvent(new Event("open-command-palette"));
           <div
             class="w-full max-w-reading mx-auto px-3 sm:px-5 py-8 text-p-xs text-ink-gray-6 leading-relaxed space-y-2"
           >
-            <div class="text-sm text-ink-gray-7">
-              Notes · all equity values <Term k="netOfStrike">net of strike</Term>
-            </div>
+            <!-- COM-130: the heading pre-announced the very next sentence — reduced -->
+            <div class="section-label">How to read these figures</div>
             <p>
               Every advisor starts on the same uniform base ({{
                 fPct(store.S.plan.baseGrant.equityPct, 2)

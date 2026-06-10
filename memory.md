@@ -1891,3 +1891,15 @@ right-align — suffix otherwise hugs the label). Row click loads via `options.o
   buttons).** Fixed the Mgr delete + the pre-existing More-actions button in the same file.
 - Verified: dialog renders the row (check + label + right-aligned delete, 40px ListRow), row click
   loads, delete → confirmDestroy → dismissed via × → board intact. vp 0 · 22/22 both · build 0.
+
+## 2026-06-10 — COM-102 (board-identity switcher) DONE [M9 finish-loop W3 #6]
+
+**COM-102 (P3 Med, ~40 LOC, App.vue) — DONE + MERGED.** "Saved · N" → Dropdown triggered by
+`store.S.name` (truncating subtle Button, title tooltip): saved boards as load items (lucide-check on
+current) + grouped "Manage boards…" → toggleMgr (divider renders between groups). Breadcrumb root
+"Studio" → the board name (COM-101 consumes this next).
+- Verified: trigger shows the name; menu renders both items; breadcrumb "Advisory board — working
+  draft › Overview". The Manage onClick is the same Dropdown :options mechanism as the proven
+  Share/More menus — **preview gotcha: headlessui Menu popovers do NOT reliably survive between
+  preview_eval calls (open-state parity gets lost); verify item RENDERING in the eval right after the
+  trigger click, don't chain interactions across evals.** vp 0 · 22/22 both · build 0.

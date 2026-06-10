@@ -32,6 +32,7 @@ declare module 'vue' {
     ScenarioTable: typeof import('./src/components/ScenarioTable.vue')['default']
     Term: typeof import('./src/components/Term.vue')['default']
     TierBadge: typeof import('./src/components/roster/TierBadge.vue')['default']
+    TrajectoryView: typeof import('./src/components/TrajectoryView.vue')['default']
     UpsideCurve: typeof import('./src/components/UpsideCurve.vue')['default']
     VestingTimeline: typeof import('./src/components/VestingTimeline.vue')['default']
   }

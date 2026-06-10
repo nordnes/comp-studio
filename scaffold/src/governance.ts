@@ -23,6 +23,39 @@ export interface Governance {
   items: ComplianceItem[];
 }
 
+// ===== COM-167 (O13 / success criterion #6): BLOCKING semantics =====
+// The pre-conditions that gate a grant, per O13's own list: pool resolved? SAV valuation done?
+// Pantera consent where required? references/security checks cleared? A package whose
+// pre-conditions are not GREEN renders with a warning chip everywhere it appears, and its
+// Proposition prints WATERMARKED until green. No money here — register state + person fields.
+// Gating rows: A-1/A-2 (pool & resolution — bite every grant), open10 (the SAV/409A valuation),
+// b3 (Pantera exec-officer consent — bites only executive grants; advisors are not executive
+// officers and Resolution v5 needs no consent for the pool, so it joins only when an advisor is
+// explicitly noted as one — the founder-grant lane).
+export function grantPreconditions(
+  advisor: { checkStatus?: string; notes?: string; stage?: string } | null,
+  gov: Governance,
+): { ok: boolean; outstanding: string[] } {
+  const outstanding: string[] = [];
+  const itemOf = (id: string) => gov.items.find((i) => i.id === id);
+  for (const id of ["a1", "a2"]) {
+    const it = itemOf(id);
+    if (it && it.status !== "green") outstanding.push(`${it.ref} ${it.title}`);
+  }
+  const sav = itemOf("open10");
+  if (sav && sav.status !== "green") outstanding.push(`${sav.ref} ${sav.title}`);
+  if (advisor) {
+    const isExec = /executive officer/i.test(advisor.notes || "");
+    if (isExec) {
+      const b3 = itemOf("b3");
+      if (b3 && b3.status !== "green") outstanding.push(`${b3.ref} ${b3.title}`);
+    }
+    if (advisor.checkStatus !== "clear")
+      outstanding.push("References / security checks not cleared");
+  }
+  return { ok: outstanding.length === 0, outstanding };
+}
+
 // Seed defaults: RED = a hard pre-condition with nothing evidenced yet; AMBER = a verification,
 // drafting check, conditional or later-stage obligation. Presentation defaults only — every
 // status is user-editable and survives reconcile.

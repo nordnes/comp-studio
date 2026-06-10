@@ -30,6 +30,7 @@ import {
   ADVISOR_STAGES,
   advisorStage,
 } from "../engine";
+import { grantPreconditions } from "../governance";
 import NumIn from "../components/NumIn.vue";
 import PageHeader from "../components/PageHeader.vue";
 import ContextStrip from "../components/ContextStrip.vue";
@@ -77,6 +78,8 @@ const advisorCase = computed({
   get: () => sel.value?.caseOverride || "",
   set: (v: string) => setAdvisorCase(sel.value.id, v || null),
 });
+// COM-167: the O13 pre-condition check for the selected package
+const precond = computed(() => grantPreconditions(sel.value, store.gov));
 // COM-159: the audit trail line — the last three stage transitions, most recent last.
 const stageTrail = computed(() => {
   const h = Array.isArray(sel.value?.stageHistory) ? sel.value.stageHistory : [];
@@ -259,6 +262,15 @@ const backstop = computed(() => {
       </dl>
       <!-- COM-159: the offer pipeline (F19) — stage control + the auditable history line.
            Departures hand off to the F18 leaver flow (Departure modeling below). -->
+      <!-- COM-167: the blocking line — what still gates this grant (O13) -->
+      <div
+        v-if="!precond.ok"
+        class="mt-3 text-p-xs text-ink-amber-strong"
+        :title="precond.outstanding.join(' · ')"
+      >
+        Pre-conditions outstanding: {{ precond.outstanding.join(" · ") }} — the Proposition prints
+        watermarked until green.
+      </div>
       <div class="mt-4 pt-3 border-t border-outline-gray-1 flex items-center gap-3 flex-wrap">
         <span class="text-xs text-ink-gray-6">Pipeline</span>
         <Select

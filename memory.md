@@ -2020,3 +2020,11 @@ base-case path" from c.baseEq/baseTk. Verified both modes live in the editor dia
 divide-y list, `grid-cols-[1fr_4rem_10rem]` slots (name | ×mult | eq·tok right), selected =
 amber-2 bg + aria-pressed (plain buttons, not broken radio semantics). Verified: ×mult column
 pixel-aligned; select Strategic → restore Anchor round-trip. vp 0 · 22/22 both · build 0.
+
+## 2026-06-10 — COM-80 (objective rows) DONE [M9 finish-loop W5 #3]
+
+**COM-80 (P3 Med, ~40/45 LOC, PackageEditor.vue) — DONE + MERGED.** Nested objective cards →
+divide-y rows, `grid-cols-[0.625rem_1fr_3.5rem_auto]` (dot | label+trigger | +uplift% | state
+TabButtons). State borders deleted — state = TabButtons + amber awaiting-gate note only. (The
+wrapper's off-amber half landed in COM-118.) Verified: 5 rows, uplift column aligned, zero nested
+cards; TabButtons wiring unchanged. vp 0 · 22/22 both · build 0.

@@ -2055,3 +2055,10 @@ PageHeader "The proposition." wrapped no-print (the printed letter keeps its own
 SOLID + Copy ghost; Configure gets PageHeader "The plan everything is measured against." + ghost
 "Back to overview" (solid Done deleted). Verified per route: #app-header carries each view's actions;
 Print bg rgb(23,23,23) vs Copy transparent; no Done remains. vp 0 · 22/22 both · build 0.
+
+## 2026-06-10 — COM-128 (Advisors confidentiality mark) DONE [M9 finish-loop W5 #7]
+
+**COM-128 (P3 Med, 8 LOC, Advisors.vue) — DONE + MERGED.** The issue's exact line ("Internal &
+confidential · net of strike, pre-tax · discussion draft, not a binding offer.") under the title via
+PageHeader's #desc slot (printable — the running mark already covers print, harmless duplicate).
+Verified in-DOM under the h1. vp 0 · 22/22 both · build 0.

@@ -440,8 +440,8 @@ const backstop = computed(() => {
                   <div v-if="backstop" class="py-2">
                     <span class="text-xs text-ink-gray-6">This package's backstop</span>
                     <p class="text-p-sm text-ink-gray-7 mt-0.5 tabular-nums">
-                      If no exit by {{ fDate(backstop.anniversary9ISO) }}, a ≥90-day window must
-                      open, closing by {{ fDate(backstop.lastCloseISO) }}.
+                      If no Exit Event by {{ fDate(backstop.anniversary9ISO) }}, a ≥90-day window
+                      must open, closing by {{ fDate(backstop.lastCloseISO) }}.
                     </p>
                   </div>
                 </div>

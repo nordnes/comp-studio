@@ -195,28 +195,29 @@ function setObjState(id: string, st: string) {
               {{ fPct(S.plan.baseGrant.equityPct, 2) }} eq ·
               {{ fPct(S.plan.baseGrant.tokenPct, 2) }} tok, <Term k="tierMultiplier">×tier</Term>
             </div>
-            <div class="grid grid-cols-3 gap-2">
+            <!-- COM-79: ONE aligned selectable list (name | ×mult | eq·tok in fixed slots) replaces
+                 the 3-up mini-card grid — amber bg = the selected tier (the current-case meaning) -->
+            <div
+              class="rounded border border-outline-gray-2 divide-y divide-outline-gray-1"
+              aria-label="Tier"
+            >
               <button
                 v-for="(t, ti) in S.tiers"
                 :key="ti"
-                class="p-3 text-left rounded border focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--ink-gray-6)]"
-                :class="
-                  sel.tier === ti
-                    ? 'bg-surface-amber-2 border-outline-amber-2'
-                    : 'border-outline-gray-2 hover:bg-surface-gray-1'
-                "
+                type="button"
+                :aria-pressed="sel.tier === ti"
+                class="grid w-full grid-cols-[1fr_4rem_10rem] items-center gap-3 px-3 py-2 text-left first:rounded-t last:rounded-b focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--ink-gray-6)]"
+                :class="sel.tier === ti ? 'bg-surface-amber-2' : 'hover:bg-surface-gray-1'"
                 @click="setField('tier', ti)"
               >
-                <div class="flex items-baseline justify-between">
-                  <div class="font-display text-base text-ink-gray-9">{{ t.name }}</div>
-                  <div class="text-xs text-ink-gray-6">
-                    <Term k="tierMultiplier">{{ fMult(t.mult) }}</Term>
-                  </div>
-                </div>
-                <div class="text-xs mt-1 tabular-nums text-ink-gray-6">
+                <span class="text-sm font-medium text-ink-gray-9 truncate">{{ t.name }}</span>
+                <span class="text-xs tabular-nums text-ink-gray-7">
+                  <Term k="tierMultiplier">{{ fMult(t.mult) }}</Term>
+                </span>
+                <span class="text-xs tabular-nums text-right text-ink-gray-6">
                   {{ fPct(S.plan.baseGrant.equityPct * t.mult, 1) }} eq ·
                   {{ fPct(S.plan.baseGrant.tokenPct * t.mult, 1) }} tok
-                </div>
+                </span>
               </button>
             </div>
             <EquityBenchmark :sel="sel" :c="c" />

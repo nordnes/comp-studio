@@ -1938,3 +1938,17 @@ col + Spread/Pin) — commented on the issue per the sanctioned split.
 **★ WAVE 3 (frappe-ui adopt cluster) COMPLETE: COM-104/105/94/121/103/102/101/106/96, PRs #36–#44.**
 M9 = 40 Done / 25 open. Next: WAVE 4 visual system (108 Panel → 119/120 FootballField → 113 Overview
 hero → 115 Board cost range → 114 Proposition hero → 117 MetricBand LAST).
+
+## 2026-06-10 — COM-108 (the Panel primitive) DONE [M9 finish-loop W4 #1]
+
+**COM-108 (P3 Med, ~120 LOC churn, 10 files) — DONE + MERGED.** `components/Panel.vue` (frame +
+`padded` default-true via withDefaults — the COM-84 boolean gotcha) replaced 13 of the 14 remaining
+literals (19 at issue-writing; COM-88/118 had removed five). Unpadded mode for ScenarioTable
+(overflow-hidden) + Compare's matrix scroller; Overview's interactive roster card rides Panel with
+behaviour classes falling through (p-4 compact kept); Board's chart cards keep role/aria/print-area
+as fallthrough attrs. p-6 drift on Compare's chart unified to p-5. Exception kept: Proposition's
+gray-2 editorial frame (recorded in Panel's header).
+- Tag-swap mechanics: opening div→Panel via python, then each matching closer </div>→</Panel> by
+  hand — the vue compiler catches any mismatch at vp/build (it did not need to). Verified live:
+  computed border 1px #EDEDED · 20px padding · same 8px preset radius · zero console errors.
+  vp 0 · 22/22 both · build 0.

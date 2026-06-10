@@ -6,6 +6,7 @@
 import { computed } from "vue";
 import { Badge } from "frappe-ui";
 import { fUSD } from "../engine";
+import Panel from "./Panel.vue";
 const props = defineProps<{ c: any }>();
 const prog = computed(() => {
   const c = props.c;
@@ -28,7 +29,7 @@ const prog = computed(() => {
 </script>
 
 <template>
-  <div class="bg-surface-white rounded border border-outline-gray-1 overflow-hidden">
+  <Panel :padded="false" class="overflow-hidden">
     <!-- base-case progression (the old PotentialStrip numbers, distilled) -->
     <div class="grid grid-cols-3 gap-px bg-surface-gray-2 border-b border-outline-gray-1">
       <div
@@ -97,5 +98,5 @@ const prog = computed(() => {
         </tr>
       </tbody>
     </table>
-  </div>
+  </Panel>
 </template>

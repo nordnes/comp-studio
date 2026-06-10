@@ -1,7 +1,8 @@
 <script setup lang="ts">
 // Proposition (Section V) — the print-ready advisor doc. Legal-dense: the caveat corpus is ported
-// verbatim (non-voting shares, RTA, deed of adherence, net exercise, CoC at Board discretion, s431/409A
-// by residency, HMRC SAV, 9-yr/90-day backstop, investor consents). propText() = plain-text clipboard.
+// verbatim (non-voting shares, RTA, deed of adherence, net exercise, the v9 no-CoC-acceleration
+// position [COM-139/Δ4 — Plan v9 supersedes the reference TSX on that line], s431/409A by
+// residency, HMRC SAV, 9-yr/90-day backstop, investor consents). propText() = plain-text clipboard.
 import { computed } from "vue";
 import { Avatar, Button, Divider } from "frappe-ui";
 import { useStudio } from "../store";
@@ -287,11 +288,13 @@ const targetLine = computed(
           non-voting shares (ESOP), strike at the {{ roundLabel(S.plan, c.grantRound) }} price; net
           exercise permitted. Tokens via Restricted Token Award. Equity vests
           {{ S.plan.equityVestYears }}yr/{{ S.plan.equityCliff }}mo annually with a 1-year cliff;
-          exercise binds a deed of adherence. Change-of-control acceleration is at Board discretion
-          (not contractual). {{ residencyLine }} Strike subject to an agreed HMRC SAV / 409A
-          valuation before first grant. If no exit by the 9th anniversary, a ≥90-day exercise window
-          opens (Option Certificate 3.6). Subject to required investor consents. Not a binding offer
-          or legal/financial advice.
+          exercise binds a deed of adherence. No automatic or discretionary change-of-control
+          acceleration under the plan (Plan rules v9); on a change of control the acquirer may roll
+          over awards, and vested options remain exercisable per the plan rules.
+          {{ residencyLine }} Strike subject to an agreed HMRC SAV / 409A valuation before first
+          grant. If no exit by the 9th anniversary, a ≥90-day exercise window opens (Option
+          Certificate 3.6). Subject to required investor consents. Not a binding offer or
+          legal/financial advice.
         </div>
       </div>
     </div>

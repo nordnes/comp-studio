@@ -457,15 +457,9 @@ const msOpts = () => S.S.plan.milestones.map((m) => ({ label: m.label, value: m.
                     @update:model-value="(v) => setP('tokenSupply', v)"
                   />
                 </div>
-                <div>
-                  <div class="text-xs text-ink-gray-6 mb-1">CoC acceleration</div>
-                  <NumIn
-                    :model-value="S.S.plan.cocAccelPct"
-                    fmt="pct"
-                    aria-label="CoC acceleration"
-                    @update:model-value="(v) => setP('cocAccelPct', v)"
-                  />
-                </div>
+                <!-- COM-139 (Δ4): the CoC-acceleration control is GONE — Plan rules v9 deleted
+                     Rule 9.2, and the engine never computed with cocAccelPct (an inert field;
+                     it stays in state untouched, so no schema change). -->
                 <div>
                   <div class="text-xs text-ink-gray-6 mb-1">Equity vest yrs</div>
                   <NumIn

@@ -57,8 +57,11 @@ current.
 ## Non-negotiables
 - Engine gated by the RFC §7 rule (above). `reference/advisor-comp-studio.tsx` is the **UX source of truth** for
   features/labels/legal copy/IA (the *visual* design is now Espresso, but behaviour + the legal corpus match
-  the reference, ported **verbatim**). **Exception (spec v2 Δ4 / COM-139):** the reference's CoC-acceleration
-  sentence is stale — Plan rules v9 deleted Rule 9.2; on that line the corpus follows Plan v9 / spec Appendix C.
+  the reference, ported **verbatim**). **Exception (spec v2 Δ4, corrected in COM-139):** the reference's
+  CoC-acceleration sentence was stale — Plan rules v9 deleted Rule 9.2; the shipped corpus states the v9
+  position (no automatic/discretionary CoC acceleration; acquirer roll-over possible; vested options remain
+  exercisable per the plan rules). On that line **Plan v9 / spec Appendix C is the source of truth**, not
+  the reference TSX.
 - **Internal & confidential**; every equity figure **net of strike**; **"discussion draft, not a binding
   offer."**
 - **≤ 450 LOC per Linear (COM-*) issue** — split the issue if larger. One issue = one PR linking its issue;

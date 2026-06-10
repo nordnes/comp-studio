@@ -2,7 +2,7 @@
 // Configure (Section VI) — the editing surface, a standard light surface (COM-72; the dark branch was
 // deleted in COM-110). Every structural list (rounds/scenarios/tiers/milestones/objectives) edits
 // through the store's reducer-parity actions incl. delete-cascades. Numbers use the shared NumIn editor.
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { useRoute } from "vue-router";
 // COM-106: Configure joins the Advisors form idiom — TextInput for inline labels, FormControl for
 // the date; NumIn stays (the deliberate click-to-edit numeric). setPath wiring unchanged.
@@ -20,6 +20,12 @@ import {
   fNum,
   fMult,
   safeDiv,
+  ENTITY,
+  FD_COMPOSITION,
+  POOL_PRESETS,
+  poolGuardrail,
+  poolSharesExact,
+  tokenPoolHeadroom,
 } from "../engine";
 import { CAT_OPTIONS } from "../constants";
 import NumIn from "../components/NumIn.vue";
@@ -92,6 +98,22 @@ function confirmDelMilestone(m: any) {
   );
 }
 const msOpts = () => S.S.plan.milestones.map((m) => ({ label: m.label, value: m.id }));
+
+// COM-142: constitutional baseline (A.1/A.2/A.4). The guardrail verdict comes from the engine —
+// the view only renders poolGuardrail()'s level/msg. Pool presets stay BOTH selectable until
+// open decision #1 lands; a non-preset persisted value surfaces as "Custom".
+const guard = computed(() => poolGuardrail(S.S.plan));
+const fShares = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 2 });
+const poolOpts = computed(() => {
+  const opts: { label: string; value: number }[] = POOL_PRESETS.map((p) => ({
+    label: `${p.label} — ${fShares(p.printed)}`,
+    value: p.printed,
+  }));
+  const cur = S.S.plan.advisorPoolShares;
+  if (cur != null && !POOL_PRESETS.some((p) => p.printed === cur))
+    opts.push({ label: `Custom — ${fShares(cur)}`, value: cur });
+  return opts;
+});
 </script>
 
 <template>
@@ -395,6 +417,150 @@ const msOpts = () => S.S.plan.milestones.map((m) => ({ label: m.label, value: m.
               <div class="text-p-xs mt-2 flex items-center gap-1 text-ink-amber-strong">
                 <span class="lucide-triangle-alert size-3" aria-hidden="true" /> TGE multipliers are
                 working assumptions — validate against tokenomics before sharing externally.
+              </div>
+            </div>
+
+            <!-- COM-142: constitutional baseline (A.1) — editable position + the Rule 13.10 guardrail -->
+            <div>
+              <div class="section-label mb-1">Constitutional baseline · Rule 13.10</div>
+              <p class="text-p-xs text-ink-gray-6 mb-3">
+                {{ ENTITY.legalName }} (t/a {{ ENTITY.tradingAs }}) · {{ ENTITY.jurisdiction }} ·
+                {{ ENTITY.regNo }}
+              </p>
+              <div class="rounded border border-outline-gray-2 bg-surface-gray-2 p-4">
+                <div class="grid sm:grid-cols-4 gap-4">
+                  <div>
+                    <div class="text-xs text-ink-gray-6 mb-1">Authorised shares</div>
+                    <NumIn
+                      :model-value="S.S.plan.constitution!.authorised"
+                      :min="0"
+                      aria-label="Authorised shares"
+                      @update:model-value="
+                        (v) => setPath(['plan', 'constitution', 'authorised'], v)
+                      "
+                    />
+                  </div>
+                  <div>
+                    <div class="text-xs text-ink-gray-6 mb-1">Issued (Robin, sole holder)</div>
+                    <NumIn
+                      :model-value="S.S.plan.constitution!.issued"
+                      :min="0"
+                      aria-label="Issued shares"
+                      @update:model-value="(v) => setPath(['plan', 'constitution', 'issued'], v)"
+                    />
+                  </div>
+                  <div>
+                    <div
+                      class="text-xs text-ink-gray-6 mb-1"
+                      title="Rousseau repurchase, 30 Apr 2026 (art. 48)"
+                    >
+                      Cancelled &amp; available
+                    </div>
+                    <NumIn
+                      :model-value="S.S.plan.constitution!.poolAvailable"
+                      :min="0"
+                      aria-label="Cancelled and available shares"
+                      @update:model-value="
+                        (v) => setPath(['plan', 'constitution', 'poolAvailable'], v)
+                      "
+                    />
+                  </div>
+                  <div>
+                    <div class="text-xs text-ink-gray-6 mb-1">Advisor pool sizing</div>
+                    <Select
+                      :model-value="S.S.plan.advisorPoolShares"
+                      :options="poolOpts"
+                      @update:model-value="(v) => setP('advisorPoolShares', Number(v))"
+                    />
+                  </div>
+                </div>
+                <p
+                  v-if="S.S.plan.advisorPoolShares === 8523"
+                  class="text-p-xs text-ink-gray-6 mt-2"
+                >
+                  The printed 15% cell (8,523) is ~3.5 shares short of its own arithmetic —
+                  recomputed {{ fShares(poolSharesExact(S.S.plan, 0.15)) }} at the live FD. Both
+                  stay selectable until the Resolution 4/5 blanks land (open decision #1).
+                </p>
+                <p
+                  v-if="guard.level !== 'ok'"
+                  role="alert"
+                  class="text-p-xs mt-2 flex items-center gap-1"
+                  :class="guard.level === 'breach' ? 'text-ink-red-3' : 'text-ink-amber-strong'"
+                >
+                  <span class="lucide-triangle-alert size-3" aria-hidden="true" />
+                  {{ guard.msg }}
+                </p>
+                <p v-else class="text-p-xs text-ink-gray-6 mt-2">
+                  Pool {{ fNum(guard.poolShares) }} of {{ fNum(guard.cap) }} available — within the
+                  Constitutional Limit (Rule 13.10).
+                </p>
+              </div>
+            </div>
+
+            <!-- COM-142: FD composition (A.2) — static read-out, label + rows on the canvas -->
+            <div>
+              <div class="section-label mb-3">Fully-diluted base · SAFEs as-converted</div>
+              <div class="divide-y divide-outline-gray-1">
+                <div
+                  v-for="r in FD_COMPOSITION"
+                  :key="r.id"
+                  class="flex items-center justify-between py-1.5 text-sm"
+                >
+                  <span class="text-ink-gray-7">{{ r.label }}</span>
+                  <span class="tabular-nums text-ink-gray-9">{{ fShares(r.shares) }}</span>
+                </div>
+                <div class="flex items-center justify-between py-1.5 text-sm font-medium">
+                  <span class="text-ink-gray-9">Live FD pre-ESOP (the walk's starting count)</span>
+                  <span class="tabular-nums text-ink-gray-9">{{
+                    fShares(S.S.plan.fdPreESOP)
+                  }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- COM-142: token pools (A.4) — allocation editable, headroom computed by the engine -->
+            <div>
+              <div class="section-label mb-3">Token pools · live allocation</div>
+              <div class="divide-y divide-outline-gray-1">
+                <div v-for="(tp, i) in S.S.plan.tokenPools" :key="tp.id" class="py-2">
+                  <div class="flex items-center gap-4 text-sm flex-wrap">
+                    <span class="text-ink-gray-7 w-20 shrink-0">{{ tp.label }}</span>
+                    <span class="flex items-center gap-1.5">
+                      <span class="text-xs text-ink-gray-6">pool</span>
+                      <NumIn
+                        :model-value="tp.poolPct"
+                        fmt="pct"
+                        :min="0"
+                        :max="1"
+                        :aria-label="`${tp.label} pool percent`"
+                        @update:model-value="
+                          (v) => setPath(['plan', 'tokenPools', i, 'poolPct'], v)
+                        "
+                      />
+                    </span>
+                    <span class="flex items-center gap-1.5">
+                      <span class="text-xs text-ink-gray-6">allocated</span>
+                      <NumIn
+                        :model-value="tp.allocatedPct"
+                        fmt="pct"
+                        :min="0"
+                        :max="1"
+                        :aria-label="`${tp.label} allocated percent`"
+                        @update:model-value="
+                          (v) => setPath(['plan', 'tokenPools', i, 'allocatedPct'], v)
+                        "
+                      />
+                    </span>
+                    <span class="ml-auto text-xs tabular-nums text-ink-gray-6"
+                      >headroom
+                      <span class="text-ink-gray-9">{{
+                        fPct(tokenPoolHeadroom(tp), 3)
+                      }}</span></span
+                    >
+                  </div>
+                  <p v-if="tp.note" class="text-p-xs text-ink-gray-6 mt-0.5">{{ tp.note }}</p>
+                </div>
               </div>
             </div>
           </template>

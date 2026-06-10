@@ -2499,3 +2499,21 @@ live (R3.4 end-to-end). vp 0/10 · 22/22 · 217/0/0 · build 0. **Prod check pen
 the pre-#88 bundle (BBEXHKjd vs tip DBYaw9mn) — the production deploy was still propagating at
 close; re-verify before Wave 3's first merge.** Next: M10-boundary grader → Wave 3 (M11:
 COM-155 spine first).
+
+## 2026-06-10 — Panel 005 (9/11) + R6.1/R8.5 fixes + COM-155 spine [M10 gate + W3 #1]
+
+**Panel 005 (M10 boundary): 9/11.** Both FAILs fixed in PR #89: **(1) R6.1** — terser
+passes:2 + toplevel mangle (DEFAULTS measured LARGER than esbuild — tune or don't bother):
+total 996,717 B ≤ 1.0 MB, initial 229,358 B gzip. Projection: M11/M12 chunks will regrow the
+total — if the ceiling collides with R1.1's build-everything demand, that criteria-CONFLICT is
+the next documented correction, made when it manifests. **(2) R8.5 method** — local-vs-prod hash
+equality is environment-dependent (Vercel chunks the identical tree differently; prod's bundle
+contained the tip-only 'Working scenarios' marker while hashes differed) → corrected to
+deployments-API ref+status AND a tip content marker. **Distilled rule: an asset-hash equality
+check across two BUILD ENVIRONMENTS is never sound — verify deploys by ref + content marker.**
+**COM-155 (M, 235 LOC, PR #90) — DONE: the M11 spine.** Person fields (checkStatus heals by
+DELETION — unknown never reads 'clear') · Review entity + nextReviewDue (open → as scheduled;
+else cadence from latest completed, else start; addMonthsUTC) · DOC_STATUSES += loi/promised ·
+reviewCadenceMonths (decision #4 configurable, 12). Additive within SCHEMA 6 (the issue's bump
+line predates §4 — flagged). 6/6 live. vp 0/10 · 22/22 · v2 225/0/0 · build 0.
+Next: COM-159 (offer pipeline F19).

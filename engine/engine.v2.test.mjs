@@ -179,8 +179,8 @@ console.log('\nT6 · Constitutional baseline & Rule 13.10 guardrail (COM-142):')
   const pre142 = JSON.parse(JSON.stringify(dflt));
   delete pre142.plan.constitution; delete pre142.plan.tokenPools; delete pre142.plan.advisorPoolShares;
   const seeded = ENG.reconcile(pre142);
-  A('round-trip: a pre-COM-142 v5 payload seeds the new fields and computes identically',
-    seeded.version === 5 && seeded.plan.constitution.authorised === 50000
+  A('round-trip: a pre-COM-142 payload seeds the new fields, stamps the CURRENT schema, computes identically',
+    seeded.version === ENG.SCHEMA && seeded.plan.constitution.authorised === 50000
     && seeded.plan.tokenPools.length === 4 && seeded.plan.advisorPoolShares === 5368
     && near(ENG.walkScenario(seeded.plan, 'base').exit.N, 118707, 1));
   const edited = JSON.parse(JSON.stringify(dflt));
@@ -408,9 +408,13 @@ console.log('\nT8 · Grant[] fold & per-grant strike/FMV (COM-144):');
     (() => { const g = rr.advisors[0].grants[0]; return g.strikePps === 1600 && g.docStatus === 'signed' && g.docUrl === 'https://docs.example/cert.pdf'; })());
   A('round-trip: junk heals — negative qty deleted, javascript: docUrl stripped, bad instrument/shape dropped, curve defaults by instrument',
     (() => { const gs = rr.advisors[0].grants; const g2 = gs.find(g => g.id === 'k2'); return gs.length === 2 && g2.quantity == null && g2.docUrl == null && g2.curve === 'rta' && g2.lifecycle === 'loi'; })());
-  A('round-trip: non-array grants junk → key deleted; v1 advisors stay grantless (derive-don\'t-materialise)',
-    rr.advisors[1].grants == null && rr.advisors[2].grants == null
-    && Object.prototype.hasOwnProperty.call(rr.advisors[1], 'grants') === false);
+  // (Tightened at COM-171: D3's derive-don't-materialise governed UNTIL the v6 bump — junk
+  // still never survives as junk, and the migration replaces it with derived-flagged rows
+  // that keep the advisor on the parametric path.)
+  A('round-trip: non-array grants junk → replaced by the v6 derived snapshot (parametric path keeps computing)',
+    Array.isArray(rr.advisors[1].grants) && rr.advisors[1].grants.every(g => g.derived === true)
+    && ENG.hasExplicitGrants(rr.advisors[1]) === false
+    && Array.isArray(rr.advisors[2].grants) && rr.advisors[2].grants.every(g => g.derived === true));
   // Review-panel pins (2026-06-10 — 9 confirmed findings, all fixed):
   A('stage mapping: currentStage "tge" (a milestone, not a round) prices FMV at Series A, not bridge',
     (() => {
@@ -996,6 +1000,175 @@ console.log('\nT15 · Cash-floor trade & affordability (COM-154):');
       const pre = JSON.parse(JSON.stringify(dflt)); delete pre.plan.cashFloor;
       const r = ENG.reconcile(pre);
       return r.plan.cashFloor.enabled === false && near(ENG.walkScenario(r.plan, 'base').exit.N, 118707, 1);
+    })());
+}
+
+// ---- T16: the single SCHEMA-6 bump (COM-171 — live-bound) ----
+// v5 → v6: materialise grants[] (derived-flagged, refreshed on load), delete the inert
+// cocAccelPct, stamp version 6 — and every v5 payload LOADS AND COMPUTES IDENTICALLY
+// (localStorage-map member AND the #s= raw-State hash form take the same reconcile path).
+console.log('\nT16 · SCHEMA v6 migration (COM-171):');
+{
+  const dflt = ENG.DEFAULT();
+  A('SCHEMA is 6 — the one and only bump of the wave', ENG.SCHEMA === 6);
+  A('cocAccelPct is gone from DEFAULT() and deleted from migrated payloads',
+    (() => {
+      const v5 = JSON.parse(JSON.stringify(dflt)); v5.version = 5; v5.plan.cocAccelPct = 0.25;
+      const r = ENG.reconcile(v5);
+      return !('cocAccelPct' in dflt.plan) && !('cocAccelPct' in r.plan) && r.version === 6;
+    })());
+  // the core guarantee: a v5 advisor (parametric, no grants) computes IDENTICALLY post-migration
+  const mkV5 = () => {
+    const v5 = JSON.parse(JSON.stringify(dflt)); v5.version = 5; v5.plan.cocAccelPct = 0;
+    v5.advisors.forEach(a => { delete a.grants; });
+    return v5;
+  };
+  A('migration materialises derived-flagged grants for parametric advisors (option + rta rows)',
+    (() => {
+      const r = ENG.reconcile(mkV5());
+      return r.advisors.every(a => Array.isArray(a.grants) && a.grants.length >= 2
+        && a.grants.every(g => g.derived === true));
+    })());
+  A('LOADS AND COMPUTES IDENTICALLY: every money field equal pre/post migration (incl. the CEILINGS)',
+    (() => {
+      const v5 = mkV5();
+      const pre = v5.advisors.map(a => ENG.computeAdvisor(a, dflt.plan, dflt.tiers, dflt.objectives));
+      const r = ENG.reconcile(v5);
+      const post = r.advisors.map(a => ENG.computeAdvisor(a, r.plan, r.tiers, r.objectives));
+      return pre.every((c, i) => near(c.baseCaseTotal, post[i].baseCaseTotal, 1e-9)
+        && near(c.baseCaseCeil, post[i].baseCaseCeil, 1e-9)
+        && near(c.eqPctCeil, post[i].eqPctCeil, 1e-12)
+        && near(c.pendingUplift, post[i].pendingUplift, 1e-12)
+        && near(c.cashTotal, post[i].cashTotal, 1e-9));
+    })());
+  A('the #s= hash form (raw State) migrates through the same path',
+    (() => {
+      // store.ts: decodeHash(JSON) → reconcile — emulate the decode product directly.
+      const hashState = mkV5();
+      const r = ENG.reconcile(hashState);
+      return r.version === 6 && !('cocAccelPct' in r.plan)
+        && near(ENG.computeBoard(r.advisors, r.plan, r.tiers, r.objectives).cost.base,
+                ENG.computeBoard(dflt.advisors, dflt.plan, dflt.tiers, dflt.objectives).cost.base, 1e-6);
+    })());
+  A('idempotent: reconcile(reconcile(v5)) — derived rows refresh, never duplicate',
+    (() => {
+      const r1 = ENG.reconcile(mkV5());
+      const r2 = ENG.reconcile(JSON.parse(JSON.stringify(r1)));
+      return r2.advisors.every((a, i) => a.grants.length === r1.advisors[i].grants.length
+        && a.grants.every(g => g.derived === true));
+    })());
+  A('derived rows REFRESH from the parametric fields (a plan edit re-derives on next load — no stale snapshots)',
+    (() => {
+      const r1 = ENG.reconcile(mkV5());
+      const edited = JSON.parse(JSON.stringify(r1));
+      edited.plan.baseGrant.equityPct = 0.01; // doubled
+      const r2 = ENG.reconcile(edited);
+      const q1 = r1.advisors[0].grants.find(g => g.instrument === 'option').quantity;
+      const q2 = r2.advisors[0].grants.find(g => g.instrument === 'option').quantity;
+      return q2 > q1 * 1.5;
+    })());
+  A('explicit grants are untouched by the migration; [] stays explicit-zero',
+    (() => {
+      const v5 = mkV5();
+      v5.advisors[0].grants = [{ id: 'real', instrument: 'option', round: 'bridge', quantity: 42, curve: 'cert-v3', vestStartISO: '2026-06-01', lifecycle: 'granted' }];
+      v5.advisors[1].grants = [];
+      const r = ENG.reconcile(v5);
+      return r.advisors[0].grants.length === 1 && r.advisors[0].grants[0].quantity === 42
+        && !r.advisors[0].grants[0].derived && Array.isArray(r.advisors[1].grants)
+        && r.advisors[1].grants.length === 0
+        && ENG.computeAdvisor(r.advisors[1], r.plan, r.tiers, r.objectives).baseCaseTotal === 0;
+    })());
+  A('claim-on-first-edit: stripping the derived flags flips the advisor to the fold (the store contract)',
+    (() => {
+      const r = ENG.reconcile(mkV5());
+      const claimed = { ...r.advisors[0], grants: r.advisors[0].grants.map(g => { const { derived, ...rest } = g; return rest; }) };
+      const c = ENG.computeAdvisor(claimed, r.plan, r.tiers, r.objectives);
+      return ENG.hasExplicitGrants(claimed) && c.ceilUplift === 0
+        && near(c.baseCaseTotal, ENG.computeAdvisor(r.advisors[0], r.plan, r.tiers, r.objectives).baseCaseTotal, 0.01);
+    })());
+  A('junk derived values heal to absent (only boolean true survives the sanitizer)',
+    (() => {
+      const v5 = mkV5();
+      v5.advisors[0].grants = [{ id: 'g', instrument: 'option', round: 'bridge', quantity: 10, curve: 'cert-v3', vestStartISO: '2026-06-01', lifecycle: 'granted', derived: 'yes' }];
+      const r = ENG.reconcile(v5);
+      return r.advisors[0].grants[0].derived == null && ENG.hasExplicitGrants(r.advisors[0]);
+    })());
+  A('a cash-floor advisor migrates with the floor row in the snapshot (policy on)',
+    (() => {
+      const v5 = mkV5();
+      v5.plan.cashFloor = { enabled: true, exchangeRate: 2, monthlyBurnUSD: 430000, maxPctOfBurn: 0.10 };
+      v5.advisors[0].cashFloorAnnualUSD = 50000;
+      const r = ENG.reconcile(v5);
+      const floorRow = r.advisors[0].grants.find(g => g.id.endsWith('-implicit-floor'));
+      return floorRow && floorRow.instrument === 'cash' && floorRow.valueUSD === 200000 && floorRow.derived === true;
+    })());
+  // Review-panel pins (2026-06-10 — every one mutation-tested: the suite stayed green under
+  // planted regressions until these landed):
+  A('a DORMANT floor election (policy OFF) materialises NO floor row and a departure retains no floor cash',
+    (() => {
+      const v5 = mkV5();
+      v5.advisors[0].cashFloorAnnualUSD = 50000; // policy stays disabled (the default)
+      const r = ENG.reconcile(v5);
+      const hasFloorRow = r.advisors[0].grants.some(g => g.id.endsWith('-implicit-floor'));
+      const dep = ENG.modelDeparture(r.advisors[0], 'good', '2030-06-01', r.plan, r.tiers, r.objectives);
+      return !hasFloorRow && r.advisors[0].cashFloorAnnualUSD === 50000 && dep.cashRetained === 0;
+    })());
+  A('MIXED arrays are EXPLICIT: an appended top-up beside derived rows survives reconcile and counts in the fold',
+    (() => {
+      const r1 = ENG.reconcile(mkV5());
+      const mixed = JSON.parse(JSON.stringify(r1));
+      mixed.advisors[0].grants.push({ id: 'top', instrument: 'option', round: 'seriesA', quantity: 500, curve: 'cert-v3', vestStartISO: '2027-06-01', lifecycle: 'granted' });
+      const r2 = ENG.reconcile(mixed);
+      const top = r2.advisors[0].grants.find(g => g.id === 'top');
+      const c = ENG.computeAdvisor(r2.advisors[0], r2.plan, r2.tiers, r2.objectives);
+      return ENG.hasExplicitGrants(r2.advisors[0]) && top && top.quantity === 500
+        && c.equityShares > 500;
+    })());
+  A('ZERO-derivation advisors stay PARAMETRIC: the migration never writes [] (a TBD placeholder must recover)',
+    (() => {
+      const v5 = mkV5();
+      v5.advisors[0].mode = 'value'; v5.advisors[0].annualValue = 0; // a parked placeholder
+      const r1 = ENG.reconcile(v5);
+      const parked = r1.advisors[0];
+      const stillParametric = !Array.isArray(parked.grants);
+      const revived = JSON.parse(JSON.stringify(r1));
+      revived.advisors[0].annualValue = 75000;
+      const r2 = ENG.reconcile(revived);
+      const c = ENG.computeAdvisor(r2.advisors[0], r2.plan, r2.tiers, r2.objectives);
+      return stillParametric && c.baseCaseTotal > 100000;
+    })());
+  A('a zeroed baseGrant round-trip never freezes the board: restore + reload recovers full value',
+    (() => {
+      const v5 = mkV5();
+      v5.plan.baseGrant = { equityPct: 0, tokenPct: 0 };
+      const r1 = ENG.reconcile(v5);
+      const restored = JSON.parse(JSON.stringify(r1));
+      restored.plan.baseGrant = { equityPct: 0.005, tokenPct: 0.003 };
+      const r2 = ENG.reconcile(restored);
+      const total = r2.advisors.reduce((s, a) => s + ENG.computeAdvisor(a, r2.plan, r2.tiers, r2.objectives).baseCaseTotal, 0);
+      return total > 1e6;
+    })());
+  A('claiming the FRESH derivation preserves the on-screen value after a plan edit (the stale-snapshot trap)',
+    (() => {
+      const r1 = ENG.reconcile(mkV5());
+      const edited = JSON.parse(JSON.stringify(r1));
+      edited.plan.baseGrant.equityPct = 0.01; // doubled in-session; snapshot rows now stale
+      // the store claims effectiveGrants FRESH on the parametric fields (never the snapshot):
+      const a = edited.advisors[0];
+      const { grants: _snap, ...parametric } = a;
+      const claimed = { ...a, grants: ENG.effectiveGrants(parametric, edited.plan, edited.tiers, edited.objectives).map(g => { const { derived, ...rest } = g; return rest; }) };
+      const cParam = ENG.computeAdvisor(parametric, edited.plan, edited.tiers, edited.objectives);
+      const cClaim = ENG.computeAdvisor(claimed, edited.plan, edited.tiers, edited.objectives);
+      return near(cClaim.baseCaseTotal, cParam.baseCaseTotal, 0.01) && cClaim.baseCaseTotal > 9e6;
+    })());
+  A('affordability never fails open after a claim: grant-borne cash keeps counting (cashAnnualEq)',
+    (() => {
+      const planOn = JSON.parse(JSON.stringify(dflt.plan));
+      planOn.cashFloor = { enabled: true, exchangeRate: 2, monthlyBurnUSD: 430000, maxPctOfBurn: 0.10 };
+      // four claimed advisors, each with a $200K/yr cash grant (the post-claim shape)
+      const board = dflt.advisors.map(a => ({ ...a, grants: [{ id: a.id + '-c', instrument: 'cash', round: 'bridge', valueUSD: 800000, curve: 'cert-v3', vestStartISO: '2026-06-01', lifecycle: 'granted' }] }));
+      const b = ENG.computeBoard(board, planOn, dflt.tiers, dflt.objectives);
+      return b.warnings.some(w => w.includes('burn')) && near(b.monthlyCash, (4 * 200000) / 12, 1);
     })());
 }
 

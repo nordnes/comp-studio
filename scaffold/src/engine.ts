@@ -36,6 +36,11 @@ export interface Grant {
   docUrl?: string;                // the RTA/certificate link column from the workbook
   // v2 (COM-150): the value must be defensible against equivalent professional-services time.
   timeCommitment?: string;        // e.g. "~10 hrs/mo"
+  // v2 (COM-171): true on rows the v6 migration MATERIALISED from the v1 implicit package.
+  // Derived rows are a refreshed-on-load snapshot for v2-native readers; the PARAMETRIC fields
+  // (mode/tier/annualValue/splitOptions/grantRound) stay authoritative for computation until
+  // the first explicit edit claims the package (the store strips the flags then).
+  derived?: boolean;
 }
 
 // v2 (COM-150 / Δ1): tiers become VALUE BANDS — packages denominate in dollars, deliver in
@@ -55,8 +60,9 @@ export interface Advisor {
   notes: string; performance: Performance;
   // PD2 (COM-82): optional per-advisor projection state — additive only, reconcile-normalised, no money path.
   caseOverride?: string; targetExit?: number;
-  // v2 (COM-144): explicit grants. ABSENT → v1 implicit-package behaviour (the §5 shim);
-  // reconcile() never materialises this (derive-don't-materialise, RFC D3).
+  // v2 (COM-144→171): explicit grants. From v6 the migration MATERIALISES this for legacy
+  // advisors as derived-flagged rows (a refreshed-on-load snapshot); computation dispatches on
+  // hasExplicitGrants — the parametric v1 package stays authoritative until a real edit.
   grants?: Grant[];
   // v2 (COM-146): first-class capital introductions. ABSENT → the v1 performance.capital*
   // fields drive the uplift; PRESENT → earned introductions drive it (the pipeline feeds the
@@ -86,7 +92,9 @@ export interface Plan {
   baseGrant: { equityPct: number; tokenPct: number };
   advisorTokenPoolPct: number; committedAdvisorTokenPct: number; boardTokenBucketPct: number;
   capitalUplift: { per: number; pct: number; cap: number; gate: string };
-  currentStage: string; cocAccelPct: number;
+  // cocAccelPct DELETED at v6 (COM-171): Plan rules v9 removed Rule 9.2; the field was inert
+  // (no engine math ever read it) and its Configure control went with COM-139/PR #68.
+  currentStage: string;
   equityVestYears: number; equityCliff: number; tokenVestYears: number; tokenCliff: number;
   milestones: Milestone[]; showBenchmarks: boolean;
   // v2 (COM-142): constitutional baseline — additive, SCHEMA stays 5; reconcile() defaults them.
@@ -148,7 +156,7 @@ export const BENCH = {
 };
 export const benchLevelForTier = (ti: number) => (ti >= 2 ? 'expert' : ti === 1 ? 'strategic' : 'standard');
 
-export const SCHEMA = 5;
+export const SCHEMA = 6;
 
 // ===== v2: constitutional baseline (COM-142 — spec v2 Δ8 · Part 10 #8 · Appendix A.1/A.2/A.4) =====
 // Entity facts (A.1) — constants, not state; Configure surfaces them read-only.
@@ -231,7 +239,7 @@ export const DEFAULT = (): State => ({
     baseGrant: { equityPct: 0.005, tokenPct: 0.003 },
     advisorTokenPoolPct: 0.05, committedAdvisorTokenPct: 0.0317, boardTokenBucketPct: 0.045,
     capitalUplift: { per: 1e6, pct: 0.10, cap: 1.0, gate: 'bridge' },
-    currentStage: 'bridge', cocAccelPct: 0,
+    currentStage: 'bridge',
     equityVestYears: 4, equityCliff: 12, tokenVestYears: 3, tokenCliff: 12,
     milestones: [
       { id: 'bridge', label: 'Bridge close' }, { id: 'mainnet', label: 'Public mainnet' },
@@ -272,7 +280,7 @@ export function reconcile(l: any): State {
   const baseScenario = (p.baseScenario && scn[p.baseScenario]) ? p.baseScenario : (scn.base ? 'base' : Object.keys(scn)[0]);
   let tiers = Array.isArray(l.tiers) && l.tiers.length ? l.tiers : d.tiers;
   tiers = tiers.map((t: any, i: number) => ({ name: t.name ?? `Tier ${i + 1}`, mult: t.mult ?? (i + 1), days: t.days ?? 1 }));
-  return {
+  const out: State = {
     ...d, ...l, version: SCHEMA,
     plan: {
       ...d.plan, ...p,
@@ -396,6 +404,7 @@ export function reconcile(l: any): State {
             if (!(DOC_STATUSES as readonly string[]).includes(g.docStatus)) delete out.docStatus;
             if (!(typeof g.docUrl === 'string' && /^https?:\/\//i.test(g.docUrl))) delete out.docUrl;
             if (!(typeof g.timeCommitment === 'string' && g.timeCommitment)) delete out.timeCommitment;
+            if (g.derived !== true) delete out.derived; // strictly boolean-true (COM-171)
             return out;
           })
           // id-keyed money list: duplicate grant ids double-count the fold — first wins.
@@ -424,6 +433,23 @@ export function reconcile(l: any): State {
       return adv;
     }) : d.advisors,
   };
+  // v2 (COM-171): the v5→v6 migration. (1) cocAccelPct is DELETED (inert — Plan v9 removed Rule
+  // 9.2; the ...p spread above may have carried it in). (2) grants[] MATERIALISE for parametric
+  // advisors as derived-flagged rows — refreshed on every load so the snapshot can't go stale;
+  // computation still dispatches to the parametric v1 path for them (hasExplicitGrants), which
+  // is what makes "loads and computes identically" literally true. Explicit grants untouched.
+  delete (out.plan as any).cocAccelPct;
+  out.advisors = out.advisors.map(a => {
+    if (hasExplicitGrants(a)) return a;
+    const stripped = { ...a } as any;
+    delete stripped.grants; // re-derive from the parametric fields, never from stale snapshots
+    const derivedRows = effectiveGrants(stripped, out.plan, out.tiers, out.objectives).map(g => ({ ...g, derived: true }));
+    // A zero-value package derives NO rows — leave grants ABSENT, never []: [] is the
+    // explicit-zero pin, and writing it would permanently freeze a parametric advisor at $0
+    // (review finding: a TBD placeholder or a temporarily-zeroed baseGrant must stay editable).
+    return derivedRows.length ? { ...a, grants: derivedRows } : stripped;
+  });
+  return out;
 }
 
 // ===== roadmap CSV (import/export) =====
@@ -634,12 +660,20 @@ export function computeGrant(grant: Grant, plan: Plan, scenKey: string) {
   return { id: grant.id, instrument: 'option' as Instrument, round: grant.round, roundLabel: roundLabel(plan, grant.round), quantity: qty, derived: derivedOpt != null, strikePps, fmvPps, exitPps, exerciseCost: qty * strikePps, stepUp: fmvPps - strikePps, value: netAtExit, netAtExit, underwater, lapsed };
 }
 
+// v2 (COM-171): the dispatch predicate. EXPLICIT = a grants array that is empty ([] = granted
+// nothing, COM-144's pin) or carries at least one non-derived row. ALL-derived rows are the v6
+// migration's snapshot — the parametric v1 package still computes (that is what makes the
+// migration's "computes identically" guarantee literally true; ceilings/uplifts keep their v1
+// semantics until a real edit claims the package).
+export const hasExplicitGrants = (a: Advisor) =>
+  Array.isArray(a.grants) && (a.grants.length === 0 || a.grants.some(g => !g.derived));
+
 export function computeAdvisor(a: Advisor, plan: Plan, tiers: Tier[], objectives: Objective[]) {
-  // v2 (COM-144): an advisor WITH a grants array computes as a fold over it — including EMPTY
+  // v2 (COM-144): an advisor with EXPLICIT grants computes as a fold over them — including EMPTY
   // ([] = explicitly granted nothing → $0; the implicit package must never resurrect when the
   // last grant is deleted or a corrupt import drops every row — fail toward understatement).
-  // The v1 implicit path below stays byte-equivalent for grant-less advisors (22/22 pins it).
-  if (Array.isArray(a.grants)) return computeAdvisorFromGrants(a, plan);
+  // The v1 implicit path below stays byte-equivalent for parametric advisors (22/22 pins it).
+  if (hasExplicitGrants(a)) return computeAdvisorFromGrants(a, plan);
   const years = a.years || 4;
   const bg = plan.baseGrant;
   const grantRound = a.grantRound || 'bridge';
@@ -736,7 +770,7 @@ export function computeAdvisor(a: Advisor, plan: Plan, tiers: Tier[], objectives
     eqPct, tkPct, eqPctCeil, tkPctCeil,
     scen, base: sb, retentionBase: sb.retention,
     equityShares, strikePps, exerciseCost, tokenCount: tkPct * plan.tokenSupply,
-    cash, cashTotal: cash * years,
+    cash, cashTotal: cash * years, cashAnnualEq: cash,
     // token legs follow the COM-152 fallback (mirrors tokenValueFor over the sb row fields —
     // baseCaseTotal must equal sb.total under the toggle; the T13 review missed these three).
     baseCaseBase: sb.netEqAt(baseEq, sb.exitVal) + (sb.tokenAsEquity ? baseTk * sb.retention * sb.exitVal : baseTk * sb.fdv),
@@ -819,7 +853,10 @@ function computeAdvisorFromGrants(a: Advisor, plan: Plan) {
     eqPct, tkPct, eqPctCeil: eqPct, tkPctCeil: tkPct,
     scen, base: sb, retentionBase: sb.retention,
     equityShares, strikePps, exerciseCost, tokenCount,
-    cash, cashTotal: cash * years + grantCash,
+    // cashAnnualEq: the advisor's TOTAL annual cash commitment incl. grant-borne cash — the
+    // affordability check must never fail open after a claim re-homes a retainer/floor into a
+    // cash grant row (review finding: claimed boards silently stopped warning).
+    cash, cashTotal: cash * years + grantCash, cashAnnualEq: cash + safeDiv(grantCash, years),
     baseCaseBase: sb.total, baseCaseTotal: sb.total, baseCaseCeil: sb.total,
     baseEqNet: sb.equity, baseBaseEqNet: sb.equity,
     bestCaseTotal: scen.reduce((m, x) => Math.max(m, x.total), 0),
@@ -827,18 +864,20 @@ function computeAdvisorFromGrants(a: Advisor, plan: Plan) {
   };
 }
 
-// v2 (COM-144): the §5 derivation shim, for UIs that render grant rows uniformly — explicit
-// grants when the array exists (even empty — [] is explicit-zero, never re-derive), else the v1
-// implicit package expressed as Grant entries. NOT persisted; reconcile never materialises these.
-// A flow that DOES persist them (materialise-on-first-edit) MUST clear hasCash/cashAnnual or drop
-// the implicit-cash row — the fold sums advisor-level cash AND cash grants (review 2026-06-10).
+// v2 (COM-144→171): the §5 derivation shim, for UIs that render grant rows uniformly — EXPLICIT
+// grants verbatim (even empty — [] is explicit-zero, never re-derive); parametric advisors get
+// the v1 implicit package expressed as Grant entries, derived FRESH every call (the v6 persisted
+// derived rows are a snapshot for external readers; live consumers always see current numbers).
+// A flow that PERSISTS the derivation as explicit (claim-on-first-edit) MUST clear
+// hasCash/cashAnnual — the fold sums advisor-level cash AND cash grants (review 2026-06-10).
 export function effectiveGrants(a: Advisor, plan: Plan, tiers: Tier[], objectives: Objective[]): Grant[] {
-  if (Array.isArray(a.grants)) return a.grants;
+  if (hasExplicitGrants(a)) return a.grants as Grant[];
   const c = computeAdvisor(a, plan, tiers, objectives);
   const out: Grant[] = [];
   if (c.equityShares > 0) out.push({ id: `${a.id}-implicit-eq`, instrument: 'option', round: c.grantRound, quantity: c.equityShares, strikePps: c.strikePps, curve: 'cert-v3', vestStartISO: a.startDate, lifecycle: 'granted' });
   if (c.tokenCount > 0) out.push({ id: `${a.id}-implicit-rta`, instrument: 'rta', round: c.grantRound, quantity: c.tokenCount, curve: 'rta', vestStartISO: a.startDate, lifecycle: 'granted' });
   if (a.hasCash && a.cashAnnual) out.push({ id: `${a.id}-implicit-cash`, instrument: 'cash', round: c.grantRound, valueUSD: (a.cashAnnual || 0) * (a.years || 4), curve: 'cert-v3', vestStartISO: a.startDate, lifecycle: 'granted' });
+  if ((a.cashFloorAnnualUSD ?? 0) > 0 && plan.cashFloor?.enabled) out.push({ id: `${a.id}-implicit-floor`, instrument: 'cash', round: c.grantRound, valueUSD: (a.cashFloorAnnualUSD as number) * (a.years || 4), curve: 'cert-v3', vestStartISO: a.startDate, lifecycle: 'granted' });
   return out;
 }
 
@@ -866,7 +905,8 @@ export function computeBoard(advisors: Advisor[], plan: Plan, tiers: Tier[], obj
   // v2 (COM-154): affordability vs burn — annual cash commitments (retainers + elected floors)
   // against the policy's burn threshold. Only when the policy is enabled.
   const cfp = plan.cashFloor;
-  const monthlyCash = safeDiv(sumCash, 12);
+  // grant-borne cash counts too (cashAnnualEq) — the check must not fail open after a claim.
+  const monthlyCash = safeDiv(rows.reduce((s, r) => s + ((r.c as any).cashAnnualEq ?? r.c.cash), 0), 12);
   if (cfp?.enabled) {
     const burn = ok(cfp.monthlyBurnUSD) && cfp.monthlyBurnUSD > 0 ? cfp.monthlyBurnUSD : CASH_FLOOR_DEFAULT.monthlyBurnUSD;
     const maxPct = ok(cfp.maxPctOfBurn) && cfp.maxPctOfBurn > 0 ? cfp.maxPctOfBurn : CASH_FLOOR_DEFAULT.maxPctOfBurn;

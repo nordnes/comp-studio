@@ -2646,3 +2646,12 @@ with a scoped observer — no fork/patch needed; (2) before shedding bundle byte
 heavy dep is actually USED for — 76KB for two icons is the norm, not the exception, with
 kitchen-sink UI libs.** Both shim icons + the X verified live; dialog suites re-run green.
 Next: Wave 4 (M12: COM-166→170).
+
+## 2026-06-11 — COM-166 (consent matrix A.6) DONE [W4 #1]
+
+**COM-166 (M, ~200 LOC, PR #102) — MERGED. No engine edit.** consents.ts (sibling of
+governance.ts): CONSENT_MATRIX (6 rows A.6 verbatim — Pantera live w/ 3 triggers + uncapped
+pro-rata + ss.8–13 survival; Big Brain/Figment waivers w/ surviving MFNs; Reciprocal/Lightspeed
+token MFNs + s.6(a); the 40+ bucket) · CONSENT_FACTS (Resolution v5) · consentersFor(actionId)
+= the COM-167 gating join. Governance renders it. 7/7 live. vp 0/10 · 22/22 · 254/0/0 · build 0.
+LINEAR DEBT: +COM-166. Next: COM-167 (blocking semantics + Proposition watermark).

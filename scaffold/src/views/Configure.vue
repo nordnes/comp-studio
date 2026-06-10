@@ -608,6 +608,60 @@ const poolOpts = computed(() => {
               </p>
             </div>
 
+            <!-- COM-154: the cash-floor policy — default disallowed (open decision #3) -->
+            <div>
+              <div class="section-label mb-3">Cash floor · certainty traded from the package</div>
+              <div class="rounded border border-outline-gray-2 bg-surface-gray-2 p-4 space-y-4">
+                <Switch
+                  :model-value="!!S.S.plan.cashFloor?.enabled"
+                  label="Allow cash floors — advisors may trade instrument value for cash certainty"
+                  @update:model-value="(v: boolean) => setPath(['plan', 'cashFloor', 'enabled'], v)"
+                />
+                <div v-if="S.S.plan.cashFloor?.enabled" class="grid sm:grid-cols-3 gap-4">
+                  <div>
+                    <div class="text-xs text-ink-gray-6 mb-1">
+                      Exchange rate ($ value per $1 cash)
+                    </div>
+                    <NumIn
+                      :model-value="S.S.plan.cashFloor.exchangeRate"
+                      fmt="mult"
+                      :min="0.1"
+                      aria-label="Cash floor exchange rate"
+                      @update:model-value="(v) => setPath(['plan', 'cashFloor', 'exchangeRate'], v)"
+                    />
+                  </div>
+                  <div>
+                    <div class="text-xs text-ink-gray-6 mb-1">Monthly burn</div>
+                    <NumIn
+                      :model-value="S.S.plan.cashFloor.monthlyBurnUSD"
+                      fmt="usd"
+                      :min="0"
+                      aria-label="Monthly burn"
+                      @update:model-value="
+                        (v) => setPath(['plan', 'cashFloor', 'monthlyBurnUSD'], v)
+                      "
+                    />
+                  </div>
+                  <div>
+                    <div class="text-xs text-ink-gray-6 mb-1">Affordability cap (% of burn)</div>
+                    <NumIn
+                      :model-value="S.S.plan.cashFloor.maxPctOfBurn"
+                      fmt="pct"
+                      :min="0.01"
+                      :max="1"
+                      aria-label="Affordability cap"
+                      @update:model-value="(v) => setPath(['plan', 'cashFloor', 'maxPctOfBurn'], v)"
+                    />
+                  </div>
+                </div>
+              </div>
+              <p class="text-p-xs text-ink-gray-6 mt-2">
+                Disabled by default — cash-floor policy is open decision #3. When enabled, an
+                advisor's elected floor is bought from the instrument legs at the exchange rate, and
+                the Board view warns when total cash commitments pass the affordability cap.
+              </p>
+            </div>
+
             <!-- uniform base + pools -->
             <div class="rounded border border-outline-gray-2 bg-surface-gray-2 p-4">
               <div class="section-label mb-3">Uniform base · tokens &amp; pools</div>

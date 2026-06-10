@@ -307,6 +307,25 @@ function setObjState(id: string, st: string) {
               {{ clampMsgs.cashAnnual }}
             </p>
           </div>
+          <!-- COM-154: the elected cash floor — only while the plan's policy allows it -->
+          <div v-if="S.plan.cashFloor?.enabled" class="space-y-1.5">
+            <FormLabel label="Cash floor (annual USD, traded from the package)" />
+            <NumIn
+              :model-value="sel.cashFloorAnnualUSD ?? 0"
+              fmt="usd"
+              :min="0"
+              aria-label="Cash floor"
+              @update:model-value="(v) => setField('cashFloorAnnualUSD', v || undefined)"
+            />
+            <p v-if="c?.cashFloorAnnual > 0" class="text-p-xs text-ink-gray-6">
+              Trades {{ fUSD(c.cashFloorTraded) }} of instrument value ({{
+                fPct(c.cashFloorFrac, 0)
+              }}) at {{ fMult(S.plan.cashFloor.exchangeRate) }} per $1 of certainty.
+            </p>
+            <p v-if="c?.cashFloorUnfunded" role="alert" class="text-p-xs text-ink-red-3">
+              The package cannot fund this floor — the whole instrument value is traded away.
+            </p>
+          </div>
         </div>
 
         <Divider />

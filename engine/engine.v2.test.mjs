@@ -931,5 +931,73 @@ console.log('\nT14 · Capital introductions & the board rollup (COM-146):');
     })());
 }
 
+// ---- T15: cash-floor trade + affordability (COM-154 — live-bound) ----
+// Certainty bought from the instrument legs at a configured rate; DEFAULT DISALLOWED
+// (open decision #3); affordability guards total cash commitments against burn (~$430K/mo).
+console.log('\nT15 · Cash-floor trade & affordability (COM-154):');
+{
+  const dflt = ENG.DEFAULT();
+  const planOn = JSON.parse(JSON.stringify(dflt.plan));
+  planOn.cashFloor = { enabled: true, exchangeRate: 2, monthlyBurnUSD: 430000, maxPctOfBurn: 0.10 };
+  const advF = { ...dflt.advisors[0], cashFloorAnnualUSD: 50000 };
+  A('CASH_FLOOR_DEFAULT: DISABLED · rate 2× · burn $430K/mo · cap 10% (open decision #3 configurable)',
+    ENG.CASH_FLOOR_DEFAULT.enabled === false && ENG.CASH_FLOOR_DEFAULT.exchangeRate === 2
+    && ENG.CASH_FLOOR_DEFAULT.monthlyBurnUSD === 430000 && ENG.CASH_FLOOR_DEFAULT.maxPctOfBurn === 0.10);
+  A('policy DISABLED → an elected floor is a byte-level no-op (default disallowed)',
+    (() => {
+      const off = ENG.computeAdvisor(advF, dflt.plan, dflt.tiers, dflt.objectives);
+      const ref = ENG.computeAdvisor(dflt.advisors[0], dflt.plan, dflt.tiers, dflt.objectives);
+      return off.cashFloorAnnual === 0 && near(off.baseCaseTotal, ref.baseCaseTotal, 1e-6) && off.cash === ref.cash;
+    })());
+  const on = ENG.computeAdvisor(advF, planOn, dflt.tiers, dflt.objectives);
+  const ref = ENG.computeAdvisor(dflt.advisors[0], planOn, dflt.tiers, dflt.objectives);
+  A('trade: $50K/yr floor over 4 years at 2× surrenders $400K of instrument value; both legs + ceilings scale',
+    (() => {
+      const instrRef = ref.baseCaseTotal;
+      return near(on.cashFloorTraded, 400000, 1) && near(on.cashFloorFrac, 400000 / instrRef, 1e-9)
+        && near(on.baseCaseTotal, instrRef - 400000, 1)
+        && near(on.eqPctCeil / ref.eqPctCeil, 1 - on.cashFloorFrac, 1e-9);
+    })());
+  A('the floor pays as cash: cash +$50K/yr, cashTotal +$200K over the engagement',
+    on.cash === ref.cash + 50000 && near(on.cashTotal, (ref.cash + 50000) * 4, 1e-6));
+  A('an unfundable floor clamps at 100% and flags (never negative instrument value)',
+    (() => {
+      const big = ENG.computeAdvisor({ ...dflt.advisors[0], cashFloorAnnualUSD: 5e7 }, planOn, dflt.tiers, dflt.objectives);
+      return big.cashFloorFrac === 1 && big.cashFloorUnfunded === true && big.baseCaseTotal >= -1e-6;
+    })());
+  A('affordability: total cash commitments past the cap fire the Board warning; below it, silent',
+    (() => {
+      const boardHot = dflt.advisors.map(a => ({ ...a, cashFloorAnnualUSD: 200000 }));
+      const hot = ENG.computeBoard(boardHot, planOn, dflt.tiers, dflt.objectives);
+      const cold = ENG.computeBoard([advF], planOn, dflt.tiers, dflt.objectives);
+      return hot.warnings.some(w => w.includes('burn')) && !cold.warnings.some(w => w.includes('burn'))
+        && near(hot.monthlyCash, (4 * 200000) / 12, 1);
+    })());
+  A('COM-152 residual fixed: baseCaseTotal ≡ sb.total under the pre-TGE fallback',
+    (() => {
+      const pT = JSON.parse(JSON.stringify(dflt.plan));
+      pT.scenarios.base.preTgeLiquidity = true;
+      const c = ENG.computeAdvisor(dflt.advisors[0], pT, dflt.tiers, dflt.objectives);
+      return near(c.baseCaseTotal, c.base.total, 1e-6);
+    })());
+  A('round-trip: policy heals per-field (junk enabled → DISABLED — fails closed); elected floors numeric-guarded',
+    (() => {
+      const rt = JSON.parse(JSON.stringify(dflt));
+      rt.plan.cashFloor = { enabled: 'yes', exchangeRate: -1, monthlyBurnUSD: 'lots', maxPctOfBurn: 0 };
+      rt.advisors[0].cashFloorAnnualUSD = -5;
+      rt.advisors[1].cashFloorAnnualUSD = 60000;
+      const r = ENG.reconcile(rt);
+      return r.plan.cashFloor.enabled === false && r.plan.cashFloor.exchangeRate === 2
+        && r.plan.cashFloor.monthlyBurnUSD === 430000 && r.plan.cashFloor.maxPctOfBurn === 0.10
+        && r.advisors[0].cashFloorAnnualUSD == null && r.advisors[1].cashFloorAnnualUSD === 60000;
+    })());
+  A('round-trip: a pre-COM-154 payload seeds the disabled policy and computes identically',
+    (() => {
+      const pre = JSON.parse(JSON.stringify(dflt)); delete pre.plan.cashFloor;
+      const r = ENG.reconcile(pre);
+      return r.plan.cashFloor.enabled === false && near(ENG.walkScenario(r.plan, 'base').exit.N, 118707, 1);
+    })());
+}
+
 console.log(`\n${pass} passed, ${fail} failed, ${pending} pending(v2).`);
 process.exit(fail ? 1 : 0);

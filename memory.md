@@ -2517,3 +2517,13 @@ else cadence from latest completed, else start; addMonthsUTC) · DOC_STATUSES +=
 reviewCadenceMonths (decision #4 configurable, 12). Additive within SCHEMA 6 (the issue's bump
 line predates §4 — flagged). 6/6 live. vp 0/10 · 22/22 · v2 225/0/0 · build 0.
 Next: COM-159 (offer pipeline F19).
+
+## 2026-06-10 — COM-159 (offer pipeline F19) DONE [W3 #2]
+
+**COM-159 (M, 138 LOC, PR #91) — DONE + MERGED.** ADVISOR_STAGES (8, F19 order) + advisorStage
+(absent/junk → 'modeled') + stageHistory (dated, note, http(s)-guarded docUrl — javascript: heals
+away) · store setStage appends history · Overview stage chips (gray/blue/orange/green/red) ·
+Advisors Pipeline Select + trail line. PINNED: stage is presentation-only (no money field moves
+across a pipeline walk — T18). LoI = the existing grant state; reviews = COM-155 outcomes.
+R3.11 live 7/7 (walk persists + history; money byte-identical). vp 0/10 · 22/22 · 228/0/0 ·
+build 0. Next: COM-160 (seed the live roster — needs the spec's E.4 register).

@@ -344,19 +344,23 @@ const caseTotalSum = computed(() =>
         <!-- scenario range by advisor -->
         <div class="print-area">
           <div class="text-sm text-ink-gray-6 mb-3">Scenario range by advisor · net value</div>
-          <!-- COM-88: static list — the section label gives context; no frame -->
+          <!-- COM-88: static list — the section label gives context; no frame.
+               COM-120: fixed-width columns (name · bar · range) so the labels align down the
+               list instead of jittering with name/value width; the bar is label-less. -->
           <div class="space-y-3">
-            <FootballField
+            <div
               v-for="r in ranges"
               :key="r.name"
-              :lo="r.lo"
-              :base="r.base"
-              :hi="r.hi"
-              :max="rangeMax"
-              :label="r.name"
-              compact
-              class="ff-row"
-            />
+              class="ff-row grid grid-cols-[8rem_1fr_7rem] items-center gap-3"
+            >
+              <span class="text-xs text-ink-gray-7 min-w-0 truncate" :title="r.name">{{
+                r.name
+              }}</span>
+              <FootballField :lo="r.lo" :base="r.base" :hi="r.hi" :max="rangeMax" compact />
+              <span class="text-xs tabular-nums text-ink-gray-6 text-right"
+                >{{ fUSD(r.lo) }} – {{ fUSD(r.hi) }}</span
+              >
+            </div>
           </div>
         </div>
       </div>

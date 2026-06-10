@@ -20,8 +20,34 @@ export interface Performance { capitalEquity?: number; capitalToken?: number; ca
 export type Instrument = 'option' | 'rta' | 'cash';
 export const GRANT_LIFECYCLES = ['draft', 'loi', 'granted', 'exercised', 'lapsed'] as const;
 export type GrantLifecycle = (typeof GRANT_LIFECYCLES)[number];
-export const DOC_STATUSES = ['in-draft', 'sent', 'in-review', 'signed', 'cancelled'] as const;
+// v2 (COM-155): the token-workbook vocabulary + 'loi' (a token grant that cancels into options
+// when the ESOP is live) + 'promised' (the Konrad 0.7–0.8% / Saikat 0.3–0.6% pattern — open
+// promises tracked, never lost).
+export const DOC_STATUSES = ['in-draft', 'sent', 'in-review', 'signed', 'cancelled', 'loi', 'promised'] as const;
 export type DocStatus = (typeof DOC_STATUSES)[number];
+
+// v2 (COM-155): person-lifecycle vocabularies. checkStatus covers DBS (UK) and the Swiss
+// self-requested certificate of suitability; contracting drives the s431 routing in F23.
+export const CHECK_STATUSES = ['none', 'requested', 'clear', 'flagged'] as const;
+export type CheckStatus = (typeof CHECK_STATUSES)[number];
+export const CONTRACTING_STRUCTURES = ['individual', 'entity'] as const;
+export type ContractingStructure = (typeof CONTRACTING_STRUCTURES)[number];
+
+// v2 (COM-155): the Review entity — the growth-over-time primitive. Scheduled (the plan cadence,
+// open decision #4 — configurable, default 12 months) or event-triggered (e.g. a Series A close).
+export const REVIEW_OUTCOMES = ['no-change', 'top-up', 'band-change', 'roll-off'] as const;
+export type ReviewOutcome = (typeof REVIEW_OUTCOMES)[number];
+export interface Review {
+  id: string;
+  scheduledISO: string;
+  trigger: 'scheduled' | 'event';
+  eventNote?: string;             // e.g. "Series A close"
+  inputs?: string;                // engagement, objectives earned, board view
+  outcome?: ReviewOutcome;        // absent until completed
+  approver?: string;
+  completedISO?: string;
+  note?: string;
+}
 export interface Grant {
   id: string;
   instrument: Instrument;
@@ -71,6 +97,14 @@ export interface Advisor {
   // v2 (COM-154): the advisor's elected cash floor (annual $) — active only while the plan's
   // cash-floor policy is enabled. Grant-path advisors express floors AS cash grants instead.
   cashFloorAnnualUSD?: number;
+  // v2 (COM-155): person-lifecycle fields — additive within SCHEMA 6 (only COM-171 bumps; the
+  // issue's bump line predates the §4 ruling). All optional; reconcile heals.
+  refereeName?: string;
+  checkStatus?: CheckStatus;          // DBS (UK) / Swiss certificate of suitability
+  contracting?: ContractingStructure; // individual vs PSC/Contracted Entity — F23 s431 routing
+  contractEntity?: string;            // the PSC / Contracted Entity name, when contracting=entity
+  supervisor?: string;
+  reviews?: Review[];                 // the growth-over-time checkpoints (COM-158 builds the UI)
 }
 
 // v2 (COM-154): the cash-floor policy — certainty bought from the instrument legs at a
@@ -105,6 +139,8 @@ export interface Plan {
   valueBands?: ValueBand[];
   // v2 (COM-154): the cash-floor policy (default disallowed — open decision #3).
   cashFloor?: CashFloorPolicy;
+  // v2 (COM-155): the review cadence (months) — open decision #4 ships CONFIGURABLE, default 12.
+  reviewCadenceMonths?: number;
 }
 
 // A named bundle of per-round assumptions — the dilution workbook generalised (COM-143).
@@ -252,6 +288,7 @@ export const DEFAULT = (): State => ({
     scenarioSets: [],
     valueBands: VALUE_BANDS_DEFAULT.map(b => ({ ...b })),
     cashFloor: { ...CASH_FLOOR_DEFAULT },
+    reviewCadenceMonths: 12,
   },
   tiers: [{ name: 'Base', mult: 1, days: 1 }, { name: 'Strategic', mult: 2, days: 2 }, { name: 'Anchor', mult: 3, days: 3 }],
   objectives: [
@@ -368,6 +405,8 @@ export function reconcile(l: any): State {
               maxPctOfBurn: ok(s.maxPctOfBurn) && s.maxPctOfBurn > 0 ? s.maxPctOfBurn : CASH_FLOOR_DEFAULT.maxPctOfBurn,
             };
           })(),
+          // COM-155: review cadence — positive months only (decision #4 stays configurable).
+          reviewCadenceMonths: ok(p.reviewCadenceMonths) && p.reviewCadenceMonths > 0 ? p.reviewCadenceMonths : 12,
         };
       })(),
     },
@@ -430,6 +469,31 @@ export function reconcile(l: any): State {
       }
       // v2 (COM-154): the elected floor must be a positive finite number, else it goes.
       if (!(ok(adv.cashFloorAnnualUSD) && adv.cashFloorAnnualUSD > 0)) delete adv.cashFloorAnnualUSD;
+      // v2 (COM-155): person-lifecycle fields — strings string-guarded, enums heal by deletion
+      // (an unknown check status must read as unset, never as 'clear').
+      for (const k of ['refereeName', 'contractEntity', 'supervisor'] as const) {
+        if (!(typeof adv[k] === 'string' && adv[k])) delete adv[k];
+      }
+      if (!(CHECK_STATUSES as readonly string[]).includes(adv.checkStatus)) delete adv.checkStatus;
+      if (!(CONTRACTING_STRUCTURES as readonly string[]).includes(adv.contracting)) delete adv.contracting;
+      if (Array.isArray(a.reviews)) {
+        adv.reviews = a.reviews
+          .filter((r: any) => r && typeof r === 'object' && r.id && typeof r.scheduledISO === 'string' && r.scheduledISO)
+          .map((r: any) => {
+            const out: any = {
+              ...r, id: String(r.id),
+              trigger: r.trigger === 'event' ? 'event' : 'scheduled',
+            };
+            for (const k of ['eventNote', 'inputs', 'approver', 'completedISO', 'note']) {
+              if (!(typeof out[k] === 'string' && out[k])) delete out[k];
+            }
+            if (!(REVIEW_OUTCOMES as readonly string[]).includes(out.outcome)) delete out.outcome;
+            return out;
+          })
+          .filter((r: any, i: number, arr: any[]) => arr.findIndex(x => x.id === r.id) === i);
+      } else if ('reviews' in adv) {
+        delete adv.reviews;
+      }
       return adv;
     }) : d.advisors,
   };
@@ -1083,6 +1147,29 @@ export const dayBeforeISO = (iso: string) => {
   if (p.length < 3 || p.some(x => !ok(x))) return iso;
   return new Date(Date.UTC(p[0], p[1] - 1, p[2]) - 86400000).toISOString().slice(0, 10);
 };
+export const addMonthsUTC = (iso: string, n: number) => {
+  const p = String(iso).slice(0, 10).split('-').map(Number);
+  if (p.length < 3 || p.some(x => !ok(x))) return iso;
+  return new Date(Date.UTC(p[0], p[1] - 1 + n, p[2])).toISOString().slice(0, 10);
+};
+
+// v2 (COM-155): the next review checkpoint for an advisor — the growth-over-time clock that the
+// Trajectory view (COM-157) and the review workflow (COM-158) read. An OPEN review (scheduled,
+// not completed) is due as scheduled; otherwise the cadence runs from the latest completed
+// review, else from the engagement start.
+export function nextReviewDue(advisor: Advisor, plan: Plan, todayIso = todayISO()) {
+  const cadence = ok(plan.reviewCadenceMonths) && plan.reviewCadenceMonths! > 0 ? plan.reviewCadenceMonths! : 12;
+  const reviews = Array.isArray(advisor.reviews) ? advisor.reviews : [];
+  const open = reviews.filter(r => !r.completedISO).sort((a, b) => a.scheduledISO.localeCompare(b.scheduledISO));
+  if (open.length) {
+    const r = open[0];
+    return { dueISO: r.scheduledISO, overdue: r.scheduledISO < todayIso, source: 'scheduled' as const, review: r };
+  }
+  const completed = reviews.filter(r => r.completedISO).sort((a, b) => (b.completedISO as string).localeCompare(a.completedISO as string));
+  const anchor = completed.length ? (completed[0].completedISO as string) : (advisor.startDate || todayIso);
+  const dueISO = addMonthsUTC(anchor, cadence);
+  return { dueISO, overdue: dueISO < todayIso, source: 'cadence' as const, review: null };
+}
 
 // exerciseCheck(grant, atISO, windows) — RFC §4. Board-window membership + the Clause 3.6
 // backstop computed off the grant date (= vestStartISO; an advisor's VCD is the grant date).

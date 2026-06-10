@@ -15,6 +15,7 @@ import {
   SECTORS,
   stageReached,
   todayISO,
+  CHECK_STATUSES,
 } from "../engine";
 import { CAT } from "../constants";
 import NumIn from "./NumIn.vue";
@@ -152,6 +153,57 @@ function setObjState(id: string, st: string) {
               :model-value="sel.taxResidency || 'Other'"
               :options="['UK', 'US', 'Other'].map((t) => ({ label: t, value: t }))"
               @update:model-value="(v) => setField('taxResidency', v)"
+            />
+          </div>
+          <!-- COM-155: the person-lifecycle spine — checks, contracting (drives F23 s431
+               routing), referee, supervisor. Recorded for lifecycle; never modelled. -->
+          <div class="grid grid-cols-2 gap-4">
+            <FormControl
+              type="select"
+              label="Background check"
+              description="DBS (UK) / Swiss certificate of suitability"
+              size="sm"
+              :model-value="sel.checkStatus || 'none'"
+              :options="CHECK_STATUSES.map((s) => ({ label: s, value: s }))"
+              @update:model-value="(v) => setField('checkStatus', v === 'none' ? undefined : v)"
+            />
+            <FormControl
+              type="select"
+              label="Contracting"
+              description="Individual vs PSC / Contracted Entity"
+              size="sm"
+              :model-value="sel.contracting || 'individual'"
+              :options="[
+                { label: 'Individual', value: 'individual' },
+                { label: 'PSC / Contracted Entity', value: 'entity' },
+              ]"
+              @update:model-value="
+                (v) => setField('contracting', v === 'individual' ? undefined : v)
+              "
+            />
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <FormControl
+              v-if="sel.contracting === 'entity'"
+              type="text"
+              label="Contracted entity"
+              size="sm"
+              :model-value="sel.contractEntity || ''"
+              @update:model-value="(v) => setField('contractEntity', v || undefined)"
+            />
+            <FormControl
+              type="text"
+              label="Referee"
+              size="sm"
+              :model-value="sel.refereeName || ''"
+              @update:model-value="(v) => setField('refereeName', v || undefined)"
+            />
+            <FormControl
+              type="text"
+              label="Supervisor"
+              size="sm"
+              :model-value="sel.supervisor || ''"
+              @update:model-value="(v) => setField('supervisor', v || undefined)"
             />
           </div>
           <FormControl

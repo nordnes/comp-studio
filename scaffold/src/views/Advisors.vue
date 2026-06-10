@@ -23,6 +23,9 @@ import {
   effectiveGrants,
   computeGrant,
   GRANT_LIFECYCLES,
+  EXERCISE_MECHANICS,
+  FUNDING_ROUND_CARVEOUT,
+  exerciseCheck,
 } from "../engine";
 import NumIn from "../components/NumIn.vue";
 import PageHeader from "../components/PageHeader.vue";
@@ -96,6 +99,16 @@ const addGrantOpts = [
   { label: "Token grant (RTA)", onClick: () => addGrant(sel.value.id, "rta") },
   { label: "Cash", onClick: () => addGrant(sel.value.id, "cash") },
 ];
+// COM-151: the earliest exercisable option grant anchors the 3.6 backstop line.
+const backstop = computed(() => {
+  const opts = grantRows.value
+    .map(({ g }) => g)
+    .filter(
+      (g) => g.instrument === "option" && g.lifecycle !== "lapsed" && g.lifecycle !== "exercised",
+    )
+    .sort((a, b) => a.vestStartISO.localeCompare(b.vestStartISO));
+  return opts.length ? exerciseCheck(opts[0], todayISO()).backstop : null;
+});
 </script>
 
 <template>
@@ -415,6 +428,25 @@ const addGrantOpts = [
               <p class="text-p-xs mt-2 text-ink-gray-6">
                 Strike subject to an HMRC SAV / 409A valuation agreed before first grant.
               </p>
+              <!-- COM-151: exercise mechanics stated (display truth — the engine computes the
+                   backstop dates; Board discretion is never simulated) -->
+              <div class="mt-6">
+                <div class="section-label mb-3">Exercise mechanics</div>
+                <div class="divide-y divide-outline-gray-1 text-sm">
+                  <div v-for="m in EXERCISE_MECHANICS" :key="m.id" class="py-2">
+                    <span class="text-xs text-ink-gray-6">{{ m.rule }}</span>
+                    <p class="text-p-sm text-ink-gray-7 mt-0.5">{{ m.text }}</p>
+                  </div>
+                  <div v-if="backstop" class="py-2">
+                    <span class="text-xs text-ink-gray-6">This package's backstop</span>
+                    <p class="text-p-sm text-ink-gray-7 mt-0.5 tabular-nums">
+                      If no exit by {{ fDate(backstop.anniversary9ISO) }}, a ≥90-day window must
+                      open, closing by {{ fDate(backstop.lastCloseISO) }}.
+                    </p>
+                  </div>
+                </div>
+                <p class="text-p-xs mt-2 text-ink-gray-6">{{ FUNDING_ROUND_CARVEOUT }}</p>
+              </div>
             </div>
           </div>
         </template>

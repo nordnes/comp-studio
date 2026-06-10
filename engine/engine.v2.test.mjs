@@ -729,5 +729,37 @@ console.log('\nT11 · Leaver engine (COM-153):');
     })());
 }
 
+// ---- T12: exercise mechanics (COM-151 — live-bound) ----
+// Clause 3.6 backstop dates, Board-window membership, the cash-free-route flags, and the
+// Part 10 #7 carve-out explainer (display truth — no adjustment math may exist).
+console.log('\nT12 · Exercise windows & the Clause 3.6 backstop (COM-151):');
+{
+  const g = { id: 'x', instrument: 'option', round: 'bridge', quantity: 100, curve: 'cert-v3', vestStartISO: '2026-06-01', lifecycle: 'granted' };
+  const w1 = { id: 'w1', openISO: '2030-01-01', closeISO: '2030-03-31', label: 'Series C secondary' };
+  A('EXERCISE_MECHANICS: four statements (windows · 3.6 backstop · net exercise 4.5 · sell-to-cover 7.4(a))',
+    ENG.EXERCISE_MECHANICS.length === 4
+    && ENG.EXERCISE_MECHANICS[1].text.includes('90 days') && ENG.EXERCISE_MECHANICS[1].text.includes("30 days' written notice")
+    && ENG.EXERCISE_MECHANICS[2].rule.includes('4.5') && ENG.EXERCISE_MECHANICS[3].rule.includes('7.4'));
+  A('FUNDING_ROUND_CARVEOUT explains Rules 11.2/11.3 — and the engine exports NO adjustment math for it',
+    ENG.FUNDING_ROUND_CARVEOUT.includes('no compensatory adjustment') && ENG.FUNDING_ROUND_CARVEOUT.includes('11.3'));
+  A('window membership: inside a Board window → inWindow true; outside → false',
+    ENG.exerciseCheck(g, '2030-02-15', [w1]).inWindow === true
+    && ENG.exerciseCheck(g, '2030-04-01', [w1]).inWindow === false);
+  A('backstop dates: 9th anniversary 2035-06-01 · last close 2036-05-31 (day before the 10th)',
+    (() => { const b = ENG.exerciseCheck(g, '2030-01-01').backstop; return b.anniversary9ISO === '2035-06-01' && b.lastCloseISO === '2036-05-31' && b.minWindowDays === 90 && b.noticeDays === 30; })());
+  A('backstop.required flips at the 9th anniversary (premise: no Exit Event)',
+    ENG.exerciseCheck(g, '2035-05-31').backstop.required === false
+    && ENG.exerciseCheck(g, '2035-06-01').backstop.required === true);
+  A('cash-free routes ride as flags: net exercise = board discretion on request · sell-to-cover = holder-elected',
+    (() => { const c = ENG.exerciseCheck(g, '2030-01-01'); return c.netExercise.route.includes('board-discretion') && c.sellToCover.route === 'holder-elected'; })());
+  A('rta/cash/lapsed/exercised grants are never exercisable (no window, no backstop requirement)',
+    ENG.exerciseCheck({ ...g, instrument: 'rta' }, '2035-07-01', [w1]).exercisable === false
+    && ENG.exerciseCheck({ ...g, lifecycle: 'exercised' }, '2035-07-01').backstop.required === false
+    && ENG.exerciseCheck({ ...g, lifecycle: 'lapsed' }, '2030-02-15', [w1]).inWindow === false);
+  A('date helpers are TZ-free and junk-safe (leap-day folds; junk passes through unchanged)',
+    ENG.addYearsISO('2028-02-29', 1) === '2029-03-01' && ENG.dayBeforeISO('2036-03-01') === '2036-02-29'
+    && ENG.addYearsISO('junk', 9) === 'junk');
+}
+
 console.log(`\n${pass} passed, ${fail} failed, ${pending} pending(v2).`);
 process.exit(fail ? 1 : 0);

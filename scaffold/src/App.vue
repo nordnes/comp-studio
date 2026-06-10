@@ -25,7 +25,7 @@ import { confirmDestroy } from "./confirm";
 import Term from "./components/Term.vue";
 import CommandPalette from "./components/CommandPalette.vue";
 import PackageEditor from "./components/PackageEditor.vue";
-import { fUSD, fPct, scenKeys, baseScenKey } from "./engine";
+import { fUSD, fPct, scenKeys, baseScenKey, setList } from "./engine";
 import { CONFIDENTIAL_EYEBROW } from "./constants";
 // COM-62 workflow groups, COM-93 single-sourced from src/nav.ts (shared with palette + router).
 import { navGroups, configureItem } from "./nav";
@@ -85,6 +85,7 @@ const {
   pasteState,
   reset,
   setPath,
+  activateSet,
 } = useStudio();
 
 const fileRef = ref<HTMLInputElement | null>(null);
@@ -185,6 +186,22 @@ const currentStage = computed({
 const stageOptions = computed(() =>
   store.S.plan.milestones.map((m: any) => ({ label: m.label, value: m.id })),
 );
+// COM-148: the THIRD lens — saved scenario SETS. Selecting one activates it (deep copy into the
+// working scenarios, Undo on the toast); the control then snaps back to the working placeholder
+// because the active map is a copy, not a live pointer to the set.
+const setLens = ref("");
+const setOptions = computed(() => [
+  { label: "Working scenarios", value: "" },
+  ...setList(store.S.plan).map((s) => ({
+    label: `${s.starred ? "★ " : ""}${s.label}`,
+    value: s.id,
+  })),
+]);
+function onSetLens(v: string) {
+  if (!v) return;
+  activateSet(v);
+  setLens.value = "";
+}
 
 // COM-62: breadcrumb — board › view › advisor (the advisor segment only on the per-advisor routes).
 // COM-102: the root is the active BOARD (→ /overview), not the static "Studio".
@@ -302,6 +319,21 @@ const openCmdK = () => window.dispatchEvent(new Event("open-command-palette"));
                   :title="`Board · ${store.S.name}`"
                 />
               </Dropdown>
+              <!-- COM-148: the Set lens — any saved scenario set, two clicks from anywhere -->
+              <label
+                v-if="setOptions.length > 1"
+                class="flex items-center gap-2"
+                title="Switch the whole board to a saved scenario set"
+              >
+                <span class="text-p-xs text-ink-gray-6 w-9 shrink-0">Set</span>
+                <Select
+                  :model-value="setLens"
+                  class="flex-1 min-w-0"
+                  :options="setOptions"
+                  aria-label="Scenario set"
+                  @update:model-value="onSetLens"
+                />
+              </label>
               <label
                 v-if="scenarioOptions.length > 1"
                 class="flex items-center gap-2"

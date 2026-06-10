@@ -3,16 +3,26 @@
 // comparison bar lives HERE (not Board), per the reference.
 import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
-import { Badge, Button } from "frappe-ui";
+import { Badge, Button, Select } from "frappe-ui";
 import { useStudio } from "../store";
-import { fUSD, fPct, scenKeys, baseScenKey } from "../engine";
+import {
+  fUSD,
+  fPct,
+  fNum,
+  scenKeys,
+  baseScenKey,
+  setList,
+  diffSets,
+  planWithSet,
+  computeAdvisor,
+} from "../engine";
 import { SCEN_TOKENS, chartHex, shortName } from "../constants";
 import PageHeader from "../components/PageHeader.vue";
 import FrappeChart from "../components/FrappeChart.vue";
 import EmptyState from "../components/EmptyState.vue";
 import Panel from "../components/Panel.vue";
 
-const { store, board, select, flash, addAdvisor } = useStudio();
+const { store, board, select, flash, addAdvisor, duplicateAdvisor } = useStudio();
 // COM-136: chart/heading labels disambiguate duplicate first names (mononym/empty guarded).
 const rosterNames = computed(() => board.value.rows.map((r: any) => r.a.name));
 const sn = (n: string) => shortName(n, rosterNames.value);
@@ -102,6 +112,59 @@ const chartOpts = {
 const scenColors = computed(() =>
   cols.value.map((_, i) => chartHex(SCEN_TOKENS[i % SCEN_TOKENS.length])),
 );
+
+// COM-148: set diff + same-advisor A/B — every number from the engine (diffSets/computeAdvisor
+// over planWithSet); '' = the working scenarios (planWithSet no-ops on an unknown id).
+const setOpts = computed(() => [
+  { label: "Working scenarios", value: "" },
+  ...setList(S.value.plan).map((s) => ({ label: s.label, value: s.id })),
+]);
+const diffA = ref("");
+const diffB = ref("");
+const setDiff = computed(() =>
+  diffSets(
+    S.value.advisors,
+    S.value.plan,
+    S.value.tiers,
+    S.value.objectives,
+    diffA.value,
+    diffB.value,
+  ),
+);
+const advisorOpts = computed(() => [
+  { label: "Pick a package…", value: "" },
+  ...S.value.advisors.map((a) => ({ label: a.name, value: a.id })),
+]);
+const abA = ref("");
+const abB = ref("");
+const abSet = ref("");
+const abRows = computed(() => {
+  const a = S.value.advisors.find((x) => x.id === abA.value);
+  const b = S.value.advisors.find((x) => x.id === abB.value);
+  if (!a || !b) return null;
+  const p = planWithSet(S.value.plan, abSet.value);
+  const ca = computeAdvisor(a, p, S.value.tiers, S.value.objectives);
+  const cb = computeAdvisor(b, p, S.value.tiers, S.value.objectives);
+  const fmt = (c: any) => [
+    fUSD(c.baseCaseTotal),
+    fUSD(c.baseCaseCeil),
+    `${fPct(c.eqPct, 3)} · ${fNum(c.equityShares)}`,
+    fPct(c.tkPct, 3),
+    fUSD(c.cashTotal),
+    fUSD(c.bestCaseTotal),
+  ];
+  const fa = fmt(ca),
+    fb = fmt(cb);
+  const labels = [
+    "Base case (net)",
+    "Ceiling (net)",
+    "Equity % · options",
+    "Token %",
+    "Cash (engagement)",
+    "Best case",
+  ];
+  return labels.map((label, i) => ({ label: `${label}`, a: fa[i], b: fb[i] }));
+});
 </script>
 
 <template>
@@ -355,6 +418,113 @@ const scenColors = computed(() =>
           aria-label="Grouped bar of each advisor net value across scenarios, in millions of dollars."
         />
       </Panel>
+    </div>
+
+    <!-- COM-148: side-by-side SET diff — engine diffSets; the view renders rows -->
+    <div v-if="setOpts.length > 1">
+      <div class="flex items-center justify-between mb-3 gap-2 flex-wrap">
+        <div class="section-label">Scenario sets · side-by-side</div>
+        <div class="flex items-center gap-2">
+          <Select
+            :model-value="diffA"
+            :options="setOpts"
+            aria-label="Set A"
+            @update:model-value="(v) => (diffA = v)"
+          />
+          <span class="text-xs text-ink-gray-6">vs</span>
+          <Select
+            :model-value="diffB"
+            :options="setOpts"
+            aria-label="Set B"
+            @update:model-value="(v) => (diffB = v)"
+          />
+        </div>
+      </div>
+      <div class="divide-y divide-outline-gray-1 text-sm">
+        <div class="flex justify-between py-2">
+          <span class="text-ink-gray-6">Board cost (base case)</span>
+          <span class="tabular-nums text-ink-gray-9"
+            >{{ fUSD(setDiff.a.cost) }} → {{ fUSD(setDiff.b.cost) }}
+            <span :class="setDiff.deltas.cost >= 0 ? 'text-ink-green-3' : 'text-ink-red-3'"
+              >({{ setDiff.deltas.cost >= 0 ? "+" : "" }}{{ fUSD(setDiff.deltas.cost) }})</span
+            ></span
+          >
+        </div>
+        <div class="flex justify-between py-2">
+          <span class="text-ink-gray-6">Founder at exit</span>
+          <span class="tabular-nums text-ink-gray-9"
+            >{{ fPct(setDiff.a.founderPct, 2) }} → {{ fPct(setDiff.b.founderPct, 2) }}</span
+          >
+        </div>
+        <div class="flex justify-between py-2">
+          <span class="text-ink-gray-6">Board equity vs pool</span>
+          <span class="tabular-nums text-ink-gray-9"
+            >{{ fPct(setDiff.a.sumEq, 2) }} of {{ fPct(setDiff.a.esopNow, 0) }} →
+            {{ fPct(setDiff.b.sumEq, 2) }} of {{ fPct(setDiff.b.esopNow, 0) }}</span
+          >
+        </div>
+        <div v-for="r in setDiff.rows" :key="r.id" class="flex justify-between py-2">
+          <span class="text-ink-gray-7">{{ sn(r.name) }}</span>
+          <span class="tabular-nums text-ink-gray-9"
+            >{{ fUSD(r.aTotal) }} → {{ fUSD(r.bTotal) }}
+            <span :class="r.delta >= 0 ? 'text-ink-green-3' : 'text-ink-red-3'"
+              >({{ r.delta >= 0 ? "+" : "" }}{{ fUSD(r.delta) }})</span
+            ></span
+          >
+        </div>
+      </div>
+    </div>
+
+    <!-- COM-148: same-advisor A/B — two candidate packages, one person, one set -->
+    <div>
+      <div class="flex items-center justify-between mb-3 gap-2 flex-wrap">
+        <div class="section-label">A/B · two packages, one person</div>
+        <div class="flex items-center gap-2 flex-wrap">
+          <Select
+            :model-value="abA"
+            :options="advisorOpts"
+            aria-label="Package A"
+            @update:model-value="(v) => (abA = v)"
+          />
+          <span class="text-xs text-ink-gray-6">vs</span>
+          <Select
+            :model-value="abB"
+            :options="advisorOpts"
+            aria-label="Package B"
+            @update:model-value="(v) => (abB = v)"
+          />
+          <Select
+            v-if="setOpts.length > 1"
+            :model-value="abSet"
+            :options="setOpts"
+            aria-label="Evaluate under set"
+            @update:model-value="(v) => (abSet = v)"
+          />
+          <Button
+            variant="subtle"
+            theme="gray"
+            size="sm"
+            icon-left="lucide-copy"
+            label="Fork B"
+            title="Duplicate package A as an editable B candidate"
+            @click="abA && duplicateAdvisor(abA)"
+          />
+        </div>
+      </div>
+      <div v-if="abRows" class="divide-y divide-outline-gray-1 text-sm">
+        <div
+          v-for="row in abRows"
+          :key="row.label"
+          class="grid grid-cols-[1fr_auto_auto] gap-6 py-2"
+        >
+          <span class="text-ink-gray-6">{{ row.label }}</span>
+          <span class="tabular-nums text-ink-gray-9 text-right w-28">{{ row.a }}</span>
+          <span class="tabular-nums text-ink-gray-9 text-right w-28">{{ row.b }}</span>
+        </div>
+      </div>
+      <p v-else class="text-p-xs text-ink-gray-6">
+        Pick two packages — fork one with "Fork B" to model an offer v2 for the same person.
+      </p>
     </div>
   </div>
 </template>

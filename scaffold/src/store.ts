@@ -21,6 +21,7 @@ import {
   type State,
   type Scenario,
   makeScenarioSet,
+  planWithSet,
   type Instrument,
 } from "./engine";
 import { reconcileGovernance, type ComplianceItem, type Governance } from "./governance";
@@ -520,6 +521,38 @@ export function useStudio() {
     persist();
     undoToast("scenario set");
   }
+  // COM-148: the global set switcher — make a saved set the ACTIVE scenarios (planWithSet
+  // deep-copies, so later edits never rewrite the saved bundle). Undo restores the working map.
+  function activateSet(id: string) {
+    const s = (store.S.plan.scenarioSets || []).find((x) => x.id === id);
+    if (!s) return;
+    pushUndo();
+    const next = planWithSet(store.S.plan, id);
+    store.S.plan.scenarios = next.scenarios;
+    store.S.plan.baseScenario = next.baseScenario;
+    // a swapped map may drop scenarios that advisor overrides referenced — same cascade as delScenario
+    store.S.advisors.forEach((a) => {
+      if (a.caseOverride && !store.S.plan.scenarios[a.caseOverride]) delete a.caseOverride;
+    });
+    persist();
+    toast.create({
+      message: `Switched to "${s.label}"`,
+      type: "info",
+      action: { label: "Undo", onClick: restoreUndo },
+    });
+  }
+  // COM-148: same-advisor A/B — fork a candidate package (offer v2) for one person.
+  function duplicateAdvisor(id: string) {
+    const src: any = store.S.advisors.find((a) => a.id === id);
+    if (!src) return;
+    const copy = clone(src);
+    copy.id = uid("a");
+    copy.name = `${src.name} (B)`;
+    const at = store.S.advisors.findIndex((a) => a.id === id);
+    store.S.advisors.splice(at + 1, 0, copy);
+    persist();
+    flash(`Forked "${src.name}" as an A/B candidate`);
+  }
 
   // ---- per-advisor projection (PD2 / COM-82): case override + target exit ----
   function setAdvisorCase(id: string, key: string | null) {
@@ -754,6 +787,8 @@ export function useStudio() {
     duplicateSet,
     updateSet,
     deleteSet,
+    activateSet,
+    duplicateAdvisor,
     setAdvisorCase,
     setAdvisorTargetExit,
     setGovItem,

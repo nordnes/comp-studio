@@ -509,6 +509,31 @@ export const makeScenarioSet = (id: string, label: string, plan: Plan): Scenario
   id, label, scenarios: JSON.parse(JSON.stringify(plan.scenarios)), baseScenario: baseScenKey(plan),
 });
 
+// v2 (COM-148): the side-by-side set diff — per-advisor net + board totals + pool/founder
+// deltas, both sides evaluated through planWithSet (an unknown/'' id evaluates the WORKING
+// scenarios, so "current vs a saved set" diffs come free). Pure reads; the UI renders rows.
+export function diffSets(advisors: Advisor[], plan: Plan, tiers: Tier[], objectives: Objective[], idA: string, idB: string) {
+  const evalUnder = (setId: string) => {
+    const p = planWithSet(plan, setId);
+    const b = computeBoard(advisors, p, tiers, objectives);
+    const w = walkScenario(p, baseScenKey(p));
+    const issued = p.constitution?.issued ?? CONSTITUTION_DEFAULT.issued;
+    return { plan: p, board: b, founderPct: safeDiv(issued, w.exit.N), cost: b.cost[baseScenKey(p)] ?? 0 };
+  };
+  const A = evalUnder(idA), B = evalUnder(idB);
+  const rows = advisors.map(a => {
+    const ca = computeAdvisor(a, A.plan, tiers, objectives);
+    const cb = computeAdvisor(a, B.plan, tiers, objectives);
+    return { id: a.id, name: a.name, aTotal: ca.baseCaseTotal, bTotal: cb.baseCaseTotal, delta: cb.baseCaseTotal - ca.baseCaseTotal };
+  });
+  return {
+    a: { cost: A.cost, founderPct: A.founderPct, sumEq: A.board.sumEq, esopNow: A.board.esopNow },
+    b: { cost: B.cost, founderPct: B.founderPct, sumEq: B.board.sumEq, esopNow: B.board.esopNow },
+    rows,
+    deltas: { cost: B.cost - A.cost, founderPct: B.founderPct - A.founderPct, sumEq: B.board.sumEq - A.board.sumEq },
+  };
+}
+
 // v2 (COM-147): the workbook's "Headline observations", auto-generated from a plan's own numbers
 // (the founder walk and the bridge dilution decomposition — A.3's two named callouts). Pure
 // engine reads; the UI renders the strings. founder share count = constitution.issued (A.3

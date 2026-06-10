@@ -2416,3 +2416,20 @@ read the ENGINE's fractions, never recompute from raw dollars — two formulas =
 moment a path (grants) diverges; (3) every reduce over user-writable numbers needs its own ≥0
 clamp — reconcile guards LOADS, setPath writes LIVE state unsanitised.** vp 0/10 · 22/22 ·
 189/0/0 · build 0. Next: COM-154 (cash floor) → COM-171 (SCHEMA-6, LAST engine PR).
+
+## 2026-06-10 — COM-154 (cash-floor trade + affordability) DONE — Linear back [V2-finish W1 #10]
+
+**Linear MCP recovered (Robin /reload-plugins) → COM-146 flip + comment cleared; the debt
+protocol worked.** **COM-154 (S, 207 LOC, PR #83) — DONE + MERGED.** CashFloorPolicy (DEFAULT
+DISALLOWED — decision #3 open; rate 2× · burn $430K/mo · cap 10%, all configurable) ·
+cashFloorAnnualUSD bought from BOTH legs at the rate (ceilings scale; unfundable clamps+flags;
+floor pays as cash) · computeBoard affordability warning + monthlyCash · policy heals fail-CLOSED
+(junk enabled → disabled) · Configure panel + PackageEditor floor input w/ live trade line.
+**Bonus: the COM-152 residual — baseCaseBase/Total/Ceil token legs bypassed the pre-TGE fallback
+(baseCaseTotal ≠ sb.total under the toggle). Distilled rule: when an engine formula gains a
+BRANCH, grep the engine ITSELF for siblings of the un-branched formula (tkPct×fdv appeared 4×:
+scen rows + 3 baseCase legs) — a degraded review panel only caught the scen rows; the suite pin
+is baseCaseTotal ≡ sb.total.** Live preview server died with the plugin reload — restart with
+`cd scaffold && npm run preview -- --port 4173` (unsandboxed, background). vp 0/10 · 22/22 ·
+v2 198/0/0 · build 0 · 10/10 live (trade $7.67M→$6.87M = the exact $800K surrender).
+Next: COM-171 — the single SCHEMA-6 bump, the LAST engine PR.

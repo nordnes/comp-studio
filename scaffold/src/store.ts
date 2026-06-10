@@ -16,6 +16,7 @@ import {
   baseScenKey,
   walkScenario,
   currentRoundStep,
+  crystalliseIntroductions,
   roadmapToCSV,
   parseRoadmapCSV,
   todayISO,
@@ -558,6 +559,45 @@ export function useStudio() {
     flash(`Stage → ${stage}`);
   }
 
+  // COM-162 (F17): mark a round CLOSED — comp and fundraising move together. Re-pricing comes
+  // free (currentRoundStep follows plan.currentStage, advanced here when a milestone shares the
+  // round's id); gated capital uplifts crystallise via the engine; Series A additionally
+  // schedules the STRUCTURAL review for every advisor (Δ2 — "trainer wheels off").
+  function closeRound(roundId: string) {
+    const i = store.S.plan.rounds.findIndex((r: any) => r.id === roundId);
+    if (i < 0 || (store.S.plan.rounds[i] as any).closedISO) return;
+    pushUndo();
+    const today = todayISO();
+    (store.S.plan.rounds[i] as any).closedISO = today;
+    // advance the stage lens so NEW grants price at this round (only forward, never back)
+    const msIdx = store.S.plan.milestones.findIndex((m) => m.id === roundId);
+    const curIdx = store.S.plan.milestones.findIndex((m) => m.id === store.S.plan.currentStage);
+    if (msIdx >= 0 && msIdx > curIdx) store.S.plan.currentStage = roundId;
+    const { advisors, flipped } = crystalliseIntroductions(store.S.advisors, roundId);
+    store.S.advisors = advisors;
+    if (roundId === "seriesA") {
+      // the structural review: board formalisation + a full package review for EVERY advisor
+      store.S.advisors.forEach((a: any) => {
+        a.reviews = [
+          ...(Array.isArray(a.reviews) ? a.reviews : []),
+          {
+            id: uid("rv"),
+            scheduledISO: today,
+            trigger: "event",
+            eventNote: "Series A close — structural review (board formalises)",
+          },
+        ];
+      });
+    }
+    persist();
+    const label = store.S.plan.rounds[i].label;
+    toast.create({
+      message: `${label} closed — ${flipped ? `${flipped} capital uplift${flipped === 1 ? "" : "s"} crystallised; ` : ""}new grants price here${roundId === "seriesA" ? "; structural reviews scheduled" : ""}`,
+      type: "info",
+      action: { label: "Undo", onClick: restoreUndo },
+    });
+  }
+
   // COM-158 (F16): the review workflow — "start everyone the same; review and top up the
   // keepers", ON THE RECORD. Scheduling creates an open Review; completing one records
   // inputs/outcome/approver and applies the outcome: a top-up appends a NEW grant priced at
@@ -888,6 +928,7 @@ export function useStudio() {
     setStage,
     scheduleReview,
     completeReview,
+    closeRound,
     setAdvisorCase,
     setAdvisorTargetExit,
     setGovItem,

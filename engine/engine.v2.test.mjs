@@ -1405,5 +1405,64 @@ console.log('\nT20 · Trajectory: the value band + dated events (COM-157):');
     })());
 }
 
+// ---- T21: fundraising-event triggers (COM-162 — live-bound) ----
+console.log('\nT21 · Round close: crystallise + re-price + trajectory events (COM-162):');
+{
+  const dflt = ENG.DEFAULT();
+  A('crystalliseIntroductions: ONLY gated intros on the CLOSED round flip to earned; others untouched; pure',
+    (() => {
+      const advisors = JSON.parse(JSON.stringify(dflt.advisors));
+      advisors[0].introductions = [
+        { id: 'a', amountUSD: 5e6, round: 'seriesA', status: 'gated' },
+        { id: 'b', amountUSD: 2e6, round: 'seriesB', status: 'gated' },
+        { id: 'c', amountUSD: 1e6, round: 'seriesA', status: 'targeted' },
+      ];
+      const before = JSON.stringify(advisors);
+      const { advisors: out, flipped } = ENG.crystalliseIntroductions(advisors, 'seriesA');
+      const i = Object.fromEntries(out[0].introductions.map(x => [x.id, x.status]));
+      return flipped === 1 && i.a === 'earned' && i.b === 'gated' && i.c === 'targeted'
+        && JSON.stringify(advisors) === before; // purity — the input is untouched
+    })());
+  A('crystallisation MOVES MONEY: an earned intro raises the uplift that a gated one withheld',
+    (() => {
+      const planGate = JSON.parse(JSON.stringify(dflt.plan));
+      const a = JSON.parse(JSON.stringify(dflt.advisors[0]));
+      a.introductions = [{ id: 'x', amountUSD: 5e6, round: 'seriesA', status: 'gated' }];
+      const cBefore = ENG.computeAdvisor(a, planGate, dflt.tiers, dflt.objectives);
+      const { advisors: [a2] } = ENG.crystalliseIntroductions([a], 'seriesA');
+      const cAfter = ENG.computeAdvisor(a2, planGate, dflt.tiers, dflt.objectives);
+      return cAfter.baseCaseTotal > cBefore.baseCaseTotal && cAfter.capEarned > cBefore.capEarned;
+    })());
+  A('round-trip: closedISO survives reconcile; junk close dates heal by DELETION (never closed-at-junk)',
+    (() => {
+      const rt = JSON.parse(JSON.stringify(dflt));
+      rt.plan.rounds = rt.plan.rounds.map(r => ({ ...r }));
+      rt.plan.rounds[0].closedISO = '2026-06-10';
+      rt.plan.rounds[1].closedISO = 'not-a-date';
+      rt.plan.rounds[2].closedISO = 42;
+      const r = ENG.reconcile(rt);
+      return r.plan.rounds[0].closedISO === '2026-06-10'
+        && r.plan.rounds[1].closedISO == null && r.plan.rounds[2].closedISO == null;
+    })());
+  A('trajectoryEvents: a CLOSED round is a dated event; open rounds never render',
+    (() => {
+      const plan = JSON.parse(JSON.stringify(dflt.plan));
+      plan.rounds = plan.rounds.map(r => ({ ...r }));
+      plan.rounds.find(r => r.id === 'seriesA').closedISO = '2027-06-01';
+      const evs = ENG.trajectoryEvents({ ...dflt.advisors[0], startDate: '2026-06-01' }, plan, dflt.tiers, dflt.objectives, '2026-06-10');
+      const closed = evs.find(e => e.id === 'round-seriesA');
+      const openOnes = evs.filter(e => e.kind === 'round').length;
+      return closed && closed.m === 12 && closed.label.includes('closed') && openOnes === 1;
+    })());
+  A('re-pricing is the stage lens: currentStage=seriesA prices a new grant at the Series A walk step',
+    (() => {
+      const plan = JSON.parse(JSON.stringify(dflt.plan));
+      plan.currentStage = 'seriesA';
+      const w = ENG.walkScenario(plan, ENG.baseScenKey(plan));
+      const step = ENG.currentRoundStep(plan, w);
+      return step.id === 'seriesA' && step.post === 120e6;
+    })());
+}
+
 console.log(`\n${pass} passed, ${fail} failed, ${pending} pending(v2).`);
 process.exit(fail ? 1 : 0);

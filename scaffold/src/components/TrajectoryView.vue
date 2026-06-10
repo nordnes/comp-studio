@@ -52,6 +52,7 @@ const EVENT_COLOR: Record<string, string> = {
   "review-due": "var(--chart-capital)",
   tge: "var(--chart-customer)",
   backstop: "var(--chart-warning)",
+  round: "var(--chart-uplift)",
 };
 // collision-aware label rows: events sharing an x-neighbourhood stack instead of overprinting
 // (three events can land on month 12 — cliff, TGE, and a cadence review)
@@ -177,8 +178,9 @@ const endVals = computed(() => band.value[band.value.length - 1] || { floor: 0, 
     </div>
     <p class="text-p-xs mt-1 text-ink-gray-6">
       The band is the package's cumulative vested value under the selected scenario: floor = the
-      uniform base grant, base = earned performance, ceiling = every objective at maximum.
-      Fundraising rounds are undated in the plan and render on the dilution path instead.
+      uniform base grant, base = earned performance, ceiling = every objective at maximum. Closed
+      rounds mark the timeline (new grants price there); open rounds stay on the dilution path until
+      closed in Configure.
       <template v-if="seriesAFlag"
         >At Series A the advisory board formalises — a structural review of every package is
         expected (Δ2).</template

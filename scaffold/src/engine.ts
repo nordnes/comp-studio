@@ -5,7 +5,10 @@
 // SPDX: internal — Raiku Labs (Ackermann Systems Engineering Ltd).
 
 // ===== types =====
-export interface RoundDef { id: string; label: string }
+// v2 (COM-162): closedISO marks a round CLOSED — a first-class trajectory event (F17). New
+// grants then price at this round (currentRoundStep advances via the milestone), gated capital
+// uplifts crystallise, and the close date renders on the Trajectory.
+export interface RoundDef { id: string; label: string; closedISO?: string }
 export interface RoundVals { post: number; raise: number; esop: number }
 // v2 (COM-152): preTgeLiquidity — a liquidity event before TGE converts token awards 1:1 into
 // equity ("until we launch a token, all protocol value goes into equity", all-hands 16 Apr).
@@ -362,7 +365,14 @@ export function reconcile(l: any): State {
   const srcScn = p.scenarios && Object.keys(p.scenarios).length ? p.scenarios : d.plan.scenarios;
   const scn: Record<string, Scenario> = {};
   Object.keys(srcScn).forEach(k => { scn[k] = { label: k, tgeMult: 1, ...(d.plan.scenarios[k] || {}), ...(srcScn[k] || {}) }; });
-  const rounds = Array.isArray(p.rounds) && p.rounds.length ? p.rounds : d.plan.rounds;
+  // v2 (COM-162): closedISO heals — a YYYY-MM-DD string survives, anything else deletes
+  // (a junk close date must read as "still open", never as closed-at-Invalid-Date).
+  const rounds = (Array.isArray(p.rounds) && p.rounds.length ? p.rounds : d.plan.rounds)
+    .map((r: any) => {
+      const out: any = { ...r };
+      if (!(typeof out.closedISO === 'string' && /^\d{4}-\d{2}-\d{2}/.test(out.closedISO))) delete out.closedISO;
+      return out;
+    });
   const baseScenario = (p.baseScenario && scn[p.baseScenario]) ? p.baseScenario : (scn.base ? 'base' : Object.keys(scn)[0]);
   let tiers = Array.isArray(l.tiers) && l.tiers.length ? l.tiers : d.tiers;
   tiers = tiers.map((t: any, i: number) => ({ name: t.name ?? `Tier ${i + 1}`, mult: t.mult ?? (i + 1), days: t.days ?? 1 }));
@@ -676,7 +686,7 @@ export function trajectoryBand(a: Advisor, plan: Plan, tiers: Tier[], objectives
 // returned even when it falls beyond the window (the caller clamps/captions). The Series-A
 // structural review (Δ2 "trainer wheels" formalisation) renders caller-side off the seriesA
 // milestone.
-export interface TrajectoryEvent { id: string; kind: 'start' | 'cliff' | 'tranche' | 'qualifying' | 'review' | 'review-due' | 'tge' | 'today' | 'backstop'; m: number; label: string; dateISO: string }
+export interface TrajectoryEvent { id: string; kind: 'start' | 'cliff' | 'tranche' | 'qualifying' | 'review' | 'review-due' | 'tge' | 'today' | 'backstop' | 'round'; m: number; label: string; dateISO: string }
 export function trajectoryEvents(a: Advisor, plan: Plan, tiers: Tier[], objectives: Objective[], todayIso = todayISO()): TrajectoryEvent[] {
   const start = a.startDate || todayIso;
   const months = Math.max(12, Math.round((a.years || 4) * 12));
@@ -696,6 +706,10 @@ export function trajectoryEvents(a: Advisor, plan: Plan, tiers: Tier[], objectiv
   const due = nextReviewDue(a, plan, todayIso);
   if (!due.review) out.push({ id: 'review-due', kind: 'review-due', m: mOf(due.dueISO), label: 'Next review due', dateISO: due.dueISO });
   if (plan.tgeDate) out.push({ id: 'tge', kind: 'tge', m: mOf(plan.tgeDate), label: 'TGE', dateISO: plan.tgeDate });
+  // v2 (COM-162): CLOSED rounds are dated trajectory events (open rounds stay on the dilution path)
+  (plan.rounds || []).forEach(r => {
+    if (r.closedISO) out.push({ id: `round-${r.id}`, kind: 'round', m: mOf(r.closedISO), label: `${r.label} closed`, dateISO: r.closedISO });
+  });
   const tm = mOf(todayIso);
   if (tm > 0 && tm < months) out.push({ id: 'today', kind: 'today', m: tm, label: 'Today', dateISO: todayIso });
   const firstOpt = effectiveGrants(a, plan, tiers, objectives).find(g => g.instrument === 'option');
@@ -1167,6 +1181,23 @@ export function computeBoard(advisors: Advisor[], plan: Plan, tiers: Tier[], obj
 // Uplift-owed values are LINEAR reads of the base-case package (netEqAt is linear in pct above
 // water), so owedValue = upliftFraction × baseCaseBase — engine-derived, no new semantics.
 // Advisors without introductions[] contribute their v1 perf capital as 'earned' (one bucket).
+// v2 (COM-162): a round close CRYSTALLISES gated capital-introduction uplifts — every intro
+// gated on the closed round flips to earned. Pure: returns NEW advisor objects + the count
+// (the store wraps it in Undo and persists). Intros gated on OTHER rounds are untouched.
+export function crystalliseIntroductions(advisors: Advisor[], roundId: string): { advisors: Advisor[]; flipped: number } {
+  let flipped = 0;
+  const out = advisors.map(a => {
+    if (!Array.isArray(a.introductions)) return a;
+    let touched = false;
+    const introductions = a.introductions.map(i => {
+      if (i.status === 'gated' && i.round === roundId) { flipped++; touched = true; return { ...i, status: 'earned' as IntroStatus }; }
+      return i;
+    });
+    return touched ? { ...a, introductions } : a;
+  });
+  return { advisors: out, flipped };
+}
+
 export function capitalRollup(advisors: Advisor[], plan: Plan, tiers: Tier[], objectives: Objective[]) {
   const cu = plan.capitalUplift;
   const rows = advisors.map(a => {

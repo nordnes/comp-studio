@@ -1993,3 +1993,16 @@ notes, base row amber-ink). Roman i/ii/iii deleted. **In-PR judgment (prompt-set
 reference TABLE over a bar — reads as a letter's enclosure.** targetLine kept inside the bordered
 section. Legal corpus + propText byte-untouched (diff grep = 0 hits). Screenshots: document-grade.
 vp 0 · 22/22 both · build 0 · zero console errors.
+
+## 2026-06-10 — COM-117 (.section-label; MetricBand dissolved) DONE — ★ WAVE 4 COMPLETE [M9 finish-loop W4 #7]
+
+**COM-117 (P4 Low, ~50 LOC churn, 16 files) — DONE + MERGED.** `.section-label` token (text-sm/500/
+ink-gray-7) swapped into all 33 label sites (21 gray-6 + the 12 COM-118 gray-7 headers; python
+line-targeted sweep — letterhead metadata kept gray-6). **MetricBand NOT extracted — the premise
+dissolved: 113/114/115 removed 3 of the 4 bands; one survivor (ScenarioTable's progression band) ≠ a
+component.** Dead PotentialStrip.vue deleted (unmounted since COM-83). DESIGN_SYSTEM §2.5 → the one
+treatment. Verified: Board labels 14px/500/#525252. vp 0 · 22/22 both · build 0.
+
+**★ WAVE 4 (visual system) COMPLETE: COM-108/119/120/113/115/114/117, PRs #45–#51.** M9 = 47 Done /
+18 open. Next: WAVE 5 (editorial & package editor: 78→79→80 stack in PackageEditor, 91 Tabs, 92+127
+header zone, 128, 130+131, 129).

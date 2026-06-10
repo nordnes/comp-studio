@@ -25,6 +25,14 @@
 .figure-sm {
   font-size: 1.5rem;
 }
+/* COM-117: THE section-label treatment — one quiet convention for every label-above-content
+   (sentence case in the markup; amber is never a heading color per COM-118). */
+.section-label {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+  color: var(--ink-gray-7);
+}
 .figure-md {
   font-size: 1.875rem;
 }

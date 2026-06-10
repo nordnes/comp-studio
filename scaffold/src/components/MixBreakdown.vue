@@ -23,7 +23,7 @@ const total = computed(() =>
 <template>
   <!-- COM-88: static read-out — the section label carries it; no frame -->
   <div>
-    <div class="text-sm text-ink-gray-6 mb-3">Mix · base-case net value</div>
+    <div class="section-label mb-3">Mix · base-case net value</div>
     <div class="flex w-full h-[18px] rounded overflow-hidden bg-surface-gray-2">
       <div
         v-for="[l, v, col] in seg"

@@ -97,7 +97,7 @@ const hi = (r: any) => Math.max(r.from, r.to);
 <template>
   <Panel>
     <div class="flex items-center justify-between mb-1 flex-wrap gap-2">
-      <div class="text-sm text-ink-gray-6">How the package grows · base-case net value</div>
+      <div class="section-label">How the package grows · base-case net value</div>
       <div class="text-xs text-ink-gray-6">
         solid earned · faded pending gate · outline available
       </div>

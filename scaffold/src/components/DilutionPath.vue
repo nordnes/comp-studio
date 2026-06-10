@@ -14,7 +14,7 @@ const pctOfGrant = (sN: number) => props.c.baseEq * (w.value.steps[0].N / sN);
   <div>
     <div class="flex items-center gap-2 mb-3">
       <span class="lucide-trending-down size-3.5 text-ink-gray-6" aria-hidden="true" />
-      <div class="text-sm text-ink-gray-6">Equity dilution · base path</div>
+      <div class="section-label">Equity dilution · base path</div>
     </div>
     <div class="flex items-end gap-1 h-20">
       <div

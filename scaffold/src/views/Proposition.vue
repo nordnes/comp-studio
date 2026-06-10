@@ -122,7 +122,7 @@ const targetLine = computed(
   </EmptyState>
   <div v-else class="mx-auto w-full max-w-reading px-3 sm:px-5 space-y-8">
     <div class="flex justify-between items-center flex-wrap gap-3 no-print">
-      <div class="text-sm text-ink-gray-6">Proposition</div>
+      <div class="section-label">Proposition</div>
       <div class="flex items-center gap-2">
         <AdvisorPicker />
         <Button
@@ -194,7 +194,7 @@ const targetLine = computed(
         <div
           class="p-5 text-p-sm max-w-3xl rounded bg-surface-gray-1 border border-outline-gray-1 text-ink-gray-7 leading-relaxed"
         >
-          <div class="text-sm text-ink-gray-7 mb-2">How to read this</div>
+          <div class="section-label mb-2">How to read this</div>
           Your options are priced at today's share value, so their <b>net</b> worth is the upside
           <i>above</i> that price — at a modest exit they can be worth little, which is normal for
           options; the value is in the climb. Tokens are a fixed share of supply with no exercise
@@ -209,7 +209,7 @@ const targetLine = computed(
              amber INK; the roman ordinals are gone. Layout only — the legal corpus is untouched. -->
         <div class="border-y border-outline-gray-1 py-10 space-y-8">
           <div>
-            <div class="text-sm text-ink-gray-6 mb-3">Guaranteed base · net of strike</div>
+            <div class="section-label mb-3">Guaranteed base · net of strike</div>
             <div class="figure-lg text-ink-gray-9">{{ fUSD(c.baseCaseBase) }}</div>
             <div class="text-p-sm mt-3 text-ink-gray-6">
               {{ fPct(c.baseEq, 2) }} equity + {{ fPct(c.baseTk, 3) }} tokens

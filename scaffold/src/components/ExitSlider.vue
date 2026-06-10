@@ -78,7 +78,7 @@ const tickPct = (i: number) => (maxPos.value ? (i / maxPos.value) * 100 : 0);
 <template>
   <Panel class="no-print">
     <div class="flex items-baseline justify-between gap-3 mb-3 flex-wrap">
-      <div class="text-sm text-ink-gray-6">Explore the exit · drag to feel the upside</div>
+      <div class="section-label">Explore the exit · drag to feel the upside</div>
       <div class="text-xs text-ink-gray-5">net of strike &amp; dilution · not a forecast</div>
     </div>
     <div class="flex items-end gap-4 mb-4 flex-wrap">

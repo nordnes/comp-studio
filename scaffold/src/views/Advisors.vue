@@ -123,7 +123,7 @@ function toProp() {
     <!-- COM-76: read-only package summary (the editable terms, recapped); Edit opens the Dialog -->
     <Panel class="no-print">
       <div class="flex items-center justify-between mb-3">
-        <div class="text-sm text-ink-gray-6">Package · {{ sel.name }}</div>
+        <div class="section-label">Package · {{ sel.name }}</div>
         <Button
           variant="subtle"
           theme="gray"
@@ -192,7 +192,7 @@ function toProp() {
       <!-- COM-83: FootballField promoted out of the detail expander — the range belongs beside the table.
            COM-88: static read-out, de-boxed (the label carries it). -->
       <div>
-        <div class="text-sm text-ink-gray-6 mb-3">Scenario range · net value (low → high)</div>
+        <div class="section-label mb-3">Scenario range · net value (low → high)</div>
         <FootballField :lo="ff.lo" :base="ff.base" :hi="ff.hi" :max="ff.hi" />
         <div class="flex justify-between text-xs mt-2 tabular-nums text-ink-gray-6">
           <span>Low {{ fUSD(ff.lo) }}</span
@@ -217,7 +217,7 @@ function toProp() {
           <DilutionPath :c="c" />
           <!-- COM-88: static read-out — label + divide-y rows, no frame -->
           <div>
-            <div class="text-sm text-ink-gray-6 mb-3">
+            <div class="section-label mb-3">
               Instruments · <Term k="netOfStrike">net of strike</Term>
             </div>
             <div class="divide-y divide-outline-gray-1 text-sm">

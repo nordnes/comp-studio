@@ -356,7 +356,7 @@ const caseTotalSum = computed(() =>
         </RosterTable>
         <!-- scenario range by advisor -->
         <div class="print-area">
-          <div class="text-sm text-ink-gray-6 mb-3">Scenario range by advisor · net value</div>
+          <div class="section-label mb-3">Scenario range by advisor · net value</div>
           <!-- COM-88: static list — the section label gives context; no frame.
                COM-120: fixed-width columns (name · bar · range) so the labels align down the
                list instead of jittering with name/value width; the bar is label-less. -->
@@ -431,7 +431,7 @@ const caseTotalSum = computed(() =>
         :aria-label="`Valuation path base case. TGE FDV ${fUSD(stairFdv)}.`"
       >
         <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
-          <div class="text-sm text-ink-gray-6">
+          <div class="section-label">
             Valuation path · base case{{ S.plan.showBenchmarks ? " vs market median" : "" }}
             <span class="text-ink-gray-6">· post-money $M</span>
           </div>
@@ -460,7 +460,7 @@ const caseTotalSum = computed(() =>
         role="img"
         :aria-label="`Advisor potential under ${S.plan.scenarios[bc].label}: net value (x) vs headroom to ceiling (y); bubble size is capital introduced.`"
       >
-        <div class="text-sm text-ink-gray-6 mb-3">
+        <div class="section-label mb-3">
           Untapped potential · current net (x) vs <Term k="headroom">headroom</Term> (y) · bubble =
           capital introduced
         </div>

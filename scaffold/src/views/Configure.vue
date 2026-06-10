@@ -957,6 +957,24 @@ const composed = computed(() => walkComposed(S.S.plan, baseScenKey(S.S.plan), pr
           </template>
 
           <template v-if="group === 'perf'">
+            <!-- COM-155: the review cadence (open decision #4 — configurable, default 12) -->
+            <div
+              class="rounded border border-outline-gray-2 bg-surface-gray-2 p-3 flex items-center gap-3 flex-wrap"
+            >
+              <span class="section-label">Review cadence</span>
+              <NumIn
+                :model-value="S.S.plan.reviewCadenceMonths ?? 12"
+                :min="1"
+                :max="60"
+                aria-label="Review cadence months"
+                @update:model-value="(v) => setP('reviewCadenceMonths', v)"
+              />
+              <span class="text-p-xs text-ink-gray-6"
+                >months between scheduled checkpoints (open decision #4 — 6 or 12 under discussion);
+                event-triggered reviews ride fundraising closes</span
+              >
+            </div>
+
             <!-- objectives -->
             <div>
               <div class="flex items-center justify-between mb-3">

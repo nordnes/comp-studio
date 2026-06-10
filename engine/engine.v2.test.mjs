@@ -384,9 +384,9 @@ console.log('\nT8 · Grant[] fold & per-grant strike/FMV (COM-144):');
   A('lapsed grant prices to zero (quantity zeroed, value 0, flagged)',
     (() => { const g = ENG.computeGrant(mk({ lifecycle: 'lapsed' }), plan, 'base'); return g.value === 0 && g.quantity === 0 && g.lapsed === true; })());
   A('unknown grant round falls back to the bridge cell', near(ENG.computeGrant(mk({ round: 'ghost' }), plan, 'base').strikePps, 1572.95, 0.01));
-  A('GRANT_LIFECYCLES and DOC_STATUSES are the two SEPARATE status vocabularies (RFC §3)',
+  A('GRANT_LIFECYCLES and DOC_STATUSES are the two SEPARATE status vocabularies (RFC §3; COM-155 extends docs)',
     ENG.GRANT_LIFECYCLES.join(',') === 'draft,loi,granted,exercised,lapsed'
-    && ENG.DOC_STATUSES.join(',') === 'in-draft,sent,in-review,signed,cancelled');
+    && ENG.DOC_STATUSES.join(',') === 'in-draft,sent,in-review,signed,cancelled,loi,promised');
   A('currentRoundStep: milestone→most-recent-round (bridge at "mainnet"; Series A at "tge")',
     ENG.currentRoundStep({ ...plan, currentStage: 'mainnet' }, w).id === 'bridge'
     && ENG.currentRoundStep({ ...plan, currentStage: 'tge' }, w).id === 'seriesA');
@@ -1195,6 +1195,81 @@ console.log('\nT16 · SCHEMA v6 migration (COM-171):');
       const b = ENG.computeBoard(board, planOn, dflt.tiers, dflt.objectives);
       return b.warnings.some(w => w.includes('burn')) && near(b.monthlyCash, (4 * 200000) / 12, 1);
     })());
+}
+
+// ---- T17: the lifecycle/domain spine (COM-155 — live-bound) ----
+// Person fields · the Review entity (the growth-over-time primitive) · the extended doc-status
+// vocabulary. Additive within SCHEMA 6 (only COM-171 bumps — the §4 ruling).
+console.log('\nT17 · Lifecycle spine: person fields, reviews, doc statuses (COM-155):');
+{
+  const dflt = ENG.DEFAULT();
+  A('DOC_STATUSES gains loi + promised (the Konrad/Saikat open-promise pattern; SCHEMA stays 6)',
+    ENG.DOC_STATUSES.includes('loi') && ENG.DOC_STATUSES.includes('promised')
+    && ENG.DOC_STATUSES.includes('signed') && ENG.SCHEMA === 6);
+  A('CHECK_STATUSES / CONTRACTING_STRUCTURES / REVIEW_OUTCOMES are the named vocabularies',
+    ENG.CHECK_STATUSES.join(',') === 'none,requested,clear,flagged'
+    && ENG.CONTRACTING_STRUCTURES.join(',') === 'individual,entity'
+    && ENG.REVIEW_OUTCOMES.join(',') === 'no-change,top-up,band-change,roll-off');
+  A('round-trip: person fields survive; junk heals by DELETION (an unknown check never reads clear)',
+    (() => {
+      const rt = JSON.parse(JSON.stringify(dflt));
+      rt.advisors[0].refereeName = 'Jane Doe'; rt.advisors[0].checkStatus = 'clear';
+      rt.advisors[0].contracting = 'entity'; rt.advisors[0].contractEntity = 'Keller GmbH';
+      rt.advisors[0].supervisor = 'Robin';
+      rt.advisors[1].checkStatus = 'verified-ish'; rt.advisors[1].contracting = 42; rt.advisors[1].refereeName = '';
+      const r = ENG.reconcile(rt);
+      return r.advisors[0].refereeName === 'Jane Doe' && r.advisors[0].checkStatus === 'clear'
+        && r.advisors[0].contracting === 'entity' && r.advisors[0].contractEntity === 'Keller GmbH'
+        && r.advisors[0].supervisor === 'Robin'
+        && r.advisors[1].checkStatus == null && r.advisors[1].contracting == null && r.advisors[1].refereeName == null;
+    })());
+  A('round-trip: reviews survive (trigger heals, outcome enum-guarded, duplicate ids dedupe, junk drops)',
+    (() => {
+      const rt = JSON.parse(JSON.stringify(dflt));
+      rt.advisors[0].reviews = [
+        { id: 'r1', scheduledISO: '2026-12-01', trigger: 'scheduled', inputs: 'objectives earned', outcome: 'top-up', approver: 'Robin', completedISO: '2026-12-05' },
+        { id: 'r2', scheduledISO: '2027-06-01', trigger: 'sideways', outcome: 'promoted' },
+        { id: 'r2', scheduledISO: '2027-06-02', trigger: 'event' },
+        { id: 'junk' }, 'junk',
+      ];
+      rt.advisors[1].reviews = 'nope';
+      const r = ENG.reconcile(rt);
+      const rv = r.advisors[0].reviews;
+      return rv.length === 2 && rv[0].outcome === 'top-up' && rv[0].completedISO === '2026-12-05'
+        && rv[1].trigger === 'scheduled' && rv[1].outcome == null
+        && r.advisors[1].reviews == null;
+    })());
+  A('plan.reviewCadenceMonths: default 12; junk/zero heals to 12; a custom cadence survives',
+    (() => {
+      const rt = JSON.parse(JSON.stringify(dflt));
+      rt.plan.reviewCadenceMonths = 6;
+      const r6 = ENG.reconcile(rt);
+      rt.plan.reviewCadenceMonths = -3;
+      const rBad = ENG.reconcile(rt);
+      return dflt.plan.reviewCadenceMonths === 12 && r6.plan.reviewCadenceMonths === 6
+        && rBad.plan.reviewCadenceMonths === 12;
+    })());
+  A('nextReviewDue: an OPEN review is due as scheduled (overdue when past)',
+    (() => {
+      const a = { ...dflt.advisors[0], reviews: [{ id: 'r', scheduledISO: '2026-01-15', trigger: 'scheduled' }] };
+      const d = ENG.nextReviewDue(a, dflt.plan, '2026-06-10');
+      return d.dueISO === '2026-01-15' && d.overdue === true && d.source === 'scheduled';
+    })());
+  A('nextReviewDue: the cadence runs from the LATEST completed review, else the engagement start',
+    (() => {
+      const a1 = { ...dflt.advisors[0], startDate: '2026-06-01', reviews: [] };
+      const d1 = ENG.nextReviewDue(a1, dflt.plan, '2026-06-10');
+      const a2 = { ...a1, reviews: [{ id: 'r', scheduledISO: '2026-12-01', trigger: 'scheduled', outcome: 'no-change', completedISO: '2026-12-05' }] };
+      const d2 = ENG.nextReviewDue(a2, dflt.plan, '2026-12-10');
+      const p6 = { ...dflt.plan, reviewCadenceMonths: 6 };
+      const d3 = ENG.nextReviewDue(a1, p6, '2026-06-10');
+      return d1.dueISO === '2027-06-01' && d1.source === 'cadence' && d1.overdue === false
+        && d2.dueISO === '2027-12-05' && d3.dueISO === '2026-12-01';
+    })());
+  A('addMonthsUTC is TZ-free and junk-safe (month overflow folds; junk passes through)',
+    ENG.addMonthsUTC('2026-01-31', 1) === '2026-03-03' || ENG.addMonthsUTC('2026-01-31', 1) === '2026-03-02'
+      ? ENG.addMonthsUTC('junk', 6) === 'junk' && ENG.addMonthsUTC('2026-06-15', 12) === '2027-06-15'
+      : false);
 }
 
 console.log(`\n${pass} passed, ${fail} failed, ${pending} pending(v2).`);

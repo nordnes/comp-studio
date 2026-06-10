@@ -2302,3 +2302,23 @@ rule: when sub-agents are unavailable, candidate-verification degrades to in-con
 verification — evidence-based, but grader-independence is lost; re-test agent availability at
 every wave boundary and note degraded panels in the verdict file.** vp 0/10 · 22/22 · 71/0/5 ·
 build 0. Next: COM-144 (Grant[] + shim).
+
+## 2026-06-10 — COM-144 (Grant[] + per-grant strike + Instruments UI) DONE [V2-finish W1 #3]
+
+**COM-144 (P2 High, 508 LOC, PRs #74 engine + #75 UI) — DONE + MERGED.** Engine: Grant first-class
+(lifecycle ≠ docStatus), computeGrant (per-grant strike off the round; FMV via NEW currentRoundStep
+— **currentStage is a MILESTONE id, walk.byId holds ROUND ids; raw byId[currentStage] silently
+regresses to bridge past Series A** — the panel's top find), computeAdvisorFromGrants fold (v1
+superset; fold-consistent netEqAt — the v1 closure contradicted per-grant strikes in
+VestingTimeline/GrowthWaterfall/Board), effectiveGrants shim, trust-boundary sanitizer. UI:
+Instruments per-grant rows + add/edit/remove with materialise-on-first-edit (hasCash clears — cash
+double-count guard). **Panel: 45 agents, 38 cands → 9 CONFIRMED. Distilled rules: (1) any
+plan.currentStage lookup against a WALK must go through currentRoundStep — milestones aren't
+rounds; (2) a sanitizer must accept everything the compute path prices (strike-0 asymmetry =
+silent $157K reprice on reload); (3) for money state, absent ≠ empty — grants [] is explicit
+zero, deletion must never resurrect a package ($7.67M swing); (4) Term k=… with an unknown
+glossary key CRASHES the whole panel (reads .text of undefined) — grep constants.ts before using
+a new key.** Conventions flagged in PRs: lapsed=$0 · explicit grants priced not uplifted (until
+157/158 top-ups) · eqPct = shares/current-round FD. Two-PR pattern lesson: the UI half needs its
+OWN branch — pushing onto the merged PR's branch orphans the commit (#75 fixed). vp 0/10 · 22/22 ·
+v2 98/0/4 · build 0 · 11/11 live (R3.2 strikes differ 1,572.95 vs 4,212.04). Next: COM-145.

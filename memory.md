@@ -2550,3 +2550,12 @@ Advisors tab (flagged: tab not route). Collision-aware stacked event labels (3 e
 formula-mirror rule: a vector that can't fail under the actual bug is decoration.** 12/12 live ·
 vp 0/10 · 22/22 · 238/0/0 · build 0. Next: COM-158 (review workflow F16 — the wizard over
 COM-155's Review entity; the Trajectory readout is its entry point).
+
+## 2026-06-10 — COM-158 (review workflow F16) DONE [W3 #5]
+
+**COM-158 (M, ~300 LOC, PR #94) — DONE + MERGED. No engine edit** (store+UI over COM-155 Review
++ COM-144 pricing). scheduleReview/completeReview: approver guard (refuses self/empty — B.1 #5),
+top-up claims package + appends draft option grant at currentRoundStep (the fundraising-growth
+story), roll-off → F18 stage. ReviewPanel on the Trajectory tab (timeline + schedule + complete
+forms). 11/11 live (guard refused; $75K top-up landed non-derived; visible on Instruments).
+vp 0/10 · 22/22 · 238/0/0 · build 0. Next: COM-162 (fundraising event triggers F17).

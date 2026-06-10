@@ -2037,3 +2037,12 @@ tab.label; no-print (parity with collapsed-by-default printing). **Driving gotch
 ignores bare .click() — full pointerdown→…→click sequence required (same family as the Select/
 Combobox gotchas).** Verified: 4 triggers, Vesting default, Instruments switch shows the $1572.95
 strike row. vp 0 · 22/22 both · build 0.
+
+## 2026-06-10 — COM-92 (lens co-location) DONE [M9 finish-loop W5 #5]
+
+**COM-92 (P3 Med, ~30/25 LOC, 3 files + 1 deleted) — DONE + MERGED.** Stage joins Case in the sidebar
+lens block (prompt-set default placement, flagged for veto): same label idiom (w-9 label column so the
+two Selects align), `currentStage` computed over the existing setPath. stageOptions/scenarioOptions are
+the pluggable single supply points for COM-148 (M10 sets = data change). StageBadge.vue DELETED (its 2
+mounts retired). Verified: Case+Stage render in the shell on /overview AND /configure (a route that
+never had Stage); wiring is the identical setPath mechanism. vp 0 · 22/22 both · build 0.

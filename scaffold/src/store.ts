@@ -10,6 +10,7 @@ import {
   reconcile,
   computeBoard,
   computeAdvisor,
+  effectiveGrants,
   scenKeys,
   baseScenKey,
   roadmapToCSV,
@@ -18,6 +19,7 @@ import {
   SECTORS,
   type State,
   type Scenario,
+  type Instrument,
 } from "./engine";
 import { reconcileGovernance, type ComplianceItem, type Governance } from "./governance";
 
@@ -281,6 +283,62 @@ export function useStudio() {
     fixSel();
     persist();
     undoToast("advisor");
+  }
+
+  // ---- grants (COM-144: ADD/UPDATE/DEL — materialise-on-first-edit per RFC §5/D3) ----
+  // The first explicit edit converts the implicit package to explicit Grant rows so value is
+  // preserved; hasCash clears at that moment because the implicit-cash row now carries it (the
+  // fold sums advisor cash AND cash grants — keeping both would double-count).
+  function materialiseGrants(a: any) {
+    if (Array.isArray(a.grants)) return;
+    a.grants = effectiveGrants(a, store.S.plan, store.S.tiers, store.S.objectives).map((g) => ({
+      ...g,
+    }));
+    if (a.hasCash) {
+      a.hasCash = false;
+      a.cashAnnual = 0;
+    }
+  }
+  function addGrant(advisorId: string, instrument: Instrument = "option") {
+    const a: any = store.S.advisors.find((x) => x.id === advisorId);
+    if (!a) return;
+    materialiseGrants(a);
+    // Default to the LATEST round — the Part 5.3 top-up story: later grants price at later
+    // valuations; the engine derives the strike from the round.
+    const lastRound = store.S.plan.rounds[store.S.plan.rounds.length - 1]?.id || "bridge";
+    a.grants.push({
+      id: uid("g"),
+      instrument,
+      round: lastRound,
+      ...(instrument === "cash" ? { valueUSD: 0 } : { quantity: 0 }),
+      curve: instrument === "rta" ? "rta" : "cert-v3",
+      vestStartISO: todayISO(),
+      lifecycle: "draft",
+    });
+    persist();
+    flash(
+      instrument === "cash"
+        ? "Cash grant added — set the amount"
+        : "Grant added — set the quantity",
+    );
+  }
+  function updateGrant(advisorId: string, grantId: string, patch: Record<string, any>) {
+    const a: any = store.S.advisors.find((x) => x.id === advisorId);
+    if (!a) return;
+    materialiseGrants(a);
+    const g = a.grants.find((x: any) => x.id === grantId);
+    if (!g) return;
+    Object.assign(g, patch);
+    persist();
+  }
+  function removeGrant(advisorId: string, grantId: string) {
+    const a: any = store.S.advisors.find((x) => x.id === advisorId);
+    if (!a) return;
+    materialiseGrants(a);
+    pushUndo();
+    a.grants = a.grants.filter((x: any) => x.id !== grantId);
+    persist();
+    undoToast("grant");
   }
 
   // ---- objectives (ADD_OBJ / DEL_OBJ — DEL scrubs achieved/targeted across ALL advisors) ----
@@ -616,6 +674,9 @@ export function useStudio() {
     select,
     addAdvisor,
     delAdvisor,
+    addGrant,
+    updateGrant,
+    removeGrant,
     addObjective,
     delObjective,
     addTier,

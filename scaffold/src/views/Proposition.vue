@@ -381,15 +381,21 @@ const targetLine = computed(
             >Under this scenario a liquidity event precedes TGE: token awards convert 1:1 into
             equity — all protocol value accrues to equity, net of the same dilution walk.
           </template>
-          {{ residencyLine }} Strike subject to an agreed HMRC SAV / 409A valuation before first
-          grant. Exercise is available during Board-determined liquidity windows; if no Exit Event
-          occurs before the 9th anniversary of grant, the Company shall open an Exercise Period of
-          at least 90 days, on at least 30 days' written notice, ending no later than the day before
-          the 10th anniversary (Option Certificate 3.6). Net exercise is available at Board
-          discretion on the holder's written request (Rule 4.5); sell-to-cover is holder-elected
-          with surplus proceeds accounted to the holder (Rule 7.4(a)).
-          {{ FUNDING_ROUND_CARVEOUT }} Subject to required investor consents. Not a binding offer or
-          legal/financial advice.
+          {{ residencyLine }}
+          <template v-if="S.plan.valuation"
+            >Strike per the agreed {{ S.plan.valuation.basis }} valuation of
+            {{ fDate(S.plan.valuation.dateISO) }} ({{ fUSD(S.plan.valuation.ppsUSD) }}/share).
+          </template>
+          <template v-else
+            >Strike subject to an agreed HMRC SAV / 409A valuation before first grant.
+          </template>
+          Exercise is available during Board-determined liquidity windows; if no Exit Event occurs
+          before the 9th anniversary of grant, the Company shall open an Exercise Period of at least
+          90 days, on at least 30 days' written notice, ending no later than the day before the 10th
+          anniversary (Option Certificate 3.6). Net exercise is available at Board discretion on the
+          holder's written request (Rule 4.5); sell-to-cover is holder-elected with surplus proceeds
+          accounted to the holder (Rule 7.4(a)). {{ FUNDING_ROUND_CARVEOUT }} Subject to required
+          investor consents. Not a binding offer or legal/financial advice.
         </div>
       </div>
     </div>

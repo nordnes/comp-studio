@@ -1601,5 +1601,46 @@ console.log('\nT24 · Grant decisions: the B.3 verbatim steps + artefacts (COM-1
     })());
 }
 
+// ---- T25: the SAV/409A valuation record (COM-168/F22 — live-bound) ----
+console.log('\nT25 · Valuation record: one valuation, everywhere consistent (COM-168):');
+{
+  const dflt = ENG.DEFAULT();
+  const g = { id: 'g1', instrument: 'option', round: 'bridge', quantity: 1000, curve: 'cert-v3', vestStartISO: '2026-06-01', lifecycle: 'granted' };
+  A('ABSENT valuation: strike/FMV stay round-derived — the anchors hold byte-for-byte',
+    (() => {
+      const r = ENG.computeGrant(g, dflt.plan, 'base');
+      return near(r.strikePps, 1572.9525, 0.01) && r.fmvPps === ENG.currentRoundStep(dflt.plan, ENG.walkScenario(dflt.plan, 'base')).price;
+    })());
+  A('PRESENT: un-overridden strikes price at the agreed PPS; FMV reads it; explicit strikePps still WINS',
+    (() => {
+      const plan = JSON.parse(JSON.stringify(dflt.plan));
+      plan.valuation = { ppsUSD: 1800, basis: 'SAV/409A', dateISO: '2026-06-11' };
+      const r = ENG.computeGrant(g, plan, 'base');
+      const rx = ENG.computeGrant({ ...g, strikePps: 1572.9525 }, plan, 'base');
+      return r.strikePps === 1800 && r.fmvPps === 1800 && r.exerciseCost === 1000 * 1800
+        && near(rx.strikePps, 1572.9525, 0.01) && rx.fmvPps === 1800;
+    })());
+  A('a $-denominated grant derives its count off the AGREED spread when the valuation is in',
+    (() => {
+      const plan = JSON.parse(JSON.stringify(dflt.plan));
+      plan.valuation = { ppsUSD: 3000, basis: 'SAV', dateISO: '2026-06-11' };
+      const gv = { id: 'gv', instrument: 'option', round: 'bridge', valueUSD: 100000, strikePps: 1572.9525, curve: 'cert-v3', vestStartISO: '2026-06-01', lifecycle: 'granted' };
+      const r = ENG.computeGrant(gv, plan, 'base');
+      return r.derived && near(r.quantity, 100000 / (3000 - 1572.9525), 1e-6);
+    })());
+  A('round-trip: the record heals as a UNIT (junk pps/date deletes the whole record; junk basis re-defaults)',
+    (() => {
+      const rt = JSON.parse(JSON.stringify(dflt));
+      rt.plan.valuation = { ppsUSD: 1800, basis: 'vibes', dateISO: '2026-06-11', note: 'agreed w/ HMRC' };
+      const r1 = ENG.reconcile(rt);
+      rt.plan.valuation = { ppsUSD: 'lots', basis: 'SAV', dateISO: '2026-06-11' };
+      const r2 = ENG.reconcile(rt);
+      rt.plan.valuation = { ppsUSD: 1800, basis: 'SAV', dateISO: 'whenever' };
+      const r3 = ENG.reconcile(rt);
+      return r1.plan.valuation.ppsUSD === 1800 && r1.plan.valuation.basis === 'SAV/409A' && r1.plan.valuation.note === 'agreed w/ HMRC'
+        && r2.plan.valuation == null && r3.plan.valuation == null;
+    })());
+}
+
 console.log(`\n${pass} passed, ${fail} failed, ${pending} pending(v2).`);
 process.exit(fail ? 1 : 0);

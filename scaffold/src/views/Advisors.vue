@@ -344,7 +344,16 @@ const backstop = computed(() => {
               <!-- COM-144: per-grant rows — grant date · round · strike · FMV · count · status.
                    Later top-up grants price at later valuations (Part 5.3). -->
               <div class="flex items-center justify-between mb-3">
-                <div class="section-label">Grants · per-grant strike from the grant round</div>
+                <!-- COM-168: existing rows keep the strike they were granted at (explicit wins —
+                     the v1 package must not move); NEW grants price at the agreed valuation -->
+                <div class="section-label">
+                  Grants ·
+                  {{
+                    S.plan.valuation
+                      ? `new grants strike/FMV at the agreed ${S.plan.valuation.basis} valuation (${fUSD(S.plan.valuation.ppsUSD)}/share, ${fDate(S.plan.valuation.dateISO)}); granted rows keep their strike`
+                      : "per-grant strike from the grant round"
+                  }}
+                </div>
                 <Dropdown :options="addGrantOpts">
                   <Button
                     variant="subtle"

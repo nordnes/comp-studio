@@ -176,7 +176,13 @@ export interface Plan {
   cashFloor?: CashFloorPolicy;
   // v2 (COM-155): the review cadence (months) — open decision #4 ships CONFIGURABLE, default 12.
   reviewCadenceMonths?: number;
+  // v2 (COM-168/F22): the agreed SAV/409A valuation. ABSENT → strike/FMV stay round-derived
+  // (the v1 path and every anchor). PRESENT → grants WITHOUT an explicit strike price at the
+  // agreed PPS and FMV displays read it — one valuation, everywhere consistent.
+  valuation?: ValuationRecord;
 }
+export interface ValuationRecord { ppsUSD: number; basis: 'SAV' | '409A' | 'SAV/409A'; dateISO: string; note?: string }
+export const VALUATION_BASES = ['SAV', '409A', 'SAV/409A'] as const;
 
 // A named bundle of per-round assumptions — the dilution workbook generalised (COM-143).
 export interface ScenarioSet {
@@ -499,6 +505,21 @@ export function reconcile(l: any): State {
           })(),
           // COM-155: review cadence — positive months only (decision #4 stays configurable).
           reviewCadenceMonths: ok(p.reviewCadenceMonths) && p.reviewCadenceMonths > 0 ? p.reviewCadenceMonths : 12,
+          // COM-168: the valuation record heals as a UNIT — a junk pps or date deletes the whole
+          // record (strike must fail toward round-derived, never toward a half-valid valuation).
+          ...(() => {
+            const v: any = p.valuation;
+            if (v && typeof v === 'object' && ok(v.ppsUSD) && v.ppsUSD > 0
+              && typeof v.dateISO === 'string' && /^\d{4}-\d{2}-\d{2}/.test(v.dateISO)) {
+              return { valuation: {
+                ppsUSD: v.ppsUSD,
+                basis: (VALUATION_BASES as readonly string[]).includes(v.basis) ? v.basis : 'SAV/409A',
+                dateISO: v.dateISO,
+                ...(typeof v.note === 'string' && v.note ? { note: v.note } : {}),
+              } };
+            }
+            return {};
+          })(),
         };
       })(),
     },
@@ -651,6 +672,15 @@ export function reconcile(l: any): State {
   // computation still dispatches to the parametric v1 path for them (hasExplicitGrants), which
   // is what makes "loads and computes identically" literally true. Explicit grants untouched.
   delete (out.plan as any).cocAccelPct;
+  // COM-168: the ...p spread above can carry a JUNK valuation past the healed unit — strip it
+  // (the healed IIFE only writes a key when the record is whole; this removes the spread's copy).
+  {
+    const v: any = (out.plan as any).valuation;
+    if (!(v && typeof v === 'object' && ok(v.ppsUSD) && v.ppsUSD > 0
+      && typeof v.dateISO === 'string' && /^\d{4}-\d{2}-\d{2}/.test(v.dateISO))) {
+      delete (out.plan as any).valuation;
+    }
+  }
   out.advisors = out.advisors.map(a => {
     if (hasExplicitGrants(a)) return a;
     const stripped = { ...a } as any;
@@ -979,9 +1009,14 @@ export function computeGrant(grant: Grant, plan: Plan, scenKey: string) {
     // nothing — its zero is the lifecycle, not the maths).
     return { id: grant.id, instrument: 'rta' as Instrument, round: grant.round, roundLabel: roundLabel(plan, grant.round), quantity: qty, derived: derivedTk != null, strikePps: null, fmvPps: tokenPps, exitPps: null, exerciseCost: 0, stepUp: null, tokenPps, value, netAtExit: value, underwater: wantsDerive && derivedTk == null, lapsed, tokenAsEquity: asEquity };
   }
-  const strikePps = ok(grant.strikePps) ? grant.strikePps : round.price;
+  // v2 (COM-168/F22): a recorded SAV/409A valuation prices un-overridden strikes and IS the FMV
+  // print until superseded ("strike subject to an agreed HMRC SAV / 409A valuation before first
+  // grant" — the Proposition's own fine print). Explicit strikePps always wins; absent valuation
+  // keeps the round-derived path (every anchor).
+  const vPps = ok(plan.valuation?.ppsUSD) && (plan.valuation as ValuationRecord).ppsUSD > 0 ? (plan.valuation as ValuationRecord).ppsUSD : null;
+  const strikePps = ok(grant.strikePps) ? grant.strikePps : (vPps ?? round.price);
   const exitPps = safeDiv(exit.post, exit.N);
-  const fmvPps = currentRoundStep(plan, w).price;
+  const fmvPps = vPps ?? currentRoundStep(plan, w).price;
   const wantsDerive = !lapsed && !ok(grant.quantity) && ok(grant.valueUSD);
   const derivedOpt = wantsDerive ? valueToQuantity(grant.valueUSD as number, 'option', { fmvPps, strikePps }) : null;
   const qty = lapsed ? 0 : (ok(grant.quantity) ? grant.quantity : (derivedOpt ?? 0));

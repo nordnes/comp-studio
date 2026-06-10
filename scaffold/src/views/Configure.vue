@@ -82,7 +82,7 @@ const msOpts = () => S.S.plan.milestones.map((m) => ({ label: m.label, value: m.
       <!-- header -->
       <div class="flex justify-between items-center gap-3 flex-wrap">
         <div>
-          <div class="text-sm text-ink-gray-7">Configure</div>
+          <div class="section-label">Configure</div>
           <h1 class="font-display text-2xl mt-1 text-ink-gray-9">Plan basis &amp; controls</h1>
         </div>
         <Button
@@ -125,7 +125,7 @@ const msOpts = () => S.S.plan.milestones.map((m) => ({ label: m.label, value: m.
             <div
               class="rounded border border-outline-gray-2 bg-surface-gray-2 p-3 flex items-center gap-2 flex-wrap"
             >
-              <span class="text-sm text-ink-gray-7">Roadmap CSV</span>
+              <span class="section-label">Roadmap CSV</span>
               <input
                 ref="csvRef"
                 type="file"
@@ -157,7 +157,7 @@ const msOpts = () => S.S.plan.milestones.map((m) => ({ label: m.label, value: m.
 
             <!-- bridge -->
             <div class="rounded border border-outline-gray-2 bg-surface-gray-2 p-4">
-              <div class="text-sm text-ink-gray-7 mb-3">
+              <div class="section-label mb-3">
                 Bridge (fixed grant event) · cap table {{ fNum(S.S.plan.fdPreESOP) }} FD pre-ESOP
               </div>
               <div class="grid sm:grid-cols-4 gap-4">
@@ -202,7 +202,7 @@ const msOpts = () => S.S.plan.milestones.map((m) => ({ label: m.label, value: m.
             <!-- rounds -->
             <div>
               <div class="flex items-center justify-between mb-3">
-                <div class="text-sm text-ink-gray-7">
+                <div class="section-label">
                   Rounds · priced events after the bridge (order matters)
                 </div>
                 <Button
@@ -241,7 +241,7 @@ const msOpts = () => S.S.plan.milestones.map((m) => ({ label: m.label, value: m.
 
               <!-- scenarios -->
               <div class="flex items-center justify-between mb-3">
-                <div class="text-sm text-ink-gray-7">
+                <div class="section-label">
                   Scenario paths · per-round post-money / ESOP &amp; TGE multiple
                 </div>
                 <Button
@@ -387,7 +387,7 @@ const msOpts = () => S.S.plan.milestones.map((m) => ({ label: m.label, value: m.
           <template v-if="group === 'grants'">
             <!-- uniform base + pools -->
             <div class="rounded border border-outline-gray-2 bg-surface-gray-2 p-4">
-              <div class="text-sm text-ink-gray-7 mb-3">Uniform base · tokens &amp; pools</div>
+              <div class="section-label mb-3">Uniform base · tokens &amp; pools</div>
               <div class="grid sm:grid-cols-4 gap-4">
                 <div>
                   <div class="text-xs text-ink-gray-6 mb-1">Base equity %</div>
@@ -474,7 +474,7 @@ const msOpts = () => S.S.plan.milestones.map((m) => ({ label: m.label, value: m.
 
             <!-- capital schedule -->
             <div class="rounded border border-outline-gray-2 bg-surface-gray-2 p-4">
-              <div class="text-sm text-ink-gray-7 mb-3">Capital-introduced schedule</div>
+              <div class="section-label mb-3">Capital-introduced schedule</div>
               <div class="grid sm:grid-cols-4 gap-4">
                 <div>
                   <div class="text-xs text-ink-gray-6 mb-1">Per (USD)</div>
@@ -519,7 +519,7 @@ const msOpts = () => S.S.plan.milestones.map((m) => ({ label: m.label, value: m.
             <!-- objectives -->
             <div>
               <div class="flex items-center justify-between mb-3">
-                <div class="text-sm text-ink-gray-7">Objectives</div>
+                <div class="section-label">Objectives</div>
                 <Button
                   variant="subtle"
                   theme="gray"
@@ -586,7 +586,7 @@ const msOpts = () => S.S.plan.milestones.map((m) => ({ label: m.label, value: m.
             <!-- tiers -->
             <div>
               <div class="flex items-center justify-between mb-3">
-                <div class="text-sm text-ink-gray-7">Tiers · multiplier on the uniform base</div>
+                <div class="section-label">Tiers · multiplier on the uniform base</div>
                 <Button
                   variant="subtle"
                   theme="gray"
@@ -643,7 +643,7 @@ const msOpts = () => S.S.plan.milestones.map((m) => ({ label: m.label, value: m.
             <!-- milestones -->
             <div>
               <div class="flex items-center justify-between mb-3">
-                <div class="text-sm text-ink-gray-7">
+                <div class="section-label">
                   Milestones · gates for performance uplift (in order)
                 </div>
                 <Button

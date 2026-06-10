@@ -94,7 +94,7 @@ function setObjState(id: string, st: string) {
       <div v-if="sel" class="space-y-5">
         <!-- Identity -->
         <div class="space-y-4">
-          <div class="text-sm text-ink-gray-6">Identity</div>
+          <div class="section-label">Identity</div>
           <FormControl
             type="text"
             label="Name"
@@ -169,7 +169,7 @@ function setObjState(id: string, st: string) {
         <!-- Base grant -->
         <div class="space-y-4">
           <div class="flex items-center justify-between">
-            <div class="text-sm text-ink-gray-6">Base grant</div>
+            <div class="section-label">Base grant</div>
             <TabButtons
               :model-value="sel.mode"
               :buttons="[
@@ -282,7 +282,7 @@ function setObjState(id: string, st: string) {
         <div class="rounded border border-outline-gray-1 bg-surface-gray-1 p-5 space-y-4">
           <div class="flex items-center gap-2">
             <span class="lucide-trending-up size-4 text-ink-amber-strong" aria-hidden="true" />
-            <div class="text-sm text-ink-gray-7">Performance</div>
+            <div class="section-label">Performance</div>
           </div>
           <div>
             <div class="flex justify-between text-sm mb-1">

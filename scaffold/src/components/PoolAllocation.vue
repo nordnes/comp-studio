@@ -31,7 +31,7 @@ const over = (s: { ceil: number; budget: number }) => s.ceil > s.budget + 1e-9;
 
 <template>
   <Panel class="space-y-4">
-    <div class="text-sm text-ink-gray-6">Pool allocation</div>
+    <div class="section-label">Pool allocation</div>
     <div v-for="s in segments" :key="s.label">
       <div class="flex justify-between text-sm mb-1.5">
         <span class="text-ink-gray-6">{{ s.label }}</span>

@@ -41,9 +41,10 @@ and feel*. Standing rules (engine frozen, pins, confidentiality) live in `CLAUDE
 4. **Settings two-column (COM-95).** Long editing surfaces use a left group rail (sticky `lg:top-20`,
    `lg:w-44`; horizontal scroll strip below `lg` with descriptions hidden) + the active group's form on the
    right. Active rail item = `bg-surface-gray-3 text-ink-gray-9 font-medium` (the sidebar idiom).
-5. **Rhythm:** `space-y-8` between de-boxed groups, `space-y-6` inside form columns; section labels are
-   sentence case, `text-sm text-ink-gray-6` (`ink-gray-7` for editable-group headers — COM-118 demoted
-   the Configure amber headers; amber is never a heading color).
+5. **Rhythm:** `space-y-8` between de-boxed groups, `space-y-6` inside form columns; every section
+   label uses **`.section-label`** (text-sm · font-medium · `ink-gray-7`, sentence case — COM-117's one
+   treatment; amber is never a heading color per COM-118). Letterhead metadata (the confidentiality
+   eyebrow, "Prepared for") stays quiet `text-sm text-ink-gray-6`.
 
 ## 3 · Component idioms (verified against frappe-ui 0.1.278 — trust these over docs)
 

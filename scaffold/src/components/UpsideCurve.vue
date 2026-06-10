@@ -73,7 +73,7 @@ const tkChart = computed(() => {
 
 <template>
   <Panel>
-    <div class="text-sm text-ink-gray-6 mb-3">
+    <div class="section-label mb-3">
       Upside · what an outcome is worth (<Term k="netOfStrike">net of strike</Term>)
     </div>
     <div class="grid lg:grid-cols-2 gap-4">

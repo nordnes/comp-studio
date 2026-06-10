@@ -148,7 +148,7 @@ const hasBudget = computed(() => flags.value.some((f) => f.t === "budget"));
 
     <div class="grid lg:grid-cols-3 gap-6">
       <div class="lg:col-span-2 space-y-3">
-        <div class="text-sm text-ink-gray-6">Roster · click to open a package</div>
+        <div class="section-label">Roster · click to open a package</div>
         <div class="grid sm:grid-cols-2 gap-3">
           <!-- COM-108: the interactive roster card rides Panel (surface from the primitive,
                behaviour classes fall through; p-4 stays the card's compact padding) -->
@@ -209,7 +209,7 @@ const hasBudget = computed(() => flags.value.some((f) => f.t === "budget"));
       <div class="space-y-6">
         <PoolAllocation :board="board" :committed="S.plan.committedAdvisorTokenPct" />
         <Panel class="space-y-2">
-          <div class="text-sm text-ink-gray-6">Benchmark</div>
+          <div class="section-label">Benchmark</div>
           <p class="text-p-sm text-ink-gray-7">
             Board base equity <b class="text-ink-gray-9">{{ fPct(baseEqSum, 2) }}</b> · FAST
             per-head 0.30–1.00% · advisory pool ~{{ fPct(BENCH.advisorPool, 0) }}.

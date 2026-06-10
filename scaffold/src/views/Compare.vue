@@ -132,7 +132,7 @@ const scenColors = computed(() =>
     <!-- COM-86: head-to-head panel — appears when ≥2 advisors are pinned (transient, never persisted) -->
     <Panel v-if="pinned.length >= 2" class="space-y-4 no-print">
       <div class="flex items-center justify-between flex-wrap gap-2">
-        <div class="text-sm text-ink-gray-6">
+        <div class="section-label">
           Head-to-head · {{ pinned.map((r: any) => sn(r.a.name)).join(" vs ") }}
         </div>
         <Button
@@ -341,7 +341,7 @@ const scenColors = computed(() =>
     </Panel>
 
     <div>
-      <div class="text-sm text-ink-gray-6 mb-3">
+      <div class="section-label mb-3">
         Net value across scenarios <span class="text-ink-gray-6">· $M</span>
       </div>
       <!-- COM-108: p-6 was the one drifted padding — unified to the Panel default -->

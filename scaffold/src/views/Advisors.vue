@@ -21,7 +21,6 @@ import {
 } from "../engine";
 import PageHeader from "../components/PageHeader.vue";
 import ContextStrip from "../components/ContextStrip.vue";
-import StageBadge from "../components/StageBadge.vue";
 import AdvisorPicker from "../components/AdvisorPicker.vue";
 import ScenarioTable from "../components/ScenarioTable.vue";
 import GrowthWaterfall from "../components/GrowthWaterfall.vue";
@@ -102,7 +101,7 @@ function toProp() {
           label="Edit package"
           @click="openEditor"
         />
-        <StageBadge /><AdvisorPicker />
+        <AdvisorPicker />
         <label class="flex items-center gap-1.5">
           <span class="text-xs text-ink-gray-6">This advisor's case</span>
           <Select v-model="advisorCase" :options="caseOptions" />

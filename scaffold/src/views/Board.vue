@@ -21,7 +21,6 @@ import { TIER_COLOR, chartHex, shortName } from "../constants";
 import PageHeader from "../components/PageHeader.vue";
 import PoolAllocation from "../components/PoolAllocation.vue";
 import ContextStrip from "../components/ContextStrip.vue";
-import StageBadge from "../components/StageBadge.vue";
 import FootballField from "../components/FootballField.vue";
 import FrappeChart from "../components/FrappeChart.vue";
 import Term from "../components/Term.vue";
@@ -244,7 +243,6 @@ const caseTotalSum = computed(() =>
       desc="Uniform base × tier, grown by gated performance. Equity is net of strike and scenario dilution; tokens are valued at the scenario's TGE FDV."
     >
       <template #actions>
-        <StageBadge />
         <Button
           variant="subtle"
           theme="gray"

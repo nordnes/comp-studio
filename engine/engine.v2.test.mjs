@@ -106,8 +106,13 @@ console.log('\nT5 · v2 API parity (binds when the engine unfreezes — ENGINE_V
   A('walkScenario() FD counts equal T1 to the dollar (live engine vs the A.3 cells)',
     BASE_PATH.every(r => near(liveById[r.id].N, r.fd, 1)) && near(liveById.bridge.price, STRIKE, 0.01));
 }
-P('vestedFracRTA(m) equals the T3 reference across months 0–60');
-P('distributableFrac(grant, m, serviceMonths) applies the 24-month qualifying gate');
+A('vestedFracRTA(m) equals the T3 reference across months 0–60 (live engine)',
+  Array.from({ length: 61 }, (_, m) => m).every(m => near(ENG.vestedFracRTA(m), rtaFrac(m), 1e-9)));
+{
+  const rtaG = { id: 'r', instrument: 'rta', round: 'bridge', quantity: 1, curve: 'rta', vestStartISO: '2026-06-01', lifecycle: 'granted' };
+  A('distributableFrac(grant, m, serviceMonths) applies the 24-month qualifying gate (live engine)',
+    ENG.distributableFrac(rtaG, 23, 23) === 0 && near(ENG.distributableFrac(rtaG, 36, 36), 0.75, 1e-9));
+}
 P('valueToQuantity(grant, scenario) equals the T4 reference, restated per scenario');
 {
   const plan = ENG.DEFAULT().plan;
@@ -437,6 +442,54 @@ console.log('\nT8 · Grant[] fold & per-grant strike/FMV (COM-144):');
       const gs = ENG.reconcile(rtL).advisors[0].grants;
       return gs[0].lifecycle === 'lapsed' && gs[1].lifecycle === 'draft';
     })());
+}
+
+// ---- T9: dual vesting curves (COM-145 — live-bound) ----
+// Equity = the Cert v3 annual staircase (v1 vestedFrac, T2); token = the RTA monthly curve with
+// the 24-month qualifying DISTRIBUTION gate. The month-23 vs month-25 discontinuity is the spec's
+// named acceptance case.
+console.log('\nT9 · Dual vesting curves & the qualifying gate (COM-145):');
+{
+  const mkg = (curve) => ({ id: 'v', instrument: curve === 'rta' ? 'rta' : 'option', round: 'bridge', quantity: 1, curve, vestStartISO: '2026-06-01', lifecycle: 'granted' });
+  A('vestedAtMonths dispatches by curve: month 23 → equity 25% (staircase) vs token 47.92% (monthly)',
+    near(ENG.vestedAtMonths(mkg('cert-v3'), 23), 0.25, 1e-9) && near(ENG.vestedAtMonths(mkg('rta'), 23), 0.25 + 11 * (0.75 / 36), 1e-9));
+  A('vestedAtDate prices any date from vestStartISO (24 months → equity 50% · token 50%)',
+    near(ENG.vestedAtDate(mkg('cert-v3'), '2028-06-01'), 0.50, 1e-9) && near(ENG.vestedAtDate(mkg('rta'), '2028-06-01'), 0.50, 1e-9));
+  A('vestedAtMonths honours plan-parameterised equity shape (3yr/6mo cliff → month 7 = 1/3)',
+    near(ENG.vestedAtMonths(mkg('cert-v3'), 7, 3, 6), 1 / 3, 1e-9));
+  A('the month-23 vs month-25 token discontinuity: distributable 0 → 52.08% across the gate',
+    ENG.distributableFrac(mkg('rta'), 23, 23) === 0
+    && near(ENG.distributableFrac(mkg('rta'), 25, 25), 0.25 + 13 * (0.75 / 36), 1e-9));
+  A('at exactly 24 months service the gate opens (50% distributable)',
+    near(ENG.distributableFrac(mkg('rta'), 24, 24), 0.50, 1e-9));
+  A('the gate binds RTA only: an option grant distributes per its curve regardless of service',
+    near(ENG.distributableFrac(mkg('cert-v3'), 24, 0), 0.50, 1e-9));
+  A('long service does not lift the curve: m=36 svc=60 → 75% (gate is a gate, not a boost)',
+    near(ENG.distributableFrac(mkg('rta'), 36, 60), 0.75, 1e-9));
+  A('junk months → 0, never NaN (trust boundary)',
+    ENG.vestedFracRTA(NaN) === 0 && ENG.vestedFracRTA(undefined) === 0
+    && ENG.distributableFrac(mkg('rta'), 30, NaN) === 0);
+  // Review-panel pins (2026-06-10 — gate key, NaN branch, day-aware dates, cash accrual):
+  A('NaN months fail closed on EVERY branch (the equity dispatch too)',
+    ENG.vestedAtMonths(mkg('cert-v3'), NaN) === 0 && ENG.distributableFrac(mkg('cert-v3'), NaN, 36) === 0);
+  A('the gate keys on the INSTRUMENT: an rta/cert-v3 mismatch is still gated; option/rta is not',
+    ENG.distributableFrac({ ...mkg('cert-v3'), instrument: 'rta' }, 12, 12) === 0
+    && near(ENG.distributableFrac({ ...mkg('rta'), instrument: 'option' }, 24, 0), 0.50, 1e-9));
+  A('distributableFrac forwards the plan-parameterised equity shape (3yr/6mo → month 7 = 1/3)',
+    near(ENG.distributableFrac(mkg('cert-v3'), 7, 99, 3, 6), 1 / 3, 1e-9));
+  A('cash accrues linearly from month 0, never the option staircase, never gated',
+    ENG.vestedAtMonths({ ...mkg('cert-v3'), instrument: 'cash' }, 11) > 0
+    && near(ENG.vestedAtMonths({ ...mkg('cert-v3'), instrument: 'cash' }, 24), 0.50, 1e-9)
+    && near(ENG.distributableFrac({ ...mkg('cert-v3'), instrument: 'cash' }, 24, 0), 0.50, 1e-9));
+  A('fractional months price as their completed tranche (23.7 ≡ 23, no interpolation)',
+    ENG.vestedFracRTA(23.7) === ENG.vestedFracRTA(23));
+  A('fullMonthsBetween is day-aware and TZ-free (2026-06-30 → 2027-06-01 = 11 · → 2027-06-30 = 12)',
+    ENG.fullMonthsBetween('2026-06-30', '2027-06-01') === 11
+    && ENG.fullMonthsBetween('2026-06-30', '2027-06-30') === 12
+    && ENG.fullMonthsBetween('junk', '2027-06-30') === 0);
+  A('vestedAtDate honours the legal anniversary: the cliff does NOT credit 29 days early',
+    ENG.vestedAtDate({ ...mkg('rta'), vestStartISO: '2026-06-30' }, '2027-06-01') === 0
+    && near(ENG.vestedAtDate({ ...mkg('rta'), vestStartISO: '2026-06-30' }, '2027-06-30'), 0.25, 1e-9));
 }
 
 console.log(`\n${pass} passed, ${fail} failed, ${pending} pending(v2).`);

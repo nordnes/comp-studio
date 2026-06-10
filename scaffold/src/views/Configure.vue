@@ -30,6 +30,8 @@ import {
   planWithSet,
   walkComposed,
   setList,
+  VALUATION_BASES,
+  todayISO,
 } from "../engine";
 import { CAT_OPTIONS } from "../constants";
 import NumIn from "../components/NumIn.vue";
@@ -155,6 +157,10 @@ const priorOpts = computed(() => [
   })),
 ]);
 const composed = computed(() => walkComposed(S.S.plan, baseScenKey(S.S.plan), priors.value as any));
+// COM-168: recording the valuation seeds the full unit (reconcile heals it as a unit)
+function recordValuation(ppsUSD: number) {
+  setPath(["plan", "valuation"], { ppsUSD, basis: "SAV/409A", dateISO: todayISO() });
+}
 </script>
 
 <template>
@@ -774,6 +780,68 @@ const composed = computed(() => walkComposed(S.S.plan, baseScenKey(S.S.plan), pr
           </template>
 
           <template v-if="group === 'grants'">
+            <!-- COM-168 (F22): the agreed SAV/409A valuation — one valuation, everywhere
+                 consistent. Recorded → un-overridden strikes + every FMV display price here. -->
+            <div>
+              <div class="section-label mb-3">Valuation · agreed SAV / 409A</div>
+              <div v-if="!S.S.plan.valuation" class="flex items-end gap-3 flex-wrap">
+                <div>
+                  <div class="text-xs text-ink-gray-6 mb-1">Agreed $/share</div>
+                  <NumIn
+                    :model-value="0"
+                    fmt="usd"
+                    :min="0"
+                    aria-label="Agreed valuation per share"
+                    @update:model-value="(v) => v > 0 && recordValuation(v)"
+                  />
+                </div>
+                <p class="text-p-xs text-ink-gray-6 pb-1.5">
+                  No valuation recorded — strikes and FMV derive from the grant round. Enter the
+                  agreed per-share value to record one (HMRC SAV feeds 409A for US grantees).
+                </p>
+              </div>
+              <div v-else class="flex items-end gap-3 flex-wrap">
+                <div>
+                  <div class="text-xs text-ink-gray-6 mb-1">Agreed $/share</div>
+                  <NumIn
+                    :model-value="S.S.plan.valuation.ppsUSD"
+                    fmt="usd"
+                    :min="0"
+                    aria-label="Agreed valuation per share"
+                    @update:model-value="(v) => setPath(['plan', 'valuation', 'ppsUSD'], v)"
+                  />
+                </div>
+                <div>
+                  <div class="text-xs text-ink-gray-6 mb-1">Basis</div>
+                  <Select
+                    :model-value="S.S.plan.valuation.basis"
+                    :options="VALUATION_BASES.map((b) => ({ label: b, value: b }))"
+                    aria-label="Valuation basis"
+                    @update:model-value="(v) => setPath(['plan', 'valuation', 'basis'], v)"
+                  />
+                </div>
+                <FormControl
+                  type="date"
+                  label="Agreed"
+                  size="sm"
+                  :model-value="S.S.plan.valuation.dateISO"
+                  @update:model-value="(v: string) => setPath(['plan', 'valuation', 'dateISO'], v)"
+                />
+                <Button
+                  variant="ghost"
+                  theme="gray"
+                  size="sm"
+                  label="Clear"
+                  title="Remove the valuation — strikes fall back to round-derived"
+                  @click="setPath(['plan', 'valuation'], undefined)"
+                />
+                <p class="text-p-xs text-ink-gray-6 pb-1.5">
+                  Un-overridden strikes and every FMV display now price at
+                  {{ fUSD(S.S.plan.valuation.ppsUSD) }}/share ({{ S.S.plan.valuation.basis }}).
+                </p>
+              </div>
+            </div>
+
             <!-- COM-150 (Δ1): dollar value bands — the negotiation unit; % is an output.
                  Anchors are open decision #2 (pending Robin + Carl review). -->
             <div>

@@ -92,14 +92,96 @@ A('$50,000 at FMV $2,000 / strike $1,572.95 → 117.08 options', near(optionCoun
 A('underwater (FMV ≤ strike) → no option count (flag, not Infinity)', optionCount(50000, 1500, STRIKE) === null);
 A('$10,000 at TGE FDV $600M / supply 10B ($0.06/token) → 166,666.67 tokens', near(tokenCount(10000, 600e6, 10e9), 166666.67, 0.01));
 
-// ---- T5: v2 API bindings (pending until the unfreeze — the target export surface) ----
+// ---- live engine import (the unfreeze wiring, COM-142 PR onward) ----
+// Node ≥22 runs erasable-only TS directly; the live engine is scaffold/src/engine.ts.
+// T1–T4 stay SPEC COPIES (reference maths, mirrored per the header convention); T5/T6 bind
+// the spec to the REAL exports so divergence fails here instead of rotting silently.
+const ENG = await import(new URL('../scaffold/src/engine.ts', import.meta.url).href);
+
+// ---- T5: v2 API bindings (each flips live in the PR that ships its export) ----
 console.log('\nT5 · v2 API parity (binds when the engine unfreezes — ENGINE_V2_RFC.md §4):');
-P('walkScenario() FD counts equal T1 to the dollar (existing export, re-asserted against v2)');
+{
+  const ew = ENG.walkScenario(ENG.DEFAULT().plan, 'base');
+  const liveById = Object.fromEntries(ew.steps.map(st => [st.id, st]));
+  A('walkScenario() FD counts equal T1 to the dollar (live engine vs the A.3 cells)',
+    BASE_PATH.every(r => near(liveById[r.id].N, r.fd, 1)) && near(liveById.bridge.price, STRIKE, 0.01));
+}
 P('vestedFracRTA(m) equals the T3 reference across months 0–60');
 P('distributableFrac(grant, m, serviceMonths) applies the 24-month qualifying gate');
 P('valueToQuantity(grant, scenario) equals the T4 reference, restated per scenario');
 P('computeGrant() prices strike per GRANT (COM-144 multi-grant) — v1 prices one implicit grant per advisor');
 P('modelDeparture(): Bad Leaver → vested+unvested options lapse, tokens forfeit (COM-153)');
+
+// ---- T6: constitutional baseline + 13.10 pool guardrail (COM-142 — live-bound) ----
+// Spec truth: authorised 50,000 · issued 37,550 · 12,450 cancelled-and-available (A.1);
+// FD composition A.2 sums to the live FD; pool cells 5,368 / 8,523 selectable (open decision #1),
+// the printed 15% cell ~3.5 shares short of its own arithmetic (8,526.49 exact — RFC §9 footnote);
+// token pools A.4 with Advisors headroom 1.82552% the binding constraint (open decision #5).
+console.log('\nT6 · Constitutional baseline & Rule 13.10 guardrail (COM-142):');
+{
+  const dflt = ENG.DEFAULT();
+  const c = dflt.plan.constitution;
+  A('constitution defaults: authorised 50,000 · issued 37,550 · poolAvailable 12,450',
+    c && c.authorised === 50000 && c.issued === 37550 && c.poolAvailable === 12450);
+  const fdSum = ENG.FD_COMPOSITION.reduce((s, r) => s + r.shares, 0);
+  A('FD composition (A.2) sums to 48,316.78 and equals the fdPreESOP default (±0.01)',
+    near(fdSum, 48316.78, 0.01) && near(fdSum, dflt.plan.fdPreESOP, 0.01));
+  A('pool presets print the workbook cells: 10% → 5,368 · 15% → 8,523 (D2 printed-figure-wins)',
+    ENG.POOL_PRESETS[0].printed === 5368 && ENG.POOL_PRESETS[1].printed === 8523);
+  A('poolSharesExact(15%) = 8,526.49 (±0.01) — the RFC §9 recomputed footnote value',
+    near(ENG.poolSharesExact(dflt.plan, 0.15), 8526.49, 0.01));
+  const pools = Object.fromEntries(dflt.plan.tokenPools.map(t => [t.id, t]));
+  A('token pools (A.4): Team 20%/12.7316% · Advisors 5%/3.17448% · Investors 20%/17.7189% · CEX 20%/0',
+    near(pools.team.allocatedPct, 0.127316, 1e-9) && near(pools.advisors.allocatedPct, 0.0317448, 1e-9)
+    && near(pools.investors.allocatedPct, 0.177189, 1e-9) && pools.cex.allocatedPct === 0
+    && [pools.team, pools.investors, pools.cex].every(t => t.poolPct === 0.20) && pools.advisors.poolPct === 0.05);
+  A('Advisors token headroom = 1.82552% (the binding constraint, open decision #5)',
+    near(ENG.tokenPoolHeadroom(pools.advisors), 0.0182552, 1e-9));
+  A('guardrail: default pool (5,368 of 12,450) → ok', ENG.poolGuardrail(dflt.plan).level === 'ok');
+  A('guardrail: 11,500 of 12,450 (≥90%) → near (approach warning, Rule 13.10)',
+    ENG.poolGuardrail({ ...dflt.plan, advisorPoolShares: 11500 }).level === 'near');
+  A('guardrail: 12,600 of 12,450 → breach (hard warn, Rule 13.10(b))',
+    ENG.poolGuardrail({ ...dflt.plan, advisorPoolShares: 12600 }).level === 'breach');
+  // Reconcile round-trips (RFC §5 — additive, SCHEMA stays 5):
+  const pre142 = JSON.parse(JSON.stringify(dflt));
+  delete pre142.plan.constitution; delete pre142.plan.tokenPools; delete pre142.plan.advisorPoolShares;
+  const seeded = ENG.reconcile(pre142);
+  A('round-trip: a pre-COM-142 v5 payload seeds the new fields and computes identically',
+    seeded.version === 5 && seeded.plan.constitution.authorised === 50000
+    && seeded.plan.tokenPools.length === 4 && seeded.plan.advisorPoolShares === 5368
+    && near(ENG.walkScenario(seeded.plan, 'base').exit.N, 118707, 1));
+  const edited = JSON.parse(JSON.stringify(dflt));
+  edited.plan.constitution.poolAvailable = 9000; edited.plan.advisorPoolShares = 8523;
+  edited.plan.tokenPools.find(t => t.id === 'advisors').allocatedPct = 0.04;
+  const kept = ENG.reconcile(edited);
+  A('round-trip: user edits survive reconcile (poolAvailable 9,000 · pool 8,523 · advisors 4%)',
+    kept.plan.constitution.poolAvailable === 9000 && kept.plan.advisorPoolShares === 8523
+    && near(kept.plan.tokenPools.find(t => t.id === 'advisors').allocatedPct, 0.04, 1e-12)
+    && kept.plan.tokenPools.length === 4);
+  const junk = JSON.parse(JSON.stringify(dflt));
+  junk.plan.advisorPoolShares = 'lots'; junk.plan.tokenPools = 'nope'; junk.plan.constitution = null;
+  const fixed = ENG.reconcile(junk);
+  A('round-trip: junk input does not crash — defaults reassert',
+    fixed.plan.advisorPoolShares === 5368 && fixed.plan.tokenPools.length === 4
+    && fixed.plan.constitution.authorised === 50000);
+  // Per-field junk at the trust boundary (review findings 2026-06-10): junk/negative numerics
+  // inside otherwise-valid objects must re-default — they feed Rule 13.10 arithmetic.
+  const fieldJunk = JSON.parse(JSON.stringify(dflt));
+  fieldJunk.plan.constitution = { authorised: 'fifty thousand', issued: 37550, poolAvailable: null };
+  fieldJunk.plan.tokenPools = [{ id: 'advisors', allocatedPct: '3.17%' }, { id: 'team', poolPct: -2 }];
+  fieldJunk.plan.advisorPoolShares = -500;
+  const fj = ENG.reconcile(fieldJunk);
+  A('round-trip: per-field junk re-defaults (string authorised · null poolAvailable · string pct · negative pool)',
+    fj.plan.constitution.authorised === 50000 && fj.plan.constitution.poolAvailable === 12450
+    && near(fj.plan.tokenPools.find(t => t.id === 'advisors').allocatedPct, 0.0317448, 1e-9)
+    && fj.plan.tokenPools.find(t => t.id === 'team').poolPct === 0.20
+    && fj.plan.advisorPoolShares === 5368);
+  A('guardrail fails CLOSED: non-finite cap (corrupt constitution bypassing reconcile) → breach, never ok',
+    ENG.poolGuardrail({ ...dflt.plan, constitution: { authorised: NaN, issued: 37550, poolAvailable: 12450 } }).level === 'breach');
+  A('guardrail cap-0 edge: fully-issued company with a zero pool → ok (no spurious 13.10 warning)',
+    ENG.poolGuardrail({ ...dflt.plan, constitution: { authorised: 37550, issued: 37550, poolAvailable: 0 }, advisorPoolShares: 0 }).level === 'ok'
+    && ENG.poolGuardrail({ ...dflt.plan, constitution: { authorised: 37550, issued: 37550, poolAvailable: 0 }, advisorPoolShares: 1 }).level === 'breach');
+}
 
 console.log(`\n${pass} passed, ${fail} failed, ${pending} pending(v2).`);
 process.exit(fail ? 1 : 0);

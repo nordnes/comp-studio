@@ -31,6 +31,8 @@ export interface Plan {
   currentStage: string; cocAccelPct: number;
   equityVestYears: number; equityCliff: number; tokenVestYears: number; tokenCliff: number;
   milestones: Milestone[]; showBenchmarks: boolean;
+  // v2 (COM-142): constitutional baseline — additive, SCHEMA stays 5; reconcile() defaults them.
+  constitution?: Constitution; tokenPools?: TokenPool[]; advisorPoolShares?: number;
 }
 export interface State { version: number; name: string; plan: Plan; tiers: Tier[]; objectives: Objective[]; advisors: Advisor[] }
 
@@ -77,6 +79,66 @@ export const BENCH = {
 export const benchLevelForTier = (ti: number) => (ti >= 2 ? 'expert' : ti === 1 ? 'strategic' : 'standard');
 
 export const SCHEMA = 5;
+
+// ===== v2: constitutional baseline (COM-142 — spec v2 Δ8 · Part 10 #8 · Appendix A.1/A.2/A.4) =====
+// Entity facts (A.1) — constants, not state; Configure surfaces them read-only.
+export const ENTITY = {
+  legalName: 'Ackermann Systems Engineering Ltd', tradingAs: 'Raiku',
+  jurisdiction: 'Cayman Islands', regNo: 'BL-411368',
+} as const;
+
+export interface Constitution { authorised: number; issued: number; poolAvailable: number }
+export interface TokenPool { id: string; label: string; poolPct: number; allocatedPct: number; note?: string }
+
+// Authorised 50,000 · issued 37,550 (Robin sole holder) · 12,450 cancelled-and-available
+// (Rousseau repurchase, 30 Apr 2026, art. 48).
+export const CONSTITUTION_DEFAULT: Constitution = { authorised: 50000, issued: 37550, poolAvailable: 12450 };
+
+// Live FD with SAFEs as-converted (A.2) — the composition behind fdPreESOP's 48,316.78 default.
+export const FD_COMPOSITION = [
+  { id: 'robin', label: 'Robin A. Nordnes (sole holder)', shares: 37550 },
+  { id: 'preseed', label: 'Pre-seed SAFEs @ $25m cap (share-equivalents)', shares: 4519 },
+  { id: 'pantera', label: 'Pantera SAFE @ $90m', shares: 4444.44 },
+  { id: 'seed', label: 'Other seed SAFEs', shares: 1803.34 },
+] as const;
+
+// Token pools seeded from the live allocation state (A.4). Advisors headroom 1.82552% is the
+// binding constraint on new advisor token awards (open decision #5 — sourcing stays open).
+export const TOKEN_POOLS_DEFAULT: TokenPool[] = [
+  { id: 'team', label: 'Team', poolPct: 0.20, allocatedPct: 0.127316 },
+  { id: 'advisors', label: 'Advisors', poolPct: 0.05, allocatedPct: 0.0317448, note: 'Headroom is the binding constraint on new advisor token awards (open decision #5)' },
+  { id: 'investors', label: 'Investors', poolPct: 0.20, allocatedPct: 0.177189 },
+  { id: 'cex', label: 'CEX', poolPct: 0.20, allocatedPct: 0, note: "The 10% figure is Coinbase's screening quote, not an allocation" },
+];
+export const tokenPoolHeadroom = (p: TokenPool) => Math.max(0, p.poolPct - p.allocatedPct);
+
+// Pool-sizing presets (open decision #1 stays open — BOTH selectable; D2 printed-figure-wins).
+// printed = the workbook cell; the 15% cell prints ~3.5 shares short of its own arithmetic
+// (0.15/0.85 × 48,316.78 = 8,526.49) — display the printed figure with the recomputed footnote (RFC §9).
+export const POOL_PRESETS = [
+  { id: 'pool10', label: '10% of post-pool FD', pct: 0.10, printed: 5368 },
+  { id: 'pool15', label: '15% of post-pool FD', pct: 0.15, printed: 8523 },
+] as const;
+export const poolSharesExact = (plan: Plan, pct: number) => safeDiv(pct * plan.fdPreESOP, 1 - pct);
+
+// Rule 13.10 Constitutional Limit guardrail: the advisor option pool must stay within the
+// cancelled-and-available headroom AND authorised − issued. Warn at ≥90% of the cap
+// (prompt-set default threshold); hard-warn at breach per 13.10(b). A compliance guardrail
+// fails CLOSED: a non-finite cap (corrupt constitution) grades as breach, never 'ok'.
+export function poolGuardrail(plan: Plan) {
+  const c = plan.constitution || CONSTITUTION_DEFAULT;
+  const poolShares = Math.max(0, ok(plan.advisorPoolShares) ? plan.advisorPoolShares : POOL_PRESETS[0].printed);
+  const cap = Math.min(c.poolAvailable, Math.max(0, c.authorised - c.issued));
+  const level: 'ok' | 'near' | 'breach' = !isFinite(cap) ? 'breach'
+    : poolShares > cap + 1e-9 ? 'breach'
+    : (cap > 1e-9 && poolShares >= 0.9 * cap - 1e-9) ? 'near' : 'ok';
+  const msg = level === 'breach'
+    ? `Pool ${fNum(poolShares)} exceeds the Constitutional Limit of ${fNum(cap)} available shares (Rule 13.10(b))`
+    : level === 'near'
+      ? `Pool ${fNum(poolShares)} is within 10% of the Constitutional Limit (${fNum(cap)} available — Rule 13.10)`
+      : '';
+  return { level, poolShares, cap, headroom: cap - poolShares, msg };
+}
 export const SECTORS = [
   'Asset Management — Hedge Funds & Family Offices', 'Asset Management — Sovereign Wealth & Endowments',
   'Technology & FinTech', 'Capital Markets — Credit, Structured & Digital',
@@ -106,6 +168,9 @@ export const DEFAULT = (): State => ({
       { id: 'seriesA', label: 'Series A close' }, { id: 'tge', label: 'TGE' },
     ],
     showBenchmarks: true,
+    constitution: { ...CONSTITUTION_DEFAULT },
+    tokenPools: TOKEN_POOLS_DEFAULT.map(p => ({ ...p })),
+    advisorPoolShares: POOL_PRESETS[0].printed,
   },
   tiers: [{ name: 'Base', mult: 1, days: 1 }, { name: 'Strategic', mult: 2, days: 2 }, { name: 'Anchor', mult: 3, days: 3 }],
   objectives: [
@@ -143,6 +208,30 @@ export function reconcile(l: any): State {
       capitalUplift: { ...d.plan.capitalUplift, ...(p.capitalUplift || {}) },
       milestones: p.milestones || d.plan.milestones,
       scenarios: scn, rounds, baseScenario,
+      // v2 (COM-142): id-keyed deep-defaults — saved edits survive, new defaults auto-appear.
+      // numOr sanitizes every numeric at this trust boundary (the guardrail consumes these;
+      // junk/negative persisted values must re-default, never reach Rule 13.10 arithmetic).
+      ...(() => {
+        const numOr = (v: any, fb: number) => (ok(v) && v >= 0 ? v : fb);
+        const sc: any = (p.constitution && typeof p.constitution === 'object') ? p.constitution : {};
+        const saved: any[] = Array.isArray(p.tokenPools) ? p.tokenPools : [];
+        const byId = Object.fromEntries(saved.filter(t => t && typeof t === 'object' && t.id).map(t => [t.id, t]));
+        const tokenPools = TOKEN_POOLS_DEFAULT.map(t => {
+          const s = byId[t.id] || {};
+          return { ...t, ...s, poolPct: numOr(s.poolPct, t.poolPct), allocatedPct: numOr(s.allocatedPct, t.allocatedPct) };
+        });
+        const known = new Set(tokenPools.map(t => t.id));
+        saved.forEach(t => { if (t && typeof t === 'object' && t.id && !known.has(t.id)) tokenPools.push({ ...t, label: t.label ?? t.id, poolPct: numOr(t.poolPct, 0), allocatedPct: numOr(t.allocatedPct, 0) }); });
+        return {
+          constitution: {
+            authorised: numOr(sc.authorised, CONSTITUTION_DEFAULT.authorised),
+            issued: numOr(sc.issued, CONSTITUTION_DEFAULT.issued),
+            poolAvailable: numOr(sc.poolAvailable, CONSTITUTION_DEFAULT.poolAvailable),
+          },
+          tokenPools,
+          advisorPoolShares: numOr(p.advisorPoolShares, d.plan.advisorPoolShares as number),
+        };
+      })(),
     },
     tiers,
     objectives: Array.isArray(l.objectives) ? l.objectives : d.objectives,

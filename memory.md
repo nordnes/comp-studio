@@ -2572,3 +2572,13 @@ COM-162 needs In Progress→Done + the closing comment when Linear returns.** Pr
 seed's plan.rounds = [seriesA,seriesB,seriesC] — bridge lives separately (plan.bridge); and the
 seed's XTX intro is gated on BRIDGE, so a seriesA-close probe must re-gate it first.
 Next: COM-163 (departure UI F18 over modelDeparture).
+
+## 2026-06-10 — COM-163 (departure dialog F18) DONE [W3 #7]
+
+**COM-163 (M, ~260 LOC, PR #96) — MERGED. No engine edit** (presentation over COM-153). The
+six-limb checklist → classifyLeaver (death carve-out stated inline) → modelDeparture outcome
+table (both bases; exercised/discretion badges; pool return) → Andersen banner only when
+discretion exists → Record = setStage rolled-off + audit note. 13/13 live (Rule 5.8 bites:
+retained $2.70M → $0 on limb 1 at m24). vp 0/10 · 22/22 · 243/0/0 · build 0. **LINEAR DEBT
+grows: COM-163 needs In Progress→Done + comment (with COM-162).** Next: COM-161 (board capital
+panel F20/O15 — must also fix the PackageEditor dead perf-capital inputs flagged on Linear).

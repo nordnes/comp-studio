@@ -266,6 +266,20 @@ run stops only on its all-PASS. Decisions in §4 are final — flag prompt-set d
 instead of asking. Never run vp check --fix. Stop only on a §2 stop condition. Go.
 ```
 
+**Launch (zero-prompt autonomy).** The prompt never asks by design — §4 pre-makes every product
+decision, defaults are flagged in PR bodies instead of asked, and §2's four stop conditions are the
+ONLY sanctioned asks (money-semantics decision not in §4 · legal question outside Δ4 ·
+un-round-trip-testable migration · queue empty → gate). But harness permission prompts are a
+LAUNCH setting, not a prompt setting: this run pushes, merges PRs, writes Linear, and (Wave 6) runs
+Supabase migrations — under default permissions every one of those prompts. Start the session with
+**`claude --dangerously-skip-permissions`** (single-owner repo; a curated allowlist still prompts
+on novel commands and breaks the loop overnight). With bypass on, the §2 stop conditions + the RFC
+§7 gate + the graders are the only brakes — that is the design; the prompt's own guardrails
+(SQL-as-PR-file before `apply_migration`, never `vp check --fix`, COM-171-only SCHEMA) carry the
+safety the permission prompts otherwise would. Multi-session is expected: each new session
+re-enters via this kickoff; memory.md + the rubric + Linear state make the run stateless-resumable,
+and "context is long" is never a stop condition.
+
 — v2 authored 2026-06-10 by Fable 5 after reviewing Lance Martin's "Designing loops with Fable 5"
 (x.com/RLanceMartin/article/2064397389189071163): rubric-as-goal · independent grader sub-agents
 over self-critique · structural-over-scalar fixes · the fail→investigate→verify→distill→consult

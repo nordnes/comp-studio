@@ -94,6 +94,14 @@ function toProp() {
     <!-- COM-127: the actions ride PageHeader's #actions teleport (#app-header on desktop) —
          the bespoke flex row that bypassed the shared action zone is gone -->
     <PageHeader title="Base, then performance.">
+      <!-- COM-128: the locked framing, in-frame on the highest-screenshot-risk view (the verbatim
+           non-negotiable phrases; presentation placement only) -->
+      <template #desc>
+        <p class="mt-3 text-p-xs text-ink-gray-6">
+          Internal &amp; confidential · net of strike, pre-tax · discussion draft, not a binding
+          offer.
+        </p>
+      </template>
       <template #actions>
         <Button
           variant="solid"

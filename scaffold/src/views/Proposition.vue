@@ -203,79 +203,78 @@ const targetLine = computed(
           scenarios are a deliberately wide range, not a forecast.
         </div>
 
-        <!-- COM-64: the proposition's hero band diverges from the dashboard KPI bands — hairline-only
-             (no amber fill), more generous spacing, larger Fraunces — so the document reads calmer and
-             more letterpress than the working tool. Current stays marked by amber INK, not a fill block. -->
-        <div class="grid md:grid-cols-3 border-y border-outline-gray-1">
-          <div class="p-10 border-r border-outline-gray-1">
-            <div class="flex items-baseline gap-3 mb-6">
-              <span class="text-xs text-ink-gray-5">i</span
-              ><span class="text-sm text-ink-gray-6">Base · net</span>
-            </div>
-            <div class="figure-lg text-ink-gray-9">
-              {{ fUSD(c.baseCaseBase) }}
-            </div>
-            <div class="text-p-xs mt-6 text-ink-gray-6">
+        <!-- COM-64 → COM-114: ONE statement + ONE data read. The guaranteed base is the document's
+             only headline; growth (Current/Ceiling) and the scenario spread are a single quiet
+             reference table — a letter's enclosure, not a second dashboard. Current stays marked by
+             amber INK; the roman ordinals are gone. Layout only — the legal corpus is untouched. -->
+        <div class="border-y border-outline-gray-1 py-10 space-y-8">
+          <div>
+            <div class="text-sm text-ink-gray-6 mb-3">Guaranteed base · net of strike</div>
+            <div class="figure-lg text-ink-gray-9">{{ fUSD(c.baseCaseBase) }}</div>
+            <div class="text-p-sm mt-3 text-ink-gray-6">
               {{ fPct(c.baseEq, 2) }} equity + {{ fPct(c.baseTk, 3) }} tokens
             </div>
           </div>
-          <div class="p-10 border-r border-outline-gray-1">
-            <div class="flex items-baseline gap-3 mb-6">
-              <span class="text-xs text-ink-amber-strong">ii</span
-              ><span class="text-sm text-ink-amber-strong">Current · earned</span>
-            </div>
-            <div class="figure-lg text-ink-gray-9">
-              {{ fUSD(c.baseCaseTotal) }}
-            </div>
-            <div class="text-p-xs mt-6 text-ink-gray-6">
-              {{
-                c.earnedUplift > 0
-                  ? `+${(c.earnedUplift * 100).toFixed(0)}% earned`
-                  : "no uplift yet"
-              }}
-            </div>
-          </div>
-          <div class="p-10">
-            <div class="flex items-baseline gap-3 mb-6">
-              <span class="text-xs text-ink-gray-5">iii</span
-              ><span class="text-sm text-ink-gray-6">Ceiling</span>
-            </div>
-            <div class="figure-lg text-ink-gray-9">
-              {{ fUSD(c.baseCaseCeil) }}
-            </div>
-            <div class="text-p-xs mt-6 text-ink-gray-6">
-              +{{ (c.ceilUplift * 100).toFixed(0) }}% over base
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <div class="text-sm text-ink-gray-6 mb-2">
-            Net value across outcomes · <Term k="netOfStrike">net of strike</Term> & dilution
-          </div>
-          <div class="grid grid-cols-3 gap-px bg-surface-gray-2 rounded overflow-hidden">
-            <div
-              v-for="s in c.scen"
-              :key="s.key"
-              class="p-6"
-              :class="s.key === baseScenKey(S.plan) ? 'bg-surface-amber-2' : 'bg-surface-white'"
-            >
-              <div
-                class="text-xs mb-2"
-                :class="s.key === baseScenKey(S.plan) ? 'text-ink-amber-strong' : 'text-ink-gray-6'"
-              >
-                {{ s.label }} · {{ fPct(s.retention, 0) }} kept
-              </div>
-              <div class="figure-sm text-ink-gray-9">
-                {{ fUSD(s.total) }}
-              </div>
-              <div class="text-p-xs mt-2 text-ink-gray-6">
-                eq {{ s.underwater ? "underwater" : fUSD(s.equity) }} · tok {{ fUSD(s.token) }}
-              </div>
-            </div>
-          </div>
+          <table class="w-full max-w-2xl text-sm">
+            <tbody class="divide-y divide-outline-gray-1">
+              <tr>
+                <td class="py-2.5 pr-4 text-ink-amber-strong">Current · earned</td>
+                <td
+                  class="py-2.5 tabular-nums text-right font-medium text-ink-gray-9 whitespace-nowrap"
+                >
+                  {{ fUSD(c.baseCaseTotal) }}
+                </td>
+                <td class="py-2.5 pl-6 text-p-xs text-ink-gray-6 hidden sm:table-cell">
+                  {{
+                    c.earnedUplift > 0
+                      ? `+${(c.earnedUplift * 100).toFixed(0)}% earned`
+                      : "no uplift yet"
+                  }}
+                </td>
+              </tr>
+              <tr>
+                <td class="py-2.5 pr-4 text-ink-gray-7">Ceiling · all objectives</td>
+                <td
+                  class="py-2.5 tabular-nums text-right font-medium text-ink-gray-9 whitespace-nowrap"
+                >
+                  {{ fUSD(c.baseCaseCeil) }}
+                </td>
+                <td class="py-2.5 pl-6 text-p-xs text-ink-gray-6 hidden sm:table-cell">
+                  +{{ (c.ceilUplift * 100).toFixed(0) }}% over base
+                </td>
+              </tr>
+            </tbody>
+            <tbody>
+              <tr>
+                <td colspan="3" class="pt-6 pb-1 text-sm text-ink-gray-6">
+                  Net value across outcomes ·
+                  <Term k="netOfStrike">net of strike</Term> &amp; dilution
+                </td>
+              </tr>
+            </tbody>
+            <tbody class="divide-y divide-outline-gray-1">
+              <tr v-for="s in c.scen" :key="s.key">
+                <td
+                  class="py-2.5 pr-4"
+                  :class="
+                    s.key === baseScenKey(S.plan) ? 'text-ink-amber-strong' : 'text-ink-gray-7'
+                  "
+                >
+                  {{ s.label }} · {{ fPct(s.retention, 0) }} kept
+                </td>
+                <td
+                  class="py-2.5 tabular-nums text-right font-medium text-ink-gray-9 whitespace-nowrap"
+                >
+                  {{ fUSD(s.total) }}
+                </td>
+                <td class="py-2.5 pl-6 text-p-xs text-ink-gray-6 hidden sm:table-cell">
+                  eq {{ s.underwater ? "underwater" : fUSD(s.equity) }} · tok {{ fUSD(s.token) }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
           <!-- COM-84: the explored target outcome survives into the document the advisor keeps -->
-          <p class="text-p-sm mt-3 text-ink-gray-7">{{ targetLine }}</p>
+          <p class="text-p-sm text-ink-gray-7">{{ targetLine }}</p>
         </div>
 
         <Divider class="my-4" />

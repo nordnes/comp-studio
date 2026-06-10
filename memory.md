@@ -2082,3 +2082,10 @@ vp 0 · 22/22 both · build 0.
 M9 = 57 Done / 8 open (the W6 seven + COM-139/141 in W7). Next: WAVE 6 smalls (99 Switch · 100 range
 tokens · 107 toast/confirm · 111 --overlay · 112 print-running tokens · 122 scatter axes · 125 adaptive
 grids), then W7: COM-139 (BUILD + HOLD for Charlie), COM-141 (M12 governance surface), the M9 gate.
+
+## 2026-06-10 — COM-99 (Switch toggles) DONE [M9 finish-loop W6 #1]
+
+**COM-99 (P4 Low, ~16 LOC, 2 files) — DONE + MERGED.** Both label+Checkbox toggles → `<Switch
+:model-value label @update:model-value>` (benchmarks in Configure cap group; hasCash in the editor).
+Verified the benchmarks Switch round-trip incl. localStorage (true→false→true; reka switch needs the
+full pointer sequence). vp 0 · 22/22 both · build 0.

@@ -2400,3 +2400,19 @@ Proposition explainer. **Live-check catch + distilled rule: a SANCTIONED view-si
 every new engine BRANCH (like the toggle) must grep views for mirrors of the branched formula
 and re-point them at the export (Advisors token row: $5.40M stale vs $2.17M engine).** vp 0/10 ·
 22/22 both · v2 172/0/0 · build 0 · 7/7 live. Wave-1 queue: COM-146 → 154 → 171.
+
+## 2026-06-10 — COM-146 (capital introductions + rollup) DONE [V2-finish W1 #9]
+
+**COM-146 (P3, 224 LOC, PR #82) — MERGED. ⚠ LINEAR FLIP PENDING: both Linear MCP servers were
+down at close — COM-146 needs its Done flip + closing comment (drafted in the PR body) when
+Linear reconnects.** CapitalIntroduction (targeted→gated→earned; earned drives uplift via the
+existing schedule; pipeline ceilings ONLY) · capPotential exported · capitalRollup (engine-read
+fractions; grant-path = capital-in + upliftViaGrants, no phantom potential) · fold superset
+fields · negative clamps · duplicate-id dedupe (intros AND grants — sibling COM-144 gap) ·
+Kerim/XTX pinned. **Panel: 12 CONFIRMED (mutation-tested). Distilled rules: (1) a 'pending'
+indicator inherits its SEMANTICS from its tooltip — pendingUplift promises 'earned, awaiting
+gate', so the pipeline (prospects) may NEVER flow into it, only the ceiling; (2) a rollup must
+read the ENGINE's fractions, never recompute from raw dollars — two formulas = two truths the
+moment a path (grants) diverges; (3) every reduce over user-writable numbers needs its own ≥0
+clamp — reconcile guards LOADS, setPath writes LIVE state unsanitised.** vp 0/10 · 22/22 ·
+189/0/0 · build 0. Next: COM-154 (cash floor) → COM-171 (SCHEMA-6, LAST engine PR).

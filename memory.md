@@ -2216,3 +2216,25 @@ W7 final gate) · CLAUDE.md updated: **engine clause now GATED-not-frozen** (RFC
 `vp check --fix`) + live-prompt pointer → ULTRACODE_V2_FINISH.md. COM-139's hold is LIFTED by the same
 authorization — W0 merges #68. Excluded: COM-36 (Robin: later) + human-only COM-33/71. **Next session:
 paste the §6 kickoff block from ULTRACODE_V2_FINISH.md.**
+
+## 2026-06-10 — ULTRACODE_V2_FINISH v2: rubric-as-goal + grader loops (the Lance Martin recipe)
+
+**Robin commissioned the perfection upgrade** after sharing Lance Martin's "Designing loops with
+Fable 5" (x.com/RLanceMartin/article/2064397389189071163): rubric-as-goal environment feedback ·
+INDEPENDENT grader sub-agents over self-critique (fresh context windows) · grader confirms ALL
+criteria before stopping · structural-over-scalar fixes · the fail→investigate→verify→distill→
+consult memory progression. Applied literally: **`RUBRIC_V2_FINISH.md`** (the goal — 8 sections,
+~50 checkable criteria: build completeness incl. M6, engine integrity, 19 end-to-end functional
+flows, UI/UX perfection bar, testing depth incl. RLS proof, perf budgets, memory distillation,
+final-gate hygiene + a committed verdict trail in docs/rubric-grades/) + **ULTRACODE_V2_FINISH.md
+v2** (three nested loops: per-issue inner · wave-boundary scoped grader + prod-deploy check ·
+Wave-7 perfection loop until two consecutive panels return zero FAILs new-or-repeat · Wave-8.5
+closing grader so the final gate can't self-certify). **Dogfooded: a 3-grader fresh-context panel
+adversarially graded both drafts pre-commit — 5 blockers caught** (M6 absent from R1 = skippable
+wave; 7 features with no functional criterion = invisible to the loop; final gate self-certified;
+2 unexecutable check methods) **+ 14 minors** (ungradeable phrasings, gameable samples, rubric-
+loosening loophole, missing RLS criterion, no prod verification) — all folded in. Graders also
+refuted the "root suite needs dangerouslyDisableSandbox" claim (ran it sandboxed 22/22) and
+confirmed baselines to the byte (bundle 824,954 B / gzip 241,008 B; vp warnings = 10). **Distilled
+rule: a rubric criterion without an executable check method is a rubric bug — graders proved 2 of
+mine unexecutable by actually attempting all of them.** Next session: paste the §6 kickoff.

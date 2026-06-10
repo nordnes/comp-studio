@@ -2104,3 +2104,9 @@ aria "Aggressive, net $21.4M" on synthetic drag; restored. vp 0 · 22/22 both ·
 drawer scrim → `bg-[var(--overlay)]`. The palette's scrim clause was already satisfied by COM-105 (lib
 Dialog backdrop). grep: zero bg-black in src. Verified scrim computed rgba(23,23,23,0.3) at 375px.
 vp 0 · 22/22 both · build 0.
+
+## 2026-06-10 — COM-112 (print-running tokens) DONE [M9 finish-loop W6 #4]
+
+**COM-112 (P4 Low, 5 LOC) — DONE + MERGED.** .print-running hex → var(--ink-gray-7)/
+var(--outline-gray-2)/var(--surface-white). Verified: refs present in built css + --ink-gray-7
+defined unconditioned (#525252) → resolves under @media print. String untouched. vp 0 · 22/22 · build 0.

@@ -6,7 +6,7 @@
 import { reactive, computed } from "vue";
 import { toast } from "frappe-ui";
 import {
-  DEFAULT,
+  seedBoard,
   reconcile,
   computeBoard,
   computeAdvisor,
@@ -130,7 +130,8 @@ function bootstrap(): Store {
     /* ignore */
   }
 
-  if (!S) S = DEFAULT();
+  // COM-160: a brand-new session seeds the REAL roster (Δ9); DEFAULT() stays the test fixture.
+  if (!S) S = seedBoard();
   if (!last) last = S.name;
   if (!saved[last]) saved[last] = S;
   return {
@@ -252,7 +253,7 @@ export function useStudio() {
   }
   function reset() {
     pushUndo();
-    store.S = DEFAULT();
+    store.S = seedBoard(); // COM-160: the baseline IS the real roster
     store.selId = store.S.advisors[0]?.id || "";
     fixSel();
     persist();

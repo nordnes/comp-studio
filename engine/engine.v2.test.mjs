@@ -1310,5 +1310,43 @@ console.log('\nT18 · Offer pipeline: stages + history (COM-159):');
     })());
 }
 
+// ---- T19: the seeded roster (COM-160 — live-bound) ----
+console.log('\nT19 · Seeded roster: the Δ9 register as the fresh-board state (COM-160):');
+{
+  const dflt = ENG.DEFAULT();
+  const seed = ENG.seedBoard();
+  A('DEFAULT() is UNCHANGED — the v1 reference fixture stays the suite/anchor board (§7 cond. 1)',
+    dflt.advisors.length === 4 && dflt.advisors[0].id === 'iraj'
+    && dflt.advisors.every(a => a.stage == null)
+    && dflt.advisors.map(a => a.id).join(',') === 'iraj,mk,kd,rr');
+  A('seedBoard(): the Δ9 register — 3 CONFIRMED proposed · Iraj iterating · Carl/Rajesh modeled',
+    (() => {
+      const by = Object.fromEntries(seed.advisors.map(a => [a.id, a]));
+      return seed.advisors.length === 6
+        && by.iraj.stage === 'iterating'
+        && by.rr.stage === 'proposed' && by.mk.stage === 'proposed' && by.kd.stage === 'proposed'
+        && by.cb.stage === 'modeled' && by.rm.stage === 'modeled'
+        && by.rr.name === 'Robert Reoch' && by.cb.name === 'Carl Bang' && by.rm.name === 'Rajesh Mehta';
+    })());
+  A('no cash for the three incoming; residency/check placeholders set; the XTX intro rides Kerim (targeted, $5M, bridge)',
+    (() => {
+      const by = Object.fromEntries(seed.advisors.map(a => [a.id, a]));
+      const xtx = (by.kd.introductions || [])[0];
+      return [by.rr, by.mk, by.kd].every(a => a.hasCash === false && a.checkStatus === 'none')
+        && by.rr.taxResidency === 'UK' && by.mk.taxResidency === 'Other' && by.kd.taxResidency === 'UK'
+        && xtx && xtx.id === 'xtx' && xtx.amountUSD === 5e6 && xtx.round === 'bridge' && xtx.status === 'targeted';
+    })());
+  A('the seed is reconciled v6 state: every advisor carries derived grants and computes finite money',
+    seed.version === ENG.SCHEMA
+    && seed.advisors.every(a => Array.isArray(a.grants) && a.grants.length && a.grants.every(g => g.derived === true))
+    && seed.advisors.every(a => {
+      const c = ENG.computeAdvisor(a, seed.plan, seed.tiers, seed.objectives);
+      return Number.isFinite(c.baseCaseTotal) && c.baseCaseTotal > 0;
+    }));
+  A('the entity facts stand (A.1): ASEL t/a Raiku · Cayman · BL-411368',
+    ENG.ENTITY.legalName === 'Ackermann Systems Engineering Ltd' && ENG.ENTITY.tradingAs === 'Raiku'
+    && ENG.ENTITY.jurisdiction === 'Cayman Islands' && ENG.ENTITY.regNo === 'BL-411368');
+}
+
 console.log(`\n${pass} passed, ${fail} failed, ${pending} pending(v2).`);
 process.exit(fail ? 1 : 0);

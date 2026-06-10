@@ -321,6 +321,40 @@ export const DEFAULT = (): State => ({
   ],
 });
 
+// v2 (COM-160): the REAL roster state (Δ9, 27 May & 5 Jun sessions — internal & confidential)
+// as the fresh-board seed. DEFAULT() stays the v1 reference fixture (both suites and the A.3
+// anchors assume its 4-advisor board — §7 condition 1 forbids moving it); the STORE seeds new
+// boards and resets from here instead. Robin chairs (no package row); Luke Ellis is
+// friend-of-firm OUTSIDE the AB construct (no row); Iraj is the chair-adjacent orchestrator
+// whose own package is the live one being designed (E.3 — the COM-165 wizard models it).
+export function seedBoard(): State {
+  const s = DEFAULT();
+  const base = s.advisors.find(a => a.id === 'iraj') as any; // shared v1 package shape
+  const mk = (over: any) => ({ ...JSON.parse(JSON.stringify(base)), ...over });
+  s.advisors = [
+    mk({ id: 'iraj', name: 'Iraj Ispahani', sector: SECTORS[0], tier: 2, taxResidency: 'UK', stage: 'iterating',
+      notes: 'Chair-adjacent orchestrator · CEO Ispahani Advisory; ex-JP Morgan (Global COO, FIG) & Korn/Ferry. Presents the straw-men; Robin stays out of direct negotiation. His own package is the live design (27 May session).',
+      performance: { capitalEquity: 0, capitalToken: 0, achieved: [], targeted: ['cap-anchor', 'gov-engaged'] } }),
+    mk({ id: 'rr', name: 'Robert Reoch', sector: SECTORS[3], tier: 1, taxResidency: 'UK', stage: 'proposed', checkStatus: 'none',
+      notes: 'CONFIRMED & enthusiastic (5 Jun). Money-markets/credit/bank-underwriter base — what banks care about in risk parameters; network curious about AI/stablecoins/digital assets. No cash expected. DBS check lane (UK).',
+      performance: { capitalEquity: 0, capitalToken: 0, achieved: [], targeted: ['part-mandate'] } }),
+    mk({ id: 'mk', name: 'Martin Keller', sector: SECTORS[0], tier: 1, taxResidency: 'Other', stage: 'proposed', checkStatus: 'none',
+      notes: 'CONFIRMED & enthusiastic (5 Jun). Zurich — Swiss/crypto networks (named Swiss crypto funds); Falcon crisis-CEO history reframed as crisis-experience asset. No cash expected. Swiss self-requested certificate-of-suitability lane.',
+      performance: { capitalEquity: 0, capitalToken: 0, achieved: [], targeted: ['cap-intro'] } }),
+    mk({ id: 'kd', name: 'Kerim Derhalli', sector: SECTORS[2], tier: 1, taxResidency: 'UK', stage: 'proposed', checkStatus: 'none',
+      notes: 'CONFIRMED & enthusiastic (5 Jun). AI-finance overlap; hands-on, startup-literate, business builder. No cash expected.',
+      performance: { capitalEquity: 0, capitalToken: 0, achieved: [], targeted: ['cust-partner'] },
+      introductions: [{ id: 'xtx', amountUSD: 5e6, round: 'bridge', status: 'targeted', note: 'XTX Markets — the live capital-introduction instance' }] }),
+    mk({ id: 'cb', name: 'Carl Bang', sector: SECTORS[4], tier: 0, stage: 'modeled', taxResidency: 'Other',
+      notes: 'COURTING — medium/long-term, keep warm. Send the bridge deck and judge by his questions; Spain visit possibility.',
+      performance: { capitalEquity: 0, capitalToken: 0, achieved: [], targeted: [] } }),
+    mk({ id: 'rm', name: 'Rajesh Mehta', sector: SECTORS[4], tier: 0, stage: 'modeled', taxResidency: 'UK',
+      notes: 'EVALUATING — payments lane under question ("calling friends at a market maker is a very different sale than a payment processor"). ~40 yrs Citi payments, BCG senior advisor; prices himself off his DAY RATE — the cash-floor candidate profile (open decision #3).',
+      performance: { capitalEquity: 0, capitalToken: 0, achieved: [], targeted: [] } }),
+  ] as any;
+  return reconcile(s);
+}
+
 export function reconcile(l: any): State {
   const d = DEFAULT();
   if (!l || typeof l !== 'object') return d;

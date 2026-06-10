@@ -58,7 +58,17 @@ export interface Advisor {
   // v2 (COM-144): explicit grants. ABSENT → v1 implicit-package behaviour (the §5 shim);
   // reconcile() never materialises this (derive-don't-materialise, RFC D3).
   grants?: Grant[];
+  // v2 (COM-146): first-class capital introductions. ABSENT → the v1 performance.capital*
+  // fields drive the uplift; PRESENT → earned introductions drive it (the pipeline feeds the
+  // ceiling). Additive — SCHEMA stays 5.
+  introductions?: CapitalIntroduction[];
 }
+
+// v2 (COM-146): the capital-introduction entity (RFC §3). status: targeted (in conversation) →
+// gated (committed, awaiting the round close) → earned (round closed; the uplift crystallises).
+export const INTRO_STATUSES = ['targeted', 'gated', 'earned'] as const;
+export type IntroStatus = (typeof INTRO_STATUSES)[number];
+export interface CapitalIntroduction { id: string; amountUSD: number; round: string; status: IntroStatus; note?: string }
 export interface Plan {
   fdPreESOP: number; tokenSupply: number;
   bridge: RoundVals; esopStart: number; esopCap: number;
@@ -364,9 +374,27 @@ export function reconcile(l: any): State {
             if (!(typeof g.docUrl === 'string' && /^https?:\/\//i.test(g.docUrl))) delete out.docUrl;
             if (!(typeof g.timeCommitment === 'string' && g.timeCommitment)) delete out.timeCommitment;
             return out;
-          });
+          })
+          // id-keyed money list: duplicate grant ids double-count the fold — first wins.
+          .filter((g: any, i: number, arr: any[]) => arr.findIndex(y => y.id === g.id) === i);
       } else if ('grants' in adv) {
         delete adv.grants;
+      }
+      // v2 (COM-146): introductions — numeric re-defaults; status heals fail-CLOSED to
+      // 'targeted' (an unknown status must never crystallise an earned uplift).
+      if (Array.isArray(a.introductions)) {
+        adv.introductions = a.introductions
+          .filter((x: any) => x && typeof x === 'object' && x.id)
+          .map((x: any) => ({
+            ...x, id: String(x.id),
+            amountUSD: ok(x.amountUSD) && x.amountUSD >= 0 ? x.amountUSD : 0,
+            round: typeof x.round === 'string' && x.round ? x.round : 'bridge',
+            status: (INTRO_STATUSES as readonly string[]).includes(x.status) ? x.status : 'targeted',
+          }))
+          // id-keyed money list: duplicates double-count earned uplift — first wins.
+          .filter((x: any, i: number, arr: any[]) => arr.findIndex(y => y.id === x.id) === i);
+      } else if ('introductions' in adv) {
+        delete adv.introductions;
       }
       return adv;
     }) : d.advisors,
@@ -605,17 +633,32 @@ export function computeAdvisor(a: Advisor, plan: Plan, tiers: Tier[], objectives
   }
   const perf = a.performance || { achieved: [], targeted: [] } as Performance;
   const cu = plan.capitalUplift;
-  const capEquity = perf.capitalEquity || 0, capToken = perf.capitalToken || 0;
-  const capTotal = (perf.capitalEquity != null || perf.capitalToken != null) ? (capEquity + capToken) : (perf.capitalIntroduced || 0);
+  // v2 (COM-146): explicit introductions, when present, REPLACE the v1 perf.capital* numbers as
+  // the capital source — EARNED ones drive the uplift; targeted/gated feed only the ceiling.
+  // Advisors without introductions[] keep the v1 path byte-identically (22/22 pins it).
+  const intros = Array.isArray(a.introductions) ? a.introductions : null;
+  // amounts clamp ≥ 0 here too — reconcile heals on load, but setPath writes live state
+  // unsanitised; a negative entry must never SUBTRACT earned capital (review finding).
+  const introEarned = intros ? intros.reduce((s, i) => s + (i.status === 'earned' && ok(i.amountUSD) && i.amountUSD > 0 ? i.amountUSD : 0), 0) : 0;
+  const introPipeline = intros ? intros.reduce((s, i) => s + (i.status !== 'earned' && ok(i.amountUSD) && i.amountUSD > 0 ? i.amountUSD : 0), 0) : 0;
+  const capEquity = intros ? introEarned : (perf.capitalEquity || 0);
+  const capToken = intros ? 0 : (perf.capitalToken || 0);
+  const capTotal = intros ? introEarned
+    : (perf.capitalEquity != null || perf.capitalToken != null) ? (capEquity + capToken) : (perf.capitalIntroduced || 0);
   const capRaw = clamp(safeDiv(capTotal, cu.per) * cu.pct, 0, cu.cap);
   const capActive = stageReached(plan, cu.gate) ? capRaw : 0;
+  // the ceiling includes the introduction pipeline (targeted + gated) — v1 ceilings unchanged.
+  const capPotential = intros ? clamp(safeDiv(introEarned + introPipeline, cu.per) * cu.pct, 0, cu.cap) : capRaw;
   const oMap: Record<string, Objective> = Object.fromEntries((objectives || []).map(o => [o.id, o]));
   const ach = perf.achieved || [], tgt = perf.targeted || [];
   const earnedObj = ach.filter(id => oMap[id] && stageReached(plan, oMap[id].gate)).reduce((s, id) => s + oMap[id].uplift, 0);
   const pendObj = ach.filter(id => oMap[id] && !stageReached(plan, oMap[id].gate)).reduce((s, id) => s + oMap[id].uplift, 0);
   const ceilObj = [...new Set([...ach, ...tgt])].reduce((s, id) => s + (oMap[id]?.uplift || 0), 0);
   const earnedUplift = capActive + earnedObj;
-  const ceilUplift = capRaw + ceilObj;
+  const ceilUplift = capPotential + ceilObj;
+  // pendingUplift = EARNED-but-gate-blocked only (capRaw, never the pipeline) — a targeted
+  // intro is a prospect, not pending money; the pipeline lives ONLY in the ceiling, exactly
+  // like targeted objectives (review finding: the awaitingGate tooltip promises "earned").
   const pendingUplift = (capRaw - capActive) + pendObj;
 
   const eqPct = baseEq * (1 + earnedUplift), tkPct = baseTk * (1 + earnedUplift);
@@ -641,6 +684,7 @@ export function computeAdvisor(a: Advisor, plan: Plan, tiers: Tier[], objectives
   const exerciseCost = eqPct * sb.strikeBasis;
   return {
     years, tierMult, baseEq, baseTk, grantRound, capEquity, capToken, capTotal,
+    introEarned, introPipeline, capPotential,
     earnedUplift, ceilUplift, pendingUplift, capEarned: capActive, capRaw,
     eqPct, tkPct, eqPctCeil, tkPctCeil,
     scen, base: sb, retentionBase: sb.retention,
@@ -711,9 +755,17 @@ function computeAdvisorFromGrants(a: Advisor, plan: Plan) {
   const grantCash = baseRows.reduce((s, r) => s + (r.instrument === 'cash' ? r.value : 0), 0);
   const cash = a.hasCash ? (a.cashAnnual || 0) : 0;
 
+  // Intro capital is still REPORTED for grant-advisors (capital-in is a fact), but it buys no
+  // uplift multiplier on this path — explicit grants are PRICED; capital rewards express as
+  // top-up grants (the COM-144 convention). upliftViaGrants tells consumers why every uplift
+  // field is zero (review finding: the F20 panel must not read zero-owed as a contradiction).
+  const intros2 = Array.isArray(a.introductions) ? a.introductions : null;
+  const introSum = (st: 'earned' | 'rest') => (intros2 || []).reduce((s, i) => s + ((st === 'earned' ? i.status === 'earned' : i.status !== 'earned') && ok(i.amountUSD) && i.amountUSD > 0 ? i.amountUSD : 0), 0);
   return {
     years, tierMult: 1, baseEq: eqPct, baseTk: tkPct, grantRound,
     capEquity: 0, capToken: 0, capTotal: 0,
+    introEarned: introSum('earned'), introPipeline: introSum('rest'), capPotential: 0,
+    upliftViaGrants: true,
     earnedUplift: 0, ceilUplift: 0, pendingUplift: 0, capEarned: 0, capRaw: 0,
     eqPct, tkPct, eqPctCeil: eqPct, tkPctCeil: tkPct,
     scen, base: sb, retentionBase: sb.retention,
@@ -763,6 +815,48 @@ export function computeBoard(advisors: Advisor[], plan: Plan, tiers: Tier[], obj
   if ((plan.esopStart ?? plan.bridge.esop) > cap + 1e-9) overCap.push(`Bridge ${fPct(plan.esopStart, 0)}`);
   if (overCap.length) warnings.push(`ESOP exceeds the ${fPct(cap, 0)} cap: ${overCap[0]}${overCap.length > 1 ? ` (+${overCap.length - 1})` : ''}`);
   return { rows, sumEq, sumEqCeil, sumTk, sumTkCeil, sumCash, sumCapital, cost, warnings, esopNow, boardBucket };
+}
+
+// v2 (COM-146): the board capital rollup — total expected capital in vs the uplift owed out
+// (O15: the board as a fundraising instrument, quantified). Powers the F20 panel (COM-161).
+// Uplift-owed values are LINEAR reads of the base-case package (netEqAt is linear in pct above
+// water), so owedValue = upliftFraction × baseCaseBase — engine-derived, no new semantics.
+// Advisors without introductions[] contribute their v1 perf capital as 'earned' (one bucket).
+export function capitalRollup(advisors: Advisor[], plan: Plan, tiers: Tier[], objectives: Objective[]) {
+  const cu = plan.capitalUplift;
+  const rows = advisors.map(a => {
+    const c: any = computeAdvisor(a, plan, tiers, objectives);
+    const intros = Array.isArray(a.introductions) ? a.introductions : null;
+    const sumBy = (st: IntroStatus) => (intros || []).reduce((s, i) => s + (i.status === st && ok(i.amountUSD) && i.amountUSD > 0 ? i.amountUSD : 0), 0);
+    const earned = intros ? sumBy('earned') : c.capTotal;
+    const gated = sumBy('gated');
+    const targeted = sumBy('targeted');
+    // Uplift fractions come from the ENGINE'S OWN compute — one source of truth. Grant-path
+    // advisors report 0/0 with upliftViaGrants set (capital rewards express as top-up grants
+    // there; the rollup must never print a potential the engine will not pay — review finding).
+    const earnedUpliftFrac = c.capEarned;
+    const potentialUpliftFrac = c.upliftViaGrants ? 0 : (ok(c.capPotential) ? c.capPotential : c.capRaw);
+    return {
+      advisorId: a.id, name: a.name,
+      targeted, gated, earned, total: targeted + gated + earned,
+      earnedUpliftFrac, potentialUpliftFrac,
+      earnedUpliftValue: earnedUpliftFrac * c.baseCaseBase,
+      potentialUpliftValue: potentialUpliftFrac * c.baseCaseBase,
+      upliftViaGrants: !!c.upliftViaGrants,
+      introductions: intros || [],
+    };
+  });
+  const t = (f: (r: any) => number) => rows.reduce((s, r) => s + f(r), 0);
+  return {
+    rows,
+    totals: {
+      targeted: t(r => r.targeted), gated: t(r => r.gated), earned: t(r => r.earned),
+      total: t(r => r.total),
+      earnedUpliftValue: t(r => r.earnedUpliftValue),
+      potentialUpliftValue: t(r => r.potentialUpliftValue),
+    },
+    schedule: { per: cu.per, pct: cu.pct, cap: cu.cap, gate: cu.gate, gateReached: stageReached(plan, cu.gate) },
+  };
 }
 
 export function vestedFrac(m: number, years: number, cliff: number) { if (m < cliff) return 0; return clamp((1 / years) * (Math.floor((m - cliff) / 12) + 1), 0, 1); }

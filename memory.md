@@ -2559,3 +2559,16 @@ top-up claims package + appends draft option grant at currentRoundStep (the fund
 story), roll-off → F18 stage. ReviewPanel on the Trajectory tab (timeline + schedule + complete
 forms). 11/11 live (guard refused; $75K top-up landed non-derived; visible on Instruments).
 vp 0/10 · 22/22 · 238/0/0 · build 0. Next: COM-162 (fundraising event triggers F17).
+
+## 2026-06-10 — COM-162 (round-close triggers F17) DONE [W3 #6] + LINEAR DEBT OPEN
+
+**COM-162 (M, 186 LOC, PR #95) — MERGED.** RoundDef.closedISO (junk heals by deletion) ·
+crystalliseIntroductions (PURE; pinned that crystallisation MOVES MONEY) · closed rounds = dated
+Trajectory events · store closeRound (stage lens advances FORWARD only → re-pricing rides the
+existing currentRoundStep path, no second mechanism; Series A schedules the Δ2 structural review
+for every advisor) · Configure Mark closed + E.1/F grant-timing guidance. 11/11 live. vp 0/10 ·
+22/22 · 243/0/0 · build 0. **LINEAR DEBT (MCP down mid-issue, fallback needs interactive OAuth):
+COM-162 needs In Progress→Done + the closing comment when Linear returns.** Probe note: the
+seed's plan.rounds = [seriesA,seriesB,seriesC] — bridge lives separately (plan.bridge); and the
+seed's XTX intro is gated on BRIDGE, so a seriesA-close probe must re-gate it first.
+Next: COM-163 (departure UI F18 over modelDeparture).

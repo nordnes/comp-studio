@@ -16,6 +16,7 @@ import {
   BENCH,
   advisorStage,
 } from "../engine";
+import { grantPreconditions } from "../governance";
 // COM-159: the pipeline chip — stage → Badge theme (status semantics carried by TEXT + theme;
 // gray = pre-offer modeling, blue = in motion, orange = gating steps, green = committed/live).
 const STAGE_THEME: Record<string, string> = {
@@ -37,6 +38,8 @@ import EmptyState from "../components/EmptyState.vue";
 import Panel from "../components/Panel.vue";
 
 const { store, board, select, delAdvisor, setPath } = useStudio();
+// COM-167: blocking semantics — the O13 pre-condition check per package
+const precond = (a: any) => grantPreconditions(a, store.gov);
 const { openEditor } = useEditor();
 const router = useRouter();
 const S = computed(() => store.S);
@@ -200,6 +203,17 @@ const hasBudget = computed(() => flags.value.some((f) => f.t === "budget"));
               <!-- COM-96: identity + tier pill come from the shared roster primitives -->
               <RosterIdentity :name="a.name" max-w="max-w-full" />
               <div class="flex items-center gap-1 shrink-0">
+                <!-- COM-167: the blocking chip — pre-conditions outstanding (O13) -->
+                <Badge
+                  v-if="!precond(a).ok"
+                  theme="orange"
+                  size="sm"
+                  variant="subtle"
+                  :title="precond(a).outstanding.join(' · ')"
+                  >{{ precond(a).outstanding.length }} pre-condition{{
+                    precond(a).outstanding.length === 1 ? "" : "s"
+                  }}</Badge
+                >
                 <!-- COM-159: the offer-pipeline stage chip -->
                 <Badge :theme="STAGE_THEME[advisorStage(a)] || 'gray'" size="sm" variant="subtle">{{
                   advisorStage(a)

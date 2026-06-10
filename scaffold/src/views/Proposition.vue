@@ -17,6 +17,7 @@ import {
   FUNDING_ROUND_CARVEOUT,
 } from "../engine";
 import { CONFIDENTIAL_EYEBROW } from "../constants";
+import { grantPreconditions } from "../governance";
 import AdvisorPicker from "../components/AdvisorPicker.vue";
 import ExitSlider from "../components/ExitSlider.vue";
 import Term from "../components/Term.vue";
@@ -30,6 +31,8 @@ const c = computed(() => selected.value?.c);
 // COM-164 (Δ12): the version register — figures FROZEN at snapshot; the delta line compares the
 // live computed base against each sent version (current minus sent).
 const versions = computed(() => ((sel.value as any)?.propositions || []) as any[]);
+// COM-167: the watermark gate (O13 / success criterion #6)
+const precond = computed(() => grantPreconditions(sel.value as any, store.gov));
 const sb = computed(() => c.value?.base);
 const ms = computed(() => Object.fromEntries(S.value.plan.milestones.map((m) => [m.id, m.label])));
 const shown = computed(() => {
@@ -210,7 +213,32 @@ const targetLine = computed(
          target-outcome sentence below, so the component's print line is suppressed here. -->
     <ExitSlider :c="c" :sel="sel" :print-line="false" tone="quiet" />
 
-    <div class="print-area bg-surface-white rounded border border-outline-gray-2">
+    <div class="print-area bg-surface-white rounded border border-outline-gray-2 relative">
+      <!-- COM-167 (success criterion #6): the letter can always be printed, but it carries the
+           watermark until every gating pre-condition is GREEN — on screen AND in print. The
+           diagonal repeats so any cropped screenshot still shows it; the banner names what is
+           outstanding. aria-hidden on the decoration; the banner is the accessible text. -->
+      <template v-if="!precond.ok">
+        <div
+          class="pointer-events-none absolute inset-0 overflow-hidden select-none"
+          aria-hidden="true"
+        >
+          <div
+            v-for="i in 3"
+            :key="i"
+            class="absolute left-1/2 w-[140%] -translate-x-1/2 -rotate-[24deg] text-center font-display text-3xl uppercase tracking-[0.35em] text-ink-amber-strong opacity-[0.13]"
+            :style="{ top: `${i * 26 - 8}%` }"
+          >
+            Pre-conditions outstanding
+          </div>
+        </div>
+        <div
+          class="px-8 sm:px-12 py-2.5 border-b border-outline-amber-2 bg-surface-amber-1 text-p-xs text-ink-amber-strong"
+        >
+          Watermarked — pre-conditions outstanding: {{ precond.outstanding.join(" · ") }}. The
+          watermark lifts when the Governance register is green and checks clear.
+        </div>
+      </template>
       <div class="px-8 sm:px-12 py-10 border-b border-outline-gray-1">
         <div class="flex justify-between items-start flex-wrap gap-4">
           <div>

@@ -1974,3 +1974,12 @@ vp 0 · 22/22 both · build 0.
 (Conservative → Aggressive · $5.62M – $64.3M) + supporting dl ×3 (de-boxed, text-sm tabular).
 Advisors-count tile deleted; fNum import dropped. Screenshot: real hierarchy at last. vp 0 ·
 22/22 both · build 0 · zero console errors. COM-117's MetricBand will absorb this shape as a variant.
+
+## 2026-06-10 — COM-115 (company-cost range) DONE [M9 finish-loop W4 #5]
+
+**COM-115 (P3 Med, ~40/16 LOC, Board.vue) — DONE + MERGED.** The 3-tile grid inside the amber panel →
+floor (quiet) · base (.figure-md, amber-strong label, tracks the board-local bc case) · ceiling (quiet)
++ the shared FootballField beneath (max=ceiling → full-track; COM-119's amber tick marks the base).
+costRange computed = pure selection over board.cost. Panel amber framing kept (the page's one amber
+moment). Screenshot: Board fully coherent — aligned range rows + the range-shaped conclusion.
+vp 0 · 22/22 both · build 0 · zero console errors.

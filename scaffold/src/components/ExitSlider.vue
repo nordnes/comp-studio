@@ -100,13 +100,15 @@ const tickPct = (i: number) => (maxPos.value ? (i / maxPos.value) * 100 : 0);
       </div>
       <div class="ml-auto text-xs text-ink-amber-strong">{{ view.label }}</div>
     </div>
+    <!-- COM-100: the shared .range-input treatment (tokens + --slider-pct track fill) -->
     <input
       v-model.number="pos"
       type="range"
       min="0"
       :max="maxPos"
       step="0.01"
-      class="w-full accent-[var(--chart-capital)]"
+      class="w-full range-input"
+      :style="{ '--slider-pct': (maxPos ? (pos / maxPos) * 100 : 0) + '%' }"
       :aria-label="`Exit valuation: ${view.label}, net ${fUSD(view.total)}`"
       @change="commitTarget"
     />

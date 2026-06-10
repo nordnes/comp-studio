@@ -175,6 +175,16 @@ const activeScenario = computed({
 const scenarioOptions = computed(() =>
   scenKeys(store.S.plan).map((k) => ({ label: store.S.plan.scenarios[k].label, value: k })),
 );
+// COM-92: the SECOND global lens — Stage (plan.currentStage, already board-persisted) joins Case in
+// the shell so every route answers "under which future?" without navigation. The options-sources
+// stay pluggable single supply points: COM-148 (M10 scenario sets) swaps DATA here, not the control.
+const currentStage = computed({
+  get: () => store.S.plan.currentStage,
+  set: (v: string) => setPath(["plan", "currentStage"], v),
+});
+const stageOptions = computed(() =>
+  store.S.plan.milestones.map((m: any) => ({ label: m.label, value: m.id })),
+);
 
 // COM-62: breadcrumb — board › view › advisor (the advisor segment only on the per-advisor routes).
 // COM-102: the root is the active BOARD (→ /overview), not the static "Studio".
@@ -297,12 +307,25 @@ const openCmdK = () => window.dispatchEvent(new Event("open-command-palette"));
                 class="flex items-center gap-2"
                 title="The scenario case shown across every view"
               >
-                <span class="text-p-xs text-ink-gray-6 shrink-0">Case</span>
+                <span class="text-p-xs text-ink-gray-6 w-9 shrink-0">Case</span>
                 <Select
                   v-model="activeScenario"
-                  class="flex-1"
+                  class="flex-1 min-w-0"
                   :options="scenarioOptions"
                   aria-label="Scenario case"
+                />
+              </label>
+              <!-- COM-92: Stage co-locates with Case — the two plan lenses in one shell block -->
+              <label
+                class="flex items-center gap-2"
+                title="The plan stage that gates performance uplift"
+              >
+                <span class="text-p-xs text-ink-gray-6 w-9 shrink-0">Stage</span>
+                <Select
+                  v-model="currentStage"
+                  class="flex-1 min-w-0"
+                  :options="stageOptions"
+                  aria-label="Plan stage"
                 />
               </label>
             </div>

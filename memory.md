@@ -1983,3 +1983,13 @@ floor (quiet) · base (.figure-md, amber-strong label, tracks the board-local bc
 costRange computed = pure selection over board.cost. Panel amber framing kept (the page's one amber
 moment). Screenshot: Board fully coherent — aligned range rows + the range-shaped conclusion.
 vp 0 · 22/22 both · build 0 · zero console errors.
+
+## 2026-06-10 — COM-114 (Proposition hero collapse) DONE [M9 finish-loop W4 #6]
+
+**COM-114 (P2 HIGH, 68/69 LOC, Proposition.vue) — DONE + MERGED.** The two stacked 3-up grids → ONE
+statement (Guaranteed base $7.67M, .figure-lg, quiet label) + ONE reference table (multi-tbody: Current
+amber-ink / Ceiling rows · "Net value across outcomes" group caption row · 3 scenario rows w/ eq·tok
+notes, base row amber-ink). Roman i/ii/iii deleted. **In-PR judgment (prompt-set default): the compact
+reference TABLE over a bar — reads as a letter's enclosure.** targetLine kept inside the bordered
+section. Legal corpus + propText byte-untouched (diff grep = 0 hits). Screenshots: document-grade.
+vp 0 · 22/22 both · build 0 · zero console errors.

@@ -13,6 +13,7 @@ import {
   Alert,
   Sidebar,
   SidebarItem,
+  KeyboardShortcut,
 } from "frappe-ui";
 import { useStudio } from "./store";
 import { confirmDestroy } from "./confirm";
@@ -236,7 +237,9 @@ const openCmdK = () => window.dispatchEvent(new Event("open-command-palette"));
                 class="flex w-full items-center gap-2 rounded border border-outline-gray-2 bg-surface-white px-2.5 py-1.5 text-sm text-ink-gray-5 hover:bg-surface-gray-2"
                 @click="openCmdK"
               >
-                <span>Search</span><span class="ml-auto text-xs text-ink-gray-4">⌘K</span>
+                <!-- COM-105: platform-correct shortcut (mod resolves to Ctrl off-Mac) -->
+                <span>Search</span>
+                <KeyboardShortcut combo="Mod+K" class="ml-auto text-ink-gray-4" />
               </button>
               <Button
                 class="w-full"

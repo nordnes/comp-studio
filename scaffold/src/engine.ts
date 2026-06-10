@@ -639,6 +639,73 @@ export const makeScenarioSet = (id: string, label: string, plan: Plan): Scenario
   id, label, scenarios: JSON.parse(JSON.stringify(plan.scenarios)), baseScenario: baseScenKey(plan),
 });
 
+// v2 (COM-157): the Trajectory surface (F15) — pure engine reads for the per-advisor timeline.
+// trajectoryBand: cumulative VESTED net value per month as a band — floor (the base grant, no
+// uplift) → base (earned uplift) → ceiling — under the selected scenario. Equity rides the
+// Cert v3 annual staircase; tokens ride the RTA ramp gated by the 24-month qualifying service
+// (distributableFrac); grant-borne/parametric cash accrues linearly over the engagement.
+export interface TrajectoryPoint { m: number; floor: number; base: number; ceil: number }
+export function trajectoryBand(a: Advisor, plan: Plan, tiers: Tier[], objectives: Objective[], scenKey?: string): TrajectoryPoint[] {
+  const c: any = computeAdvisor(a, plan, tiers, objectives, scenKey);
+  const sbv = c.base, Vb = sbv.exitVal;
+  const eqFloor = sbv.netEqAt(c.baseEq, Vb);
+  const eqBase = sbv.netEqAt(c.eqPct, Vb);
+  const eqCeil = sbv.netEqAt(c.eqPctCeil, Vb);
+  const tokOf = (pct: number) => (sbv.tokenAsEquity ? pct * sbv.retention * Vb : pct * sbv.fdv);
+  const cash = c.cashAnnualEq ?? c.cash ?? 0;
+  const months = Math.max(12, Math.round((c.years || 4) * 12));
+  const grants = effectiveGrants(a, plan, tiers, objectives);
+  const rta = grants.find(g => g.instrument === 'rta') || null;
+  const out: TrajectoryPoint[] = [];
+  for (let m = 0; m <= months; m++) {
+    const ev = vestedFrac(m, plan.equityVestYears, plan.equityCliff);
+    const tv = rta ? distributableFrac(rta, m, m) : vestedFrac(m, plan.tokenVestYears, plan.tokenCliff);
+    const cashAcc = cash * Math.min(m / 12, c.years || 4);
+    out.push({
+      m,
+      floor: ev * eqFloor + tv * tokOf(c.baseTk) + cashAcc,
+      base: ev * eqBase + tv * tokOf(c.tkPct) + cashAcc,
+      ceil: ev * eqCeil + tv * tokOf(c.tkPctCeil) + cashAcc,
+    });
+  }
+  return out;
+}
+
+// v2 (COM-157): the dated events on an advisor's trajectory. Only REAL dates render — rounds
+// are undated in the plan (COM-162 wires fundraising triggers); the Clause 3.6 backstop is
+// returned even when it falls beyond the window (the caller clamps/captions). The Series-A
+// structural review (Δ2 "trainer wheels" formalisation) renders caller-side off the seriesA
+// milestone.
+export interface TrajectoryEvent { id: string; kind: 'start' | 'cliff' | 'tranche' | 'qualifying' | 'review' | 'review-due' | 'tge' | 'today' | 'backstop'; m: number; label: string; dateISO: string }
+export function trajectoryEvents(a: Advisor, plan: Plan, tiers: Tier[], objectives: Objective[], todayIso = todayISO()): TrajectoryEvent[] {
+  const start = a.startDate || todayIso;
+  const months = Math.max(12, Math.round((a.years || 4) * 12));
+  const mOf = (iso: string) => monthsBetween(start, iso);
+  const out: TrajectoryEvent[] = [
+    { id: 'start', kind: 'start', m: 0, label: 'Start', dateISO: start },
+    // equityCliff is already MONTHS in this model (12), not years
+    { id: 'cliff', kind: 'cliff', m: Math.round(plan.equityCliff), label: 'Cliff', dateISO: addMonthsUTC(start, Math.round(plan.equityCliff)) },
+    { id: 'qualifying', kind: 'qualifying', m: 24, label: 'Qualifying · Bad-Leaver', dateISO: addMonthsUTC(start, 24) },
+  ];
+  for (let y = 2; y <= Math.min(plan.equityVestYears, a.years || plan.equityVestYears); y++) {
+    out.push({ id: `tranche-${y}`, kind: 'tranche', m: y * 12, label: `Year ${y} tranche`, dateISO: addMonthsUTC(start, y * 12) });
+  }
+  (Array.isArray(a.reviews) ? a.reviews : []).forEach(r => {
+    out.push({ id: r.id, kind: 'review', m: mOf(r.scheduledISO), label: r.completedISO ? `Review · ${r.outcome || 'completed'}` : 'Review (open)', dateISO: r.scheduledISO });
+  });
+  const due = nextReviewDue(a, plan, todayIso);
+  if (!due.review) out.push({ id: 'review-due', kind: 'review-due', m: mOf(due.dueISO), label: 'Next review due', dateISO: due.dueISO });
+  if (plan.tgeDate) out.push({ id: 'tge', kind: 'tge', m: mOf(plan.tgeDate), label: 'TGE', dateISO: plan.tgeDate });
+  const tm = mOf(todayIso);
+  if (tm > 0 && tm < months) out.push({ id: 'today', kind: 'today', m: tm, label: 'Today', dateISO: todayIso });
+  const firstOpt = effectiveGrants(a, plan, tiers, objectives).find(g => g.instrument === 'option');
+  if (firstOpt) {
+    const b = exerciseCheck(firstOpt, todayIso).backstop;
+    out.push({ id: 'backstop', kind: 'backstop', m: mOf(b.anniversary9ISO), label: 'Exercise backstop (3.6)', dateISO: b.anniversary9ISO });
+  }
+  return out.sort((x, y) => x.m - y.m);
+}
+
 // v2 (COM-148): the side-by-side set diff — per-advisor net + board totals + pool/founder
 // deltas, both sides evaluated through planWithSet (an unknown/'' id evaluates the WORKING
 // scenarios, so "current vs a saved set" diffs come free). Pure reads; the UI renders rows.

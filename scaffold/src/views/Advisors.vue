@@ -38,6 +38,7 @@ import ScenarioTable from "../components/ScenarioTable.vue";
 import GrowthWaterfall from "../components/GrowthWaterfall.vue";
 import UpsideCurve from "../components/UpsideCurve.vue";
 import ExitSlider from "../components/ExitSlider.vue";
+import TrajectoryView from "../components/TrajectoryView.vue";
 import VestingTimeline from "../components/VestingTimeline.vue";
 import FootballField from "../components/FootballField.vue";
 import MixBreakdown from "../components/MixBreakdown.vue";
@@ -286,13 +287,15 @@ const backstop = computed(() => {
       <GrowthWaterfall :c="c" :sel="sel" />
       <ExitSlider :c="c" :sel="sel" @exit="(v) => (exitMarker = v)" />
       <UpsideCurve :c="c" :marker-exit="exitMarker ?? undefined" />
-      <!-- COM-91: frappe-ui Tabs (Vesting · Mix · Dilution · Instruments) replace the single
-           "+ Show detail" toggle that dumped four surfaces at once — jump straight to one.
+      <!-- COM-91: frappe-ui Tabs replace the single "+ Show detail" toggle that dumped four
+           surfaces at once — jump straight to one. COM-157: Trajectory leads (the headline F15
+           surface — flagged default: a tab here, not a new route; the advisor context stays).
            no-print keeps parity with the old collapsed-by-default print behaviour. -->
       <Tabs
         v-model="detailTab"
         class="no-print"
         :tabs="[
+          { label: 'Trajectory' },
           { label: 'Vesting' },
           { label: 'Mix' },
           { label: 'Dilution' },
@@ -301,7 +304,8 @@ const backstop = computed(() => {
       >
         <template #tab-panel="{ tab }">
           <div class="w-full pt-6">
-            <VestingTimeline v-if="tab.label === 'Vesting'" :c="c" :sel="sel" />
+            <TrajectoryView v-if="tab.label === 'Trajectory'" :c="c" :sel="sel" />
+            <VestingTimeline v-else-if="tab.label === 'Vesting'" :c="c" :sel="sel" />
             <MixBreakdown v-else-if="tab.label === 'Mix'" :c="c" />
             <DilutionPath v-else-if="tab.label === 'Dilution'" :c="c" />
             <!-- COM-88: static read-out — label + divide-y rows, no frame -->

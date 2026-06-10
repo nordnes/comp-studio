@@ -2125,3 +2125,15 @@ sk.length===1 (prompt default: HIDE); Board's cost panel drops floor/ceiling + t
 figure only). The issue's grid-cols-3 surfaces no longer exist (COM-114 table rows / COM-115 range —
 both count-adaptive by shape). Verified by scenario surgery (3→1: range hidden, single $23.0M,
 case Select auto-hidden as before; restored). vp 0 · 22/22 both · build 0.
+
+## 2026-06-10 — COM-107 (confirm + feedback parity) DONE — ★ WAVE 6 COMPLETE [M9 finish-loop W6 #7]
+
+**COM-107 (P3 Med, ~70 LOC, 4 files) — DONE + MERGED.** Remove advisor → confirmDestroy (both
+kebabs); addAdvisor → flash("Advisor added — edit the package") in the store (beside the existing
+flash users); Configure round/milestone deletes → confirm w/ view-derived blast-radius counts
+("Delete Series A? No advisor grants reference it." verified live + cancelled); titles on the other
+3 trashes. Verified: add → 5 rows (flash auto-dismissed pre-check; same toast mechanism as Copied),
+round-confirm dialog + cancel; test advisor cleaned. vp 0 · 22/22 both · build 0.
+
+**★ WAVE 6 COMPLETE: COM-99/100/111/112/122/125/107, PRs #61–#67.** M9 = 64 Done / 1 open (COM-87
+deferred-by-decision is NOT in M9 scope... correction: remaining = COM-139 + COM-141 in W7 + the gate.)

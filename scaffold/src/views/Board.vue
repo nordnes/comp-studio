@@ -5,6 +5,7 @@ import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
 import { Button, Badge, Dropdown, TabButtons } from "frappe-ui";
 import { useStudio } from "../store";
+import { confirmDestroy } from "../confirm";
 import { useEditor } from "../composables/useEditor";
 import {
   fUSD,
@@ -65,7 +66,18 @@ function rowMenu(a: any) {
         openEditor();
       },
     },
-    { label: "Remove", icon: "lucide-trash-2", theme: "red", onClick: () => delAdvisor(a.id) },
+    {
+      label: "Remove",
+      icon: "lucide-trash-2",
+      theme: "red",
+      // COM-107: a whole package is confirm-worthy (parity with Reset)
+      onClick: () =>
+        confirmDestroy(
+          "Remove advisor",
+          `Remove ${a.name}? Their package and objective progress are deleted.`,
+          () => delAdvisor(a.id),
+        ),
+    },
   ];
 }
 function boardPack() {

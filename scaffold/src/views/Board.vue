@@ -516,6 +516,27 @@ const caseTotalSum = computed(() =>
           >
             {{ fUSD(xMax) }}
           </text>
+          <!-- COM-122: on-axis titles so the chart teaches itself (13 in the viewBox ≈ 11.4px
+               rendered at the card's ~0.875 scale — above the COM-49 floor; ink-gray-6 per M7) -->
+          <text
+            :x="(PAD.l + VW - PAD.r) / 2"
+            :y="VH - 6"
+            text-anchor="middle"
+            class="fill-current text-ink-gray-6"
+            font-size="13"
+          >
+            Current net value
+          </text>
+          <text
+            :x="12"
+            :y="(PAD.t + VH - PAD.b) / 2"
+            text-anchor="middle"
+            class="fill-current text-ink-gray-6"
+            font-size="13"
+            :transform="`rotate(-90, 12, ${(PAD.t + VH - PAD.b) / 2})`"
+          >
+            Headroom to ceiling
+          </text>
           <g
             v-for="d in scatterPlaced"
             :key="d.id"

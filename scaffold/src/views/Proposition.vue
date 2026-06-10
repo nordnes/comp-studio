@@ -6,7 +6,15 @@
 import { computed } from "vue";
 import { Avatar, Button, Divider } from "frappe-ui";
 import { useStudio } from "../store";
-import { fUSD, fPct, fNum, fMult, baseScenKey, roundLabel } from "../engine";
+import {
+  fUSD,
+  fPct,
+  fNum,
+  fMult,
+  baseScenKey,
+  roundLabel,
+  FUNDING_ROUND_CARVEOUT,
+} from "../engine";
 import { CONFIDENTIAL_EYEBROW } from "../constants";
 import AdvisorPicker from "../components/AdvisorPicker.vue";
 import ExitSlider from "../components/ExitSlider.vue";
@@ -292,8 +300,13 @@ const targetLine = computed(
           acceleration under the plan (Plan rules v9); on a change of control the acquirer may roll
           over awards, and vested options remain exercisable per the plan rules.
           {{ residencyLine }} Strike subject to an agreed HMRC SAV / 409A valuation before first
-          grant. If no exit by the 9th anniversary, a ≥90-day exercise window opens (Option
-          Certificate 3.6). Subject to required investor consents. Not a binding offer or
+          grant. Exercise is available during Board-determined liquidity windows; if no Exit Event
+          occurs before the 9th anniversary of grant, the Company shall open an Exercise Period of
+          at least 90 days, on at least 30 days' written notice, ending no later than the day before
+          the 10th anniversary (Option Certificate 3.6). Net exercise is available at Board
+          discretion on the holder's written request (Rule 4.5); sell-to-cover is holder-elected
+          with surplus proceeds accounted to the holder (Rule 7.4(a)).
+          {{ FUNDING_ROUND_CARVEOUT }} Subject to required investor consents. Not a binding offer or
           legal/financial advice.
         </div>
       </div>

@@ -796,6 +796,54 @@ export function distributableFrac(grant: Grant, m: number, serviceMonths: number
   return vestedAtMonths(grant, m, years, cliff);
 }
 
+// ===== v2: exercise mechanics (COM-151 — spec v2 Δ6 · Part 10 #4/#7 · C.2/C.3 · E.1) =====
+// The mechanics, stated for the Instruments panel and the Proposition corpus. Display truth —
+// the engine never simulates Board discretion; it states the rules and computes the dates.
+export const EXERCISE_MECHANICS = [
+  { id: 'windows', rule: 'Exercise policy', text: 'Exercise is available during Board-determined liquidity windows only — any time you like, as long as it is during a liquidity event.' },
+  { id: 'backstop', rule: 'Option Certificate 3.6', text: "If no Exit Event occurs before the 9th anniversary of grant, the Company shall open an Exercise Period of at least 90 days, on at least 30 days' written notice, ending no later than the day before the 10th anniversary." },
+  { id: 'net-exercise', rule: 'Plan Rule 4.5', text: "Net exercise is available at Board discretion on the holder's written request; FMV is the exit consideration at an Exit Event, otherwise the most-recent-grant methodology (Rule 4.5(c))." },
+  { id: 'sell-to-cover', rule: 'Plan Rule 7.4(a)', text: 'Sell-to-cover is holder-elected: sale via a third party, the Company, or any shareholder, with surplus proceeds accounted to the holder.' },
+] as const;
+// Part 10 #7 (the RFC scope comment on this issue): the funding-round carve-out is an EXPLAINER —
+// no adjustment math exists or may be added.
+export const FUNDING_ROUND_CARVEOUT = 'Primary financings at or above nominal value trigger no compensatory adjustment to options (Rule 11.2); special distributions are at Board discretion (Rule 11.3).';
+
+export interface ExerciseWindow { id: string; openISO: string; closeISO: string; label?: string }
+// TZ-free ISO date helpers (UTC arithmetic — calendar overflow folds per Date.UTC semantics).
+export const addYearsISO = (iso: string, n: number) => {
+  const p = String(iso).slice(0, 10).split('-').map(Number);
+  if (p.length < 3 || p.some(x => !ok(x))) return iso;
+  return new Date(Date.UTC(p[0] + n, p[1] - 1, p[2])).toISOString().slice(0, 10);
+};
+export const dayBeforeISO = (iso: string) => {
+  const p = String(iso).slice(0, 10).split('-').map(Number);
+  if (p.length < 3 || p.some(x => !ok(x))) return iso;
+  return new Date(Date.UTC(p[0], p[1] - 1, p[2]) - 86400000).toISOString().slice(0, 10);
+};
+
+// exerciseCheck(grant, atISO, windows) — RFC §4. Board-window membership + the Clause 3.6
+// backstop computed off the grant date (= vestStartISO; an advisor's VCD is the grant date).
+// `backstop.required` means the company's SHALL has triggered — "no Exit Event by the 9th
+// anniversary" is the caller's premise (exit events are scenario data, never engine state).
+// Net-exercise and sell-to-cover ride as flags; cash/rta grants are never exercisable.
+export function exerciseCheck(grant: Grant, atISO: string, windows: ExerciseWindow[] = []) {
+  const exercisable = grant.instrument === 'option' && grant.lifecycle !== 'lapsed' && grant.lifecycle !== 'exercised';
+  const at = String(atISO).slice(0, 10);
+  const win = (windows || []).find(w => w && w.openISO && w.closeISO && String(w.openISO).slice(0, 10) <= at && at <= String(w.closeISO).slice(0, 10)) || null;
+  const anniversary9 = addYearsISO(grant.vestStartISO, 9);
+  const lastClose = dayBeforeISO(addYearsISO(grant.vestStartISO, 10));
+  const backstopRequired = exercisable && at >= anniversary9;
+  return {
+    exercisable,
+    inWindow: exercisable && !!win,
+    window: win,
+    backstop: { anniversary9ISO: anniversary9, lastCloseISO: lastClose, minWindowDays: 90, noticeDays: 30, required: backstopRequired },
+    netExercise: { route: 'board-discretion-on-written-request', rule: '4.5' },
+    sellToCover: { route: 'holder-elected', rule: '7.4(a)' },
+  };
+}
+
 // ===== v2: leaver engine (COM-153 — Plan v9 Rule 5.8 · the RTA · Appendix F) =====
 // Bad Leaver (RTA-aligned): any cessation other than death PLUS any of the six limbs.
 export const BAD_LEAVER_LIMBS = [

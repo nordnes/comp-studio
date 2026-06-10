@@ -2252,3 +2252,16 @@ refuted the "root suite needs dangerouslyDisableSandbox" claim (ran it sandboxed
 confirmed baselines to the byte (bundle 824,954 B / gzip 241,008 B; vp warnings = 10). **Distilled
 rule: a rubric criterion without an executable check method is a rubric bug — graders proved 2 of
 mine unexecutable by actually attempting all of them.** Next session: paste the §6 kickoff.
+
+## 2026-06-10 — ★ V2-FINISH RUN STARTED — Wave 0 complete (COM-139 merged, frosty re-verified)
+
+**The ULTRACODE_V2_FINISH run is live (no `/goal` primitive in this CLI build → §2 grader loop
+enforces the rubric manually).** Wave 0: **PR #68 (COM-139) MERGED** (merge commit 5456cb3) under
+Robin's 2026-06-10 authorization — the PR predated 44 M9 merges, so frosty was merged into the PR
+branch first (one memory.md conflict, both sides kept chronologically; CLAUDE.md auto-merged with
+#68's Δ4 wording). COM-139 flipped Done + closing comment. **OBJECTIVES_AND_FLOWS.md deleted**
+(untracked pre-spec-v2 draft — claimed "frozen engine"/"no backend"; superseded by
+COMP_STUDIO_SPEC_v2.md — per the prompt's Wave 0 decision; it was never committed, so this note is
+the record; Robin can veto by restoring from this session). Goal artifacts already versioned
+(RUBRIC_V2_FINISH.md @ ae8f035). **Frosty re-verified at tip: 22/22 both suites · v2 37/0/6 ·
+build 0 · tree clean.** Next: Wave 0 scoped grader → Wave 1 (COM-142, first engine PR under RFC §7).

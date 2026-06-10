@@ -201,6 +201,15 @@ const openCmdK = () => window.dispatchEvent(new Event("open-command-palette"));
           <span class="font-display text-lg leading-none text-ink-gray-9">Raiku Labs</span>
           <Badge label="Internal" theme="orange" variant="subtle" size="sm" />
         </div>
+        <!-- COM-137: the data-loss state is too high-stakes for a scroll-away banner — a persistent
+             strip while storage is unavailable (every edit volatile until exported) -->
+        <div
+          v-if="!store.storageOk"
+          class="px-4 py-1.5 border-b border-outline-gray-1 bg-surface-amber-1 text-p-xs text-ink-amber-strong"
+          title="Browser storage is unavailable — every edit is volatile. Export JSON to keep your work."
+        >
+          Not saved — export to keep
+        </div>
         <!-- board-switcher + scenario case -->
         <div class="px-3 py-3 space-y-2 border-b border-outline-gray-1">
           <!-- COM-63: command-palette trigger (⌘K) -->
@@ -319,12 +328,14 @@ const openCmdK = () => window.dispatchEvent(new Event("open-command-palette"));
             <!-- COM-62: teleport target for the active view's primary action(s) -->
             <div id="app-header" class="ml-auto flex items-center gap-2" />
           </div>
+          <!-- COM-137: SIBLING alerts — independent failure states must not mask each other
+               (storage-blocked AND over budget can both be true; show both, storage first) -->
           <div v-if="!store.storageOk" class="px-3 sm:px-5 pb-2">
             <Alert theme="yellow" title="Browser storage is unavailable">
               <template #description>Use <b>Export JSON</b> to keep your work.</template>
             </Alert>
           </div>
-          <div v-else-if="board.warnings.length" class="px-3 sm:px-5 pb-2">
+          <div v-if="board.warnings.length" class="px-3 sm:px-5 pb-2">
             <Alert theme="red" title="Budget warning">
               <template #description
                 >{{ board.warnings[0]

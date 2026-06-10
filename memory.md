@@ -2684,3 +2684,17 @@ at EVERY Contracted-Entity exercise, ERSM20220 · US 409A · deed always · 4.5/
 lapsed/zero blocked. Per-option launcher on Instruments → the dialog. 11/11 live. vp 0/10 ·
 22/22 · 263/0/0 · build 0. LINEAR DEBT: +COM-169. Next: COM-170 (append-only audit log —
 closes Wave 4/M12).
+
+## 2026-06-11 — COM-170 DONE — ★ WAVE 4 / THE M12 MILESTONE COMPLETE [W4 #5]
+
+**COM-170 (M, ~280 LOC, PR #106) — MERGED. M12 · Governance & compliance = ALL 5 issues done
+(166→167→168→169→170, PRs #102–#106).** audit.ts (append-only sibling slice; appendAudit the
+ONLY write path; no remove/edit API by design; 1000-event tail; heal-never-drop) · 12 acting
+paths append (grants/reviews/stage/rounds/valuation/propositions/decisions/intros) · Governance
+renders newest-first w/ ZERO controls (probe-verified). 9/9 live. vp 0/10 · 22/22 · 263/0/0 ·
+build 0. **Tooling rule RE-CONFIRMED the hard way: zsh escapes ! INSIDE quoted heredocs too —
+python -c/heredoc patches with !== anchors silently no-op; ALWAYS write patch scripts to files.**
+LINEAR DEBT now: COM-162,163,161,164,156,165,166,167,168,169,170 (11 issues need In Progress→
+Done + comments when Linear returns). Next: the M12-boundary grader → Wave 5 (legacy triage:
+COM-28/21/31/61 + epics COM-5/7 — verify-then-close-with-evidence; needs Linear for the
+closes... triage what's verifiable now, defer flips).

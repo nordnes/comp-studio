@@ -2110,3 +2110,10 @@ vp 0 · 22/22 both · build 0.
 **COM-112 (P4 Low, 5 LOC) — DONE + MERGED.** .print-running hex → var(--ink-gray-7)/
 var(--outline-gray-2)/var(--surface-white). Verified: refs present in built css + --ink-gray-7
 defined unconditioned (#525252) → resolves under @media print. String untouched. vp 0 · 22/22 · build 0.
+
+## 2026-06-10 — COM-122 (scatter axis titles) DONE [M9 finish-loop W6 #5]
+
+**COM-122 (P3 Med, ~26 LOC, Board.vue) — DONE + MERGED.** Rotated y "Headroom to ceiling" (rotate(-90)
+about its anchor) + centered x "Current net value". **Sizing lesson: 12 viewBox units rendered 10.5px
+(below the COM-49 floor — the card scales the 460-unit viewBox ~0.875×); bumped to 13 → 11.4px
+measured.** ink-gray-6 over the issue's gray-5 (M7 floor wins). vp 0 · 22/22 both · build 0.

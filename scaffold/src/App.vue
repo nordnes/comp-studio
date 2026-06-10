@@ -14,6 +14,10 @@ import {
   Sidebar,
   SidebarItem,
   KeyboardShortcut,
+  ListView,
+  ListRows,
+  ListRow,
+  ListRowItem,
 } from "frappe-ui";
 import { useStudio } from "./store";
 import { confirmDestroy } from "./confirm";
@@ -85,6 +89,15 @@ const {
 const fileRef = ref<HTMLInputElement | null>(null);
 const saveAsName = ref("");
 const savedNames = computed(() => Object.keys(store.saved));
+// COM-103: the Mgr list rides frappe-ui's ListView primitives (rowKey = the board name).
+const savedRows = computed(() =>
+  savedNames.value.map((n) => ({ name: n, current: n === store.last })),
+);
+const savedListOptions = {
+  selectable: false,
+  showTooltip: false,
+  onRowClick: (r: any) => loadBoard(r.name),
+};
 
 function onImportFile(e: Event) {
   const f = (e.target as HTMLInputElement).files?.[0];
@@ -307,11 +320,13 @@ const openCmdK = () => window.dispatchEvent(new Event("open-command-palette"));
                   />
                 </Dropdown>
                 <Dropdown :options="moreActions">
+                  <!-- icon-only frappe-ui Buttons take `label` (rendered sr-only + aria-label);
+                       a fallthrough aria-label attr is clobbered by the component's own binding -->
                   <Button
                     variant="ghost"
                     theme="gray"
                     icon="lucide-ellipsis"
-                    aria-label="More actions"
+                    label="More actions"
                     title="More — paste, export CSV, import, reset"
                   />
                 </Dropdown>
@@ -424,43 +439,47 @@ const openCmdK = () => window.dispatchEvent(new Event("open-command-palette"));
           <div v-if="!savedNames.length" class="text-sm text-ink-gray-6 mb-4">
             No saved boards yet.
           </div>
-          <ul
+          <!-- COM-103: ListView/ListRow/ListRowItem replace the hand-rolled ul — prefix slot is
+               the current-board check (a fixed slot, so labels align), suffix the delete action -->
+          <ListView
             v-else
-            class="divide-y divide-outline-gray-1 mb-5 border border-outline-gray-1 rounded"
+            class="mb-5 rounded border border-outline-gray-1 p-1"
+            :columns="[{ label: 'Board', key: 'name' }]"
+            :rows="savedRows"
+            row-key="name"
+            :options="savedListOptions"
           >
-            <li
-              v-for="n in savedNames"
-              :key="n"
-              class="flex items-center justify-between gap-2 px-3 py-2"
-            >
-              <button
-                class="flex items-center gap-2 text-sm text-left text-ink-gray-8 hover:text-ink-gray-9"
-                @click="loadBoard(n)"
-              >
-                <span
-                  v-if="n === store.last"
-                  class="lucide-check size-4 text-ink-green-3"
-                  aria-hidden="true"
-                />
-                <span v-else class="size-4" aria-hidden="true" />
-                {{ n }}
-              </button>
-              <Button
-                variant="ghost"
-                theme="red"
-                size="sm"
-                icon="lucide-trash-2"
-                aria-label="Delete board"
-                @click="
-                  confirmDestroy(
-                    'Delete board',
-                    `Delete saved board ${n}? This cannot be undone.`,
-                    () => delBoard(n),
-                  )
-                "
-              />
-            </li>
-          </ul>
+            <ListRows>
+              <ListRow v-for="row in savedRows" :key="row.name" :row="row" v-slot="{ item }">
+                <ListRowItem :item="item" :column="{ key: 'name' }">
+                  <template #prefix>
+                    <span
+                      :class="row.current ? 'lucide-check text-ink-green-3' : ''"
+                      class="size-4 shrink-0"
+                      aria-hidden="true"
+                    />
+                  </template>
+                  <template #suffix>
+                    <Button
+                      class="ml-auto"
+                      variant="ghost"
+                      theme="red"
+                      size="sm"
+                      icon="lucide-trash-2"
+                      label="Delete board"
+                      @click.stop="
+                        confirmDestroy(
+                          'Delete board',
+                          `Delete saved board ${row.name}? This cannot be undone.`,
+                          () => delBoard(row.name),
+                        )
+                      "
+                    />
+                  </template>
+                </ListRowItem>
+              </ListRow>
+            </ListRows>
+          </ListView>
           <div class="flex items-end gap-2">
             <div class="flex-1">
               <TextInput

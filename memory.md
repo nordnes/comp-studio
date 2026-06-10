@@ -2283,3 +2283,22 @@ at /tmp/claude/pw, chromium cache hit) drives http://[::1]:4173 — NOTE the sta
 :4173 binds IPv6-only ([::1], PID 88123); sandboxed node can't reach localhost (network-deny) →
 run preview scripts with dangerouslyDisableSandbox. 17/17 live checks incl. mobile + fixture
 restore. vp 0/10 · 22/22 both · v2 53/0/5 · build 0. Next: COM-143 (scenario sets, split PRs).
+
+## 2026-06-10 — COM-143 (scenario sets + composed walk) DONE + COM-87 closed [V2-finish W1 #2]
+
+**COM-143 (P2 High, 215 LOC, PR #73) — DONE + MERGED; COM-87 → Duplicate-of-143 per its tombstone
+(no residual: walkComposed × scenarioSets × caseOverride = per-advisor walks as a READ).** Engine:
+ScenarioSet + setList/planWithSet/makeScenarioSet (capture AND activation deep-copy — symmetric or
+the snapshot guarantee is one-way) · walkComposed (workbook "base prior" column; note-2 no-top-up
+branch — N = prevN/(1−raise/post), pool shares preserved; honest cellFrom; scenKey-cell fallback;
+safeDiv-guarded) · METHOD_NOTES verbatim · scenarioSets sanitizer (per-cell numOr, prototype-key
+heal via hasOwn, ...s spread keeps unknown fields). v1 walkScenario BYTE-untouched. T7 = 18 vectors.
+**Two ops gotchas verified this issue: (1) GH_TOKEN env var went STALE mid-session → every gh call
+401s; fix = `env -u GH_TOKEN gh …` (falls back to the valid keyring GITHUB_TOKEN) — prefix ALL gh
+calls. (2) The account hit its monthly spend limit mid-review-panel → sub-agent calls fail
+("monthly spend limit"); finder phase survived, verify agents died → fell back to SELF-verifying
+candidates with node probes (all 7 confirmed empirically, fixed, pinned as T7 vectors). Distilled
+rule: when sub-agents are unavailable, candidate-verification degrades to in-context node-probe
+verification — evidence-based, but grader-independence is lost; re-test agent availability at
+every wave boundary and note degraded panels in the verdict file.** vp 0/10 · 22/22 · 71/0/5 ·
+build 0. Next: COM-144 (Grant[] + shim).

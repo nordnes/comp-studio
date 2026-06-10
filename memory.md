@@ -2358,3 +2358,20 @@ zero is the lifecycle, not the maths, and conflated flags mislead any badge UI; 
 TabButtons renders buttons that are NOT role=button in the a11y tree — locate by CSS
 :has-text/hasText, never getByRole.** vp 0/10 · 22/22 · v2 133/0/1 · build 0 · 9/9 live.
 Next: COM-153 (leaver engine — the LAST T5 pending).
+
+## 2026-06-10 — COM-153 (leaver engine) DONE — ★ ALL T5 BINDINGS LIVE [V2-finish W1 #6]
+
+**COM-153 (P3, 262 LOC, PR #79) — DONE + MERGED. v2 suite = 159/0/0 — ZERO pendings (R2.2's bar
+met).** BAD_LEAVER_LIMBS + classifyLeaver (death carve-out executable) · modelDeparture (Rule 5.8
+total lapse; good/death = vested retained under FLAG; day-aware 24-mo gate; cash over the
+ENGAGEMENT term; exercised = issued shares outside lapse/pool; BOTH value bases labelled; failed
+derivations loud) · Andersen warnings where discretion exists. **The panel MUTATION-TESTED the
+suite — planted regressions (m↔serviceMonths swap, monthsBetween swap, hardcoded 4/12, death
+forfeiting tokens) all stayed GREEN pre-pin. Distilled rules: (1) when a function takes two
+same-typed args (m, serviceMonths), every vector where they're EQUAL pins nothing — add a vector
+where they diverge; (2) money results consumed for a TODAY decision must label their value basis —
+exit-dollars beside today-dollars, unlabelled, misstates the stakes; (3) lifecycle is a per-state
+dispatch: 'lapsed' zeroes, 'exercised' = issued shares (retained, no pool return) — never binary
+live/dead; (4) a degraded-flag result (qty 0 from failed derivation) must propagate flags through
+EVERY consumer shape, not just the row that computed it.** vp 0/10 · 22/22 both · 159/0/0 ·
+build 0. Wave-1 engine queue: COM-151 → 152 → 146 → 154 → 171 remain.

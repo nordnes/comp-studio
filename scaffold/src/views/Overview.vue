@@ -132,7 +132,10 @@ const hasBudget = computed(() => flags.value.some((f) => f.t === "budget"));
          band is gone). Amber ink marks the current-case conclusion — the page's one amber moment. -->
     <div class="flex flex-wrap items-end justify-between gap-x-10 gap-y-4">
       <div>
-        <div class="text-xs mb-1.5 text-ink-amber-strong">Net cost · base</div>
+        <!-- COM-129: "Net" here means net of strike — the page's first jargon gets the tooltip -->
+        <div class="text-xs mb-1.5 text-ink-amber-strong">
+          <Term k="netOfStrike">Net cost</Term> · base
+        </div>
         <div class="figure-lg text-ink-gray-9">{{ heroCost }}</div>
         <div class="text-p-xs mt-2 tabular-nums text-ink-gray-6">{{ rangeText }}</div>
       </div>
@@ -193,7 +196,8 @@ const hasBudget = computed(() => flags.value.some((f) => f.t === "budget"));
               </div>
             </div>
             <div v-if="c.ceilUplift > c.earnedUplift" class="text-xs mt-1 text-ink-green-3">
-              +{{ (c.ceilUplift * 100).toFixed(0) }}% potential at ceiling
+              +{{ (c.ceilUplift * 100).toFixed(0) }}%
+              <Term k="headroom">potential at ceiling</Term>
             </div>
           </Panel>
         </div>
@@ -211,8 +215,9 @@ const hasBudget = computed(() => flags.value.some((f) => f.t === "budget"));
         <Panel class="space-y-2">
           <div class="section-label">Benchmark</div>
           <p class="text-p-sm text-ink-gray-7">
-            Board base equity <b class="text-ink-gray-9">{{ fPct(baseEqSum, 2) }}</b> · FAST
-            per-head 0.30–1.00% · advisory pool ~{{ fPct(BENCH.advisorPool, 0) }}.
+            Board base equity <b class="text-ink-gray-9">{{ fPct(baseEqSum, 2) }}</b> ·
+            <Term k="fast">FAST</Term> per-head 0.30–1.00% ·
+            <Term k="advisoryPool">advisory pool</Term> ~{{ fPct(BENCH.advisorPool, 0) }}.
           </p>
           <p class="text-p-xs text-ink-gray-6">Source: {{ BENCH.advisorSrc }}.</p>
         </Panel>

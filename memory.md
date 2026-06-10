@@ -2070,3 +2070,15 @@ Waterfall footer sentence cut · ExitSlider label = "Explore the exit" (drag-coa
 `tone="quiet"` → "The package across outcomes" on the Proposition · Overview desc trimmed to
 view-specific copy · footer heading → "How to read these figures" (.section-label). PotentialStrip
 clause moot (deleted in COM-117). Verified per host on :4173. vp 0 · 22/22 both · build 0.
+
+## 2026-06-10 — COM-129 (Overview Term tooltips) DONE — ★ WAVE 5 COMPLETE [M9 finish-loop W5 #9]
+
+**COM-129 (P4 Low, ~25 LOC, 2 files) — DONE + MERGED.** GLOSSARY += fast, advisoryPool (explanatory
+copy; citations byte-identical). Wired: netOfStrike on the hero "Net cost", headroom on the roster
+"potential at ceiling" ×4, fast + advisoryPool on the Benchmark card. 8 Term triggers verified in-DOM.
+vp 0 · 22/22 both · build 0.
+
+**★ WAVE 5 (editorial & package editor) COMPLETE: COM-78/79/80/91/92/127/128/130+131/129, PRs #52–#60.**
+M9 = 57 Done / 8 open (the W6 seven + COM-139/141 in W7). Next: WAVE 6 smalls (99 Switch · 100 range
+tokens · 107 toast/confirm · 111 --overlay · 112 print-running tokens · 122 scatter axes · 125 adaptive
+grids), then W7: COM-139 (BUILD + HOLD for Charlie), COM-141 (M12 governance surface), the M9 gate.

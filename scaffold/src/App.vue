@@ -335,14 +335,21 @@ const openCmdK = () => window.dispatchEvent(new Event("open-command-palette"));
               <template #description>Use <b>Export JSON</b> to keep your work.</template>
             </Alert>
           </div>
+          <!-- COM-138: every warning in full (the engine emits at most 3 — a list, not a dead
+               "+N more") + a next step to where the breach is visible -->
           <div v-if="board.warnings.length" class="px-3 sm:px-5 pb-2">
-            <Alert theme="red" title="Budget warning">
-              <template #description
-                >{{ board.warnings[0]
-                }}<span v-if="board.warnings.length > 1">
-                  (+{{ board.warnings.length - 1 }} more)</span
-                ></template
-              >
+            <Alert
+              theme="red"
+              :title="board.warnings.length > 1 ? 'Budget warnings' : 'Budget warning'"
+            >
+              <template #description>
+                <ul :class="board.warnings.length > 1 ? 'list-disc pl-4 space-y-0.5' : 'list-none'">
+                  <li v-for="w in board.warnings" :key="w">{{ w }}</li>
+                </ul>
+                <router-link to="/board" class="mt-1 inline-block underline underline-offset-2"
+                  >Review the pool on the Board</router-link
+                >
+              </template>
             </Alert>
           </div>
         </header>

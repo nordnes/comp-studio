@@ -2137,3 +2137,21 @@ round-confirm dialog + cancel; test advisor cleaned. vp 0 · 22/22 both · build
 
 **★ WAVE 6 COMPLETE: COM-99/100/111/112/122/125/107, PRs #61–#67.** M9 = 64 Done / 1 open (COM-87
 deferred-by-decision is NOT in M9 scope... correction: remaining = COM-139 + COM-141 in W7 + the gate.)
+
+## 2026-06-10 — COM-141 (Governance surface, first M12 slice) DONE [M9 finish-loop W7 #2]
+
+**COM-141 (P2 High, ~416 LOC, 5 files) — DONE + MERGED.** /governance route: the Governance Table
+v4 as a RED/AMBER/GREEN checklist — ten C.5 rows verbatim + the four C.6 open items not covered by
+a v4 row ([7] MFN notifications — distinct from C-7's drafting check, [10] HMRC SAV, [11]
+corporate-wallet RTA audit, [12] Series-A releases) = 14 ComplianceItems in five workstream groups.
+**Architecture call: the `gov` slice persists BESIDE the board map** (sibling localStorage key —
+company-level fact shared across saved boards, never inside engine State or #s=) with its own
+additive id-keyed reconcile in governance.ts (canonical text seed-only; status/owner/evidence/note
+survive; new rows auto-appear). Seed RAG defaults: red = hard pre-condition, amber =
+verification/drafting/conditional/later-stage (flagged in PR as prompt-set defaults). Evidence
+links guarded to http(s) — javascript: renders as plain text (verified live both ways). Nav: joins
+the Board group (avoids a one-item group). **Tripwire caught: `vp check --fix` auto-"fixed" the
+FROZEN engine.ts (spread simplifications) — reverted before commit; both suites stayed 22/22.**
+Verified: 14 rows + verbatim strings rendered, status flip → persist → reload survival, mobile
+stacks controls under text (fixed half-width squeeze), 0 console errors. vp 0 · 22/22 both ·
+build 0. NO gating semantics (follow-on issue).

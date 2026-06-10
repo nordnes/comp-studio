@@ -7,6 +7,9 @@ export const NAV: NavItem[] = [
   { to: "/overview", label: "Overview", icon: "lucide-layout-grid", group: "Board" },
   { to: "/board", label: "Board", icon: "lucide-users", group: "Board" },
   { to: "/compare", label: "Compare", icon: "lucide-layers", group: "Board" },
+  // COM-141: company-level compliance sits with the analyse cluster — a one-item group is the
+  // shape the sidebar avoids (see Configure note below).
+  { to: "/governance", label: "Governance", icon: "lucide-shield-check", group: "Board" },
   { to: "/advisors", label: "Advisors", icon: "lucide-user", group: "Advisor" },
   { to: "/proposition", label: "Proposition", icon: "lucide-file-text", group: "Advisor" },
   { to: "/configure", label: "Configure", icon: "lucide-settings", group: "Configure" },

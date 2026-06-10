@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import {
   FrappeUIProvider,
   Dialogs,
@@ -11,6 +11,8 @@ import {
   TextInput,
   Select,
   Alert,
+  Sidebar,
+  SidebarItem,
 } from "frappe-ui";
 import { useStudio } from "./store";
 import { confirmDestroy } from "./confirm";
@@ -23,6 +25,7 @@ import { CONFIDENTIAL_EYEBROW } from "./constants";
 import { navGroups, configureItem } from "./nav";
 
 const route = useRoute();
+const router = useRouter();
 const navOpen = ref(false);
 watch(
   () => route.path,
@@ -163,10 +166,20 @@ const printRecipient = computed(() => {
   return `Internal · ${printDate.value}`;
 });
 
-const navLinkClass = (active: boolean) =>
-  active
-    ? "bg-surface-gray-3 text-ink-gray-9 font-medium"
-    : "text-ink-gray-7 hover:bg-surface-gray-2";
+// COM-104: the nav consumes frappe-ui's Sidebar primitives; sections derive from nav.ts.
+// onClick uses router.push — SidebarItem's own `to` handling calls router.replace, which
+// would erase history entries (back-button regression).
+const sidebarSections = computed(() =>
+  navGroups.map((g) => ({
+    label: g.label,
+    items: g.items.map((it) => ({
+      label: it.label,
+      icon: it.icon,
+      isActive: route.path === it.to,
+      onClick: () => router.push(it.to),
+    })),
+  })),
+);
 
 // COM-63: open the ⌘K command palette from the sidebar trigger (it also listens for Cmd/Ctrl+K itself).
 const openCmdK = () => window.dispatchEvent(new Event("open-command-palette"));
@@ -190,109 +203,119 @@ const openCmdK = () => window.dispatchEvent(new Event("open-command-palette"));
         @click="navOpen = false"
       />
 
-      <!-- COM-62: left sidebar — persistent on lg, off-canvas drawer on mobile -->
+      <!-- COM-62: left sidebar — persistent on lg, off-canvas drawer on mobile.
+           COM-104: the shell inside is frappe-ui's Sidebar (Robin's call 2026-06-09: adopt the
+           primitive, KEEP this hand-rolled scrim+translate drawer wrapper — the lib's responsive
+           mode is icon-collapse, not an overlay). disableCollapse kills both the collapse toggle
+           and the <sm icon-rail so the wrapper alone owns mobile. -->
       <aside
         ref="asideRef"
-        class="no-print fixed lg:sticky top-0 z-40 h-screen w-60 shrink-0 flex flex-col border-r border-outline-gray-1 bg-surface-white transition-transform duration-200"
+        class="no-print fixed lg:sticky top-0 z-40 h-screen w-60 shrink-0 transition-transform duration-200"
         :class="navOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
         :inert="isMobile && !navOpen"
       >
-        <div class="px-4 py-4 flex items-center gap-2 border-b border-outline-gray-1">
-          <span class="font-display text-lg leading-none text-ink-gray-9">Raiku Labs</span>
-          <Badge label="Internal" theme="orange" variant="subtle" size="sm" />
-        </div>
-        <!-- COM-137: the data-loss state is too high-stakes for a scroll-away banner — a persistent
-             strip while storage is unavailable (every edit volatile until exported) -->
-        <div
-          v-if="!store.storageOk"
-          class="px-4 py-1.5 border-b border-outline-gray-1 bg-surface-amber-1 text-p-xs text-ink-amber-strong"
-          title="Browser storage is unavailable — every edit is volatile. Export JSON to keep your work."
-        >
-          Not saved — export to keep
-        </div>
-        <!-- board-switcher + scenario case -->
-        <div class="px-3 py-3 space-y-2 border-b border-outline-gray-1">
-          <!-- COM-63: command-palette trigger (⌘K) -->
-          <button
-            class="flex w-full items-center gap-2 rounded border border-outline-gray-2 px-2.5 py-1.5 text-sm text-ink-gray-5 hover:bg-surface-gray-2"
-            @click="openCmdK"
-          >
-            <span>Search</span><span class="ml-auto text-xs text-ink-gray-4">⌘K</span>
-          </button>
-          <Button
-            class="w-full"
-            variant="subtle"
-            theme="gray"
-            icon-left="lucide-folder-open"
-            :label="savedNames.length ? `Saved · ${savedNames.length}` : 'Saved boards'"
-            @click="toggleMgr()"
-          />
-          <label
-            v-if="scenarioOptions.length > 1"
-            class="flex items-center gap-2"
-            title="The scenario case shown across every view"
-          >
-            <span class="text-p-xs text-ink-gray-6 shrink-0">Case</span>
-            <Select
-              v-model="activeScenario"
-              class="flex-1"
-              :options="scenarioOptions"
-              aria-label="Scenario case"
-            />
-          </label>
-        </div>
-        <!-- workflow-grouped nav -->
-        <nav class="flex-1 overflow-y-auto px-3 py-3 space-y-4">
-          <div v-for="g in navGroups" :key="g.label">
-            <div class="px-2 mb-1 text-xs uppercase tracking-wider text-ink-gray-5">
-              {{ g.label }}
+        <Sidebar :sections="sidebarSections" disable-collapse class="h-full w-60">
+          <template #header>
+            <div class="px-2 pt-2 pb-3 flex items-center gap-2">
+              <span class="font-display text-lg leading-none text-ink-gray-9">Raiku Labs</span>
+              <Badge label="Internal" theme="orange" variant="subtle" size="sm" />
             </div>
-            <router-link
-              v-for="it in g.items"
-              :key="it.to"
-              :to="it.to"
-              :aria-current="route.path === it.to ? 'page' : undefined"
-              class="flex items-center gap-2.5 px-2.5 py-2 rounded text-sm no-underline transition-colors"
-              :class="navLinkClass(route.path === it.to)"
+            <!-- COM-137: the data-loss state is too high-stakes for a scroll-away banner — a
+                 persistent strip while storage is unavailable (volatile until exported) -->
+            <div
+              v-if="!store.storageOk"
+              class="mx-1 mb-2 px-2 py-1.5 rounded bg-surface-amber-1 text-p-xs text-ink-amber-strong"
+              title="Browser storage is unavailable — every edit is volatile. Export JSON to keep your work."
             >
-              <span :class="it.icon" class="size-4 shrink-0" aria-hidden="true" />{{ it.label }}
-            </router-link>
-          </div>
-        </nav>
-        <!-- footer: Configure (the plan) + Share + overflow -->
-        <div class="px-3 py-3 border-t border-outline-gray-1 space-y-2">
-          <router-link
-            :to="configureItem.to"
-            :aria-current="route.path === configureItem.to ? 'page' : undefined"
-            class="flex items-center gap-2.5 px-2.5 py-2 rounded text-sm no-underline transition-colors"
-            :class="navLinkClass(route.path === configureItem.to)"
-          >
-            <span :class="configureItem.icon" class="size-4 shrink-0" aria-hidden="true" />{{
-              configureItem.label
-            }}
-          </router-link>
-          <div class="flex items-center gap-2">
-            <Dropdown class="flex-1" :options="shareActions">
+              Not saved — export to keep
+            </div>
+            <!-- board-switcher + scenario case -->
+            <div class="px-1 pb-3 space-y-2 border-b border-outline-gray-1">
+              <!-- COM-63: command-palette trigger (⌘K) -->
+              <button
+                class="flex w-full items-center gap-2 rounded border border-outline-gray-2 bg-surface-white px-2.5 py-1.5 text-sm text-ink-gray-5 hover:bg-surface-gray-2"
+                @click="openCmdK"
+              >
+                <span>Search</span><span class="ml-auto text-xs text-ink-gray-4">⌘K</span>
+              </button>
               <Button
                 class="w-full"
                 variant="subtle"
                 theme="gray"
-                icon-left="lucide-share-2"
-                label="Share"
-                title="Copy or export this board to share"
+                icon-left="lucide-folder-open"
+                :label="savedNames.length ? `Saved · ${savedNames.length}` : 'Saved boards'"
+                @click="toggleMgr()"
               />
-            </Dropdown>
-            <Dropdown :options="moreActions">
-              <Button
-                variant="ghost"
-                theme="gray"
-                icon="lucide-ellipsis"
-                aria-label="More actions"
-                title="More — paste, export CSV, import, reset"
-              />
-            </Dropdown>
-          </div>
-        </div>
+              <label
+                v-if="scenarioOptions.length > 1"
+                class="flex items-center gap-2"
+                title="The scenario case shown across every view"
+              >
+                <span class="text-p-xs text-ink-gray-6 shrink-0">Case</span>
+                <Select
+                  v-model="activeScenario"
+                  class="flex-1"
+                  :options="scenarioOptions"
+                  aria-label="Scenario case"
+                />
+              </label>
+            </div>
+          </template>
+          <!-- our icons are lucide CSS classes; the lib's default item renders string icons as
+               literal text, so supply the row ourselves (aria-current falls through to the button) -->
+          <template #sidebar-item="{ item }">
+            <SidebarItem
+              :label="item.label"
+              :is-active="item.isActive"
+              :on-click="item.onClick"
+              :aria-current="item.isActive ? 'page' : undefined"
+            >
+              <template #icon>
+                <span :class="item.icon" class="size-4 text-ink-gray-6" aria-hidden="true" />
+              </template>
+            </SidebarItem>
+          </template>
+          <!-- footer: Configure (the plan) + Share + overflow -->
+          <template #footer-items>
+            <div class="border-t border-outline-gray-1 pt-2 space-y-2">
+              <SidebarItem
+                :label="configureItem.label"
+                :is-active="route.path === configureItem.to"
+                :on-click="() => router.push(configureItem.to)"
+                :aria-current="route.path === configureItem.to ? 'page' : undefined"
+              >
+                <template #icon>
+                  <span
+                    :class="configureItem.icon"
+                    class="size-4 text-ink-gray-6"
+                    aria-hidden="true"
+                  />
+                </template>
+              </SidebarItem>
+              <div class="flex items-center gap-2 px-1 pb-1">
+                <Dropdown class="flex-1" :options="shareActions">
+                  <Button
+                    class="w-full"
+                    variant="subtle"
+                    theme="gray"
+                    icon-left="lucide-share-2"
+                    label="Share"
+                    title="Copy or export this board to share"
+                  />
+                </Dropdown>
+                <Dropdown :options="moreActions">
+                  <Button
+                    variant="ghost"
+                    theme="gray"
+                    icon="lucide-ellipsis"
+                    aria-label="More actions"
+                    title="More — paste, export CSV, import, reset"
+                  />
+                </Dropdown>
+              </div>
+            </div>
+          </template>
+        </Sidebar>
       </aside>
 
       <!-- content column — COM-135: inert behind the open mobile drawer (the focus trap) -->

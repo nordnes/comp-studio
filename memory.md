@@ -2527,3 +2527,14 @@ Advisors Pipeline Select + trail line. PINNED: stage is presentation-only (no mo
 across a pipeline walk — T18). LoI = the existing grant state; reviews = COM-155 outcomes.
 R3.11 live 7/7 (walk persists + history; money byte-identical). vp 0/10 · 22/22 · 228/0/0 ·
 build 0. Next: COM-160 (seed the live roster — needs the spec's E.4 register).
+
+## 2026-06-10 — COM-160 (seed the Δ9 roster) DONE [W3 #3]
+
+**COM-160 (S, 76 LOC, PR #92) — DONE + MERGED.** seedBoard() = the real register (Reoch/Keller/
+Derhalli proposed-no-cash w/ residency+check lanes; Kerim carries the XTX $5M targeted intro;
+Iraj iterating; Bang/Mehta modeled; Robin/Luke no rows); store fresh-init + Reset seed it.
+**Structural rule reaffirmed: DEFAULT() is the FIXTURE (suites + 17 v2 call sites assume it —
+§7 cond. 1); user-visible defaults ship as a SEPARATE seed, split pinned both ways (T19).**
+Probe note: fresh boards persist on FIRST EDIT (store contract) — probes must mutate before
+reading localStorage; intro UI surface = COM-161 (COM-146 was engine-only). 5/5 live. vp 0/10 ·
+22/22 · 233/0/0 · build 0. Next: COM-157 (Trajectory view F15).

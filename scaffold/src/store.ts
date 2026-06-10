@@ -541,6 +541,20 @@ export function useStudio() {
       action: { label: "Undo", onClick: restoreUndo },
     });
   }
+  // COM-159: the offer pipeline — advance an advisor's stage; every transition appends to the
+  // history (date + optional note) so the process is auditable end-to-end.
+  function setStage(advisorId: string, stage: string, note?: string) {
+    const a: any = store.S.advisors.find((x) => x.id === advisorId);
+    if (!a) return;
+    a.stage = stage;
+    a.stageHistory = [
+      ...(Array.isArray(a.stageHistory) ? a.stageHistory : []),
+      { stage, atISO: todayISO(), ...(note ? { note } : {}) },
+    ];
+    persist();
+    flash(`Stage → ${stage}`);
+  }
+
   // COM-148: same-advisor A/B — fork a candidate package (offer v2) for one person.
   function duplicateAdvisor(id: string) {
     const src: any = store.S.advisors.find((a) => a.id === id);
@@ -789,6 +803,7 @@ export function useStudio() {
     deleteSet,
     activateSet,
     duplicateAdvisor,
+    setStage,
     setAdvisorCase,
     setAdvisorTargetExit,
     setGovItem,

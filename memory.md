@@ -2387,3 +2387,16 @@ expansion (additive around locked sentences). One mixed PR — the issue's own s
 statements, so §7's presentation rule (one ISSUE per PR) is satisfied. Backstop timeline marker →
 COM-149 (flagged). T12 = 8 vectors. vp 0/10 · 22/22 both · v2 167/0/0 · build 0 · 9/9 live.
 Next: scoped grader (5 merges since 002), then COM-152 (S).
+
+## 2026-06-10 — Panel 003 (9/9 PASS) + COM-152 (pre-TGE 1:1 fallback) DONE [V2-finish W1 #8]
+
+**Panel 003 (fresh grader): 9/9 PASS — 002's R5.1 FAIL confirmed remediated; R2.2 now at its FULL
+bar (zero pendings); 2 editorial nits (1 fixed: 'Exit Event' on the backstop line; 1 accepted:
+the session-quote gloss).** **COM-152 (S, 91 LOC, PR #81) — DONE + MERGED.** Scenario.
+preTgeLiquidity · tokenValueFor (1:1 = token-% point → equity-% point: tkPct × retention ×
+exitVal, no strike) · all three compute paths follow w/ tokenAsEquity flag · Configure Switch ·
+Proposition explainer. **Live-check catch + distilled rule: a SANCTIONED view-side mirror
+(tkPct×fdv) is only sanctioned while the engine formula it mirrors stays the engine's formula —
+every new engine BRANCH (like the toggle) must grep views for mirrors of the branched formula
+and re-point them at the export (Advisors token row: $5.40M stale vs $2.17M engine).** vp 0/10 ·
+22/22 both · v2 172/0/0 · build 0 · 7/7 live. Wave-1 queue: COM-146 → 154 → 171.

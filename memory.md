@@ -2339,3 +2339,22 @@ for legal anniversaries needs a day-aware TZ-free counter — v1 monthsBetween i
 trust-boundary contract (\"never NaN\"), it must exercise EVERY dispatch branch, not the one the
 author hardened — co-varying test factories (mkg deriving instrument FROM curve) blind the suite
 to cross terms.** vp 0/10 · 22/22 both · v2 120/0/2 · build 0. Next: COM-150 (value→quantity).
+
+## 2026-06-10 — COM-150 (value→quantity + dollar bands, Δ1) DONE [V2-finish W1 #5]
+
+**COM-150 (P2, 279 LOC, PRs #77 engine + #78 UI) — DONE + MERGED. The Δ1 denomination shift is
+live: $ in, instruments out, % is an output.** Engine: valueToQuantity (null underwater — never
+Infinity) · per-scenario derivation in computeGrant (explicit qty overrides; failed derivation
+flags underwater on BOTH instrument paths; lapsed flags nothing) · fold-consistent netEqAt even
+when the BASE derivation nulls (pct===eqPct scales 1 — eqPct 0 must not zero other scenarios) ·
+ValueBand defaults 50/100/150K (decision #2 open, flagged in-UI) · timeCommitment ·
+duplicate-id dedup (bands/pools/sets). UI: Configure band editor + PackageEditor quick-selects.
+**Ops: the account spend limit died mid-panel AGAIN (3 finder angles + all verifiers); Robin's
+/login restored it — the 1-angle degraded panel still probe-confirmed 4 real findings. Distilled
+rules: (1) when a list is id-keyed, the reconcile merge must KEEP it id-unique — dedup as you
+append, and grep every other id-keyed merge for the same hole (bands hole existed in pools too);
+(2) status flags (derived/underwater) must be computed AFTER lifecycle gating — a lapsed row's
+zero is the lifecycle, not the maths, and conflated flags mislead any badge UI; (3) frappe-ui
+TabButtons renders buttons that are NOT role=button in the a11y tree — locate by CSS
+:has-text/hasText, never getByRole.** vp 0/10 · 22/22 · v2 133/0/1 · build 0 · 9/9 live.
+Next: COM-153 (leaver engine — the LAST T5 pending).

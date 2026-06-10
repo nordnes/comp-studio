@@ -2062,3 +2062,11 @@ Print bg rgb(23,23,23) vs Copy transparent; no Done remains. vp 0 · 22/22 both 
 confidential · net of strike, pre-tax · discussion draft, not a binding offer.") under the title via
 PageHeader's #desc slot (printable — the running mark already covers print, harmless duplicate).
 Verified in-DOM under the h1. vp 0 · 22/22 both · build 0.
+
+## 2026-06-10 — COM-130 + COM-131 (copy trims + slider tone) DONE [M9 finish-loop W5 #8 — one PR, sanctioned]
+
+**COM-130 (P4) + COM-131 (P4), ~25 LOC, 5 files — DONE + MERGED (one PR per the run-prompt).**
+Waterfall footer sentence cut · ExitSlider label = "Explore the exit" (drag-coaching gone) with
+`tone="quiet"` → "The package across outcomes" on the Proposition · Overview desc trimmed to
+view-specific copy · footer heading → "How to read these figures" (.section-label). PotentialStrip
+clause moot (deleted in COM-117). Verified per host on :4173. vp 0 · 22/22 both · build 0.

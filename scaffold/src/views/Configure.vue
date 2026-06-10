@@ -4,7 +4,9 @@
 // through the store's reducer-parity actions incl. delete-cascades. Numbers use the shared NumIn editor.
 import { ref } from "vue";
 import { useRoute } from "vue-router";
-import { Button, Select, Checkbox } from "frappe-ui";
+// COM-106: Configure joins the Advisors form idiom — TextInput for inline labels, FormControl for
+// the date; NumIn stays (the deliberate click-to-edit numeric). setPath wiring unchanged.
+import { Button, Select, Checkbox, TextInput, FormControl } from "frappe-ui";
 import { useStudio } from "../store";
 import {
   walkScenario,
@@ -219,17 +221,12 @@ const msOpts = () => S.S.plan.milestones.map((m) => ({ label: m.label, value: m.
                   class="rounded border border-outline-gray-2 bg-surface-gray-2 p-2 flex items-center gap-2"
                 >
                   <span class="text-xs text-ink-gray-6 tabular-nums">{{ i + 1 }}</span>
-                  <input
-                    :value="rd.label"
+                  <TextInput
+                    class="flex-1 min-w-0"
+                    size="sm"
+                    :model-value="rd.label"
                     :aria-label="`Round ${i + 1} name`"
-                    class="flex-1 min-w-0 bg-transparent border-b border-outline-gray-3 text-sm text-ink-gray-9 outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--ink-gray-6)] py-1"
-                    @input="
-                      (e) =>
-                        setPath(
-                          ['plan', 'rounds', i, 'label'],
-                          (e.target as HTMLInputElement).value,
-                        )
-                    "
+                    @update:model-value="(v: string) => setPath(['plan', 'rounds', i, 'label'], v)"
                   />
                   <button
                     v-if="S.S.plan.rounds.length > 1"
@@ -269,16 +266,13 @@ const msOpts = () => S.S.plan.milestones.map((m) => ({ label: m.label, value: m.
                 >
                   <div class="flex items-center justify-between mb-2 gap-2 flex-wrap">
                     <div class="flex items-center gap-2">
-                      <input
-                        :value="S.S.plan.scenarios[sk].label"
+                      <TextInput
+                        class="w-40"
+                        size="sm"
+                        :model-value="S.S.plan.scenarios[sk].label"
                         :aria-label="`Scenario ${sk} name`"
-                        class="bg-transparent border-b border-outline-gray-3 text-ink-gray-9 font-display outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--ink-gray-6)] py-0.5 w-40"
-                        @input="
-                          (e) =>
-                            setPath(
-                              ['plan', 'scenarios', sk, 'label'],
-                              (e.target as HTMLInputElement).value,
-                            )
+                        @update:model-value="
+                          (v: string) => setPath(['plan', 'scenarios', sk, 'label'], v)
                         "
                       />
                       <button
@@ -466,13 +460,13 @@ const msOpts = () => S.S.plan.milestones.map((m) => ({ label: m.label, value: m.
                   />
                 </div>
                 <div>
-                  <div class="text-xs text-ink-gray-6 mb-1">TGE date</div>
-                  <input
+                  <!-- COM-106: the Advisors FormControl date idiom (COM-72/77) -->
+                  <FormControl
                     type="date"
-                    :value="S.S.plan.tgeDate"
-                    aria-label="TGE date"
-                    class="w-full bg-surface-white border border-outline-gray-3 rounded px-2 py-1 text-sm text-ink-gray-9 outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--ink-gray-6)]"
-                    @input="(e) => setP('tgeDate', (e.target as HTMLInputElement).value)"
+                    label="TGE date"
+                    size="sm"
+                    :model-value="S.S.plan.tgeDate"
+                    @update:model-value="(v: string) => setP('tgeDate', v)"
                   />
                 </div>
               </div>
@@ -541,14 +535,12 @@ const msOpts = () => S.S.plan.milestones.map((m) => ({ label: m.label, value: m.
                   :key="o.id"
                   class="rounded border border-outline-gray-2 bg-surface-gray-2 p-3 grid sm:grid-cols-12 gap-3 items-center"
                 >
-                  <input
-                    :value="o.label"
+                  <TextInput
+                    class="sm:col-span-3"
+                    size="sm"
+                    :model-value="o.label"
                     :aria-label="`Objective ${i + 1} label`"
-                    class="sm:col-span-3 bg-surface-white border border-outline-gray-3 rounded px-2 py-1 text-sm text-ink-gray-9 outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--ink-gray-6)]"
-                    @input="
-                      (e) =>
-                        setPath(['objectives', i, 'label'], (e.target as HTMLInputElement).value)
-                    "
+                    @update:model-value="(v: string) => setPath(['objectives', i, 'label'], v)"
                   />
                   <div class="sm:col-span-2">
                     <Select
@@ -557,14 +549,12 @@ const msOpts = () => S.S.plan.milestones.map((m) => ({ label: m.label, value: m.
                       @update:model-value="(v) => setPath(['objectives', i, 'category'], v)"
                     />
                   </div>
-                  <input
-                    :value="o.trigger"
+                  <TextInput
+                    class="sm:col-span-4"
+                    size="sm"
+                    :model-value="o.trigger"
                     :aria-label="`Objective ${i + 1} trigger`"
-                    class="sm:col-span-4 bg-surface-white border border-outline-gray-3 rounded px-2 py-1 text-xs text-ink-gray-7 outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--ink-gray-6)]"
-                    @input="
-                      (e) =>
-                        setPath(['objectives', i, 'trigger'], (e.target as HTMLInputElement).value)
-                    "
+                    @update:model-value="(v: string) => setPath(['objectives', i, 'trigger'], v)"
                   />
                   <div class="sm:col-span-1">
                     <div class="text-xs text-ink-gray-6 mb-1">Uplift</div>
@@ -613,13 +603,12 @@ const msOpts = () => S.S.plan.milestones.map((m) => ({ label: m.label, value: m.
                   class="rounded border border-outline-gray-2 bg-surface-gray-2 p-4"
                 >
                   <div class="flex items-center justify-between mb-3 gap-2">
-                    <input
-                      :value="t.name"
+                    <TextInput
+                      class="flex-1 min-w-0"
+                      size="sm"
+                      :model-value="t.name"
                       :aria-label="`Tier ${i + 1} name`"
-                      class="flex-1 min-w-0 bg-transparent border-b border-outline-gray-3 font-display text-lg text-ink-gray-9 outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--ink-gray-6)]"
-                      @input="
-                        (e) => setPath(['tiers', i, 'name'], (e.target as HTMLInputElement).value)
-                      "
+                      @update:model-value="(v: string) => setPath(['tiers', i, 'name'], v)"
                     />
                     <button
                       v-if="S.S.tiers.length > 1"
@@ -673,16 +662,13 @@ const msOpts = () => S.S.plan.milestones.map((m) => ({ label: m.label, value: m.
                   class="rounded border border-outline-gray-2 bg-surface-gray-2 p-2 flex items-center gap-2"
                 >
                   <span class="text-xs text-ink-gray-6 tabular-nums">{{ i + 1 }}</span>
-                  <input
-                    :value="m.label"
+                  <TextInput
+                    class="flex-1 min-w-0"
+                    size="sm"
+                    :model-value="m.label"
                     :aria-label="`Milestone ${i + 1} name`"
-                    class="flex-1 min-w-0 bg-transparent border-b border-outline-gray-3 text-sm text-ink-gray-9 outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--ink-gray-6)] py-1"
-                    @input="
-                      (e) =>
-                        setPath(
-                          ['plan', 'milestones', i, 'label'],
-                          (e.target as HTMLInputElement).value,
-                        )
+                    @update:model-value="
+                      (v: string) => setPath(['plan', 'milestones', i, 'label'], v)
                     "
                   />
                   <button

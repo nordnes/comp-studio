@@ -1220,6 +1220,47 @@ export function computeBoard(advisors: Advisor[], plan: Plan, tiers: Tier[], obj
 // Uplift-owed values are LINEAR reads of the base-case package (netEqAt is linear in pct above
 // water), so owedValue = upliftFraction × baseCaseBase — engine-derived, no new semantics.
 // Advisors without introductions[] contribute their v1 perf capital as 'earned' (one bucket).
+// v2 (COM-156): generosity guardrails — Carl Sjöström's standing challenge ("this is too
+// generous") as software. Per-advisor: the compa-ratio grammar (annual package value at base
+// vs the US private-company advisory median ~$50K/yr — ▲ above / ◆ in line / ▼ below), the
+// FAST output-% sanity check (the negotiation unit is DOLLARS; the % is a sanity band), and
+// the day-rate reality test over the tier's stated days/month. Board: pool-consumption +
+// reserve-depletion (Ispahani step 8) and totality-vs-peers. Pure reads; the UI renders.
+export const ADVISORY_MEDIAN_USD = 50000;   // Carl Sjöström's anchor (E.3)
+export const BENCH_DAY_RATE_USD = 10000;    // magic-circle/Big-4 equivalent day (E.3 reality test)
+export function generosityCheck(advisors: Advisor[], plan: Plan, tiers: Tier[], objectives: Objective[]) {
+  const rows = advisors.map(a => {
+    const c: any = computeAdvisor(a, plan, tiers, objectives);
+    const annual = safeDiv(c.baseCaseTotal, Math.max(a.years || 4, 1e-9));
+    const compa = safeDiv(annual, ADVISORY_MEDIAN_USD);
+    const status: 'above' | 'inline' | 'below' = compa > 1.2 ? 'above' : compa < 0.8 ? 'below' : 'inline';
+    const flags: string[] = [];
+    const expert = BENCH.advisorEquity.expert;
+    if (c.eqPct > expert.hi) flags.push(`Band breach: ${fPct(c.eqPct, 2)} base equity exceeds the FAST Expert ceiling (${fPct(expert.hi, 2)}).`);
+    const days = tiers[a.tier]?.days;
+    if (a.mode !== 'value' && days && days > 0) {
+      const impliedDayRate = safeDiv(annual, days * 12);
+      if (impliedDayRate > BENCH_DAY_RATE_USD * 2) flags.push(`Day-rate reality: ~${fUSD(impliedDayRate)}/day implied — over 2× the magic-circle/Big-4 equivalent (${fUSD(BENCH_DAY_RATE_USD)}).`);
+    }
+    return { advisorId: a.id, name: a.name, annual, compa, status, flags, baseCaseTotal: c.baseCaseTotal };
+  });
+  const board: string[] = [];
+  // totality vs peers: one person far above the rest of the board
+  const totals = rows.map(r => r.baseCaseTotal).sort((x, y) => x - y);
+  const median = totals.length ? totals[Math.floor(totals.length / 2)] : 0;
+  rows.forEach(r => {
+    if (totals.length >= 3 && median > 0 && r.baseCaseTotal > 2 * median)
+      r.flags.push(`Totality: ${fUSD(r.baseCaseTotal)} is over 2× the board median (${fUSD(median)}) — token + option + cash for one person vs peers.`);
+  });
+  // pool consumption / reserve depletion (Ispahani step 8: keep reserve for future hires)
+  const b = computeBoard(advisors, plan, tiers, objectives);
+  const consumption = safeDiv(b.sumEq, plan.esopStart || 1);
+  if (consumption >= 0.5) board.push(`Pool consumption: the board's base equity (${fPct(b.sumEq, 2)}) consumes ${fPct(consumption, 0)} of the ESOP at adoption (${fPct(plan.esopStart, 0)}) — keep reserve for future hires (Ispahani step 8).`);
+  const anyAbove = rows.some(r => r.status === 'above');
+  if (anyAbove) board.push(`Anchor check: packages above ~${fUSD(ADVISORY_MEDIAN_USD)}/yr (the US private-company advisory median) must justify themselves — "$50K won't get these people out of bed; $100K maybe — but you must afford it annually."`);
+  return { rows, board, median, anchorUSD: ADVISORY_MEDIAN_USD };
+}
+
 // v2 (COM-164): build the next proposition version from the LIVE package + plan (pure; the
 // store appends it and owns the numbering).
 export function makeProposition(a: Advisor, plan: Plan, tiers: Tier[], objectives: Objective[], id: string, version: number, atISO: string, note?: string): PropositionVersion {

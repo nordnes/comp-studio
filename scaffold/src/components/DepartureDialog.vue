@@ -105,41 +105,45 @@ const dialogOptions = computed(() => ({
           <div class="section-label mb-2">
             Outcome at {{ fDate(dateISO) }} · per instrument, vested-to-date
           </div>
-          <table class="w-full text-sm">
-            <thead>
-              <tr class="text-left text-xs text-ink-gray-6">
-                <th class="py-1.5 font-normal">Instrument</th>
-                <th class="py-1.5 font-normal text-right">Granted</th>
-                <th class="py-1.5 font-normal text-right">Vested</th>
-                <th class="py-1.5 font-normal text-right">Retained</th>
-                <th class="py-1.5 font-normal text-right">Lapses</th>
-                <th class="py-1.5 font-normal text-right">Retained value (today)</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-outline-gray-1 tabular-nums">
-              <tr v-for="(r, i) in result.rows" :key="i">
-                <td class="py-1.5 text-ink-gray-7">
-                  {{ instLabel[r.instrument] || r.instrument }}
-                  <Badge v-if="r.exercised" theme="gray" variant="subtle" size="sm"
-                    >exercised — issued shares</Badge
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="text-left text-xs text-ink-gray-6">
+                  <th class="py-1.5 font-normal">Instrument</th>
+                  <th class="py-1.5 font-normal text-right">Granted</th>
+                  <th class="py-1.5 font-normal text-right">Vested</th>
+                  <th class="py-1.5 font-normal text-right">Retained</th>
+                  <th class="py-1.5 font-normal text-right">Lapses</th>
+                  <th class="py-1.5 font-normal text-right">Retained value (today)</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-outline-gray-1 tabular-nums">
+                <tr v-for="(r, i) in result.rows" :key="i">
+                  <td class="py-1.5 text-ink-gray-7">
+                    {{ instLabel[r.instrument] || r.instrument }}
+                    <Badge v-if="r.exercised" theme="gray" variant="subtle" size="sm"
+                      >exercised — issued shares</Badge
+                    >
+                    <Badge v-else-if="r.boardDiscretion" theme="orange" variant="subtle" size="sm"
+                      >Board discretion</Badge
+                    >
+                  </td>
+                  <td class="py-1.5 text-right text-ink-gray-9">{{ fQty(r, r.qty) }}</td>
+                  <td class="py-1.5 text-right text-ink-gray-9">{{ fQty(r, r.vestedQty) }}</td>
+                  <td class="py-1.5 text-right text-ink-gray-9">{{ fQty(r, r.retainedQty) }}</td>
+                  <td
+                    class="py-1.5 text-right"
+                    :class="r.lapsedQty > 0 ? 'text-ink-red-3' : 'text-ink-gray-6'"
                   >
-                  <Badge v-else-if="r.boardDiscretion" theme="orange" variant="subtle" size="sm"
-                    >Board discretion</Badge
-                  >
-                </td>
-                <td class="py-1.5 text-right text-ink-gray-9">{{ fQty(r, r.qty) }}</td>
-                <td class="py-1.5 text-right text-ink-gray-9">{{ fQty(r, r.vestedQty) }}</td>
-                <td class="py-1.5 text-right text-ink-gray-9">{{ fQty(r, r.retainedQty) }}</td>
-                <td
-                  class="py-1.5 text-right"
-                  :class="r.lapsedQty > 0 ? 'text-ink-red-3' : 'text-ink-gray-6'"
-                >
-                  {{ fQty(r, r.lapsedQty) }}
-                </td>
-                <td class="py-1.5 text-right text-ink-gray-9">{{ fUSD(r.retainedValueToday) }}</td>
-              </tr>
-            </tbody>
-          </table>
+                    {{ fQty(r, r.lapsedQty) }}
+                  </td>
+                  <td class="py-1.5 text-right text-ink-gray-9">
+                    {{ fUSD(r.retainedValueToday) }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
           <div class="flex flex-wrap gap-x-8 gap-y-1 mt-3 text-p-xs text-ink-gray-6 tabular-nums">
             <span
               >Retained <b class="text-ink-gray-9">{{ fUSD(result.retainedValueToday) }}</b> today ·

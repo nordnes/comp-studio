@@ -45,55 +45,57 @@ const rows = computed(() =>
     </p>
 
     <template v-else>
-      <table class="w-full text-sm">
-        <thead>
-          <tr class="text-left text-xs text-ink-gray-6">
-            <th class="py-1.5 font-normal">Advisor</th>
-            <th class="py-1.5 font-normal text-right">Targeted</th>
-            <th class="py-1.5 font-normal text-right">Gated</th>
-            <th class="py-1.5 font-normal text-right">Earned</th>
-            <th class="py-1.5 font-normal text-right">Uplift owed (earned)</th>
-            <th class="py-1.5 font-normal text-right">At ceiling</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-outline-gray-1 tabular-nums">
-          <tr v-for="r in rows" :key="r.advisorId">
-            <td class="py-1.5 text-ink-gray-7">
-              {{ sn(r.name) }}
-              <Badge v-if="r.upliftViaGrants" theme="gray" variant="subtle" size="sm"
-                >via top-up grants</Badge
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="text-left text-xs text-ink-gray-6">
+              <th class="py-1.5 font-normal">Advisor</th>
+              <th class="py-1.5 font-normal text-right">Targeted</th>
+              <th class="py-1.5 font-normal text-right">Gated</th>
+              <th class="py-1.5 font-normal text-right">Earned</th>
+              <th class="py-1.5 font-normal text-right">Uplift owed (earned)</th>
+              <th class="py-1.5 font-normal text-right">At ceiling</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-outline-gray-1 tabular-nums">
+            <tr v-for="r in rows" :key="r.advisorId">
+              <td class="py-1.5 text-ink-gray-7">
+                {{ sn(r.name) }}
+                <Badge v-if="r.upliftViaGrants" theme="gray" variant="subtle" size="sm"
+                  >via top-up grants</Badge
+                >
+              </td>
+              <td class="py-1.5 text-right text-ink-gray-6">{{ fUSD(r.targeted) }}</td>
+              <td
+                class="py-1.5 text-right"
+                :class="r.gated ? 'text-ink-amber-strong' : 'text-ink-gray-6'"
               >
-            </td>
-            <td class="py-1.5 text-right text-ink-gray-6">{{ fUSD(r.targeted) }}</td>
-            <td
-              class="py-1.5 text-right"
-              :class="r.gated ? 'text-ink-amber-strong' : 'text-ink-gray-6'"
-            >
-              {{ fUSD(r.gated) }}
-            </td>
-            <td
-              class="py-1.5 text-right"
-              :class="r.earned ? 'text-ink-green-3' : 'text-ink-gray-6'"
-            >
-              {{ fUSD(r.earned) }}
-            </td>
-            <td class="py-1.5 text-right text-ink-gray-9">{{ fUSD(r.earnedUpliftValue) }}</td>
-            <td class="py-1.5 text-right text-ink-gray-6">{{ fUSD(r.potentialUpliftValue) }}</td>
-          </tr>
-          <tr class="font-medium">
-            <td class="py-1.5 text-ink-gray-9">Board</td>
-            <td class="py-1.5 text-right text-ink-gray-9">{{ fUSD(roll.totals.targeted) }}</td>
-            <td class="py-1.5 text-right text-ink-gray-9">{{ fUSD(roll.totals.gated) }}</td>
-            <td class="py-1.5 text-right text-ink-gray-9">{{ fUSD(roll.totals.earned) }}</td>
-            <td class="py-1.5 text-right text-ink-gray-9">
-              {{ fUSD(roll.totals.earnedUpliftValue) }}
-            </td>
-            <td class="py-1.5 text-right text-ink-gray-9">
-              {{ fUSD(roll.totals.potentialUpliftValue) }}
-            </td>
-          </tr>
-        </tbody>
-      </table>
+                {{ fUSD(r.gated) }}
+              </td>
+              <td
+                class="py-1.5 text-right"
+                :class="r.earned ? 'text-ink-green-3' : 'text-ink-gray-6'"
+              >
+                {{ fUSD(r.earned) }}
+              </td>
+              <td class="py-1.5 text-right text-ink-gray-9">{{ fUSD(r.earnedUpliftValue) }}</td>
+              <td class="py-1.5 text-right text-ink-gray-6">{{ fUSD(r.potentialUpliftValue) }}</td>
+            </tr>
+            <tr class="font-medium">
+              <td class="py-1.5 text-ink-gray-9">Board</td>
+              <td class="py-1.5 text-right text-ink-gray-9">{{ fUSD(roll.totals.targeted) }}</td>
+              <td class="py-1.5 text-right text-ink-gray-9">{{ fUSD(roll.totals.gated) }}</td>
+              <td class="py-1.5 text-right text-ink-gray-9">{{ fUSD(roll.totals.earned) }}</td>
+              <td class="py-1.5 text-right text-ink-gray-9">
+                {{ fUSD(roll.totals.earnedUpliftValue) }}
+              </td>
+              <td class="py-1.5 text-right text-ink-gray-9">
+                {{ fUSD(roll.totals.potentialUpliftValue) }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
       <p class="text-p-xs text-ink-gray-6 mt-2">
         Expected capital in {{ fUSD(roll.totals.total) }} vs uplift owed out
         {{ fUSD(roll.totals.earnedUpliftValue) }} (earned) ·

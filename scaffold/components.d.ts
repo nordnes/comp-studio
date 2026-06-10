@@ -16,6 +16,7 @@ declare module 'vue' {
     DilutionPath: typeof import('./src/components/DilutionPath.vue')['default']
     EmptyState: typeof import('./src/components/EmptyState.vue')['default']
     EquityBenchmark: typeof import('./src/components/EquityBenchmark.vue')['default']
+    ExerciseRunbook: typeof import('./src/components/ExerciseRunbook.vue')['default']
     ExitSlider: typeof import('./src/components/ExitSlider.vue')['default']
     FootballField: typeof import('./src/components/FootballField.vue')['default']
     FrappeChart: typeof import('./src/components/FrappeChart.vue')['default']

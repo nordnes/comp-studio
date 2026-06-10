@@ -1642,5 +1642,57 @@ console.log('\nT25 · Valuation record: one valuation, everywhere consistent (CO
     })());
 }
 
+// ---- T26: the exercise runbook (COM-169/F23 — live-bound) ----
+console.log('\nT26 · Exercise runbook: window → election → checklist (COM-169):');
+{
+  const dflt = ENG.DEFAULT();
+  const a = { ...dflt.advisors[0], taxResidency: 'UK' };
+  const g = { id: 'g1', instrument: 'option', round: 'bridge', quantity: 1000, curve: 'cert-v3', vestStartISO: '2026-06-01', lifecycle: 'granted' };
+  A('no open window → BLOCKED, with the next-backstop date; inside a Board window → clear',
+    (() => {
+      const blocked = ENG.exerciseRunbook(a, g, 500, '2026-06-11', dflt.plan);
+      const win = [{ id: 'w', openISO: '2026-06-01', closeISO: '2026-09-01' }];
+      const clear = ENG.exerciseRunbook(a, g, 500, '2026-06-11', dflt.plan, win);
+      return blocked.blocked && blocked.items.find(i => i.id === 'window').status === 'blocked'
+        && blocked.items.find(i => i.id === 'window').label.includes('2035-06-01')
+        && !clear.blocked && clear.items.find(i => i.id === 'window').status === 'ok';
+    })());
+  A('the 3.6 backstop clears the window check at year 9+ without a Board window',
+    (() => {
+      const r = ENG.exerciseRunbook(a, g, 500, '2035-07-01', dflt.plan);
+      const w = r.items.find(i => i.id === 'window');
+      return w.status === 'ok' && w.label.includes('90') && w.label.includes('2036-05-31');
+    })());
+  A('costs price through COM-168: the agreed valuation sets FMV and the intrinsic spread; qty clamps to granted',
+    (() => {
+      const plan = JSON.parse(JSON.stringify(dflt.plan));
+      plan.valuation = { ppsUSD: 1800, basis: 'SAV', dateISO: '2026-06-11' };
+      const gx = { ...g, strikePps: 1000 };
+      const win = [{ id: 'w', openISO: '2026-06-01', closeISO: '2026-09-01' }];
+      const r = ENG.exerciseRunbook(a, gx, 5000, '2026-06-11', plan, win);
+      return r.costs.qty === 1000 && r.costs.exerciseCost === 1000 * 1000
+        && r.costs.fmvValue === 1000 * 1800 && r.costs.intrinsic === 1000 * 800
+        && r.costs.valuationBasis === 'SAV 2026-06-11';
+    })());
+  A('the jurisdictional checklist routes: UK individual → s431; UK entity → the PSC issuance flag; US → 409A; deed always',
+    (() => {
+      const win = [{ id: 'w', openISO: '2026-06-01', closeISO: '2026-09-01' }];
+      const uk = ENG.exerciseRunbook({ ...a, contracting: undefined }, g, 100, '2026-06-11', dflt.plan, win);
+      const psc = ENG.exerciseRunbook({ ...a, contracting: 'entity', contractEntity: 'Keller GmbH' }, g, 100, '2026-06-11', dflt.plan, win);
+      const us = ENG.exerciseRunbook({ ...a, taxResidency: 'US' }, g, 100, '2026-06-11', dflt.plan, win);
+      return uk.items.some(i => i.id === 's431') && !uk.items.some(i => i.id === 's431-psc')
+        && psc.items.some(i => i.id === 's431-psc' && i.label.includes('Keller GmbH') && i.label.includes('ERSM20220'))
+        && us.items.some(i => i.id === '409a') && !us.items.some(i => i.id === 's431')
+        && [uk, psc, us].every(r => r.items.some(i => i.id === 'deed') && r.items.some(i => i.id === 'election'));
+    })());
+  A('a lapsed/exercised grant or zero qty is BLOCKED regardless of windows',
+    (() => {
+      const win = [{ id: 'w', openISO: '2026-06-01', closeISO: '2026-09-01' }];
+      const lapsed = ENG.exerciseRunbook(a, { ...g, lifecycle: 'lapsed' }, 100, '2026-06-11', dflt.plan, win);
+      const zero = ENG.exerciseRunbook(a, g, 0, '2026-06-11', dflt.plan, win);
+      return lapsed.blocked && !lapsed.exercisable && zero.blocked;
+    })());
+}
+
 console.log(`\n${pass} passed, ${fail} failed, ${pending} pending(v2).`);
 process.exit(fail ? 1 : 0);

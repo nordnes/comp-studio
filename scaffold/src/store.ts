@@ -29,6 +29,7 @@ import {
   type Instrument,
 } from "./engine";
 import { reconcileGovernance, type ComplianceItem, type Governance } from "./governance";
+import { reconcileAudit, MAX_AUDIT_EVENTS, type AuditEvent, type AuditKind } from "./audit";
 
 const KEY = "raiku-advisor-comp-v5";
 type SavedMap = Record<string, State>;
@@ -83,6 +84,8 @@ interface Store {
   // COM-141: the Governance Table v4 checklist — company-level fact, so it lives BESIDE the
   // board map (one slice per storage key, shared across saved boards) and outside State/#s=.
   gov: Governance;
+  // COM-170: the append-only audit trail — beside the board map like gov, outside State/#s=.
+  audit: AuditEvent[];
 }
 
 function bootstrap(): Store {
@@ -147,6 +150,7 @@ function bootstrap(): Store {
     storageOk,
     pinnedIds: [],
     gov: reconcileGovernance(persisted?.governance),
+    audit: reconcileAudit(persisted?.audit),
   };
 }
 
@@ -176,7 +180,9 @@ function validImport(o: any): boolean {
 function persist() {
   store.saved[store.S.name] = store.S;
   store.last = store.S.name;
-  if (!lsSet({ scenarios: store.saved, last: store.last, governance: store.gov }))
+  if (
+    !lsSet({ scenarios: store.saved, last: store.last, governance: store.gov, audit: store.audit })
+  )
     store.storageOk = false;
 }
 function fixSel() {
@@ -206,6 +212,20 @@ function undoToast(what: string) {
     type: "info",
     action: { label: "Undo", onClick: restoreUndo },
   });
+}
+
+// COM-170: the ONLY write path into the audit trail — append, cap the tail, persist with the
+// next mutation. No remove/edit API exists by design (append-only; M6 hardens it server-side).
+function appendAudit(kind: AuditKind, subject: string, summary: string) {
+  store.audit.push({
+    id: uid("au"),
+    atISO: new Date().toISOString(),
+    kind,
+    subject,
+    summary,
+  });
+  if (store.audit.length > MAX_AUDIT_EVENTS)
+    store.audit.splice(0, store.audit.length - MAX_AUDIT_EVENTS);
 }
 
 function download(name: string, text: string, mime: string): boolean {
@@ -242,6 +262,17 @@ const selected = computed(() => {
 export function useStudio() {
   // ---- core mutations (SET / LOAD / select / reset) ----
   function setPath(path: (string | number)[], value: any) {
+    // COM-170: the valuation record is an audited fact (F22) — the one setPath-routed write
+    // that belongs on the trail (everything else audited has a named action).
+    if (path[0] === "plan" && path[1] === "valuation" && path.length === 2) {
+      appendAudit(
+        "valuation",
+        "plan",
+        value
+          ? `Valuation recorded: $${value.ppsUSD}/share (${value.basis}, ${value.dateISO})`
+          : "Valuation cleared — strikes fall back to round-derived",
+      );
+    }
     let o: any = store.S;
     for (let i = 0; i < path.length - 1; i++) {
       if (o[path[i]] == null) o[path[i]] = typeof path[i + 1] === "number" ? [] : {};
@@ -346,6 +377,7 @@ export function useStudio() {
       vestStartISO: todayISO(),
       lifecycle: "draft",
     });
+    appendAudit("grant", a.name, `Grant added: ${instrument} at ${lastRound} (draft)`);
     persist();
     flash(
       instrument === "cash"
@@ -360,6 +392,7 @@ export function useStudio() {
     const g = a.grants.find((x: any) => x.id === grantId);
     if (!g) return;
     Object.assign(g, patch);
+    appendAudit("grant", a.name, `Grant ${g.instrument} updated: ${Object.keys(patch).join(", ")}`);
     persist();
   }
   function removeGrant(advisorId: string, grantId: string) {
@@ -368,6 +401,7 @@ export function useStudio() {
     pushUndo(); // BEFORE the claim — Undo must restore the pre-claim parametric state
     materialiseGrants(a);
     a.grants = a.grants.filter((x: any) => x.id !== grantId);
+    appendAudit("grant", a.name, "Grant removed");
     persist();
     undoToast("grant");
   }
@@ -556,6 +590,7 @@ export function useStudio() {
       ...(Array.isArray(a.stageHistory) ? a.stageHistory : []),
       { stage, atISO: todayISO(), ...(note ? { note } : {}) },
     ];
+    appendAudit("stage", a.name, `Pipeline → ${stage}${note ? ` (${note})` : ""}`);
     persist();
     flash(`Stage → ${stage}`);
   }
@@ -590,8 +625,13 @@ export function useStudio() {
         ];
       });
     }
-    persist();
     const label = store.S.plan.rounds[i].label;
+    appendAudit(
+      "round",
+      label,
+      `Round closed ${today}: ${flipped} capital uplift${flipped === 1 ? "" : "s"} crystallised; new grants price here${roundId === "seriesA" ? "; structural reviews scheduled for every advisor" : ""}`,
+    );
+    persist();
     toast.create({
       message: `${label} closed — ${flipped ? `${flipped} capital uplift${flipped === 1 ? "" : "s"} crystallised; ` : ""}new grants price here${roundId === "seriesA" ? "; structural reviews scheduled" : ""}`,
       type: "info",
@@ -622,6 +662,11 @@ export function useStudio() {
         ...(data.decidedBy ? { decidedBy: data.decidedBy } : {}),
       },
     ];
+    appendAudit(
+      "decision",
+      subject,
+      `Grant decision recorded${data.decidedBy ? ` by ${data.decidedBy}` : ""} (${data.answers.filter((x) => x).length}/9 steps answered)`,
+    );
     persist();
     flash(`Decision recorded · ${subject}`);
     return true;
@@ -661,6 +706,11 @@ export function useStudio() {
         { stage: "proposed", atISO: todayISO(), note: `Proposition v${next} sent` },
       ];
     }
+    appendAudit(
+      "proposition",
+      a.name,
+      `Proposition v${next} saved (base ${"$"}${Math.round(v.figures.baseCaseTotal).toLocaleString("en-US")})`,
+    );
     persist();
     flash(`Proposition v${next} saved`);
   }
@@ -707,6 +757,7 @@ export function useStudio() {
       round: store.S.plan.rounds[0]?.id || "bridge",
       status: "targeted",
     });
+    appendAudit("introduction", a.name, "Capital introduction added (targeted)");
     persist();
   }
   function updateIntroduction(advisorId: string, introId: string, patch: Record<string, any>) {
@@ -714,6 +765,11 @@ export function useStudio() {
     const it = a && (a.introductions || []).find((x: any) => x.id === introId);
     if (!it) return;
     Object.assign(it, patch);
+    appendAudit(
+      "introduction",
+      a.name,
+      `Introduction updated: ${Object.keys(patch).join(", ")}${patch.status ? ` → ${patch.status}` : ""}`,
+    );
     persist();
   }
   function removeIntroduction(advisorId: string, introId: string) {
@@ -744,6 +800,11 @@ export function useStudio() {
         ...(data.eventNote ? { eventNote: data.eventNote } : {}),
       },
     ];
+    appendAudit(
+      "review",
+      a.name,
+      `Review scheduled ${data.scheduledISO} (${data.trigger === "event" ? data.eventNote || "round event" : "calendar"})`,
+    );
     persist();
     flash(`Review scheduled · ${data.scheduledISO}`);
   }
@@ -799,6 +860,11 @@ export function useStudio() {
         { stage: "rolled-off", atISO: todayISO(), note: `Review ${reviewId}: roll-off` },
       ];
     }
+    appendAudit(
+      "review",
+      a.name,
+      `Review completed: ${data.outcome}, signed off by ${approver}${data.outcome === "top-up" && (data.topUpValueUSD || data.topUpQuantity) ? ` · top-up ${data.topUpValueUSD ? `$${data.topUpValueUSD}` : `${data.topUpQuantity} options`} at the current round` : ""}`,
+    );
     persist();
     undoToast(`review (${data.outcome})`);
     return true;
@@ -900,7 +966,7 @@ export function useStudio() {
   function delBoard(name: string) {
     delete store.saved[name];
     if (store.last === name) store.last = Object.keys(store.saved)[0] || "";
-    lsSet({ scenarios: store.saved, last: store.last, governance: store.gov });
+    lsSet({ scenarios: store.saved, last: store.last, governance: store.gov, audit: store.audit });
   }
   function toggleMgr(v?: boolean) {
     store.showMgr = v == null ? !store.showMgr : v;

@@ -2631,3 +2631,18 @@ recordDecision (subject required) · the wizard from Board w/ LIVE engine contex
 **LINEAR DEBT (MCP down since COM-162): COM-162, COM-163, COM-161, COM-164, COM-156, COM-165
 all need In Progress→Done flips + closing comments when Linear returns.**
 Next: the M11-boundary grader panel → Wave 4 (M12: COM-166→170).
+
+## 2026-06-11 — Panel 006 (12/15) + the three fixes (PR #101) [M11 gate]
+
+**Panel 006 (M11 boundary): 12/15** — engine integrity, R1.1 (git-substituted; Linear still
+down), R5.1/R5.3 full, both live flows (R3.5/R3.6 adversarial), R6.2, and R8.5 (prod carries the
+Wave-3 markers) all PASS. The three FAILs fixed in PR #101: **R2.5** coverage ratio moved INTO
+capitalRollup (raiseTargetUSD + coverage, targeted excluded, pinned) · **R4.4**
+installDialogA11y() MutationObserver names+sizes the frappe-ui Dialog chrome X app-wide (props
+can't reach it on 0.1.278) · **R6.1** feather-icons (~76KB) shipped for TWO icons → vite alias
+to a 6-icon shim with the same {attrs,contents} surface: **1,059,074 → 972,337 B** minified,
+initial 215,833 B gzip. **Distilled rules: (1) a pinned third-party lib's a11y gaps are fixable
+with a scoped observer — no fork/patch needed; (2) before shedding bundle bytes, grep what the
+heavy dep is actually USED for — 76KB for two icons is the norm, not the exception, with
+kitchen-sink UI libs.** Both shim icons + the X verified live; dialog suites re-run green.
+Next: Wave 4 (M12: COM-166→170).

@@ -2595,3 +2595,15 @@ when a NEW data path overrides an OLD one, the editor for the old path must disa
 moment the override engages — live inputs over dead state are silent data loss.** 11/11 live.
 vp 0/10 · 22/22 · 243/0/0 · build 0. LINEAR DEBT: +COM-161. Next: COM-164 (proposition
 versioning).
+
+## 2026-06-10 — COM-164 (proposition versioning Δ12) DONE [W3 #9]
+
+**COM-164 (M, 195 LOC, PR #98) — MERGED.** PropositionVersion (inputs + figures FROZEN at send;
+pinned: plan changes move the live compute, never the stored version) · makeProposition pure ·
+reconcile heals (junk figures re-default — never render as a sent number; id-dedupe; sorted) ·
+snapshotProposition (numbering + modeled→proposed nudge) · the register on Proposition (vN ·
+frozen figures · drift delta vs live · no-print). 10/10 live (v1 froze $7.67M through a package
+change to $1.15M). **Probe rules: Escape on PackageEditor = Cancel-REVERT (use Save); years is
+INERT in tier mode (change something that moves money); fUSD(negative) prints '$-6.51M' — sign
+inside.** vp 0/10 · 22/22 · 246/0/0 · build 0. LINEAR DEBT: +COM-164. Next: COM-156 (benchmarks
+& generosity guardrails).

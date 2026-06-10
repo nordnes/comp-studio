@@ -62,7 +62,16 @@ export interface Advisor {
   // fields drive the uplift; PRESENT → earned introductions drive it (the pipeline feeds the
   // ceiling). Additive — SCHEMA stays 5.
   introductions?: CapitalIntroduction[];
+  // v2 (COM-154): the advisor's elected cash floor (annual $) — active only while the plan's
+  // cash-floor policy is enabled. Grant-path advisors express floors AS cash grants instead.
+  cashFloorAnnualUSD?: number;
 }
+
+// v2 (COM-154): the cash-floor policy — certainty bought from the instrument legs at a
+// configured exchange rate. DEFAULT DISALLOWED (open decision #3 stays open; configurable,
+// never hardcoded). Affordability guards against burn (~$430K/mo).
+export interface CashFloorPolicy { enabled: boolean; exchangeRate: number; monthlyBurnUSD: number; maxPctOfBurn: number }
+export const CASH_FLOOR_DEFAULT: CashFloorPolicy = { enabled: false, exchangeRate: 2, monthlyBurnUSD: 430000, maxPctOfBurn: 0.10 };
 
 // v2 (COM-146): the capital-introduction entity (RFC §3). status: targeted (in conversation) →
 // gated (committed, awaiting the round close) → earned (round closed; the uplift crystallises).
@@ -86,6 +95,8 @@ export interface Plan {
   scenarioSets?: ScenarioSet[];
   // v2 (COM-150): dollar value bands (open decision #2 — Configure-editable defaults).
   valueBands?: ValueBand[];
+  // v2 (COM-154): the cash-floor policy (default disallowed — open decision #3).
+  cashFloor?: CashFloorPolicy;
 }
 
 // A named bundle of per-round assumptions — the dilution workbook generalised (COM-143).
@@ -232,6 +243,7 @@ export const DEFAULT = (): State => ({
     advisorPoolShares: POOL_PRESETS[0].printed,
     scenarioSets: [],
     valueBands: VALUE_BANDS_DEFAULT.map(b => ({ ...b })),
+    cashFloor: { ...CASH_FLOOR_DEFAULT },
   },
   tiers: [{ name: 'Base', mult: 1, days: 1 }, { name: 'Strategic', mult: 2, days: 2 }, { name: 'Anchor', mult: 3, days: 3 }],
   objectives: [
@@ -337,6 +349,17 @@ export function reconcile(l: any): State {
           advisorPoolShares: numOr(p.advisorPoolShares, d.plan.advisorPoolShares as number),
           scenarioSets,
           valueBands,
+          // COM-154: the policy heals per-field; enabled is a strict boolean (junk → disabled —
+          // a cash-floor policy fails CLOSED).
+          cashFloor: (() => {
+            const s: any = (p.cashFloor && typeof p.cashFloor === 'object') ? p.cashFloor : {};
+            return {
+              enabled: s.enabled === true,
+              exchangeRate: ok(s.exchangeRate) && s.exchangeRate > 0 ? s.exchangeRate : CASH_FLOOR_DEFAULT.exchangeRate,
+              monthlyBurnUSD: numOr(s.monthlyBurnUSD, CASH_FLOOR_DEFAULT.monthlyBurnUSD),
+              maxPctOfBurn: ok(s.maxPctOfBurn) && s.maxPctOfBurn > 0 ? s.maxPctOfBurn : CASH_FLOOR_DEFAULT.maxPctOfBurn,
+            };
+          })(),
         };
       })(),
     },
@@ -396,6 +419,8 @@ export function reconcile(l: any): State {
       } else if ('introductions' in adv) {
         delete adv.introductions;
       }
+      // v2 (COM-154): the elected floor must be a positive finite number, else it goes.
+      if (!(ok(adv.cashFloorAnnualUSD) && adv.cashFloorAnnualUSD > 0)) delete adv.cashFloorAnnualUSD;
       return adv;
     }) : d.advisors,
   };
@@ -661,8 +686,29 @@ export function computeAdvisor(a: Advisor, plan: Plan, tiers: Tier[], objectives
   // like targeted objectives (review finding: the awaitingGate tooltip promises "earned").
   const pendingUplift = (capRaw - capActive) + pendObj;
 
-  const eqPct = baseEq * (1 + earnedUplift), tkPct = baseTk * (1 + earnedUplift);
-  const eqPctCeil = baseEq * (1 + ceilUplift), tkPctCeil = baseTk * (1 + ceilUplift);
+  let eqPct = baseEq * (1 + earnedUplift), tkPct = baseTk * (1 + earnedUplift);
+  let eqPctCeil = baseEq * (1 + ceilUplift), tkPctCeil = baseTk * (1 + ceilUplift);
+
+  // v2 (COM-154): the cash-floor trade — the advisor's elected floor is BOUGHT from the
+  // instrument legs at the policy's exchange rate (value surrendered = floor total × rate,
+  // priced at the base case). Both legs and both ceilings scale by the same traded fraction;
+  // a floor the package can't fund clamps at 100% and flags. Disabled policy = byte-level no-op.
+  const cfp = plan.cashFloor;
+  const floorAnnual = (cfp?.enabled && ok(a.cashFloorAnnualUSD) && a.cashFloorAnnualUSD > 0) ? a.cashFloorAnnualUSD : 0;
+  let floorTradedValue = 0, floorTradedFrac = 0, floorUnfunded = false;
+  if (floorAnnual > 0) {
+    const rate = ok(cfp.exchangeRate) && cfp.exchangeRate > 0 ? cfp.exchangeRate : CASH_FLOOR_DEFAULT.exchangeRate;
+    const wB = walkScenario(plan, baseScenKey(plan));
+    const gB = wB.byId[grantRound] || wB.byId.bridge;
+    const instrumentValue = Math.max(0, eqPct * (safeDiv(gB.N, wB.exit.N) * wB.exit.post - gB.post))
+      + tokenValueFor(plan, baseScenKey(plan), wB, tkPct, grantRound);
+    const wanted = floorAnnual * years * rate;
+    floorTradedFrac = instrumentValue > 0 ? clamp(wanted / instrumentValue, 0, 1) : 1;
+    floorUnfunded = instrumentValue <= 0 || wanted > instrumentValue;
+    floorTradedValue = floorTradedFrac * instrumentValue;
+    eqPct *= 1 - floorTradedFrac; tkPct *= 1 - floorTradedFrac;
+    eqPctCeil *= 1 - floorTradedFrac; tkPctCeil *= 1 - floorTradedFrac;
+  }
 
   const scen = Object.keys(plan.scenarios).map(k => {
     const w = walkScenario(plan, k);
@@ -678,21 +724,24 @@ export function computeAdvisor(a: Advisor, plan: Plan, tiers: Tier[], objectives
   });
   const sb = scen.find(x => x.key === baseScenKey(plan)) || scen[0];
 
-  const cash = a.hasCash ? (a.cashAnnual || 0) : 0;
+  const cash = (a.hasCash ? (a.cashAnnual || 0) : 0) + floorAnnual;
   const equityShares = eqPct * sb.grantN;
   const strikePps = sb.grantPrice;
   const exerciseCost = eqPct * sb.strikeBasis;
   return {
     years, tierMult, baseEq, baseTk, grantRound, capEquity, capToken, capTotal,
     introEarned, introPipeline, capPotential,
+    cashFloorAnnual: floorAnnual, cashFloorTraded: floorTradedValue, cashFloorFrac: floorTradedFrac, cashFloorUnfunded: floorUnfunded,
     earnedUplift, ceilUplift, pendingUplift, capEarned: capActive, capRaw,
     eqPct, tkPct, eqPctCeil, tkPctCeil,
     scen, base: sb, retentionBase: sb.retention,
     equityShares, strikePps, exerciseCost, tokenCount: tkPct * plan.tokenSupply,
     cash, cashTotal: cash * years,
-    baseCaseBase: sb.netEqAt(baseEq, sb.exitVal) + baseTk * sb.fdv,
-    baseCaseTotal: sb.netEqAt(eqPct, sb.exitVal) + tkPct * sb.fdv,
-    baseCaseCeil: sb.netEqAt(eqPctCeil, sb.exitVal) + tkPctCeil * sb.fdv,
+    // token legs follow the COM-152 fallback (mirrors tokenValueFor over the sb row fields —
+    // baseCaseTotal must equal sb.total under the toggle; the T13 review missed these three).
+    baseCaseBase: sb.netEqAt(baseEq, sb.exitVal) + (sb.tokenAsEquity ? baseTk * sb.retention * sb.exitVal : baseTk * sb.fdv),
+    baseCaseTotal: sb.netEqAt(eqPct, sb.exitVal) + (sb.tokenAsEquity ? tkPct * sb.retention * sb.exitVal : tkPct * sb.fdv),
+    baseCaseCeil: sb.netEqAt(eqPctCeil, sb.exitVal) + (sb.tokenAsEquity ? tkPctCeil * sb.retention * sb.exitVal : tkPctCeil * sb.fdv),
     baseEqNet: sb.netEqAt(eqPct, sb.exitVal), baseBaseEqNet: sb.netEqAt(baseEq, sb.exitVal),
     bestCaseTotal: scen.reduce((m, x) => Math.max(m, x.total), 0),
   };
@@ -814,7 +863,17 @@ export function computeBoard(advisors: Advisor[], plan: Plan, tiers: Tier[], obj
   Object.keys(plan.scenarios).forEach(k => { (plan.rounds || []).forEach(rd => { const e = plan.scenarios[k][rd.id]?.esop; if (e > cap + 1e-9) overCap.push(`${plan.scenarios[k].label} ${rd.label} ${fPct(e, 0)}`); }); });
   if ((plan.esopStart ?? plan.bridge.esop) > cap + 1e-9) overCap.push(`Bridge ${fPct(plan.esopStart, 0)}`);
   if (overCap.length) warnings.push(`ESOP exceeds the ${fPct(cap, 0)} cap: ${overCap[0]}${overCap.length > 1 ? ` (+${overCap.length - 1})` : ''}`);
-  return { rows, sumEq, sumEqCeil, sumTk, sumTkCeil, sumCash, sumCapital, cost, warnings, esopNow, boardBucket };
+  // v2 (COM-154): affordability vs burn — annual cash commitments (retainers + elected floors)
+  // against the policy's burn threshold. Only when the policy is enabled.
+  const cfp = plan.cashFloor;
+  const monthlyCash = safeDiv(sumCash, 12);
+  if (cfp?.enabled) {
+    const burn = ok(cfp.monthlyBurnUSD) && cfp.monthlyBurnUSD > 0 ? cfp.monthlyBurnUSD : CASH_FLOOR_DEFAULT.monthlyBurnUSD;
+    const maxPct = ok(cfp.maxPctOfBurn) && cfp.maxPctOfBurn > 0 ? cfp.maxPctOfBurn : CASH_FLOOR_DEFAULT.maxPctOfBurn;
+    if (monthlyCash > burn * maxPct + 1e-9)
+      warnings.push(`Cash commitments ${fUSD(monthlyCash)}/mo exceed ${fPct(maxPct, 0)} of burn (${fUSD(burn)}/mo)`);
+  }
+  return { rows, sumEq, sumEqCeil, sumTk, sumTkCeil, sumCash, sumCapital, cost, warnings, esopNow, boardBucket, monthlyCash };
 }
 
 // v2 (COM-146): the board capital rollup — total expected capital in vs the uplift owed out

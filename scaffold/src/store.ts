@@ -25,6 +25,7 @@ import {
   type Scenario,
   makeScenarioSet,
   planWithSet,
+  makeProposition,
   type Instrument,
 } from "./engine";
 import { reconcileGovernance, type ComplianceItem, type Governance } from "./governance";
@@ -598,6 +599,45 @@ export function useStudio() {
     });
   }
 
+  // COM-164 (Δ12): snapshot the live package as the next proposition version — the straw-man
+  // artefact as sent via Iraj. The engine freezes the figures; the store owns the numbering.
+  // Snapshotting a proposition usually means it went out — nudge the pipeline to 'proposed'
+  // when it is still sitting in a pre-send stage.
+  function snapshotProposition(advisorId: string, note?: string) {
+    const a: any = store.S.advisors.find((x) => x.id === advisorId);
+    if (!a) return;
+    const versions = Array.isArray(a.propositions) ? a.propositions : [];
+    const next = versions.length ? Math.max(...versions.map((v: any) => v.version)) + 1 : 1;
+    const v = makeProposition(
+      a,
+      store.S.plan,
+      store.S.tiers,
+      store.S.objectives,
+      uid("pv"),
+      next,
+      todayISO(),
+      note,
+    );
+    a.propositions = [...versions, v];
+    if (!a.stage || a.stage === "modeled") {
+      a.stage = "proposed";
+      a.stageHistory = [
+        ...(Array.isArray(a.stageHistory) ? a.stageHistory : []),
+        { stage: "proposed", atISO: todayISO(), note: `Proposition v${next} sent` },
+      ];
+    }
+    persist();
+    flash(`Proposition v${next} saved`);
+  }
+  function removeProposition(advisorId: string, versionId: string) {
+    const a: any = store.S.advisors.find((x) => x.id === advisorId);
+    if (!a || !Array.isArray(a.propositions)) return;
+    pushUndo();
+    a.propositions = a.propositions.filter((v: any) => v.id !== versionId);
+    persist();
+    undoToast("proposition version");
+  }
+
   // COM-161 (F20): first-class capital introductions — the per-intro pipeline that the Board
   // rollup reads. CONVERTING from the v1 aggregate fields seeds EARNED intro rows from
   // capitalEquity/capitalToken so the computed uplift is preserved to the cent (intros-present
@@ -984,6 +1024,8 @@ export function useStudio() {
     addIntroduction,
     updateIntroduction,
     removeIntroduction,
+    snapshotProposition,
+    removeProposition,
     setAdvisorCase,
     setAdvisorTargetExit,
     setGovItem,

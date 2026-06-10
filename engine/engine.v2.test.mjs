@@ -1464,5 +1464,48 @@ console.log('\nT21 · Round close: crystallise + re-price + trajectory events (C
     })());
 }
 
+// ---- T22: proposition versioning (COM-164/Δ12 — live-bound) ----
+console.log('\nT22 · Proposition versions: the straw-man trail (COM-164):');
+{
+  const dflt = ENG.DEFAULT();
+  const a0 = dflt.advisors[0];
+  A('makeProposition: figures match computeAdvisor at snapshot time; the package inputs are captured',
+    (() => {
+      const c = ENG.computeAdvisor(a0, dflt.plan, dflt.tiers, dflt.objectives);
+      const v = ENG.makeProposition(a0, dflt.plan, dflt.tiers, dflt.objectives, 'pv1', 1, '2026-06-10', 'straw-man via Iraj');
+      return v.version === 1 && v.scenKey === 'base' && v.note === 'straw-man via Iraj'
+        && near(v.figures.baseCaseTotal, c.baseCaseTotal, 1e-9)
+        && near(v.figures.baseCaseCeil, c.baseCaseCeil, 1e-9)
+        && near(v.figures.strikePps, c.strikePps, 1e-9)
+        && v.package.years === a0.years && v.package.splitOptions === a0.splitOptions;
+    })());
+  A('figures are FROZEN: a plan change moves the live compute but never the stored version',
+    (() => {
+      const v = ENG.makeProposition(a0, dflt.plan, dflt.tiers, dflt.objectives, 'pv1', 1, '2026-06-10');
+      const cheaper = JSON.parse(JSON.stringify(dflt.plan));
+      cheaper.scenarios.base.seriesC.post = 300e6;
+      const cAfter = ENG.computeAdvisor(a0, cheaper, dflt.tiers, dflt.objectives);
+      return Math.abs(cAfter.baseCaseTotal - v.figures.baseCaseTotal) > 1e5
+        && near(v.figures.baseCaseTotal, 7665019.86, 1);
+    })());
+  A('round-trip: versions survive; junk versions drop; figures re-default numerically; sorted by version',
+    (() => {
+      const rt = JSON.parse(JSON.stringify(dflt));
+      rt.advisors[0].propositions = [
+        { id: 'b', version: 2, atISO: '2026-06-09', figures: { baseCaseTotal: 'NaN-ish' }, package: {} },
+        { id: 'a', version: 1, atISO: '2026-06-01', scenKey: 'base', figures: { baseCaseTotal: 5e6 }, package: { years: 4 } },
+        { id: 'junk', version: -1, atISO: '2026-06-02' },
+        { id: 'a', version: 9, atISO: 'dup-id-drops' },
+        'garbage', { version: 3 },
+      ];
+      rt.advisors[1].propositions = 'nope';
+      const r = ENG.reconcile(rt);
+      const pv = r.advisors[0].propositions;
+      return pv.length === 2 && pv[0].version === 1 && pv[1].version === 2
+        && pv[0].figures.baseCaseTotal === 5e6 && pv[1].figures.baseCaseTotal === 0
+        && r.advisors[1].propositions == null;
+    })());
+}
+
 console.log(`\n${pass} passed, ${fail} failed, ${pending} pending(v2).`);
 process.exit(fail ? 1 : 0);

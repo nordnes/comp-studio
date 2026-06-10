@@ -32,7 +32,20 @@ export interface Grant {
   lifecycle: GrantLifecycle;
   docStatus?: DocStatus;
   docUrl?: string;                // the RTA/certificate link column from the workbook
+  // v2 (COM-150): the value must be defensible against equivalent professional-services time.
+  timeCommitment?: string;        // e.g. "~10 hrs/mo"
 }
+
+// v2 (COM-150 / Δ1): tiers become VALUE BANDS — packages denominate in dollars, deliver in
+// instruments; percent-of-company is an OUTPUT, never the negotiation unit. Anchor numbers are
+// open decision #2 (pending Robin + Carl Sjöström review) and Configure-editable; the v1
+// tier-multiplier mode survives untouched as the migration alias.
+export interface ValueBand { id: string; label: string; annualUSD: number }
+export const VALUE_BANDS_DEFAULT: ValueBand[] = [
+  { id: 'base', label: 'Base', annualUSD: 50000 },
+  { id: 'strategic', label: 'Strategic', annualUSD: 100000 },
+  { id: 'anchor', label: 'Anchor', annualUSD: 150000 },
+];
 export interface Advisor {
   id: string; name: string; sector: string; mode: 'tier' | 'value'; tier: number;
   years: number; splitOptions: number; annualValue: number; hasCash: boolean; cashAnnual: number;
@@ -59,6 +72,8 @@ export interface Plan {
   constitution?: Constitution; tokenPools?: TokenPool[]; advisorPoolShares?: number;
   // v2 (COM-143): saved scenario-set bundles; plan.scenarios stays the ACTIVE set (RFC §3).
   scenarioSets?: ScenarioSet[];
+  // v2 (COM-150): dollar value bands (open decision #2 — Configure-editable defaults).
+  valueBands?: ValueBand[];
 }
 
 // A named bundle of per-round assumptions — the dilution workbook generalised (COM-143).
@@ -204,6 +219,7 @@ export const DEFAULT = (): State => ({
     tokenPools: TOKEN_POOLS_DEFAULT.map(p => ({ ...p })),
     advisorPoolShares: POOL_PRESETS[0].printed,
     scenarioSets: [],
+    valueBands: VALUE_BANDS_DEFAULT.map(b => ({ ...b })),
   },
   tiers: [{ name: 'Base', mult: 1, days: 1 }, { name: 'Strategic', mult: 2, days: 2 }, { name: 'Anchor', mult: 3, days: 3 }],
   objectives: [
@@ -254,7 +270,7 @@ export function reconcile(l: any): State {
           return { ...t, ...s, poolPct: numOr(s.poolPct, t.poolPct), allocatedPct: numOr(s.allocatedPct, t.allocatedPct) };
         });
         const known = new Set(tokenPools.map(t => t.id));
-        saved.forEach(t => { if (t && typeof t === 'object' && t.id && !known.has(t.id)) tokenPools.push({ ...t, label: t.label ?? t.id, poolPct: numOr(t.poolPct, 0), allocatedPct: numOr(t.allocatedPct, 0) }); });
+        saved.forEach(t => { if (t && typeof t === 'object' && t.id && !known.has(t.id)) { known.add(t.id); tokenPools.push({ ...t, label: t.label ?? t.id, poolPct: numOr(t.poolPct, 0), allocatedPct: numOr(t.allocatedPct, 0) }); } });
         // COM-143: saved sets — drop malformed entries; sanitize every cell numeric at this trust
         // boundary (sets get ACTIVATED into the money walk via planWithSet, so junk here is junk
         // in the walk); keep unknown fields (...s) so newer payloads round-trip loss-free;
@@ -286,7 +302,19 @@ export function reconcile(l: any): State {
             if (typeof out.note !== 'string' || !out.note) delete out.note;
             return out;
           })
-          .filter(Boolean);
+          .filter(Boolean)
+          // duplicate set ids: first wins — an id-keyed list must stay id-unique (review finding)
+          .filter((s: any, i: number, arr: any[]) => arr.findIndex(x => x.id === s.id) === i);
+        // COM-150: value bands — id-keyed merge so edited anchors survive and new defaults
+        // auto-appear; unknown bands are kept (user-defined); numerics sanitized.
+        const savedBands: any[] = Array.isArray(p.valueBands) ? p.valueBands : [];
+        const bandById = Object.fromEntries(savedBands.filter(b => b && typeof b === 'object' && b.id).map(b => [b.id, b]));
+        const valueBands = VALUE_BANDS_DEFAULT.map(b => {
+          const s = bandById[b.id] || {};
+          return { ...b, ...s, annualUSD: numOr(s.annualUSD, b.annualUSD), label: typeof s.label === 'string' && s.label ? s.label : b.label };
+        });
+        const knownBands = new Set(valueBands.map(b => b.id));
+        savedBands.forEach(b => { if (b && typeof b === 'object' && b.id && !knownBands.has(b.id)) { knownBands.add(b.id); valueBands.push({ ...b, label: typeof b.label === 'string' && b.label ? b.label : String(b.id), annualUSD: numOr(b.annualUSD, 0) }); } });
         return {
           constitution: {
             authorised: numOr(sc.authorised, CONSTITUTION_DEFAULT.authorised),
@@ -296,6 +324,7 @@ export function reconcile(l: any): State {
           tokenPools,
           advisorPoolShares: numOr(p.advisorPoolShares, d.plan.advisorPoolShares as number),
           scenarioSets,
+          valueBands,
         };
       })(),
     },
@@ -331,6 +360,7 @@ export function reconcile(l: any): State {
             if (!(ok(g.strikePps) && g.strikePps >= 0)) delete out.strikePps;
             if (!(DOC_STATUSES as readonly string[]).includes(g.docStatus)) delete out.docStatus;
             if (!(typeof g.docUrl === 'string' && /^https?:\/\//i.test(g.docUrl))) delete out.docUrl;
+            if (!(typeof g.timeCommitment === 'string' && g.timeCommitment)) delete out.timeCommitment;
             return out;
           });
       } else if ('grants' in adv) {
@@ -473,11 +503,31 @@ export function currentRoundStep(plan: Plan, walk: any) {
   return step;
 }
 
+// v2 (COM-150 / Δ1): value→quantity — denominate in dollars, deliver in instruments. Options:
+// $ ÷ (FMV − strike); NULL when FMV ≤ strike (underwater flag, never Infinity). Tokens:
+// $ ÷ (TGE FDV ÷ supply). Cash has no quantity. Restated per scenario by the caller (computeGrant
+// passes that scenario's FMV/FDV). Percent-of-company is an OUTPUT, never the negotiation unit.
+export function valueToQuantity(
+  valueUSD: number, instrument: Instrument,
+  ctx: { fmvPps?: number; strikePps?: number; tgeFdv?: number; tokenSupply?: number },
+): number | null {
+  if (!ok(valueUSD) || valueUSD < 0) return null;
+  if (instrument === 'option') {
+    if (!ok(ctx.fmvPps) || !ok(ctx.strikePps) || ctx.fmvPps <= ctx.strikePps) return null;
+    return valueUSD / (ctx.fmvPps - ctx.strikePps);
+  }
+  if (instrument === 'rta') {
+    const pps = safeDiv(ctx.tgeFdv as number, ctx.tokenSupply as number);
+    return pps > 0 ? valueUSD / pps : null;
+  }
+  return null;
+}
+
 // v2 (COM-144): per-grant pricing off the grant's round. Strike = the round's price/share unless
 // the grant carries an explicit strikePps. FMV per Cert v3 cl. 4.5(c): exit consideration at an
 // Exit Event (exit price/share), else the most-recent-grant methodology — the price at the plan's
-// current stage in this scenario's walk. Net of strike, always. Quantity derivation from
-// valueUSD is COM-150; until then an option/rta grant prices its explicit quantity (absent → 0).
+// current stage in this scenario's walk. Net of strike, always. An explicit quantity wins; a
+// value-denominated grant (COM-150) derives its quantity per scenario via valueToQuantity.
 export function computeGrant(grant: Grant, plan: Plan, scenKey: string) {
   const w = walkScenario(plan, scenKey);
   const round = w.byId[grant.round] || w.byId.bridge;
@@ -485,20 +535,32 @@ export function computeGrant(grant: Grant, plan: Plan, scenKey: string) {
   const lapsed = grant.lifecycle === 'lapsed';
   if (grant.instrument === 'cash') {
     const value = lapsed ? 0 : (ok(grant.valueUSD) ? grant.valueUSD : 0);
-    return { id: grant.id, instrument: 'cash' as Instrument, round: grant.round, roundLabel: roundLabel(plan, grant.round), quantity: null, strikePps: null, fmvPps: null, exitPps: null, exerciseCost: 0, stepUp: null, value, netAtExit: value, underwater: false, lapsed };
+    return { id: grant.id, instrument: 'cash' as Instrument, round: grant.round, roundLabel: roundLabel(plan, grant.round), quantity: null, derived: false, strikePps: null, fmvPps: null, exitPps: null, exerciseCost: 0, stepUp: null, value, netAtExit: value, underwater: false, lapsed };
   }
   if (grant.instrument === 'rta') {
-    const qty = lapsed ? 0 : (ok(grant.quantity) ? grant.quantity : 0);
     const tokenPps = safeDiv(tgeFdvFor(plan, scenKey, w), plan.tokenSupply);
+    const wantsDerive = !lapsed && !ok(grant.quantity) && ok(grant.valueUSD);
+    const derivedTk = wantsDerive
+      ? valueToQuantity(grant.valueUSD as number, 'rta', { tgeFdv: tgeFdvFor(plan, scenKey, w), tokenSupply: plan.tokenSupply })
+      : null;
+    const qty = lapsed ? 0 : (ok(grant.quantity) ? grant.quantity : (derivedTk ?? 0));
     const value = qty * tokenPps;
-    return { id: grant.id, instrument: 'rta' as Instrument, round: grant.round, roundLabel: roundLabel(plan, grant.round), quantity: qty, strikePps: null, fmvPps: tokenPps, exitPps: null, exerciseCost: 0, stepUp: null, tokenPps, value, netAtExit: value, underwater: false, lapsed };
+    // A failed token derivation (FDV/supply degenerate) flags like the option path — the UI must
+    // distinguish "derivation failed" from "granted nothing" (review finding; a lapsed row flags
+    // nothing — its zero is the lifecycle, not the maths).
+    return { id: grant.id, instrument: 'rta' as Instrument, round: grant.round, roundLabel: roundLabel(plan, grant.round), quantity: qty, derived: derivedTk != null, strikePps: null, fmvPps: tokenPps, exitPps: null, exerciseCost: 0, stepUp: null, tokenPps, value, netAtExit: value, underwater: wantsDerive && derivedTk == null, lapsed };
   }
   const strikePps = ok(grant.strikePps) ? grant.strikePps : round.price;
-  const qty = lapsed ? 0 : (ok(grant.quantity) ? grant.quantity : 0);
   const exitPps = safeDiv(exit.post, exit.N);
   const fmvPps = currentRoundStep(plan, w).price;
+  const wantsDerive = !lapsed && !ok(grant.quantity) && ok(grant.valueUSD);
+  const derivedOpt = wantsDerive ? valueToQuantity(grant.valueUSD as number, 'option', { fmvPps, strikePps }) : null;
+  const qty = lapsed ? 0 : (ok(grant.quantity) ? grant.quantity : (derivedOpt ?? 0));
   const netAtExit = Math.max(0, qty * (exitPps - strikePps));
-  return { id: grant.id, instrument: 'option' as Instrument, round: grant.round, roundLabel: roundLabel(plan, grant.round), quantity: qty, strikePps, fmvPps, exitPps, exerciseCost: qty * strikePps, stepUp: fmvPps - strikePps, value: netAtExit, netAtExit, underwater: exitPps < strikePps, lapsed };
+  // underwater: the exit consideration below strike OR a failed value derivation (non-positive
+  // FMV spread — no count exists at this scenario's FMV). Lapsed rows flag nothing.
+  const underwater = !lapsed && (exitPps < strikePps || (wantsDerive && derivedOpt == null));
+  return { id: grant.id, instrument: 'option' as Instrument, round: grant.round, roundLabel: roundLabel(plan, grant.round), quantity: qty, derived: derivedOpt != null, strikePps, fmvPps, exitPps, exerciseCost: qty * strikePps, stepUp: fmvPps - strikePps, value: netAtExit, netAtExit, underwater, lapsed };
 }
 
 export function computeAdvisor(a: Advisor, plan: Plan, tiers: Tier[], objectives: Objective[]) {
@@ -585,10 +647,12 @@ function computeAdvisorFromGrants(a: Advisor, plan: Plan) {
   const baseWalk = walkScenario(plan, baseKey);
   const grantRound = a.grantRound || 'bridge';
 
-  // Shares/eqPct are scenario-independent (quantities are grant data); compute them first so
-  // every scenario's netEqAt can scale off the same eqPct reference.
-  const equityShares = live.reduce((s, g) => s + (g.instrument === 'option' && ok(g.quantity) ? g.quantity : 0), 0);
-  const tokenCount = live.reduce((s, g) => s + (g.instrument === 'rta' && ok(g.quantity) ? g.quantity : 0), 0);
+  // Shares/eqPct come from the BASE-scenario rows (COM-150: value-denominated grants derive
+  // their quantity per scenario, so headline counts are the base derivation) — computed first
+  // so every scenario's netEqAt can scale off the same eqPct reference.
+  const headRows = live.map(g => computeGrant(g, plan, baseKey));
+  const equityShares = headRows.reduce((s, r) => s + (r.instrument === 'option' ? (r.quantity || 0) : 0), 0);
+  const tokenCount = headRows.reduce((s, r) => s + (r.instrument === 'rta' ? (r.quantity || 0) : 0), 0);
   const tkPct = safeDiv(tokenCount, plan.tokenSupply);
   const curN = currentRoundStep(plan, baseWalk).N;
   const eqPct = safeDiv(equityShares, curN);
@@ -602,17 +666,21 @@ function computeAdvisorFromGrants(a: Advisor, plan: Plan) {
     const retention = safeDiv(grant.N, exit.N);
     // Fold-consistent netEqAt: price the GRANTS at valuation V (per-share V/exitN against each
     // grant's own strike), scaled by pct relative to eqPct so ceiling-style calls stay
-    // proportional. The v1 single-round closure contradicted the fold for explicit strikes and
-    // non-bridge rounds (review finding 2026-06-10) — scen.equity === netEqAt(eqPct, exitVal).
+    // proportional. pct === eqPct (the standard call) scales 1 EVEN when eqPct is 0 — a base
+    // scenario whose value-derivation nulls must not zero every other scenario's netEqAt
+    // (review finding 2026-06-10) — invariant: scen.equity === netEqAt(eqPct, exitVal).
     const netEqAt = (pct: number, V: number) => {
       const pps = safeDiv(V, exit.N);
       const raw = rows.reduce((s, r) => s + (r.instrument === 'option' ? (r.quantity || 0) * Math.max(0, pps - (r.strikePps as number)) : 0), 0);
-      return raw * safeDiv(pct, eqPct, 0);
+      return raw * (pct === eqPct ? 1 : safeDiv(pct, eqPct, 0));
     };
     return {
       key: k, label: plan.scenarios[k].label, retention, strikeBasis: grant.post, exitVal: exit.post,
       fdv: tgeFdvFor(plan, k, w), grantN: grant.N, exitN: exit.N, grantPrice: grant.price, netEqAt,
-      equity, token, total: equity + token, underwater: equityShares > 0 && equity === 0, rows,
+      equity, token, total: equity + token,
+      // per-scenario flag off THIS scenario's rows (a base-keyed count misses the scenario
+      // where the grant actually is underwater — review finding)
+      underwater: rows.some(r => r.instrument === 'option' && r.underwater), rows,
     };
   });
   const sb = scen.find(x => x.key === baseKey) || scen[0];

@@ -1878,3 +1878,16 @@ The uppercase label half was already retired by COM-104/105 (lib sentence-case l
 `uppercase tracking-wider`. Verified on :4173: ONE googleapis stylesheet (Fraunces), font loads + paints
 (figures + wordmark). The issue's (c) Fraunces-on-data question is settled in practice by COM-116's
 figure scale (Robin kept Fraunces for figures). vp 0 · 22/22 both · build 0.
+
+## 2026-06-10 — COM-103 (Mgr list on ListView) DONE [M9 finish-loop W3 #5]
+
+**COM-103 (P4 Low, ~60 LOC, App.vue) — DONE + MERGED.** ItemListRow does NOT exist in 0.1.278 → the
+issue's fallback: minimal composed `ListView` + `ListRows` + `ListRow` (default scoped slot) +
+`ListRowItem` (#prefix = current check in a fixed slot, #suffix = delete w/ @click.stop, `ml-auto` to
+right-align — suffix otherwise hugs the label). Row click loads via `options.onRowClick`;
+`selectable:false` kills the checkbox column.
+- **frappe-ui gotcha (a11y): icon-only Buttons bind `:aria-label="label"` internally — a fallthrough
+  `aria-label` attr is CLOBBERED (renders without a name). Pass `label` (it renders sr-only on icon
+  buttons).** Fixed the Mgr delete + the pre-existing More-actions button in the same file.
+- Verified: dialog renders the row (check + label + right-aligned delete, 40px ListRow), row click
+  loads, delete → confirmDestroy → dismissed via × → board intact. vp 0 · 22/22 both · build 0.

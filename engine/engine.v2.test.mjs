@@ -805,5 +805,131 @@ console.log('\nT13 · Token→equity 1:1 pre-TGE fallback (COM-152):');
     })());
 }
 
+// ---- T14: capital introductions + board rollup (COM-146 — live-bound) ----
+// Targeted → gated → earned: EARNED drives the uplift; the pipeline feeds only the ceiling.
+// The live instance: Kerim's XTX introduction ("they could do the whole 10 million") against
+// the bridge $5m target — $10M earned at $1M-per-10% caps at the schedule's 100%.
+console.log('\nT14 · Capital introductions & the board rollup (COM-146):');
+{
+  const dflt = ENG.DEFAULT();
+  const plan = dflt.plan;
+  const mkA = (intros) => ({ ...dflt.advisors[2], id: 'kerim-x', introductions: intros });
+  A('INTRO_STATUSES: targeted → gated → earned', ENG.INTRO_STATUSES.join(',') === 'targeted,gated,earned');
+  const xtx = mkA([{ id: 'xtx', amountUSD: 10e6, round: 'bridge', status: 'earned', note: 'XTX — could do the whole 10 million' }]);
+  const cX = ENG.computeAdvisor(xtx, plan, dflt.tiers, dflt.objectives);
+  A('Kerim/XTX earned $10M → uplift caps at 100% (the schedule cap), gate reached at bridge',
+    near(cX.capEarned, 1.0, 1e-9) && cX.introEarned === 10e6
+    && near(cX.eqPct, cX.baseEq * (1 + cX.earnedUplift), 1e-12));
+  A('targeted/gated feed ONLY the ceiling: $10M targeted → earned uplift 0, ceiling includes it',
+    (() => {
+      const t = ENG.computeAdvisor(mkA([{ id: 'x', amountUSD: 10e6, round: 'bridge', status: 'targeted' }]), plan, dflt.tiers, dflt.objectives);
+      return t.capEarned === 0 && t.introPipeline === 10e6 && t.ceilUplift > t.earnedUplift;
+    })());
+  A('explicit introductions REPLACE the v1 perf capital (perf numbers ignored when intros[] present)',
+    (() => {
+      const both = mkA([{ id: 'x', amountUSD: 2e6, round: 'bridge', status: 'earned' }]);
+      both.performance = { ...both.performance, capitalEquity: 9e6, capitalToken: 0, achieved: [], targeted: [] };
+      const c = ENG.computeAdvisor(both, plan, dflt.tiers, dflt.objectives);
+      return c.capTotal === 2e6 && near(c.capEarned, clamp(2e6 / 1e6 * 0.1, 0, 1), 1e-9);
+    })());
+  A('v1 advisors (no introductions[]) keep the v1 capital path byte-identically',
+    (() => {
+      const v1 = ENG.computeAdvisor(dflt.advisors[2], plan, dflt.tiers, dflt.objectives);
+      return v1.introEarned === 0 && v1.introPipeline === 0 && v1.capTotal === (dflt.advisors[2].performance.capitalEquity || 0) + (dflt.advisors[2].performance.capitalToken || 0);
+    })());
+  // the rollup
+  const board = [xtx, mkA([{ id: 'g1', amountUSD: 3e6, round: 'seriesA', status: 'gated' }, { id: 't1', amountUSD: 2e6, round: 'seriesA', status: 'targeted' }])];
+  board[1].id = 'adv2';
+  const roll = ENG.capitalRollup(board, plan, dflt.tiers, dflt.objectives);
+  A('rollup totals: targeted $2M · gated $3M · earned $10M · total $15M',
+    roll.totals.targeted === 2e6 && roll.totals.gated === 3e6 && roll.totals.earned === 10e6 && roll.totals.total === 15e6);
+  A('rollup owed-out: earned-uplift value = capEarned × baseCaseBase per advisor (engine-derived)',
+    (() => {
+      const r0 = roll.rows.find(r => r.advisorId === 'kerim-x');
+      return near(r0.earnedUpliftValue, cX.capEarned * cX.baseCaseBase, 0.01) && r0.potentialUpliftValue >= r0.earnedUpliftValue;
+    })());
+  A('rollup schedule echoes the Configure capital schedule + gate state',
+    roll.schedule.per === 1e6 && roll.schedule.pct === 0.1 && roll.schedule.cap === 1 && roll.schedule.gateReached === true);
+  A('round-trip: introductions survive; junk amount → 0; unknown status heals fail-CLOSED to targeted; non-array deletes',
+    (() => {
+      const rt = JSON.parse(JSON.stringify(dflt));
+      rt.advisors[0].introductions = [
+        { id: 'k', amountUSD: 5e6, round: 'bridge', status: 'earned' },
+        { id: 'j', amountUSD: 'lots', round: 7, status: 'crystallised' },
+        'junk',
+      ];
+      rt.advisors[1].introductions = 'nope';
+      const r = ENG.reconcile(rt);
+      const ii = r.advisors[0].introductions;
+      return ii.length === 2 && ii[0].amountUSD === 5e6 && ii[0].status === 'earned'
+        && ii[1].amountUSD === 0 && ii[1].status === 'targeted' && ii[1].round === 'bridge'
+        && r.advisors[1].introductions == null;
+    })());
+  // Review-panel pins (2026-06-10 — pendingUplift semantics, grants×intros, dedupe, negatives,
+  // gate-not-reached, v1 rollup bucket, owed-vs-actual fidelity):
+  A('pendingUplift means EARNED-but-gated only: a $10M targeted intro pends 0 (it ceilings, like targeted objectives)',
+    (() => {
+      const t = ENG.computeAdvisor(mkA([{ id: 'x', amountUSD: 10e6, round: 'bridge', status: 'targeted' }]), plan, dflt.tiers, dflt.objectives);
+      return t.pendingUplift === 0 && t.ceilUplift >= 1.0;
+    })());
+  A('duplicate intro ids never survive reconcile (a doubled $5M must not crystallise 100%)',
+    (() => {
+      const rt = JSON.parse(JSON.stringify(dflt));
+      rt.advisors[0].introductions = [
+        { id: 'dup', amountUSD: 5e6, round: 'bridge', status: 'earned' },
+        { id: 'dup', amountUSD: 5e6, round: 'bridge', status: 'earned' },
+      ];
+      const r = ENG.reconcile(rt);
+      const c = ENG.computeAdvisor(r.advisors[0], plan, dflt.tiers, dflt.objectives);
+      return r.advisors[0].introductions.length === 1 && near(c.capEarned, 0.5, 1e-9);
+    })());
+  A('duplicate grant ids never survive reconcile (the fold must not double-count)',
+    (() => {
+      const rt = JSON.parse(JSON.stringify(dflt));
+      rt.advisors[0].grants = [
+        { id: 'g1', instrument: 'option', round: 'bridge', quantity: 100, curve: 'cert-v3', vestStartISO: '2026-06-01', lifecycle: 'granted' },
+        { id: 'g1', instrument: 'option', round: 'bridge', quantity: 100, curve: 'cert-v3', vestStartISO: '2026-06-01', lifecycle: 'granted' },
+      ];
+      return ENG.reconcile(rt).advisors[0].grants.length === 1;
+    })());
+  A('negative amounts never subtract (live state bypasses reconcile): earned $10M + targeted −$8M → ceiling ≥ earned',
+    (() => {
+      const c = ENG.computeAdvisor(mkA([
+        { id: 'a', amountUSD: 10e6, round: 'bridge', status: 'earned' },
+        { id: 'b', amountUSD: -8e6, round: 'bridge', status: 'targeted' },
+      ]), plan, dflt.tiers, dflt.objectives);
+      return c.introPipeline === 0 && c.ceilUplift >= c.earnedUplift && c.pendingUplift >= 0;
+    })());
+  A('gate NOT reached: an earned intro upstream of the gate pends, never crystallises (capEarned 0, pending > 0)',
+    (() => {
+      const pGate = JSON.parse(JSON.stringify(plan));
+      pGate.capitalUplift = { ...pGate.capitalUplift, gate: 'seriesA' };
+      const c = ENG.computeAdvisor(mkA([{ id: 'x', amountUSD: 10e6, round: 'bridge', status: 'earned' }]), pGate, dflt.tiers, dflt.objectives);
+      const roll = ENG.capitalRollup([mkA([{ id: 'x', amountUSD: 10e6, round: 'bridge', status: 'earned' }])], pGate, dflt.tiers, dflt.objectives);
+      return c.capEarned === 0 && c.pendingUplift >= 1.0 && roll.schedule.gateReached === false
+        && roll.rows[0].earnedUpliftValue === 0;
+    })());
+  A('owed-out fidelity: earnedUpliftValue ≡ the ACTUAL package delta (baseCaseTotal − baseCaseBase) for a capital-only advisor',
+    (() => {
+      const r0 = roll.rows.find(r => r.advisorId === 'kerim-x');
+      return near(r0.earnedUpliftValue, cX.baseCaseTotal - cX.baseCaseBase, 0.01);
+    })());
+  A('rollup buckets a v1 advisor\'s perf capital as earned (no introductions[])',
+    (() => {
+      const v1a = { ...dflt.advisors[2], id: 'v1cap' };
+      v1a.performance = { ...v1a.performance, capitalEquity: 3e6, capitalToken: 0, achieved: [], targeted: [] };
+      const r = ENG.capitalRollup([v1a], plan, dflt.tiers, dflt.objectives);
+      return r.rows[0].earned === 3e6 && r.rows[0].targeted === 0 && near(r.rows[0].earnedUpliftFrac, 0.3, 1e-9);
+    })());
+  A('grants×intros: capital-in reported, uplift 0/0 with upliftViaGrants (top-up grants carry the reward; no phantom potential)',
+    (() => {
+      const ga = { ...dflt.advisors[2], id: 'gx', grants: [{ id: 'g', instrument: 'option', round: 'bridge', quantity: 100, curve: 'cert-v3', vestStartISO: '2026-06-01', lifecycle: 'granted' }], introductions: [{ id: 'x', amountUSD: 10e6, round: 'bridge', status: 'earned' }] };
+      const c = ENG.computeAdvisor(ga, plan, dflt.tiers, dflt.objectives);
+      const r = ENG.capitalRollup([ga], plan, dflt.tiers, dflt.objectives);
+      return c.introEarned === 10e6 && c.upliftViaGrants === true && c.capEarned === 0
+        && r.rows[0].earned === 10e6 && r.rows[0].potentialUpliftValue === 0 && r.rows[0].upliftViaGrants === true;
+    })());
+}
+
 console.log(`\n${pass} passed, ${fail} failed, ${pending} pending(v2).`);
 process.exit(fail ? 1 : 0);

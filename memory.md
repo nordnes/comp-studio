@@ -1966,3 +1966,11 @@ surface-amber-3 3px. Verified computed on BOTH call sites (Board rows ×4 + Advi
 grid wrapper (COM-134 break-inside intact). FootballField's no-label mode WAS the lighter API — no
 component change needed. Verified: all 4 rows' bars start x=400 and values end x=858 (pixel-aligned).
 vp 0 · 22/22 both · build 0.
+
+## 2026-06-10 — COM-113 (Overview hero) DONE [M9 finish-loop W4 #4]
+
+**COM-113 (P3 Med, ~35/30 LOC, Overview.vue) — DONE + MERGED.** kpis[] (6 tiles) → heroCost
+(.figure-lg, label ink-amber-strong = the page's amber moment as INK not wash) + rangeText subline
+(Conservative → Aggressive · $5.62M – $64.3M) + supporting dl ×3 (de-boxed, text-sm tabular).
+Advisors-count tile deleted; fNum import dropped. Screenshot: real hierarchy at last. vp 0 ·
+22/22 both · build 0 · zero console errors. COM-117's MetricBand will absorb this shape as a variant.

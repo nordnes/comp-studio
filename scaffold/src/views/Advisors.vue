@@ -40,6 +40,7 @@ import UpsideCurve from "../components/UpsideCurve.vue";
 import ExitSlider from "../components/ExitSlider.vue";
 import TrajectoryView from "../components/TrajectoryView.vue";
 import ReviewPanel from "../components/ReviewPanel.vue";
+import DepartureDialog from "../components/DepartureDialog.vue";
 import VestingTimeline from "../components/VestingTimeline.vue";
 import FootballField from "../components/FootballField.vue";
 import MixBreakdown from "../components/MixBreakdown.vue";
@@ -90,6 +91,8 @@ const overrideDiverged = computed(
 );
 // COM-91: granular disclosure — Tabs replace the all-or-nothing detail dump (one surface at a time).
 const detailTab = ref(0);
+// COM-163: the departure dialog (F18)
+const departureOpen = ref(false);
 // COM-47: the exit slider publishes the selected exit value; UpsideCurve marks it on the equity curve.
 const exitMarker = ref<number | null>(null);
 
@@ -267,8 +270,19 @@ const backstop = computed(() => {
         <span class="text-p-xs text-ink-gray-6 tabular-nums">
           {{ stageTrail }}
         </span>
+        <!-- COM-163: the F18 leaver flow — model the departure before recording it -->
+        <Button
+          variant="subtle"
+          theme="gray"
+          size="sm"
+          icon-left="lucide-log-out"
+          label="Model departure"
+          class="ml-auto"
+          @click="departureOpen = true"
+        />
       </div>
     </Panel>
+    <DepartureDialog v-model="departureOpen" :sel="sel" />
 
     <!-- full-width decision projection (COM-88: space-y-8 gives the de-boxed groups their rhythm) -->
     <div class="space-y-8 print-area">

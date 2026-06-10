@@ -11,6 +11,7 @@ declare module 'vue' {
     AdvisorPicker: typeof import('./src/components/AdvisorPicker.vue')['default']
     CommandPalette: typeof import('./src/components/CommandPalette.vue')['default']
     ContextStrip: typeof import('./src/components/ContextStrip.vue')['default']
+    DepartureDialog: typeof import('./src/components/DepartureDialog.vue')['default']
     DilutionPath: typeof import('./src/components/DilutionPath.vue')['default']
     EmptyState: typeof import('./src/components/EmptyState.vue')['default']
     EquityBenchmark: typeof import('./src/components/EquityBenchmark.vue')['default']

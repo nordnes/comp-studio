@@ -198,12 +198,14 @@ svg g[tabindex]:focus {
     justify-content: space-between;
     gap: 1.5rem;
     padding: 1.5mm 2mm 0;
-    background: #fff;
-    border-top: 0.5pt solid #d6d3d1;
+    /* COM-112: the confidential mark reads in the same ink family as the app — Espresso tokens,
+       not raw hex (:root custom properties resolve under @media print; same document). */
+    background: var(--surface-white);
+    border-top: 0.5pt solid var(--outline-gray-2);
     font-size: 7.5pt;
     line-height: 1.4;
     letter-spacing: 0.01em;
-    color: #57534e;
+    color: var(--ink-gray-7);
   }
   @page {
     margin: 14mm;

@@ -8,6 +8,7 @@ import { Badge, Button, FormControl } from "frappe-ui";
 import { useStudio } from "../store";
 import type { ComplianceItem, RagStatus } from "../governance";
 import { CONSENT_MATRIX, CONSENT_FACTS } from "../consents";
+import { MAX_AUDIT_EVENTS } from "../audit";
 
 // COM-166: right-status → badge theme (live = the gating state, amber attention)
 const RIGHT_THEME: Record<string, string> = {
@@ -21,6 +22,25 @@ import Panel from "../components/Panel.vue";
 const { store, setGovItem, removeDecision } = useStudio();
 // COM-165: the decision artefacts, newest first
 const decisions = computed(() => [...(store.S.decisions || [])].reverse());
+// COM-170: the audit tail, newest first (display caps at 50; the slice keeps MAX_AUDIT_EVENTS)
+const auditTail = computed(() => [...store.audit].reverse().slice(0, 50));
+const AUDIT_THEME: Record<string, string> = {
+  grant: "blue",
+  review: "green",
+  stage: "gray",
+  round: "orange",
+  valuation: "orange",
+  proposition: "blue",
+  decision: "green",
+  introduction: "gray",
+};
+const fAuditTime = (iso: string) =>
+  new Date(iso).toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 const advisorName = (id?: string) =>
   id ? store.S.advisors.find((a) => a.id === id)?.name || "" : "";
 
@@ -260,6 +280,33 @@ const evidenceHref = (it: ComplianceItem) =>
       </div>
       <p class="text-p-xs text-ink-gray-6 mt-1">
         Run a new decision from the Board ("New grant decision") — each one leaves this artefact.
+      </p>
+    </div>
+
+    <!-- COM-170: the append-only audit trail — grant/review/stage/round/valuation changes,
+         on the record. No edit or delete controls exist BY DESIGN. -->
+    <div v-if="auditTail.length">
+      <div class="section-label mb-2">
+        Audit log · append-only ({{ store.audit.length }} event{{
+          store.audit.length === 1 ? "" : "s"
+        }})
+      </div>
+      <div class="divide-y divide-outline-gray-1 text-sm">
+        <div v-for="e in auditTail" :key="e.id" class="py-1.5 flex items-baseline gap-3 flex-wrap">
+          <span class="text-xs tabular-nums text-ink-gray-6 w-36 shrink-0">{{
+            fAuditTime(e.atISO)
+          }}</span>
+          <Badge :theme="AUDIT_THEME[e.kind] || 'gray'" variant="subtle" size="sm">{{
+            e.kind
+          }}</Badge>
+          <span class="text-ink-gray-7 shrink-0">{{ e.subject }}</span>
+          <span class="text-p-xs text-ink-gray-6">{{ e.summary }}</span>
+        </div>
+      </div>
+      <p class="text-p-xs text-ink-gray-6 mt-1">
+        Grant, review, pipeline, round, valuation, proposition and decision changes append here —
+        there is no edit or delete. The newest {{ MAX_AUDIT_EVENTS }} events are kept locally;
+        server-side integrity arrives with M6.
       </p>
     </div>
   </div>

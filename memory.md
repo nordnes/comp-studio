@@ -2322,3 +2322,20 @@ a new key.** Conventions flagged in PRs: lapsed=$0 · explicit grants priced not
 157/158 top-ups) · eqPct = shares/current-round FD. Two-PR pattern lesson: the UI half needs its
 OWN branch — pushing onto the merged PR's branch orphans the commit (#75 fixed). vp 0/10 · 22/22 ·
 v2 98/0/4 · build 0 · 11/11 live (R3.2 strikes differ 1,572.95 vs 4,212.04). Next: COM-145.
+
+## 2026-06-10 — Mid-W1 grader (002: 7/8) + COM-145 (dual curves + qualifying gate) DONE [W1 #4]
+
+**Mid-wave grader 002 (fresh sub-agent, 7/8 PASS):** only FAIL = R5.1 by-name vectors for 7
+runtime exports → fixed same commit (17d1d1d) + R5.1 tightened to runtime exports (type-only TS
+exports are .mjs-uncheckable — the rubric's own checkability rule). **COM-145 (P2, 104 LOC, PR
+#76) — DONE + MERGED.** vestedFracRTA (discrete tranches) · vestedAtMonths/vestedAtDate ·
+fullMonthsBetween (day-aware/TZ-free) · distributableFrac (gate on the INSTRUMENT, plan-shape
+forwarded; cash = linear accrual). T5 #2+#3 live → only 2 pendings left (valueToQuantity,
+modelDeparture). **Panel (3 angles, 18 agents) confirmed 8 findings on a 28-LOC \"pure math\"
+diff — distilled rules: (1) a DISPATCH key must be the contract's subject (the RTA gate is a term
+of the INSTRUMENT; curve is just shape — reconcile legally decouples them); (2) date arithmetic
+for legal anniversaries needs a day-aware TZ-free counter — v1 monthsBetween is display-only
+(credits cliffs ~30 days early, TZ-flips at month boundaries); (3) when a suite asserts a
+trust-boundary contract (\"never NaN\"), it must exercise EVERY dispatch branch, not the one the
+author hardened — co-varying test factories (mkg deriving instrument FROM curve) blind the suite
+to cross terms.** vp 0/10 · 22/22 both · v2 120/0/2 · build 0. Next: COM-150 (value→quantity).

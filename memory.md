@@ -2089,3 +2089,11 @@ grids), then W7: COM-139 (BUILD + HOLD for Charlie), COM-141 (M12 governance sur
 :model-value label @update:model-value>` (benchmarks in Configure cap group; hasCash in the editor).
 Verified the benchmarks Switch round-trip incl. localStorage (true→false→true; reka switch needs the
 full pointer sequence). vp 0 · 22/22 both · build 0.
+
+## 2026-06-10 — COM-100 (.range-input tokens + fill) DONE [M9 finish-loop W6 #2]
+
+**COM-100 (P4 Low, ~70 LOC, 3 files) — DONE + MERGED.** `.range-input` in style.css (appearance:none,
+token track/thumb, webkit gradient + moz-range-progress fill via `--slider-pct`, focus-visible outline);
+ExitSlider + the editor's split slider consume it w/ per-host :style pct. **frappe-ui Slider UNFIT —
+recorded in style.css: hardcoded aria-label="Volume", number[] v-model.** Verified: 50%→100% fill +
+aria "Aggressive, net $21.4M" on synthetic drag; restored. vp 0 · 22/22 both · build 0.

@@ -509,6 +509,30 @@ export const makeScenarioSet = (id: string, label: string, plan: Plan): Scenario
   id, label, scenarios: JSON.parse(JSON.stringify(plan.scenarios)), baseScenario: baseScenKey(plan),
 });
 
+// v2 (COM-147): the workbook's "Headline observations", auto-generated from a plan's own numbers
+// (the founder walk and the bridge dilution decomposition — A.3's two named callouts). Pure
+// engine reads; the UI renders the strings. founder share count = constitution.issued (A.3
+// note 5: fixed across all scenarios — only the percentage declines).
+export function headlineObservations(plan: Plan) {
+  const issued = plan.constitution?.issued ?? CONSTITUTION_DEFAULT.issued;
+  const w = walkScenario(plan, baseScenKey(plan));
+  const pre = safeDiv(issued, plan.fdPreESOP);
+  const post = safeDiv(issued, w.byId.bridge.N);
+  const exitPct = safeDiv(issued, w.exit.N);
+  const esop = plan.esopStart ?? plan.bridge.esop ?? 0;
+  const newMoney = safeDiv(plan.bridge.raise, plan.bridge.post);
+  const pp = (v: number) => (v * 100).toFixed(2);
+  const out = [
+    { id: 'founder-walk', text: `${fUSD(plan.bridge.post)} bridge / ${fPct(esop, 0)} ESOP → founder ${fPct(pre, 2)} → ${fPct(post, 2)} (−${pp(pre - post)}pp), ${fPct(exitPct, 2)} at ${roundLabel(plan, w.exit.id)}.` },
+  ];
+  if (esop > newMoney) {
+    out.push({ id: 'esop-driver', text: `ESOP creation is the larger dilution driver at the bridge (${fPct(esop, 0)}) vs new money (${fPct(newMoney, 1)}).` });
+  } else {
+    out.push({ id: 'money-driver', text: `New money is the larger dilution driver at the bridge (${fPct(newMoney, 1)}) vs ESOP creation (${fPct(esop, 0)}).` });
+  }
+  return out;
+}
+
 // ===== cap-table walk =====
 // Fixed bridge for all scenarios; scenarios diverge from the first round.
 // N_k = (N_{k-1} − ESOP_{k-1}) / (1 − raise_k/post_k − esop_k); ESOP_k = esop_k × N_k.

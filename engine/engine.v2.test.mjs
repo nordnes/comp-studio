@@ -291,6 +291,14 @@ console.log('\nT7 · Scenario sets & composed walk (COM-143):');
         && ss[1].label === 'b' && ss[1].baseScenario === 'x' && ss[1].scenarios.x.label === 'x'
         && ss[1].scenarios.x.tgeMult === 1;
     })());
+  // COM-147: the workbook's auto-callouts, engine-generated (A.3 headline observations)
+  A('headlineObservations: founder walk 77.72% → 65.63% (−12.09pp) + the ESOP-driver line (10% vs 5.6%)',
+    (() => {
+      const obs = ENG.headlineObservations(ENG.DEFAULT().plan);
+      return obs.length === 2 && obs[0].text.includes('77.72%') && obs[0].text.includes('65.63%')
+        && obs[0].text.includes('12.09pp') && obs[1].id === 'esop-driver'
+        && obs[1].text.includes('10%') && obs[1].text.includes('5.6%');
+    })());
   // Review findings 2026-06-10 (one panel-confirmed + six self-verified by node probe) — pinned:
   A('activation isolation: planWithSet deep-copies — editing the active map never rewrites the set',
     (() => {

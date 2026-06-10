@@ -105,6 +105,9 @@
      dark-OS UA otherwise paints dark chrome on the light doc. */
   color-scheme: light;
   --ink-amber-strong: #8a4b08;
+  /* COM-111: the ONE overlay scrim — ink-gray-9-based, not raw black (the palette/dialogs inherit
+     frappe-ui's own themed backdrop; this token covers the app's hand-rolled drawer scrim). */
+  --overlay: rgb(23 23 23 / 0.3);
 } /* 6.3:1 on amber-2, 6.8:1 on white */
 /* COM-110 (Robin's call 2026-06-09): the app is LIGHT-ONLY — the dead [data-theme=dark] token
    branches were deleted (nothing set the attribute since COM-72). A future dark milestone re-adds

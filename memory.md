@@ -2582,3 +2582,16 @@ discretion exists → Record = setStage rolled-off + audit note. 13/13 live (Rul
 retained $2.70M → $0 on limb 1 at m24). vp 0/10 · 22/22 · 243/0/0 · build 0. **LINEAR DEBT
 grows: COM-163 needs In Progress→Done + comment (with COM-162).** Next: COM-161 (board capital
 panel F20/O15 — must also fix the PackageEditor dead perf-capital inputs flagged on Linear).
+
+## 2026-06-10 — COM-161 (board capital panel F20/O15 + dead-inputs fix) DONE [W3 #8]
+
+**COM-161 (M, ~320 LOC, PR #97) — MERGED. No engine edit.** CapitalRollupPanel on Board
+(targeted/gated/earned vs the bridge raise; uplift owed earned+ceiling; via-grants badge;
+schedule + crystallise note). **The flagged dead-inputs bug fixed structurally: PackageEditor
+now renders the per-intro pipeline editor whenever introductions[] exists (the aggregates never
+render dead), and CONVERSION IS VALUE-PRESERVING — aggregates seed as EARNED intro rows, since
+intros-present overrides them in the engine; seeding anything else moves money. Distilled rule:
+when a NEW data path overrides an OLD one, the editor for the old path must disappear at the
+moment the override engages — live inputs over dead state are silent data loss.** 11/11 live.
+vp 0/10 · 22/22 · 243/0/0 · build 0. LINEAR DEBT: +COM-161. Next: COM-164 (proposition
+versioning).

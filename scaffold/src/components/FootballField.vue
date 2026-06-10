@@ -25,13 +25,15 @@ const pct = (v: number) => `${Math.max(0, Math.min(1, props.max ? v / props.max 
       role="img"
       :aria-label="`Scenario range ${fUSD(lo)} to ${fUSD(hi)}, base ${fUSD(base)}.`"
     >
+      <!-- COM-119: weight inverted — the spread is CONTEXT (neutral band), the base case is THE
+           SIGNAL (a 3px brand-amber tick). Amber marks the current case, nothing else. -->
       <div
-        class="absolute rounded bg-surface-amber-2"
+        class="absolute rounded bg-surface-gray-3"
         :style="{ left: pct(lo), width: pct(hi - lo), top: '3px', bottom: '3px' }"
       />
       <div
-        class="absolute bg-surface-gray-7 rounded"
-        :style="{ left: pct(base), top: 0, bottom: 0, width: '2px' }"
+        class="absolute bg-surface-amber-3 rounded"
+        :style="{ left: pct(base), top: 0, bottom: 0, width: '3px' }"
         :title="`base ${fUSD(base)}`"
       />
     </div>

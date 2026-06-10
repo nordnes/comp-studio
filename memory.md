@@ -2471,3 +2471,15 @@ staircase · token dashed accrual ramp + flat-zero distributable area before m24
 distributableFrac; the stale v1 token curve killed; 3.6 backstop dates in the caption; COM-152
 fallback note). 11/11 live incl. flat-zero geometry proof. vp 0/10 · 22/22 · 215/0/0 · build 0.
 Next: COM-147 (scenario-set editor).
+
+## 2026-06-10 — COM-147 (set editor + callouts + prior picker) DONE [W2 #2]
+
+**COM-147 (M, 245 LOC, PR #87) — DONE + MERGED.** headlineObservations engine export (workbook
+callouts: founder −12.09pp + dilution-driver) · store saveSetAs/duplicateSet/updateSet
+(EXCLUSIVE star)/deleteSet (undo) · Configure: callouts section + walk-prior picker (per-round
+Select → walkComposed PREVIEW, transient) + the set-editor cards w/ per-set callouts via
+planWithSet. **Probe lesson distilled: frappe-ui TextInput VALUES are not in textContent —
+body.includes() never sees set labels/notes; assert persisted state via localStorage reads (and
+remember toast text + empty-state copy pollute body matches: my 'fixture restored' check
+collided with the empty-state's own example string).** 15/15 live. vp 0/10 · 22/22 · 216/0/0 ·
+build 0. Next: COM-148 (set switcher + diff + A/B) — closes Wave 2 AND the M10 milestone.

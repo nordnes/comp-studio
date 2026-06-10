@@ -105,7 +105,22 @@ export interface Advisor {
   contractEntity?: string;            // the PSC / Contracted Entity name, when contracting=entity
   supervisor?: string;
   reviews?: Review[];                 // the growth-over-time checkpoints (COM-158 builds the UI)
+  // v2 (COM-159): the offer pipeline (F19). ABSENT stage reads 'modeled'; every transition
+  // appends to stageHistory (date + optional note/doc link). Departures hand off to F18.
+  stage?: AdvisorStage;
+  stageHistory?: StageEvent[];
 }
+
+// v2 (COM-159): the offer-pipeline stages — modeled → proposed (straw-man via Iraj) →
+// iterating → referenced & cleared (references + DBS/Swiss sub-states ride checkStatus) →
+// offer letter issued (Charlie) → signed → active → rolled-off. Reviews/top-ups are REVIEW
+// outcomes (COM-155), not pipeline stages; the LoI mechanic is a GRANT state (lifecycle/doc
+// 'loi'), not a special case here.
+export const ADVISOR_STAGES = ['modeled', 'proposed', 'iterating', 'referenced', 'offer-issued', 'signed', 'active', 'rolled-off'] as const;
+export type AdvisorStage = (typeof ADVISOR_STAGES)[number];
+export interface StageEvent { stage: AdvisorStage; atISO: string; note?: string; docUrl?: string }
+export const advisorStage = (a: Advisor): AdvisorStage =>
+  (ADVISOR_STAGES as readonly string[]).includes(a.stage as string) ? (a.stage as AdvisorStage) : 'modeled';
 
 // v2 (COM-154): the cash-floor policy — certainty bought from the instrument legs at a
 // configured exchange rate. DEFAULT DISALLOWED (open decision #3 stays open; configurable,
@@ -493,6 +508,23 @@ export function reconcile(l: any): State {
           .filter((r: any, i: number, arr: any[]) => arr.findIndex(x => x.id === r.id) === i);
       } else if ('reviews' in adv) {
         delete adv.reviews;
+      }
+      // v2 (COM-159): the pipeline stage heals by deletion (unknown reads 'modeled'); history
+      // entries need a valid stage + date string; docUrl is http(s)-guarded like grants'.
+      if (!(ADVISOR_STAGES as readonly string[]).includes(adv.stage)) delete adv.stage;
+      if (Array.isArray(a.stageHistory)) {
+        adv.stageHistory = a.stageHistory
+          .filter((e: any) => e && typeof e === 'object'
+            && (ADVISOR_STAGES as readonly string[]).includes(e.stage)
+            && typeof e.atISO === 'string' && e.atISO)
+          .map((e: any) => {
+            const out: any = { ...e };
+            if (!(typeof out.note === 'string' && out.note)) delete out.note;
+            if (!(typeof out.docUrl === 'string' && /^https?:\/\//i.test(out.docUrl))) delete out.docUrl;
+            return out;
+          });
+      } else if ('stageHistory' in adv) {
+        delete adv.stageHistory;
       }
       return adv;
     }) : d.advisors,

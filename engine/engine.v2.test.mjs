@@ -1272,5 +1272,43 @@ console.log('\nT17 · Lifecycle spine: person fields, reviews, doc statuses (COM
       : false);
 }
 
+// ---- T18: the offer pipeline (COM-159 — live-bound) ----
+console.log('\nT18 · Offer pipeline: stages + history (COM-159):');
+{
+  const dflt = ENG.DEFAULT();
+  A('ADVISOR_STAGES is the F19 pipeline in order; advisorStage defaults ABSENT/junk to modeled',
+    ENG.ADVISOR_STAGES.join(',') === 'modeled,proposed,iterating,referenced,offer-issued,signed,active,rolled-off'
+    && ENG.advisorStage(dflt.advisors[0]) === 'modeled'
+    && ENG.advisorStage({ ...dflt.advisors[0], stage: 'vibing' }) === 'modeled'
+    && ENG.advisorStage({ ...dflt.advisors[0], stage: 'signed' }) === 'signed');
+  A('round-trip: stage + history survive; junk stages/entries heal by deletion; docUrl http(s)-guarded',
+    (() => {
+      const rt = JSON.parse(JSON.stringify(dflt));
+      rt.advisors[0].stage = 'offer-issued';
+      rt.advisors[0].stageHistory = [
+        { stage: 'proposed', atISO: '2026-06-01', note: 'straw-man via Iraj' },
+        { stage: 'offer-issued', atISO: '2026-06-09', docUrl: 'https://docs.example/offer.pdf' },
+        { stage: 'teleported', atISO: '2026-06-10' },
+        { stage: 'signed', atISO: '2026-06-10', docUrl: 'javascript:alert(1)' },
+        'junk', { atISO: '2026-06-11' },
+      ];
+      rt.advisors[1].stage = 'imaginary';
+      const r = ENG.reconcile(rt);
+      const h = r.advisors[0].stageHistory;
+      return r.advisors[0].stage === 'offer-issued' && h.length === 3
+        && h[0].note === 'straw-man via Iraj' && h[1].docUrl === 'https://docs.example/offer.pdf'
+        && h[2].stage === 'signed' && h[2].docUrl == null
+        && r.advisors[1].stage == null && ENG.advisorStage(r.advisors[1]) === 'modeled';
+    })());
+  A('the stage is PRESENTATION-ONLY: no money field moves when an advisor walks the pipeline',
+    (() => {
+      const a = dflt.advisors[0];
+      const before = ENG.computeAdvisor(a, dflt.plan, dflt.tiers, dflt.objectives);
+      const after = ENG.computeAdvisor({ ...a, stage: 'active', stageHistory: [{ stage: 'active', atISO: '2026-06-10' }] }, dflt.plan, dflt.tiers, dflt.objectives);
+      return near(before.baseCaseTotal, after.baseCaseTotal, 1e-9) && near(before.cashAnnualEq ?? 0, after.cashAnnualEq ?? 0, 1e-9)
+        && near(before.baseCaseCeil, after.baseCaseCeil, 1e-9);
+    })());
+}
+
 console.log(`\n${pass} passed, ${fail} failed, ${pending} pending(v2).`);
 process.exit(fail ? 1 : 0);

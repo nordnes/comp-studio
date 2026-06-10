@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useRouter } from "vue-router";
-import { Alert, Button, Dropdown } from "frappe-ui";
+import { Alert, Badge, Button, Dropdown } from "frappe-ui";
 import { useStudio } from "../store";
 import { confirmDestroy } from "../confirm";
 import { useEditor } from "../composables/useEditor";
@@ -14,7 +14,20 @@ import {
   walkScenario,
   tgeFdvFor,
   BENCH,
+  advisorStage,
 } from "../engine";
+// COM-159: the pipeline chip — stage → Badge theme (status semantics carried by TEXT + theme;
+// gray = pre-offer modeling, blue = in motion, orange = gating steps, green = committed/live).
+const STAGE_THEME: Record<string, string> = {
+  modeled: "gray",
+  proposed: "blue",
+  iterating: "blue",
+  referenced: "orange",
+  "offer-issued": "orange",
+  signed: "green",
+  active: "green",
+  "rolled-off": "red",
+};
 import PageHeader from "../components/PageHeader.vue";
 import RosterIdentity from "../components/roster/RosterIdentity.vue";
 import TierBadge from "../components/roster/TierBadge.vue";
@@ -187,6 +200,10 @@ const hasBudget = computed(() => flags.value.some((f) => f.t === "budget"));
               <!-- COM-96: identity + tier pill come from the shared roster primitives -->
               <RosterIdentity :name="a.name" max-w="max-w-full" />
               <div class="flex items-center gap-1 shrink-0">
+                <!-- COM-159: the offer-pipeline stage chip -->
+                <Badge :theme="STAGE_THEME[advisorStage(a)] || 'gray'" size="sm" variant="subtle">{{
+                  advisorStage(a)
+                }}</Badge>
                 <TierBadge :mode="a.mode" :tier-name="S.tiers[a.tier]?.name" />
                 <Dropdown :options="rowMenu(a)" placement="right" class="no-print">
                   <template #trigger>

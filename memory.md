@@ -2028,3 +2028,12 @@ divide-y rows, `grid-cols-[0.625rem_1fr_3.5rem_auto]` (dot | label+trigger | +up
 TabButtons). State borders deleted — state = TabButtons + amber awaiting-gate note only. (The
 wrapper's off-amber half landed in COM-118.) Verified: 5 rows, uplift column aligned, zero nested
 cards; TabButtons wiring unchanged. vp 0 · 22/22 both · build 0.
+
+## 2026-06-10 — COM-91 (detail Tabs) DONE [M9 finish-loop W5 #4]
+
+**COM-91 (P3 Med, ~35/30 LOC, Advisors.vue) — DONE + MERGED.** "+ Show detail" toggle → frappe-ui
+Tabs (Vesting · Mix · Dilution · Instruments), indexed v-model + one #tab-panel slot branching on
+tab.label; no-print (parity with collapsed-by-default printing). **Driving gotcha: reka TabsTrigger
+ignores bare .click() — full pointerdown→…→click sequence required (same family as the Select/
+Combobox gotchas).** Verified: 4 triggers, Vesting default, Instruments switch shows the $1572.95
+strike row. vp 0 · 22/22 both · build 0.

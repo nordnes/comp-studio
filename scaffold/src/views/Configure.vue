@@ -26,6 +26,10 @@ import {
   poolGuardrail,
   poolSharesExact,
   tokenPoolHeadroom,
+  headlineObservations,
+  planWithSet,
+  walkComposed,
+  setList,
 } from "../engine";
 import { CAT_OPTIONS } from "../constants";
 import NumIn from "../components/NumIn.vue";
@@ -46,6 +50,10 @@ const {
   delObjective,
   importRoadmap,
   downloadRoadmap,
+  saveSetAs,
+  duplicateSet,
+  updateSet,
+  deleteSet,
 } = useStudio();
 
 const S = store; // reactive
@@ -114,6 +122,38 @@ const poolOpts = computed(() => {
     opts.push({ label: `Custom — ${fShares(cur)}`, value: cur });
   return opts;
 });
+
+// COM-147: scenario-set management + the engine's headline callouts (no view-side money math —
+// headlineObservations and walkComposed do all the computing).
+const sets = computed(() => setList(S.S.plan));
+const headlines = computed(() => headlineObservations(S.S.plan));
+const newSetName = ref("");
+function onSaveSet() {
+  saveSetAs(newSetName.value);
+  newSetName.value = "";
+}
+// per-set callout: the founder-walk line computed over THAT set's scenarios
+function setHeadline(id: string) {
+  return headlineObservations(planWithSet(S.S.plan, id) as any)[0].text;
+}
+// the walk-forward prior picker — transient preview state ('' = this scenario's own cell)
+const priors = ref<Record<string, string>>({});
+function setPrior(roundId: string, v: string) {
+  if (v) priors.value = { ...priors.value, [roundId]: v };
+  else {
+    const next = { ...priors.value };
+    delete next[roundId];
+    priors.value = next;
+  }
+}
+const priorOpts = computed(() => [
+  { label: "This scenario", value: "" },
+  ...Object.keys(S.S.plan.scenarios).map((k) => ({
+    label: S.S.plan.scenarios[k].label || k,
+    value: k,
+  })),
+]);
+const composed = computed(() => walkComposed(S.S.plan, baseScenKey(S.S.plan), priors.value as any));
 </script>
 
 <template>
@@ -427,6 +467,136 @@ const poolOpts = computed(() => {
               <div class="text-p-xs mt-2 flex items-center gap-1 text-ink-amber-strong">
                 <span class="lucide-triangle-alert size-3" aria-hidden="true" /> TGE multipliers are
                 working assumptions — validate against tokenomics before sharing externally.
+              </div>
+            </div>
+
+            <!-- COM-147: headline observations — the workbook's auto-callouts, engine-generated -->
+            <div>
+              <div class="section-label mb-3">Headline observations · this path</div>
+              <div class="divide-y divide-outline-gray-1">
+                <p
+                  v-for="o in headlines"
+                  :key="o.id"
+                  class="py-1.5 text-p-sm text-ink-gray-7 tabular-nums"
+                >
+                  {{ o.text }}
+                </p>
+              </div>
+            </div>
+
+            <!-- COM-147: the walk-forward prior picker — re-base any round on another scenario's
+                 cell (the workbook's "base prior" column); engine walkComposed, preview only -->
+            <div>
+              <div class="section-label mb-3">Walk priors · re-base rounds on another path</div>
+              <div class="flex items-end gap-3 flex-wrap">
+                <div v-for="rd in S.S.plan.rounds" :key="rd.id">
+                  <div class="text-xs text-ink-gray-6 mb-1">{{ rd.label }} cell from</div>
+                  <Select
+                    :model-value="priors[rd.id] || ''"
+                    :options="priorOpts"
+                    :aria-label="`${rd.label} prior`"
+                    @update:model-value="(v) => setPrior(rd.id, v)"
+                  />
+                </div>
+                <p class="text-xs tabular-nums text-ink-gray-6 pb-1.5">
+                  Composed: exit {{ fNum(composed.exit.N) }} FD · {{ fUSD(composed.exit.post) }} ·
+                  founder
+                  {{ fPct(safeDiv(S.S.plan.constitution?.issued ?? 0, composed.exit.N), 2) }}
+                </p>
+              </div>
+              <p class="text-p-xs text-ink-gray-6 mt-2">
+                A preview, not an edit — the walk recomputes with each selected cell taken from the
+                chosen scenario; the saved scenarios are untouched.
+              </p>
+            </div>
+
+            <!-- COM-147: saved scenario sets — save/duplicate/annotate/star/archive (COM-143) -->
+            <div>
+              <div class="flex items-center justify-between mb-3 gap-2 flex-wrap">
+                <div class="section-label">Scenario sets · saved bundles</div>
+                <div class="flex items-center gap-2">
+                  <TextInput
+                    v-model="newSetName"
+                    size="sm"
+                    placeholder="Name this path…"
+                    aria-label="New set name"
+                  />
+                  <Button
+                    variant="subtle"
+                    theme="gray"
+                    size="sm"
+                    icon-left="lucide-plus"
+                    label="Save current"
+                    @click="onSaveSet"
+                  />
+                </div>
+              </div>
+              <p v-if="!sets.length" class="text-p-xs text-ink-gray-6">
+                No saved sets yet — save the current scenario grid to keep a named path (for
+                example, "$90m floor per strategy memo") you can switch to or compare later.
+              </p>
+              <div v-else class="space-y-2">
+                <div
+                  v-for="s in sets"
+                  :key="s.id"
+                  class="rounded border p-3"
+                  :class="
+                    s.starred
+                      ? 'border-outline-amber-2 bg-surface-gray-2'
+                      : 'border-outline-gray-2 bg-surface-gray-2'
+                  "
+                >
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <TextInput
+                      class="w-44"
+                      size="sm"
+                      :model-value="s.label"
+                      :aria-label="`Set ${s.label} name`"
+                      @update:model-value="(v: string) => updateSet(s.id, { label: v })"
+                    />
+                    <button
+                      class="text-xs px-2 py-0.5 rounded border focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--ink-gray-6)]"
+                      :class="
+                        s.starred
+                          ? 'border-outline-amber-2 text-ink-amber-strong'
+                          : 'border-outline-gray-3 text-ink-gray-6'
+                      "
+                      :aria-pressed="!!s.starred"
+                      @click="updateSet(s.id, { starred: !s.starred })"
+                    >
+                      {{ s.starred ? "★ base set" : "set base" }}
+                    </button>
+                    <span class="ml-auto flex items-center gap-1">
+                      <Button
+                        variant="subtle"
+                        theme="gray"
+                        size="sm"
+                        icon-left="lucide-copy"
+                        label="Duplicate"
+                        @click="duplicateSet(s.id)"
+                      />
+                      <button
+                        aria-label="Archive set"
+                        title="Archive this set (Undo available)"
+                        class="inline-flex shrink-0 items-center justify-center size-8 rounded hover:bg-surface-gray-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-gray-6)] text-ink-gray-6 hover:text-ink-red-3"
+                        @click="deleteSet(s.id)"
+                      >
+                        <span class="lucide-trash-2 size-3.5" aria-hidden="true" />
+                      </button>
+                    </span>
+                  </div>
+                  <TextInput
+                    class="mt-2"
+                    size="sm"
+                    :model-value="s.note || ''"
+                    placeholder="Annotation — e.g. $90m floor per strategy memo"
+                    :aria-label="`Set ${s.label} note`"
+                    @update:model-value="(v: string) => updateSet(s.id, { note: v || undefined })"
+                  />
+                  <p class="text-p-xs text-ink-gray-6 mt-2 tabular-nums">
+                    {{ setHeadline(s.id) }}
+                  </p>
+                </div>
               </div>
             </div>
 

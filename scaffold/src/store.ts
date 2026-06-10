@@ -20,6 +20,7 @@ import {
   SECTORS,
   type State,
   type Scenario,
+  makeScenarioSet,
   type Instrument,
 } from "./engine";
 import { reconcileGovernance, type ComplianceItem, type Governance } from "./governance";
@@ -482,6 +483,44 @@ export function useStudio() {
     undoToast("scenario");
   }
 
+  // ---- scenario sets (COM-147: save/duplicate/annotate/star/archive over COM-143's model) ----
+  function saveSetAs(label: string) {
+    const name = (label || "").trim() || `Set ${(store.S.plan.scenarioSets?.length || 0) + 1}`;
+    const set = makeScenarioSet(uid("set"), name, store.S.plan);
+    store.S.plan.scenarioSets = [...(store.S.plan.scenarioSets || []), set];
+    persist();
+    flash(`Saved "${name}"`);
+  }
+  function duplicateSet(id: string) {
+    const sets = store.S.plan.scenarioSets || [];
+    const src = sets.find((s) => s.id === id);
+    if (!src) return;
+    const copy = clone(src);
+    copy.id = uid("set");
+    copy.label = `${src.label} (copy)`;
+    copy.starred = false;
+    store.S.plan.scenarioSets = [...sets, copy];
+    persist();
+    flash(`Duplicated "${src.label}"`);
+  }
+  function updateSet(id: string, patch: Record<string, any>) {
+    const s = (store.S.plan.scenarioSets || []).find((x) => x.id === id);
+    if (!s) return;
+    // starring is exclusive — one base set (the COM-143 model's "one starred base per set" list)
+    if (patch.starred === true)
+      (store.S.plan.scenarioSets || []).forEach((x) => {
+        x.starred = false;
+      });
+    Object.assign(s, patch);
+    persist();
+  }
+  function deleteSet(id: string) {
+    pushUndo();
+    store.S.plan.scenarioSets = (store.S.plan.scenarioSets || []).filter((s) => s.id !== id);
+    persist();
+    undoToast("scenario set");
+  }
+
   // ---- per-advisor projection (PD2 / COM-82): case override + target exit ----
   function setAdvisorCase(id: string, key: string | null) {
     const a = store.S.advisors.find((x) => x.id === id);
@@ -711,6 +750,10 @@ export function useStudio() {
     delRound,
     addScenario,
     delScenario,
+    saveSetAs,
+    duplicateSet,
+    updateSet,
+    deleteSet,
     setAdvisorCase,
     setAdvisorTargetExit,
     setGovItem,

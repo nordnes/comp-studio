@@ -1868,3 +1868,13 @@ which the group deep-link makes visible; flagged in PR.
   full pointerdown→mousedown→pointerup→mouseup→click sequence on the LI.** Verified live (backup→
   restore): New objective added a row + landed on the Performance group; Add advisor opened the editor
   on "New advisor". vp 0 · 22/22 both · build 0 · zero console errors.
+
+## 2026-06-10 — COM-121 (Plex dropped, Fraunces only) DONE [M9 finish-loop W3 #4]
+
+**COM-121 (P4 Low, 10/13 LOC, 2 files) — DONE + MERGED.** index.html css2 → Fraunces only (Plex Mono had
+zero painted usages; Plex Sans was fetched but used NOWHERE); dead `.font-mono` + `.eyebrow` deleted from
+style.css (grep: only comment mentions remain — constants.ts "eyebrow" is the COM-126 STRING, untouched).
+The uppercase label half was already retired by COM-104/105 (lib sentence-case labels); grep zero
+`uppercase tracking-wider`. Verified on :4173: ONE googleapis stylesheet (Fraunces), font loads + paints
+(figures + wordmark). The issue's (c) Fraunces-on-data question is settled in practice by COM-116's
+figure scale (Robin kept Fraunces for figures). vp 0 · 22/22 both · build 0.

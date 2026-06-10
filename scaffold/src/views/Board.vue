@@ -186,6 +186,19 @@ const scatterPlaced = computed(() => {
   return pts.sort((a, b) => (a.id === hoverId.value ? 1 : 0) - (b.id === hoverId.value ? 1 : 0));
 });
 
+// COM-115: the company cost as ONE range (floor · base · ceiling over the board-local case),
+// not three equal tiles — selection over the engine's exported board.cost, no new math.
+const costRange = computed(() => {
+  const keys = scenKeys(S.value.plan);
+  const first = keys[0];
+  const last = keys[keys.length - 1];
+  return {
+    floor: { label: S.value.plan.scenarios[first].label, v: board.value.cost[first] || 0 },
+    base: { label: S.value.plan.scenarios[bc.value].label, v: board.value.cost[bc.value] || 0 },
+    ceil: { label: S.value.plan.scenarios[last].label, v: board.value.cost[last] || 0 },
+  };
+});
+
 // --- per-advisor scenario range ---
 const ranges = computed(() =>
   board.value.rows.map(({ a, c }: any) => {
@@ -372,19 +385,31 @@ const caseTotalSum = computed(() =>
             <span class="lucide-building-2 size-3.5" aria-hidden="true" /> Company cost · net to the
             board
           </div>
-          <div class="grid grid-cols-3 gap-px bg-surface-gray-2 rounded overflow-hidden">
-            <div
-              v-for="k in Object.keys(S.plan.scenarios)"
-              :key="k"
-              class="p-3"
-              :class="k === bc ? 'bg-surface-white' : 'bg-surface-amber-2'"
-            >
-              <div class="text-xs text-ink-gray-6 mb-1">{{ S.plan.scenarios[k].label }}</div>
-              <div class="font-display text-base tabular-nums text-ink-gray-9">
-                {{ fUSD(board.cost[k] || 0) }}
+          <!-- COM-115: one RANGE, not three equal tiles — floor and ceiling quiet at the ends,
+               the projected case bold in the middle, the shared FootballField idiom beneath -->
+          <div class="flex items-end justify-between gap-4">
+            <div>
+              <div class="text-xs text-ink-gray-6 mb-1">{{ costRange.floor.label }}</div>
+              <div class="text-sm tabular-nums text-ink-gray-7">
+                {{ fUSD(costRange.floor.v) }}
               </div>
             </div>
+            <div class="text-center">
+              <div class="text-xs text-ink-amber-strong mb-1">{{ costRange.base.label }}</div>
+              <div class="figure-md text-ink-gray-9">{{ fUSD(costRange.base.v) }}</div>
+            </div>
+            <div class="text-right">
+              <div class="text-xs text-ink-gray-6 mb-1">{{ costRange.ceil.label }}</div>
+              <div class="text-sm tabular-nums text-ink-gray-7">{{ fUSD(costRange.ceil.v) }}</div>
+            </div>
           </div>
+          <FootballField
+            :lo="costRange.floor.v"
+            :base="costRange.base.v"
+            :hi="costRange.ceil.v"
+            :max="costRange.ceil.v"
+            compact
+          />
           <p class="text-p-xs text-ink-gray-6">
             Total net value across the board at each scenario.
           </p>

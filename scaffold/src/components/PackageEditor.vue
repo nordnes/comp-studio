@@ -353,41 +353,36 @@ function setObjState(id: string, st: string) {
               />
             </div>
           </div>
-          <div class="space-y-2 pt-2 border-t border-outline-gray-2">
-            <div class="text-xs text-ink-gray-6">Objectives · off / target / earned</div>
-            <div
-              v-for="o in S.objectives"
-              :key="o.id"
-              class="p-3 rounded border bg-surface-white"
-              :class="
-                objState(o.id) === 'earned' && !stageReached(S.plan, o.gate)
-                  ? 'border-outline-amber-2'
-                  : objState(o.id) === 'earned'
-                    ? 'border-outline-green-2'
-                    : objState(o.id) === 'targeted'
-                      ? 'border-outline-amber-2'
-                      : 'border-outline-gray-1'
-              "
-            >
-              <div class="flex items-center gap-2">
+          <div class="pt-2 border-t border-outline-gray-2">
+            <div class="text-xs text-ink-gray-6 pb-1">Objectives · off / target / earned</div>
+            <!-- COM-80: aligned divide-y rows replace the nested card-in-card grid; state lives in
+                 the stateful bits (the TabButtons selection + the amber awaiting-gate note), not in
+                 decorative borders -->
+            <div class="divide-y divide-outline-gray-1">
+              <div
+                v-for="o in S.objectives"
+                :key="o.id"
+                class="grid grid-cols-[0.625rem_1fr_3.5rem_auto] items-center gap-3 py-2.5"
+              >
                 <span
                   class="inline-block size-2 rounded-full"
                   :style="{ background: CAT[o.category]?.color }"
-                /><span class="text-sm font-medium text-ink-gray-9">{{ o.label }}</span
-                ><span class="text-xs tabular-nums text-ink-green-3"
+                />
+                <div class="min-w-0">
+                  <div class="text-sm font-medium text-ink-gray-9 truncate">{{ o.label }}</div>
+                  <div class="text-p-xs text-ink-gray-6 leading-snug">
+                    {{ o.trigger }} · gate: {{ ms[o.gate]
+                    }}<span
+                      v-if="objState(o.id) === 'earned' && !stageReached(S.plan, o.gate)"
+                      class="text-ink-amber-strong"
+                    >
+                      · <Term k="awaitingGate">awaiting gate</Term></span
+                    >
+                  </div>
+                </div>
+                <span class="text-xs tabular-nums text-right text-ink-green-3"
                   >+{{ (o.uplift * 100).toFixed(0) }}%</span
                 >
-              </div>
-              <div class="text-p-xs mt-1 text-ink-gray-6 leading-snug">
-                {{ o.trigger }} · gate: {{ ms[o.gate]
-                }}<span
-                  v-if="objState(o.id) === 'earned' && !stageReached(S.plan, o.gate)"
-                  class="text-ink-amber-strong"
-                >
-                  · <Term k="awaitingGate">awaiting gate</Term></span
-                >
-              </div>
-              <div class="mt-2">
                 <TabButtons
                   :model-value="objState(o.id)"
                   :buttons="[

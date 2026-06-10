@@ -6,12 +6,15 @@ import { useRouter } from "vue-router";
 import { Badge, Button } from "frappe-ui";
 import { useStudio } from "../store";
 import { fUSD, fPct, scenKeys, baseScenKey } from "../engine";
-import { SCEN_TOKENS, chartHex } from "../constants";
+import { SCEN_TOKENS, chartHex, shortName } from "../constants";
 import PageHeader from "../components/PageHeader.vue";
 import FrappeChart from "../components/FrappeChart.vue";
 import EmptyState from "../components/EmptyState.vue";
 
 const { store, board, select, flash, addAdvisor } = useStudio();
+// COM-136: chart/heading labels disambiguate duplicate first names (mononym/empty guarded).
+const rosterNames = computed(() => board.value.rows.map((r: any) => r.a.name));
+const sn = (n: string) => shortName(n, rosterNames.value);
 const router = useRouter();
 const S = computed(() => store.S);
 const cols = computed(() => scenKeys(S.value.plan));
@@ -77,12 +80,12 @@ const h2hRows = computed(() => {
 const h2hChart = computed(() => ({
   labels: cols.value.map((k) => S.value.plan.scenarios[k].label),
   datasets: pinned.value.map((r: any) => ({
-    name: r.a.name.split(" ")[0],
+    name: sn(r.a.name),
     values: cols.value.map((k) => (r.c.scen.find((x: any) => x.key === k)?.total || 0) / 1e6),
   })),
 }));
 const chart = computed(() => ({
-  labels: board.value.rows.map((r: any) => r.a.name.split(" ")[0]),
+  labels: board.value.rows.map((r: any) => sn(r.a.name)),
   datasets: cols.value.map((k) => ({
     name: S.value.plan.scenarios[k].label,
     values: board.value.rows.map(
@@ -132,7 +135,7 @@ const scenColors = computed(() =>
     >
       <div class="flex items-center justify-between flex-wrap gap-2">
         <div class="text-sm text-ink-gray-6">
-          Head-to-head · {{ pinned.map((r: any) => r.a.name.split(" ")[0]).join(" vs ") }}
+          Head-to-head · {{ pinned.map((r: any) => sn(r.a.name)).join(" vs ") }}
         </div>
         <Button
           variant="ghost"
@@ -147,7 +150,7 @@ const scenColors = computed(() =>
           <tr class="border-b border-outline-gray-2 text-ink-gray-6">
             <th class="px-3 py-2 font-normal text-left">Scenario</th>
             <th v-for="r in pinned" :key="(r as any).a.id" class="px-3 py-2 font-normal text-right">
-              {{ (r as any).a.name.split(" ")[0] }}
+              {{ sn((r as any).a.name) }}
             </th>
           </tr>
         </thead>
@@ -191,7 +194,7 @@ const scenColors = computed(() =>
         :height="220"
         :colors="scenColors"
         :options="chartOpts"
-        :aria-label="`Grouped bar comparing ${pinned.map((r: any) => r.a.name.split(' ')[0]).join(', ')} net value per scenario, in millions of dollars.`"
+        :aria-label="`Grouped bar comparing ${pinned.map((r: any) => sn(r.a.name)).join(', ')} net value per scenario, in millions of dollars.`"
       />
     </div>
 
@@ -245,7 +248,8 @@ const scenColors = computed(() =>
             <td
               class="px-4 py-3 font-medium text-ink-gray-9 sticky left-0 z-[2] bg-surface-white border-r border-outline-gray-1"
             >
-              {{ a.name }}
+              <!-- COM-136: cap + truncate the sticky name column -->
+              <div class="min-w-0 max-w-[12rem] truncate" :title="a.name">{{ a.name }}</div>
             </td>
             <td class="px-4 py-3">
               <Badge

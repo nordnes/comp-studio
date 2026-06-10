@@ -1795,3 +1795,19 @@ disclosure machinery needed, the dead "(+N more)" is gone — plus a "Review the
 router-link (PoolAllocation makes the breach visible there). Verified live with a two-warning state
 (equity + token pools both bombed via localStorage surgery; link navigated to /board; data restored).
 vp 0 · 22/22 both · build 0.
+
+## 2026-06-10 — COM-136 (names: truncate + disambiguate) DONE [M9 finish-loop W2 #5 — ★ WAVE 2 COMPLETE]
+
+**COM-136 (P3 Med, ~40 LOC, 4 files) — DONE + MERGED.** `shortName(name, all)` in constants.ts (first
+name; + last-token initial when duplicated; mononym kept; empty → "—"). Board scatter/ranges +
+Compare's 5 label sites (datasets, axis labels, h2h heading/cols, aria-label) consume it via a local
+`sn()`. Board roster cell capped `max-w-[14rem]` + truncate + :title (the max-w cap is what makes
+truncate bite in table-auto layout); Compare sticky col 12rem; FootballField label span truncates
+(callers pass short names anyway).
+- Verified with a fixture ("Martin Aleksander Bergström-Holmenkollen III" + "Martin Keller"): ranges
+  + scatter + Compare charts show "Martin I." / "Martin K.", unique names stay first-only, cells
+  truncate at 224px w/ full-name title. Restored after. vp 0 · 22/22 both · build 0.
+
+**★ WAVE 2 (hardening) COMPLETE: COM-133/134/137/138/136, PRs #31–#35.** M9 = 31 Done / 34 open.
+Next: wave-boundary frosty re-verify → WAVE 3 (the frappe-ui adopt cluster: 104 → 105 → 94 → 121 →
+103 → 102 → 101 → 106 → 96; §4 decisions pre-made).

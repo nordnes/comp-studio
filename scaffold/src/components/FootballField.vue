@@ -14,9 +14,10 @@ const pct = (v: number) => `${Math.max(0, Math.min(1, props.max ? v / props.max 
 
 <template>
   <div>
-    <div v-if="label" class="flex justify-between text-xs mb-1">
-      <span class="text-ink-gray-7">{{ label }}</span>
-      <span class="tabular-nums text-ink-gray-6">{{ fUSD(lo) }} – {{ fUSD(hi) }}</span>
+    <!-- COM-136: a long label truncates rather than colliding with the range read-out -->
+    <div v-if="label" class="flex justify-between gap-2 text-xs mb-1">
+      <span class="text-ink-gray-7 min-w-0 truncate" :title="label">{{ label }}</span>
+      <span class="tabular-nums text-ink-gray-6 shrink-0">{{ fUSD(lo) }} – {{ fUSD(hi) }}</span>
     </div>
     <div
       class="relative rounded bg-surface-gray-2"

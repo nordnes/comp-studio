@@ -137,8 +137,11 @@ Every flow is driven end-to-end with assertions; a flow that cannot complete = F
       on every advisor-facing/printable surface. Grader reads all new copy in full.
 
 ## R5 · Testing depth (check: shell + diff inspection)
-- [ ] **R5.1** Every NEW engine export has vectors in `engine/engine.v2.test.mjs` (grader lists v2
-      exports from `scaffold/src/engine.ts`, greps the suite for each).
+- [ ] **R5.1** Every NEW engine **runtime export** (value exports — functions, constants; TS
+      type-only exports are erased at runtime and cannot be referenced from a .mjs suite) has a
+      **by-name** vector in `engine/engine.v2.test.mjs`: grader lists value exports added since
+      baseline from `scaffold/src/engine.ts`, greps the suite for each name, and the named
+      assertion must exercise the export itself (not merely a caller).
 - [ ] **R5.2** Every store slice added since baseline has reconcile round-trip coverage (missing →
       seeded; user edits survive; junk input doesn't crash) in a suite file that is **wired into
       the documented QA gate** (`npm test` or the per-issue gate command) and green there.

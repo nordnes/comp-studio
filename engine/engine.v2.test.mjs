@@ -128,6 +128,14 @@ console.log('\nT6 · Constitutional baseline & Rule 13.10 guardrail (COM-142):')
 {
   const dflt = ENG.DEFAULT();
   const c = dflt.plan.constitution;
+  // By-name export coverage (R5.1): every runtime export carries at least one named assertion.
+  A('ENTITY: ASEL t/a Raiku · Cayman Islands · BL-411368',
+    ENG.ENTITY.legalName === 'Ackermann Systems Engineering Ltd' && ENG.ENTITY.tradingAs === 'Raiku'
+    && ENG.ENTITY.jurisdiction === 'Cayman Islands' && ENG.ENTITY.regNo === 'BL-411368');
+  A('CONSTITUTION_DEFAULT and TOKEN_POOLS_DEFAULT are the named seed constants',
+    ENG.CONSTITUTION_DEFAULT.authorised === 50000 && ENG.CONSTITUTION_DEFAULT.issued === 37550
+    && ENG.CONSTITUTION_DEFAULT.poolAvailable === 12450 && ENG.TOKEN_POOLS_DEFAULT.length === 4
+    && ENG.TOKEN_POOLS_DEFAULT.map(t => t.id).join(',') === 'team,advisors,investors,cex');
   A('constitution defaults: authorised 50,000 · issued 37,550 · poolAvailable 12,450',
     c && c.authorised === 50000 && c.issued === 37550 && c.poolAvailable === 12450);
   const fdSum = ENG.FD_COMPOSITION.reduce((s, r) => s + r.shares, 0);
@@ -236,6 +244,9 @@ console.log('\nT7 · Scenario sets & composed walk (COM-143):');
     near(ROBIN / FD_CURRENT, 0.7772, 0.0001) && near(ROBIN / walk[0].N, 0.6563, 0.0001)
     && near(ROBIN / FD_CURRENT - ROBIN / walk[0].N, 0.1209, 0.0001));
   // scenario-set machinery
+  A('setList: [] on the default plan; returns the saved bundles when present',
+    ENG.setList(plan).length === 0
+    && ENG.setList({ ...plan, scenarioSets: [{ id: 'x', label: 'X', scenarios: {}, baseScenario: '' }] }).length === 1);
   const set = ENG.makeScenarioSet('floor90', '$90m floor per strategy memo', plan);
   A('makeScenarioSet captures a DEEP copy (later live edits do not leak in)',
     (() => { const before = set.scenarios.base.seriesA.post; plan.scenarios.base.seriesA.post = 1; const okSet = set.scenarios.base.seriesA.post === before; plan.scenarios.base.seriesA.post = 120e6; return okSet; })());
@@ -330,6 +341,12 @@ console.log('\nT8 · Grant[] fold & per-grant strike/FMV (COM-144):');
   A('lapsed grant prices to zero (quantity zeroed, value 0, flagged)',
     (() => { const g = ENG.computeGrant(mk({ lifecycle: 'lapsed' }), plan, 'base'); return g.value === 0 && g.quantity === 0 && g.lapsed === true; })());
   A('unknown grant round falls back to the bridge cell', near(ENG.computeGrant(mk({ round: 'ghost' }), plan, 'base').strikePps, 1572.95, 0.01));
+  A('GRANT_LIFECYCLES and DOC_STATUSES are the two SEPARATE status vocabularies (RFC §3)',
+    ENG.GRANT_LIFECYCLES.join(',') === 'draft,loi,granted,exercised,lapsed'
+    && ENG.DOC_STATUSES.join(',') === 'in-draft,sent,in-review,signed,cancelled');
+  A('currentRoundStep: milestone→most-recent-round (bridge at "mainnet"; Series A at "tge")',
+    ENG.currentRoundStep({ ...plan, currentStage: 'mainnet' }, w).id === 'bridge'
+    && ENG.currentRoundStep({ ...plan, currentStage: 'tge' }, w).id === 'seriesA');
   // the fold
   const adv = { ...dflt.advisors[0], id: 'multi', grants: [
     mk({ id: 'e1' }), mk({ id: 'e2', round: 'seriesA' }),

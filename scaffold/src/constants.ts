@@ -96,4 +96,14 @@ export const GLOSSARY = {
     term: "awaiting gate",
     text: "Earned, but its milestone gate hasn't been reached yet — so the uplift doesn't count toward the package's current value until the company hits that milestone.",
   },
+  // COM-129: explanatory entries for the Overview benchmark terms (the benchmark citation strings
+  // themselves stay byte-identical — only the tooltip trigger wraps the term token).
+  fast: {
+    term: "FAST",
+    text: "The Founder Institute's Founder/Advisor Standard Template — the market-standard grid for advisor equity by engagement level; the per-head benchmark used here.",
+  },
+  advisoryPool: {
+    term: "advisory pool",
+    text: "The total equity a company sets aside for all advisors combined — benchmarked at roughly 5% of fully-diluted supply.",
+  },
 } as const;

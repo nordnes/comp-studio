@@ -31,6 +31,7 @@ import RosterRow from "../components/roster/RosterRow.vue";
 import RosterIdentity from "../components/roster/RosterIdentity.vue";
 import TierBadge from "../components/roster/TierBadge.vue";
 import Panel from "../components/Panel.vue";
+import CapitalRollupPanel from "../components/CapitalRollupPanel.vue";
 
 const { store, board, select, addAdvisor, delAdvisor, setPath } = useStudio();
 const { openEditor } = useEditor();
@@ -465,6 +466,9 @@ const caseTotalSum = computed(() =>
           above median — an ambitious path.
         </p>
       </Panel>
+
+      <!-- COM-161 (F20/O15): the capital rollup — the board as a fundraising channel -->
+      <CapitalRollupPanel />
 
       <!-- potential scatter -->
       <Panel

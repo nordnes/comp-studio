@@ -2483,3 +2483,19 @@ body.includes() never sees set labels/notes; assert persisted state via localSto
 remember toast text + empty-state copy pollute body matches: my 'fixture restored' check
 collided with the empty-state's own example string).** 15/15 live. vp 0/10 · 22/22 · 216/0/0 ·
 build 0. Next: COM-148 (set switcher + diff + A/B) — closes Wave 2 AND the M10 milestone.
+
+## 2026-06-10 — COM-148 DONE — ★ WAVE 2 / THE M10 MILESTONE COMPLETE [W2 #3]
+
+**COM-148 (M, 283 LOC, PR #88) — DONE + MERGED. M10 · Engine v2 = 12 Done + COM-87 Duplicate,
+PRs #71–#88, every engine PR under the §7 gate, v2 suite 22→217 vectors with zero pendings.**
+The three set reads: the global Set LENS (third shell lens beside Case/Stage; activation
+deep-copies + Undo toast; snaps back to 'Working scenarios') · engine diffSets (per-advisor net +
+cost/founder/pool deltas; '' = working) on Compare · same-advisor A/B (duplicateAdvisor 'Fork B' +
+evaluate-under-set). **Probe lesson (2nd occurrence → rule): generic '$X.XM' regexes on a page
+grab the bridge post-money — anchor money assertions to a LABELED figure ('Base $…' from the
+FootballField) or read localStorage; and assertion direction sanity: a cheaper exit with the same
+raise DILUTES (founder % falls — I asserted the inverse in the diffSets vector first).** 10/10
+live (R3.4 end-to-end). vp 0/10 · 22/22 · 217/0/0 · build 0. **Prod check pending: prod serves
+the pre-#88 bundle (BBEXHKjd vs tip DBYaw9mn) — the production deploy was still propagating at
+close; re-verify before Wave 3's first merge.** Next: M10-boundary grader → Wave 3 (M11:
+COM-155 spine first).

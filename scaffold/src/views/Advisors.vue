@@ -39,6 +39,7 @@ import GrowthWaterfall from "../components/GrowthWaterfall.vue";
 import UpsideCurve from "../components/UpsideCurve.vue";
 import ExitSlider from "../components/ExitSlider.vue";
 import TrajectoryView from "../components/TrajectoryView.vue";
+import ReviewPanel from "../components/ReviewPanel.vue";
 import VestingTimeline from "../components/VestingTimeline.vue";
 import FootballField from "../components/FootballField.vue";
 import MixBreakdown from "../components/MixBreakdown.vue";
@@ -304,7 +305,11 @@ const backstop = computed(() => {
       >
         <template #tab-panel="{ tab }">
           <div class="w-full pt-6">
-            <TrajectoryView v-if="tab.label === 'Trajectory'" :c="c" :sel="sel" />
+            <template v-if="tab.label === 'Trajectory'">
+              <TrajectoryView :c="c" :sel="sel" />
+              <!-- COM-158: the F16 review workflow rides the Trajectory tab (its entry point) -->
+              <ReviewPanel :sel="sel" />
+            </template>
             <VestingTimeline v-else-if="tab.label === 'Vesting'" :c="c" :sel="sel" />
             <MixBreakdown v-else-if="tab.label === 'Mix'" :c="c" />
             <DilutionPath v-else-if="tab.label === 'Dilution'" :c="c" />

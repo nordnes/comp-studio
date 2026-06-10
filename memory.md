@@ -1835,3 +1835,24 @@ footer-items = Configure + Share/More.
   console errors. vp 0 · 22/22 both · build 0.
 - **New zsh gotcha: backticks inside a double-quoted `git commit -m "..."` get command-substituted**
   (ate a word; amended). Single-quote commit messages or use Write+`-F`.
+
+## 2026-06-10 — COM-105 (palette rebuild) DONE — ★ UPSTREAM BUG FOUND [M9 finish-loop W3 #2]
+
+**COM-105 (P3 Med, L, 164/183 LOC) — DONE + MERGED.**
+- **★ frappe-ui 0.1.278 CommandPalette is BROKEN AS SHIPPED:** its SFC root is a DOUBLED `<template>` —
+  the bare inner one compiles to a native INERT template element (verified with @vue/compiler-sfc:
+  `createElementBlock("template")`), so its Dialog renders into inert DOM and never teleports. Symptom:
+  show flips true, nothing appears, zero console errors. **The lib's CommandPaletteItem is fine.**
+- Fix shape: ported the lib component's template verbatim into our CommandPalette.vue with the root
+  fixed — frappe-ui Dialog (`{size:'xl',position:'top'}` + @after-leave clears query) + CommandPaletteItem
+  (`{name,title,description,disabled}` items; `component: markRaw(CommandPaletteItem)` per group) +
+  @headlessui/vue Combobox (now an EXPLICIT dep ^1.7.23 — it was already in the tree via frappe-ui; 1-line
+  package.json+lock delta kept deliberately). Parent owns filtering (the lib palette filters NOTHING),
+  the open-command-palette event, and the Import file input. Global watcher: Cmd/Ctrl+K opens (note: only
+  opens, no toggle — Frappe behavior), Esc closes. App.vue trigger glyph → `<KeyboardShortcut combo="Mod+K">`
+  (renders ⌘K on Mac, Ctrl+K elsewhere; aria "Shortcut Command + K").
+- **Keyboard regression pass on :4173:** ⌘K opens + input autofocused (headlessui), 16 cmds in 4 groups,
+  type→filter, ↓ activates (aria-activedescendant — NOTE: activation lands a TICK later; same-tick
+  synthetic ↓+↵ silently no-ops — two-eval it), ↵ selects→navigates→closes, Esc closes, "No matches"
+  disabled item renders. Dialog leave transition ≈300ms (a "closed" check right after Esc reads stale).
+- For COM-94 (palette Actions): write new verbs in the `{name,title,description,run}` shape.

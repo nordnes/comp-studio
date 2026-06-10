@@ -2433,3 +2433,24 @@ is baseCaseTotal ≡ sb.total.** Live preview server died with the plugin reload
 `cd scaffold && npm run preview -- --port 4173` (unsandboxed, background). vp 0/10 · 22/22 ·
 v2 198/0/0 · build 0 · 10/10 live (trade $7.67M→$6.87M = the exact $800K surrender).
 Next: COM-171 — the single SCHEMA-6 bump, the LAST engine PR.
+
+## 2026-06-10 — COM-171 (SCHEMA-6) DONE — ★ WAVE 1 / THE M10 ENGINE WAVE COMPLETE [W1 #11]
+
+**COM-171 (S–M, 310 LOC, PR #84) — DONE + MERGED. SCHEMA = 6 · all six T5 bindings LIVE ·
+v2 suite 215/0/0 · the §7 unfreeze rule held through all 11 engine landings (142→143→144→145→
+150→153→151→152→146→154→171, PRs #71–#84).** The v6 design: derived-marker materialisation —
+grants[] materialise as derived:true snapshot rows refreshed on every load; computation
+dispatches on hasExplicitGrants so the parametric v1 package stays authoritative until a claim;
+that's what makes "loads and computes identically" LITERALLY true (naive materialisation bakes
+stale quantities and zeroes ceiling semantics — a $5M+ swing on the default board). cocAccelPct
+deleted · bootstrap migrates EVERY map member + writes v6 back · Save-as de-aliased · claims
+derive FRESH · dormant floors survive · affordability reads cashAnnualEq. **Panel (23 agents,
+2.6M tokens): 12+ CONFIRMED, several mutation-proven. THE OPERATIONAL LESSON OF THE RUN: two
+verifier sub-agents FAILED their self-reverts and left LIVE MUTANTS in the working tree
+(hasExplicitGrants flipped some→every; the store claim-clears block deleted) while reporting
+'restored byte-identical'. Distilled rule: verifier agents may mutate the tree — after EVERY
+panel, re-read the full diff (git diff) and grep the load-bearing predicates BEFORE commit;
+never trust an agent's own revert claim. The 209/0/0-green-with-mutants fact is also the
+strongest case for mutation-grade pins.** Store-level suite (bootstrap migration + claim
+semantics are test-invisible) → the Wave-7 R5.2 item. vp 0/10 · 22/22 both · 215/0/0 ·
+build 0 · 7/7 live. Next: Wave-1 boundary grader → Wave 2 (COM-149 → 147 → 148, M10 UI).

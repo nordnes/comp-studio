@@ -2177,3 +2177,27 @@ RFC prep" (ULTRACODE_M9_FINISH.md is a completed predecessor). **Next:** author 
 (COM-140 gate scope — engine-unfreeze reconciliation suite), then the M10 run-prompt. Open human
 items: Charlie's COM-139 sign-off → merge PR #68; COM-33/34 public-URL remediation; COM-36
 merge-to-main; pool-sizing blanks (spec Part 17).
+
+## 2026-06-10 — Post-gate continuation: main synced (COM-36 git half) + M10 RFC authored (COM-140)
+
+**COM-36 (git half DONE, Vercel half → Robin).** `main` merged up to the gated M9 frosty state
+(merge commit 93d6073, prior-pattern parity with 4a6473b): 44 M9 issues, spec v2, DESIGN_SYSTEM,
+/governance. QA at the merge: build 0 · 22/22 both · engine.ts byte-identical. COM-139's wording
+NOT included (still held on PR #68). Vercel Production-Branch flip → Robin (comp-studio's Vercel
+project is NOT in the Raiku Labs team scope — `raiku-advisor` there is a different Next.js app;
+COM-71 stands). Linear commented; issue stays In Progress on the Vercel half.
+
+**COM-140 (M10 gate) — RFC + reconciliation suite MERGED (PR #70); Linear stays In Progress —
+Robin flipping it Done IS the unfreeze sign-off.** engine/ENGINE_V2_RFC.md (domain model w/
+lifecycle-vs-docStatus split, additive-SCHEMA-5 → single-SCHEMA-6 migration, five-condition
+unfreeze rule, landing order 142→143→144→145→150→153→151→152→146→154→v6) +
+engine/engine.v2.test.mjs (**37 passed / 0 failed / 6 pending(v2)**: T1 workbook parity to the
+dollar incl. Robin-% chain + headline cells; T2 pins v1 vestedFrac — it is ALREADY the Cert v3
+annual staircase; T3 RTA 75%/36 curve + 24-mo qualifying gate; T4 value→quantity; T5 pending
+API bindings). 22/22 untouched both copies. Adversarial 4-agent verify: 0 blockers; fixed-in:
+v1 already prices strike off grantRound (COM-144 = multi-grant, not round-strike), COM-153's
+export name `modelDeparture` adopted, cocAccelPct deletion sequenced behind PR #68, **15% pool
+cell 8,523 is ~3.5 shares short of its own arithmetic (8,526.49 exact)** — COM-142 footnote +
+flagged to Robin on COM-140. Scope comment posted on COM-151 (Part 10 #7 carve-out doc note).
+**Next:** Robin sign-offs (COM-140 = unfreeze; COM-139 wording via Charlie; COM-36 Vercel flip),
+then encode §8 as Linear blocking relations and author the M10 run-prompt.

@@ -109,7 +109,14 @@ console.log('\nT5 · v2 API parity (binds when the engine unfreezes — ENGINE_V
 P('vestedFracRTA(m) equals the T3 reference across months 0–60');
 P('distributableFrac(grant, m, serviceMonths) applies the 24-month qualifying gate');
 P('valueToQuantity(grant, scenario) equals the T4 reference, restated per scenario');
-P('computeGrant() prices strike per GRANT (COM-144 multi-grant) — v1 prices one implicit grant per advisor');
+{
+  const plan = ENG.DEFAULT().plan;
+  const mk = (over) => ({ id: 'g', instrument: 'option', round: 'bridge', quantity: 100, curve: 'cert-v3', vestStartISO: '2026-06-01', lifecycle: 'granted', ...over });
+  const gBridge = ENG.computeGrant(mk({}), plan, 'base');
+  const gA = ENG.computeGrant(mk({ round: 'seriesA' }), plan, 'base');
+  A('computeGrant() prices strike per GRANT (bridge $1,572.95 vs Series A $1,592.37 ±$0.01)',
+    near(gBridge.strikePps, 1572.95, 0.01) && near(gA.strikePps, 120e6 / 75359.215, 0.05) && gA.strikePps > gBridge.strikePps);
+}
 P('modelDeparture(): Bad Leaver → vested+unvested options lapse, tokens forfeit (COM-153)');
 
 // ---- T6: constitutional baseline + 13.10 pool guardrail (COM-142 — live-bound) ----
@@ -295,6 +302,123 @@ console.log('\nT7 · Scenario sets & composed walk (COM-143):');
     (() => {
       const pi = JSON.parse(JSON.stringify(plan)); pi.scenarios.base.seriesB = { post: 40e6, raise: 40e6, esop: 0 };
       return ENG.walkComposed(pi, 'base').steps.every(st => Number.isFinite(st.N));
+    })());
+}
+
+// ---- T8: multi-grant fold + per-grant pricing (COM-144 — live-bound) ----
+// Part 5.3: later top-up grants price at later valuations; earlier grants enjoy the step-up.
+// The fold returns the v1 SUPERSET shape; the v1 implicit path stays byte-equivalent (22/22 pin).
+console.log('\nT8 · Grant[] fold & per-grant strike/FMV (COM-144):');
+{
+  const dflt = ENG.DEFAULT();
+  const plan = dflt.plan;
+  const mk = (over) => ({ id: 'g' + Math.abs(JSON.stringify(over).length), instrument: 'option', round: 'bridge', quantity: 100, curve: 'cert-v3', vestStartISO: '2026-06-01', lifecycle: 'granted', ...over });
+  const w = ENG.walkScenario(plan, 'base');
+  const exitPps = w.exit.post / w.exit.N;
+  // pricing references
+  const g1 = ENG.computeGrant(mk({ id: 'g1' }), plan, 'base');
+  A('option net at exit = q·(exitPps − strike), net of strike always',
+    near(g1.netAtExit, 100 * (exitPps - w.byId.bridge.price), 0.01));
+  A('explicit strikePps overrides the round price', ENG.computeGrant(mk({ strikePps: 2000 }), plan, 'base').strikePps === 2000);
+  A('underwater: strike above exit consideration → net 0 + flag, never negative',
+    (() => { const g = ENG.computeGrant(mk({ strikePps: 5000 }), plan, 'base'); return g.netAtExit === 0 && g.underwater === true; })());
+  A('FMV methodology: current stage (bridge) → fmvPps = bridge price; exitPps carried separately',
+    near(g1.fmvPps, w.byId.bridge.price, 0.01) && near(g1.exitPps, exitPps, 0.01));
+  A('rta grant: value = quantity × (TGE FDV ÷ supply), restated per scenario',
+    (() => { const g = ENG.computeGrant(mk({ instrument: 'rta', quantity: 1e6, curve: 'rta' }), plan, 'base'); return near(g.value, 1e6 * (600e6 / 10e9), 0.01); })());
+  A('cash grant: value = valueUSD', ENG.computeGrant(mk({ instrument: 'cash', valueUSD: 50000 }), plan, 'base').value === 50000);
+  A('lapsed grant prices to zero (quantity zeroed, value 0, flagged)',
+    (() => { const g = ENG.computeGrant(mk({ lifecycle: 'lapsed' }), plan, 'base'); return g.value === 0 && g.quantity === 0 && g.lapsed === true; })());
+  A('unknown grant round falls back to the bridge cell', near(ENG.computeGrant(mk({ round: 'ghost' }), plan, 'base').strikePps, 1572.95, 0.01));
+  // the fold
+  const adv = { ...dflt.advisors[0], id: 'multi', grants: [
+    mk({ id: 'e1' }), mk({ id: 'e2', round: 'seriesA' }),
+    mk({ id: 't1', instrument: 'rta', quantity: 1e6, curve: 'rta' }),
+    mk({ id: 'c1', instrument: 'cash', valueUSD: 50000 }),
+    mk({ id: 'dead', lifecycle: 'lapsed', quantity: 999999 }),
+  ] };
+  const c = ENG.computeAdvisor(adv, plan, dflt.tiers, dflt.objectives);
+  const aPrice = 120e6 / ENG.walkScenario(plan, 'base').byId.seriesA.N;
+  A('fold: equityShares = Σ live option quantities (lapsed excluded)', c.equityShares === 200);
+  A('fold: exerciseCost = Σ q·strike; strikePps = the weighted average',
+    near(c.exerciseCost, 100 * 1572.95 + 100 * aPrice, 0.5) && near(c.strikePps, c.exerciseCost / 200, 1e-9));
+  A('fold: base equity = Σ per-grant net-of-strike; tokens restate per scenario',
+    near(c.base.equity, 100 * (exitPps - 1572.95) + 100 * (exitPps - aPrice), 0.5)
+    && near(c.base.token, 1e6 * 0.06, 0.01) && near(c.baseCaseTotal, c.base.equity + c.base.token, 1e-6));
+  A('fold: cash grants land in cashTotal once (not annualised)', c.cashTotal === 50000);
+  A('fold: the v1 superset shape survives (scen/base/netEqAt/bestCaseTotal present)',
+    Array.isArray(c.scen) && typeof c.base.netEqAt === 'function' && c.bestCaseTotal >= c.baseCaseTotal);
+  // v1 parity + the derivation shim
+  const v1c = ENG.computeAdvisor(dflt.advisors[0], plan, dflt.tiers, dflt.objectives);
+  A('v1 advisors (no grants[]) keep the implicit path: equityShares ≡ eqPct·grantN',
+    near(v1c.equityShares, v1c.eqPct * v1c.base.grantN, 1e-6));
+  const eff = ENG.effectiveGrants(dflt.advisors[0], plan, dflt.tiers, dflt.objectives);
+  A('effectiveGrants derives the implicit package (option + rta rows, lifecycle granted)',
+    eff.length === 2 && eff[0].instrument === 'option' && eff[1].instrument === 'rta'
+    && eff.every(g => g.lifecycle === 'granted'));
+  A('shim consistency: the derived option row re-prices to the v1 base net (±$0.01)',
+    near(ENG.computeGrant(eff[0], plan, 'base').netAtExit, v1c.baseEqNet, 0.01));
+  A('effectiveGrants returns explicit grants verbatim when present',
+    ENG.effectiveGrants(adv, plan, dflt.tiers, dflt.objectives) === adv.grants);
+  // round-trips (derive-don't-materialise + trust boundary)
+  const rt = JSON.parse(JSON.stringify(dflt));
+  rt.advisors[0].grants = [
+    { id: 'k1', instrument: 'option', round: 'seriesA', quantity: 50, strikePps: 1600, curve: 'cert-v3', vestStartISO: '2026-07-01', lifecycle: 'granted', docStatus: 'signed', docUrl: 'https://docs.example/cert.pdf' },
+    { id: 'k2', instrument: 'rta', quantity: -5, lifecycle: 'loi', docUrl: 'javascript:alert(1)' },
+    { id: 'bad', instrument: 'warrant' }, 'junk', { instrument: 'option' },
+  ];
+  rt.advisors[1].grants = 'nope';
+  const rr = ENG.reconcile(rt);
+  A('round-trip: valid grants survive verbatim (strike, docStatus, https docUrl kept)',
+    (() => { const g = rr.advisors[0].grants[0]; return g.strikePps === 1600 && g.docStatus === 'signed' && g.docUrl === 'https://docs.example/cert.pdf'; })());
+  A('round-trip: junk heals — negative qty deleted, javascript: docUrl stripped, bad instrument/shape dropped, curve defaults by instrument',
+    (() => { const gs = rr.advisors[0].grants; const g2 = gs.find(g => g.id === 'k2'); return gs.length === 2 && g2.quantity == null && g2.docUrl == null && g2.curve === 'rta' && g2.lifecycle === 'loi'; })());
+  A('round-trip: non-array grants junk → key deleted; v1 advisors stay grantless (derive-don\'t-materialise)',
+    rr.advisors[1].grants == null && rr.advisors[2].grants == null
+    && Object.prototype.hasOwnProperty.call(rr.advisors[1], 'grants') === false);
+  // Review-panel pins (2026-06-10 — 9 confirmed findings, all fixed):
+  A('stage mapping: currentStage "tge" (a milestone, not a round) prices FMV at Series A, not bridge',
+    (() => {
+      const p2 = { ...plan, currentStage: 'tge' };
+      const g = ENG.computeGrant(mk({ id: 's1' }), p2, 'base');
+      return near(g.fmvPps, 120e6 / 75359.215, 0.05) && g.stepUp > 19;
+    })());
+  A('stage mapping: eqPct denominates in the CURRENT round FD (Series A 75,359 at tge)',
+    (() => {
+      const p2 = { ...plan, currentStage: 'tge' };
+      const c2 = ENG.computeAdvisor({ ...dflt.advisors[0], grants: [mk({ id: 'q1' })] }, p2, dflt.tiers, dflt.objectives);
+      return near(c2.eqPct, 100 / 75359.215, 1e-7);
+    })());
+  A('nil-cost option: strikePps 0 prices at q·exitPps AND survives the reconcile round-trip',
+    (() => {
+      const g0 = ENG.computeGrant(mk({ strikePps: 0 }), plan, 'base');
+      const rt0 = JSON.parse(JSON.stringify(dflt));
+      rt0.advisors[0].grants = [mk({ id: 'nil', strikePps: 0 })];
+      const kept = ENG.reconcile(rt0).advisors[0].grants[0];
+      return near(g0.netAtExit, 100 * exitPps, 0.01) && kept.strikePps === 0;
+    })());
+  A('grants [] is EXPLICIT ZERO: the implicit package never resurrects (delete-last-grant and corrupt-import-drops-all both → $0)',
+    (() => {
+      const empty = ENG.computeAdvisor({ ...dflt.advisors[0], grants: [] }, plan, dflt.tiers, dflt.objectives);
+      const rtE = JSON.parse(JSON.stringify(dflt));
+      rtE.advisors[0].grants = [{ id: 'w1', instrument: 'warrant', quantity: 100 }];
+      const dropped = ENG.reconcile(rtE).advisors[0];
+      const droppedC = ENG.computeAdvisor(dropped, plan, dflt.tiers, dflt.objectives);
+      return empty.baseCaseTotal === 0 && Array.isArray(dropped.grants) && dropped.grants.length === 0
+        && droppedC.baseCaseTotal === 0
+        && ENG.effectiveGrants({ ...dflt.advisors[0], grants: [] }, plan, dflt.tiers, dflt.objectives).length === 0;
+    })());
+  A('netEqAt is fold-consistent: scen.equity === netEqAt(eqPct, exitVal) for explicit strikes and multi-round grants',
+    (() => {
+      const c2 = ENG.computeAdvisor({ ...dflt.advisors[0], grants: [mk({ id: 'x1', strikePps: 2500 }), mk({ id: 'x2', round: 'seriesA' })] }, plan, dflt.tiers, dflt.objectives);
+      return c2.scen.every(s => near(s.equity, s.netEqAt(c2.eqPct, s.exitVal), 0.01));
+    })());
+  A('lifecycle heals fail-CLOSED: unknown value ("cancelled") → lapsed ($0); absent → draft (counts)',
+    (() => {
+      const rtL = JSON.parse(JSON.stringify(dflt));
+      rtL.advisors[0].grants = [{ id: 'l1', instrument: 'option', round: 'bridge', quantity: 100, lifecycle: 'cancelled' }, { id: 'l2', instrument: 'option', round: 'bridge', quantity: 100 }];
+      const gs = ENG.reconcile(rtL).advisors[0].grants;
+      return gs[0].lifecycle === 'lapsed' && gs[1].lifecycle === 'draft';
     })());
 }
 

@@ -1530,6 +1530,66 @@ export function exerciseCheck(grant: Grant, atISO: string, windows: ExerciseWind
   };
 }
 
+// ===== v2 (COM-169/F23): the exercise runbook — every exercise compliant by construction =====
+// Composes COM-151's window/backstop check, COM-168's valuation-aware pricing (via computeGrant),
+// and the jurisdictional checklist (B.6 PSC routing: the s431 election attaches to the
+// UNDERLYING INDIVIDUAL — shares issued to the Service Provider personally → election available,
+// signed by the individual; shares issued to the entity → NOT available; flagged at every
+// Contracted-Entity exercise). Pure modeling + checklist (v1 of the feature); the pack is the
+// return value — document generation comes later.
+export type RunbookStatus = 'ok' | 'action' | 'blocked';
+export function exerciseRunbook(
+  advisor: Advisor, grant: Grant, qty: number, atISO: string,
+  plan: Plan, windows: ExerciseWindow[] = [],
+) {
+  const check = exerciseCheck(grant, atISO, windows);
+  const r: any = computeGrant(grant, plan, baseScenKey(plan));
+  const n = ok(qty) && qty > 0 ? Math.min(qty, r.quantity || 0) : 0;
+  const strike = r.strikePps ?? 0;
+  const fmv = r.fmvPps ?? 0;
+  const costs = {
+    qty: n,
+    exerciseCost: n * strike,
+    fmvValue: n * fmv,
+    intrinsic: Math.max(0, n * (fmv - strike)),
+    underwater: fmv < strike,
+    strikePps: strike, fmvPps: fmv,
+    valuationBasis: plan.valuation ? `${plan.valuation.basis} ${plan.valuation.dateISO}` : 'round-derived',
+  };
+  const items: { id: string; label: string; status: RunbookStatus }[] = [];
+  const windowOk = check.inWindow || check.backstop.required;
+  items.push({
+    id: 'window',
+    label: check.inWindow
+      ? `Inside the Board-determined window (${check.window!.openISO} → ${check.window!.closeISO}).`
+      : check.backstop.required
+        ? `The Clause 3.6 backstop applies — a ≥${check.backstop.minWindowDays}-day window must be open (≥${check.backstop.noticeDays} days' notice), closing by ${check.backstop.lastCloseISO}.`
+        : `No open exercise window at ${atISO} — exercise is restricted to Board-determined liquidity windows (next backstop ${check.backstop.anniversary9ISO}).`,
+    status: windowOk ? 'ok' : 'blocked',
+  });
+  if (advisor.taxResidency === 'UK') {
+    const viaEntity = advisor.contracting === 'entity';
+    items.push(viaEntity
+      ? {
+          id: 's431-psc',
+          label: `Contracted-Entity exercise (${advisor.contractEntity || 'PSC'}): the s431 election attaches to the underlying individual — AVAILABLE only if shares are issued to the Service Provider personally (signed by the individual + the engaging entity, within 14 days); shares issued to the entity → NO election (ERSM20220). Confirm the issuance route BEFORE exercising.`,
+          status: 'action',
+        }
+      : {
+          id: 's431',
+          label: 'UK grantee: file the s431 election within 14 days of exercise (restricted securities).',
+          status: 'action',
+        });
+  }
+  if (advisor.taxResidency === 'US') {
+    items.push({ id: '409a', label: 'US grantee: s83(b)/409A treatment applies — confirm the 409A position against the agreed valuation before exercise.', status: 'action' });
+  }
+  items.push({ id: 'deed', label: 'Deed of adherence executed before first exercise (drag-along, transfer restrictions, power of attorney — the sole contractual layer; no SHA exists).', status: 'action' });
+  items.push({ id: 'election', label: `Cash-free routes: net exercise at Board discretion on written request (Rule ${check.netExercise.rule}); sell-to-cover holder-elected with surplus accounted (Rule ${check.sellToCover.rule}).`, status: 'ok' });
+  const blocked = items.some(i => i.status === 'blocked') || !check.exercisable || n <= 0;
+  return { check, costs, items, blocked, exercisable: check.exercisable };
+}
+
 // ===== v2: leaver engine (COM-153 — Plan v9 Rule 5.8 · the RTA · Appendix F) =====
 // Bad Leaver (RTA-aligned): any cessation other than death PLUS any of the six limbs.
 export const BAD_LEAVER_LIMBS = [

@@ -42,6 +42,7 @@ import ExitSlider from "../components/ExitSlider.vue";
 import TrajectoryView from "../components/TrajectoryView.vue";
 import ReviewPanel from "../components/ReviewPanel.vue";
 import DepartureDialog from "../components/DepartureDialog.vue";
+import ExerciseRunbook from "../components/ExerciseRunbook.vue";
 import VestingTimeline from "../components/VestingTimeline.vue";
 import FootballField from "../components/FootballField.vue";
 import MixBreakdown from "../components/MixBreakdown.vue";
@@ -96,6 +97,13 @@ const overrideDiverged = computed(
 const detailTab = ref(0);
 // COM-163: the departure dialog (F18)
 const departureOpen = ref(false);
+// COM-169: the exercise runbook (F23) — per option row
+const runbookOpen = ref(false);
+const runbookGrant = ref<any>(null);
+function openRunbook(g: any) {
+  runbookGrant.value = g;
+  runbookOpen.value = true;
+}
 // COM-47: the exit slider publishes the selected exit value; UpsideCurve marks it on the equity curve.
 const exitMarker = ref<number | null>(null);
 
@@ -295,6 +303,7 @@ const backstop = computed(() => {
       </div>
     </Panel>
     <DepartureDialog v-model="departureOpen" :sel="sel" />
+    <ExerciseRunbook v-model="runbookOpen" :sel="sel" :grant="runbookGrant" />
 
     <!-- full-width decision projection (COM-88: space-y-8 gives the de-boxed groups their rhythm) -->
     <div class="space-y-8 print-area">
@@ -437,6 +446,20 @@ const backstop = computed(() => {
                         @update:model-value="(v) => updateGrant(sel.id, g.id, { lifecycle: v })"
                       />
                       <Badge v-else theme="gray" size="sm">{{ g.lifecycle }}</Badge>
+                      <!-- COM-169 (F23): the exercise runbook per option row -->
+                      <button
+                        v-if="
+                          g.instrument === 'option' &&
+                          g.lifecycle !== 'lapsed' &&
+                          g.lifecycle !== 'exercised'
+                        "
+                        :aria-label="`Exercise runbook for this grant`"
+                        title="Run an exercise event — window check, elections, the s431/409A checklist"
+                        class="inline-flex shrink-0 items-center justify-center size-8 rounded hover:bg-surface-gray-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-gray-6)] text-ink-gray-6 hover:text-ink-gray-8"
+                        @click="openRunbook(g)"
+                      >
+                        <span class="lucide-play size-3.5" aria-hidden="true" />
+                      </button>
                       <button
                         v-if="isExplicit"
                         aria-label="Remove grant"

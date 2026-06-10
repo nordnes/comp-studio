@@ -93,6 +93,24 @@ const savedNames = computed(() => Object.keys(store.saved));
 const savedRows = computed(() =>
   savedNames.value.map((n) => ({ name: n, current: n === store.last })),
 );
+// COM-102: board identity IS the switcher — a Dropdown triggered by the active board's name
+// (the Gameplan workspace-switcher idiom); Manage… opens the existing Mgr Dialog.
+const boardSwitcherOptions = computed(() => [
+  {
+    group: "Boards",
+    hideLabel: true,
+    items: savedNames.value.map((n) => ({
+      label: n,
+      icon: n === store.last ? "lucide-check" : "lucide-folder-open",
+      onClick: () => loadBoard(n),
+    })),
+  },
+  {
+    group: "Manage",
+    hideLabel: true,
+    items: [{ label: "Manage boards…", icon: "lucide-pen", onClick: () => toggleMgr() }],
+  },
+]);
 const savedListOptions = {
   selectable: false,
   showTooltip: false,
@@ -157,10 +175,14 @@ const scenarioOptions = computed(() =>
   scenKeys(store.S.plan).map((k) => ({ label: store.S.plan.scenarios[k].label, value: k })),
 );
 
-// COM-62: breadcrumb — Studio › view › advisor (the advisor segment only on the per-advisor routes).
+// COM-62: breadcrumb — board › view › advisor (the advisor segment only on the per-advisor routes).
+// COM-102: the root is the active BOARD, not the static "Studio" (board identity in the chrome).
 const allNav = [...navGroups.flatMap((g) => g.items), configureItem];
 const breadcrumb = computed(() => {
-  const parts = ["Studio", allNav.find((i) => i.to === route.path)?.label || ""];
+  const parts = [
+    store.S.name || "Untitled board",
+    allNav.find((i) => i.to === route.path)?.label || "",
+  ];
   const adv = selected.value?.a?.name;
   if (adv && (route.path === "/advisors" || route.path === "/proposition")) parts.push(adv);
   return parts.filter(Boolean);
@@ -254,14 +276,17 @@ const openCmdK = () => window.dispatchEvent(new Event("open-command-palette"));
                 <span>Search</span>
                 <KeyboardShortcut combo="Mod+K" class="ml-auto text-ink-gray-4" />
               </button>
-              <Button
-                class="w-full"
-                variant="subtle"
-                theme="gray"
-                icon-left="lucide-folder-open"
-                :label="savedNames.length ? `Saved · ${savedNames.length}` : 'Saved boards'"
-                @click="toggleMgr()"
-              />
+              <!-- COM-102: the active board's NAME is the switcher trigger -->
+              <Dropdown class="w-full" :options="boardSwitcherOptions">
+                <Button
+                  class="w-full"
+                  variant="subtle"
+                  theme="gray"
+                  icon-left="lucide-folder-open"
+                  :label="store.S.name || 'Untitled board'"
+                  :title="`Board · ${store.S.name}`"
+                />
+              </Dropdown>
               <label
                 v-if="scenarioOptions.length > 1"
                 class="flex items-center gap-2"

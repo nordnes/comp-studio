@@ -6,7 +6,7 @@ import { computed, ref } from "vue";
 import { useRoute } from "vue-router";
 // COM-106: Configure joins the Advisors form idiom — TextInput for inline labels, FormControl for
 // the date; NumIn stays (the deliberate click-to-edit numeric). setPath wiring unchanged.
-import { Button, Select, Switch, TextInput, FormControl } from "frappe-ui";
+import { Badge, Button, Select, Switch, TextInput, FormControl } from "frappe-ui";
 import { useStudio } from "../store";
 import { confirmDestroy } from "../confirm";
 import {
@@ -54,6 +54,7 @@ const {
   duplicateSet,
   updateSet,
   deleteSet,
+  closeRound,
 } = useStudio();
 
 const S = store; // reactive
@@ -289,31 +290,58 @@ const composed = computed(() => walkComposed(S.S.plan, baseScenKey(S.S.plan), pr
                   @click="addRound"
                 />
               </div>
-              <div class="grid sm:grid-cols-4 gap-2 mb-5">
+              <div class="grid sm:grid-cols-4 gap-2 mb-3">
                 <div
                   v-for="(rd, i) in S.S.plan.rounds"
                   :key="rd.id"
-                  class="rounded border border-outline-gray-2 bg-surface-gray-2 p-2 flex items-center gap-2"
+                  class="rounded border border-outline-gray-2 bg-surface-gray-2 p-2"
                 >
-                  <span class="text-xs text-ink-gray-6 tabular-nums">{{ i + 1 }}</span>
-                  <TextInput
-                    class="flex-1 min-w-0"
-                    size="sm"
-                    :model-value="rd.label"
-                    :aria-label="`Round ${i + 1} name`"
-                    @update:model-value="(v: string) => setPath(['plan', 'rounds', i, 'label'], v)"
-                  />
-                  <button
-                    v-if="S.S.plan.rounds.length > 1"
-                    aria-label="Delete round"
-                    title="Deleting a round reassigns grants made at it"
-                    class="inline-flex shrink-0 items-center justify-center size-8 rounded hover:bg-surface-gray-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-gray-6)] text-ink-gray-6 hover:text-ink-red-3"
-                    @click="confirmDelRound(rd)"
-                  >
-                    <span class="lucide-trash-2 size-3.5" aria-hidden="true" />
-                  </button>
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs text-ink-gray-6 tabular-nums">{{ i + 1 }}</span>
+                    <TextInput
+                      class="flex-1 min-w-0"
+                      size="sm"
+                      :model-value="rd.label"
+                      :aria-label="`Round ${i + 1} name`"
+                      @update:model-value="
+                        (v: string) => setPath(['plan', 'rounds', i, 'label'], v)
+                      "
+                    />
+                    <button
+                      v-if="S.S.plan.rounds.length > 1"
+                      aria-label="Delete round"
+                      title="Deleting a round reassigns grants made at it"
+                      class="inline-flex shrink-0 items-center justify-center size-8 rounded hover:bg-surface-gray-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-gray-6)] text-ink-gray-6 hover:text-ink-red-3"
+                      @click="confirmDelRound(rd)"
+                    >
+                      <span class="lucide-trash-2 size-3.5" aria-hidden="true" />
+                    </button>
+                  </div>
+                  <!-- COM-162 (F17): close the round — re-price + crystallise + (Series A) reviews -->
+                  <div class="mt-1.5 pl-5">
+                    <Badge v-if="rd.closedISO" theme="green" variant="subtle" size="sm"
+                      >Closed {{ rd.closedISO }}</Badge
+                    >
+                    <button
+                      v-else
+                      class="text-xs text-ink-gray-6 underline decoration-dotted hover:text-ink-gray-8 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-gray-6)] rounded"
+                      :title="`Close ${rd.label}: new grants price here; gated capital uplifts crystallise${rd.id === 'seriesA' ? '; structural reviews scheduled for every advisor' : ''}`"
+                      @click="closeRound(rd.id)"
+                    >
+                      Mark closed
+                    </button>
+                  </div>
                 </div>
               </div>
+              <!-- COM-162: the grant-timing guidance (E.1 / Appendix F) -->
+              <p class="text-p-xs text-ink-gray-6 mb-5">
+                Grant timing: nothing can be granted before the bridge closes (terms, cancellation
+                cleanup, Pantera rights). Once permitted, pre-round grants are attractive — the
+                bridge implies roughly +30% expected price uplift to the next round. Closing a round
+                here means comp and fundraising move together: new grants price at the closed round,
+                gated capital uplifts crystallise, and Series A flags the structural review of every
+                package.
+              </p>
 
               <!-- scenarios -->
               <div class="flex items-center justify-between mb-3">

@@ -17,12 +17,9 @@ const roll = computed(() =>
 );
 const rosterNames = computed(() => S.value.advisors.map((a: any) => a.name));
 const sn = (n: string) => shortName(n, rosterNames.value);
-// the live raise target — the bridge raise (O15's "bridge $5m+")
-const raiseTarget = computed(() => S.value.plan.bridge.raise);
-const coverage = computed(() => {
-  const t = roll.value.totals;
-  return raiseTarget.value > 0 ? (t.earned + t.gated) / raiseTarget.value : 0;
-});
+// panel 006 (R2.5): the coverage ratio is MONEY MATH — it comes from the engine; the view renders
+const raiseTarget = computed(() => roll.value.raiseTargetUSD);
+const coverage = computed(() => roll.value.coverage);
 const rows = computed(() =>
   roll.value.rows.filter((r: any) => r.total > 0 || r.earnedUpliftValue > 0),
 );

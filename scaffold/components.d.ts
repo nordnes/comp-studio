@@ -19,6 +19,7 @@ declare module 'vue' {
     ExitSlider: typeof import('./src/components/ExitSlider.vue')['default']
     FootballField: typeof import('./src/components/FootballField.vue')['default']
     FrappeChart: typeof import('./src/components/FrappeChart.vue')['default']
+    GrantDecisionWizard: typeof import('./src/components/GrantDecisionWizard.vue')['default']
     GrowthWaterfall: typeof import('./src/components/GrowthWaterfall.vue')['default']
     MixBreakdown: typeof import('./src/components/MixBreakdown.vue')['default']
     NumIn: typeof import('./src/components/NumIn.vue')['default']

@@ -33,6 +33,7 @@ import RosterIdentity from "../components/roster/RosterIdentity.vue";
 import TierBadge from "../components/roster/TierBadge.vue";
 import Panel from "../components/Panel.vue";
 import CapitalRollupPanel from "../components/CapitalRollupPanel.vue";
+import GrantDecisionWizard from "../components/GrantDecisionWizard.vue";
 
 const { store, board, select, addAdvisor, delAdvisor, setPath } = useStudio();
 const { openEditor } = useEditor();
@@ -145,6 +146,8 @@ const sn = (n: string) => shortName(n, rosterNames.value);
 const generosity = computed(() =>
   generosityCheck(S.value.advisors, S.value.plan, S.value.tiers, S.value.objectives),
 );
+// COM-165: the Ispahani grant-decision wizard
+const wizardOpen = ref(false);
 const scatter = computed(() =>
   board.value.rows.map(({ a, c }: any) => {
     const s = sFor(c); // COM-85: scatter re-keys to the board-local case
@@ -265,6 +268,14 @@ const caseTotalSum = computed(() =>
         <Button
           variant="subtle"
           theme="gray"
+          icon-left="lucide-list-checks"
+          label="New grant decision"
+          title="The Ispahani 9-step process (B.3) — leaves an artefact per decision"
+          @click="wizardOpen = true"
+        />
+        <Button
+          variant="subtle"
+          theme="gray"
           icon-left="lucide-printer"
           label="Board pack"
           @click="boardPack"
@@ -278,6 +289,7 @@ const caseTotalSum = computed(() =>
         />
       </template>
     </PageHeader>
+    <GrantDecisionWizard v-model="wizardOpen" />
     <ContextStrip />
 
     <!-- COM-85: board-local scenario projection (presentation-only; the global Case is untouched) -->

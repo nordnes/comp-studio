@@ -599,6 +599,41 @@ export function useStudio() {
     });
   }
 
+  // COM-165 (B.3): record a 9-step grant-decision artefact — "defend it in a board conversation".
+  function recordDecision(data: {
+    subject: string;
+    advisorId?: string;
+    answers: string[];
+    decidedBy?: string;
+  }) {
+    const subject = (data.subject || "").trim();
+    if (!subject) {
+      flash("A decision needs a subject — what grant is this about?");
+      return false;
+    }
+    store.S.decisions = [
+      ...(Array.isArray(store.S.decisions) ? store.S.decisions : []),
+      {
+        id: uid("gd"),
+        atISO: todayISO(),
+        subject,
+        ...(data.advisorId ? { advisorId: data.advisorId } : {}),
+        answers: data.answers,
+        ...(data.decidedBy ? { decidedBy: data.decidedBy } : {}),
+      },
+    ];
+    persist();
+    flash(`Decision recorded · ${subject}`);
+    return true;
+  }
+  function removeDecision(id: string) {
+    if (!Array.isArray(store.S.decisions)) return;
+    pushUndo();
+    store.S.decisions = store.S.decisions.filter((d) => d.id !== id);
+    persist();
+    undoToast("decision artefact");
+  }
+
   // COM-164 (Δ12): snapshot the live package as the next proposition version — the straw-man
   // artefact as sent via Iraj. The engine freezes the figures; the store owns the numbering.
   // Snapshotting a proposition usually means it went out — nudge the pipeline to 'proposed'
@@ -1026,6 +1061,8 @@ export function useStudio() {
     removeIntroduction,
     snapshotProposition,
     removeProposition,
+    recordDecision,
+    removeDecision,
     setAdvisorCase,
     setAdvisorTargetExit,
     setGovItem,

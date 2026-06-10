@@ -1556,5 +1556,34 @@ console.log('\nT23 · Generosity guardrails: the Sjöström check (COM-156):');
     })());
 }
 
+// ---- T24: the Ispahani 9-step decision artefacts (COM-165 — live-bound) ----
+console.log('\nT24 · Grant decisions: the B.3 verbatim steps + artefacts (COM-165):');
+{
+  const dflt = ENG.DEFAULT();
+  A('ISPAHANI_STEPS is the B.3 verbatim sequence, in order, all nine',
+    ENG.ISPAHANI_STEPS.length === 9
+    && ENG.ISPAHANI_STEPS[0].startsWith('Determine what performance/returns')
+    && ENG.ISPAHANI_STEPS[3].includes('franchise situation')
+    && ENG.ISPAHANI_STEPS[7].includes('keeping a reserve for future hires')
+    && ENG.ISPAHANI_STEPS[8] === 'Iterate for sustainability');
+  A('round-trip: artefacts survive; answers pad/truncate to 9; junk drops; id-dedupe; absent stays absent',
+    (() => {
+      const rt = JSON.parse(JSON.stringify(dflt));
+      rt.decisions = [
+        { id: 'd1', atISO: '2026-06-10', subject: 'Iraj chair package', advisorId: 'iraj', answers: ['a', 'b'], decidedBy: 'Robin' },
+        { id: 'd2', atISO: '2026-06-10', answers: Array(20).fill('x') },
+        { id: 'd1', atISO: 'dup-drops' },
+        { atISO: '2026-06-10' }, 'junk',
+      ];
+      const r = ENG.reconcile(rt);
+      const clean = ENG.reconcile(JSON.parse(JSON.stringify(dflt)));
+      return r.decisions.length === 2
+        && r.decisions[0].answers.length === 9 && r.decisions[0].answers[0] === 'a' && r.decisions[0].answers[8] === ''
+        && r.decisions[1].answers.length === 9 && r.decisions[1].subject === 'Grant decision'
+        && r.decisions[0].decidedBy === 'Robin' && r.decisions[0].advisorId === 'iraj'
+        && clean.decisions == null;
+    })());
+}
+
 console.log(`\n${pass} passed, ${fail} failed, ${pending} pending(v2).`);
 process.exit(fail ? 1 : 0);

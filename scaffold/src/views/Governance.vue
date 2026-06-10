@@ -10,7 +10,11 @@ import type { ComplianceItem, RagStatus } from "../governance";
 import PageHeader from "../components/PageHeader.vue";
 import Panel from "../components/Panel.vue";
 
-const { store, setGovItem } = useStudio();
+const { store, setGovItem, removeDecision } = useStudio();
+// COM-165: the decision artefacts, newest first
+const decisions = computed(() => [...(store.S.decisions || [])].reverse());
+const advisorName = (id?: string) =>
+  id ? store.S.advisors.find((a) => a.id === id)?.name || "" : "";
 
 const STATUSES: { key: RagStatus; label: string; on: string; dot: string }[] = [
   { key: "red", label: "Red", on: "bg-surface-red-2 text-ink-red-3", dot: "var(--ink-red-3)" },
@@ -174,5 +178,42 @@ const evidenceHref = (it: ComplianceItem) =>
       Register text is fixed; statuses, owners, evidence and notes are tracking state and save with
       the studio. Internal &amp; confidential.
     </p>
+
+    <!-- COM-165: the grant-decision artefacts (B.3) — the defend-it-in-a-board-conversation log -->
+    <div v-if="decisions.length">
+      <div class="section-label mb-2">Grant decisions · the Ispahani 9-step artefacts</div>
+      <div class="divide-y divide-outline-gray-1 text-sm">
+        <div v-for="d in decisions" :key="d.id" class="py-2.5">
+          <div class="flex items-center gap-3 flex-wrap">
+            <span class="tabular-nums text-ink-gray-6 w-24 shrink-0">{{ d.atISO }}</span>
+            <span class="text-ink-gray-9">{{ d.subject }}</span>
+            <span v-if="advisorName(d.advisorId)" class="text-p-xs text-ink-gray-6"
+              >· {{ advisorName(d.advisorId) }}</span
+            >
+            <span v-if="d.decidedBy" class="text-p-xs text-ink-gray-6"
+              >· decided by {{ d.decidedBy }}</span
+            >
+            <span class="text-p-xs text-ink-gray-6"
+              >· {{ d.answers.filter((a: string) => a).length }}/9 steps answered</span
+            >
+            <button
+              aria-label="Remove decision artefact"
+              class="ml-auto inline-flex shrink-0 items-center justify-center size-7 rounded hover:bg-surface-gray-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-gray-6)] text-ink-gray-6 hover:text-ink-red-3"
+              @click="removeDecision(d.id)"
+            >
+              <span class="lucide-trash-2 size-3.5" aria-hidden="true" />
+            </button>
+          </div>
+          <div class="mt-1 space-y-0.5">
+            <p v-for="(a, i) in d.answers" v-show="a" :key="i" class="text-p-xs text-ink-gray-7">
+              <span class="text-ink-gray-6">{{ i + 1 }}.</span> {{ a }}
+            </p>
+          </div>
+        </div>
+      </div>
+      <p class="text-p-xs text-ink-gray-6 mt-1">
+        Run a new decision from the Board ("New grant decision") — each one leaves this artefact.
+      </p>
+    </div>
   </div>
 </template>

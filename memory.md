@@ -2674,3 +2674,13 @@ the derived rows carry explicit strikes from effectiveGrants — that's WHY the 
 $-grants derive off the agreed spread · Configure form + Instruments caption (explicit-wins said
 out loud) + Proposition fine-print swap w/ fallback. 8/8 live. vp 0/10 · 22/22 · 258/0/0 ·
 build 0. LINEAR DEBT: +COM-168. Next: COM-169 (exercise runbook F23 over 151/153/168).
+
+## 2026-06-11 — COM-169 (exercise runbook F23) DONE [W4 #4]
+
+**COM-169 (M, ~340 LOC, PR #105) — MERGED.** exerciseRunbook composes 151+168+B.6: window/
+backstop gate (blocked outside windows; 3.6 clears at year 9+) · costs at the named basis
+(qty clamps to granted) · the jurisdictional checklist (UK s431 · the PSC issuance-route flag
+at EVERY Contracted-Entity exercise, ERSM20220 · US 409A · deed always · 4.5/7.4(a) routes) ·
+lapsed/zero blocked. Per-option launcher on Instruments → the dialog. 11/11 live. vp 0/10 ·
+22/22 · 263/0/0 · build 0. LINEAR DEBT: +COM-169. Next: COM-170 (append-only audit log —
+closes Wave 4/M12).

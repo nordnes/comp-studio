@@ -3,6 +3,7 @@
 // deleted in COM-110). Every structural list (rounds/scenarios/tiers/milestones/objectives) edits
 // through the store's reducer-parity actions incl. delete-cascades. Numbers use the shared NumIn editor.
 import { ref } from "vue";
+import { useRoute } from "vue-router";
 import { Button, Select, Checkbox } from "frappe-ui";
 import { useStudio } from "../store";
 import {
@@ -49,12 +50,18 @@ function onCsv(e: Event) {
 
 // COM-95: the frappe-ui settings two-column IA — a left rail of three groups replaces the flat
 // 8-section scroll. Presentation state only; every section keeps its exact store wiring.
+// COM-94: ?group=cap|grants|perf deep-links a rail group (the palette's New scenario/objective land
+// on the right section).
 const GROUPS = [
   { key: "cap", label: "Cap table", desc: "Bridge · rounds · scenarios" },
   { key: "grants", label: "Grants & pools", desc: "Uniform base · capital" },
   { key: "perf", label: "Performance", desc: "Objectives · tiers · milestones" },
 ] as const;
-const group = ref<(typeof GROUPS)[number]["key"]>("cap");
+type GroupKey = (typeof GROUPS)[number]["key"];
+const route = useRoute();
+const group = ref<GroupKey>(
+  GROUPS.some((g) => g.key === route.query.group) ? (route.query.group as GroupKey) : "cap",
+);
 
 const esopOpts = [
   { label: "10%", value: 0.1 },

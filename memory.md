@@ -2607,3 +2607,16 @@ change to $1.15M). **Probe rules: Escape on PackageEditor = Cancel-REVERT (use S
 INERT in tier mode (change something that moves money); fUSD(negative) prints '$-6.51M' — sign
 inside.** vp 0/10 · 22/22 · 246/0/0 · build 0. LINEAR DEBT: +COM-164. Next: COM-156 (benchmarks
 & generosity guardrails).
+
+## 2026-06-10 — COM-156 (generosity guardrails) DONE [W3 #10]
+
+**COM-156 (M, 235 LOC, PR #99) — MERGED.** generosityCheck: compa grammar vs the $50K median
+(▲/◆/▼) · FAST Expert-ceiling breach (the FIXTURE breaches by design — its tier-2 anchor is
+1.5%; pinned as such, don't "fix" it) · day-rate reality ($10K/day anchor over tier days) ·
+totality >2× board median · pool ≥50% → Ispahani step-8. Board panel renders it. **Mobile rule
+distilled: grid items have min-width:auto — a table's min-width propagates THROUGH overflow-x-
+auto wrappers and widens the LAYOUT VIEWPORT on isMobile (572→614). Never give tables explicit
+min-widths inside grid columns; and measure mobile against PROD parity, not just self-consistent
+sw≤iw (Chrome's auto-fit makes iw==sw ALWAYS pass).** Board mobile = 572 = prod parity (legacy
+roster width — a Wave-7 R4.3 item). 9/9 live. vp 0/10 · 22/22 · 251/0/0 · build 0. LINEAR DEBT:
++COM-156. Next: COM-165 (Ispahani wizard, S) — closes Wave 3/M11.

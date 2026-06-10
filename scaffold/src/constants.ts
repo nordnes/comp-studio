@@ -53,6 +53,16 @@ const CHART_HEX: Record<string, string> = {
 };
 
 // Resolve a --chart-* token to a concrete hex for libraries that take color values (frappe-charts).
+// COM-136: chart-label shortener — first name, plus a last initial when two advisors share it;
+// mononyms keep their single name and an empty name guards to "—". Presentation only.
+export function shortName(name: string, all: string[]): string {
+  const firstOf = (n: string) => (n || "").trim().split(/\s+/)[0] || "—";
+  const parts = (name || "").trim().split(/\s+/).filter(Boolean);
+  const f = firstOf(name);
+  const dup = all.filter((n) => firstOf(n) === f).length > 1;
+  return dup && parts.length > 1 ? `${f} ${parts[parts.length - 1][0]}.` : f;
+}
+
 export function chartHex(token: string): string {
   const name = token.startsWith("--") ? token : `--${token}`;
   if (typeof window !== "undefined" && typeof getComputedStyle === "function") {

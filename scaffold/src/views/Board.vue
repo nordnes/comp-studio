@@ -17,7 +17,7 @@ import {
   fMult,
   BENCH,
 } from "../engine";
-import { TIER_COLOR, chartHex } from "../constants";
+import { TIER_COLOR, chartHex, shortName } from "../constants";
 import PageHeader from "../components/PageHeader.vue";
 import PoolAllocation from "../components/PoolAllocation.vue";
 import ContextStrip from "../components/ContextStrip.vue";
@@ -120,11 +120,13 @@ const stairColors = computed(() => [chartHex("--chart-capital"), chartHex("--cha
 const PAD = { l: 52, r: 16, t: 16, b: 28 };
 const VW = 460;
 const VH = 280;
+// COM-136: chart labels disambiguate duplicate first names (and guard mononyms/empty).
+const rosterNames = computed(() => board.value.rows.map((r: any) => r.a.name));
 const scatter = computed(() =>
   board.value.rows.map(({ a, c }: any) => {
     const s = sFor(c); // COM-85: scatter re-keys to the board-local case
     return {
-      name: a.name.split(" ")[0],
+      name: shortName(a.name, rosterNames.value),
       x: s.total,
       y: Math.max(0, ceilFor(c) - s.total),
       z: Math.max(c.capTotal || 0, 1),
@@ -184,7 +186,7 @@ const ranges = computed(() =>
   board.value.rows.map(({ a, c }: any) => {
     const totals = c.scen.map((s: any) => s.total);
     return {
-      name: a.name.split(" ")[0],
+      name: shortName(a.name, rosterNames.value),
       lo: Math.min(...totals),
       base: c.baseCaseTotal,
       hi: Math.max(...totals),
@@ -291,11 +293,15 @@ const caseTotalSum = computed(() =>
                 @keydown.space.prevent="open(a.id)"
               >
                 <td class="px-4 py-3">
-                  <div class="flex items-center gap-2.5">
+                  <!-- COM-136: a long legal name truncates instead of shoving numeric columns
+                       off-screen (max-w caps the cell's preferred width in table-auto layout) -->
+                  <div class="flex items-center gap-2.5 min-w-0">
                     <Avatar :label="a.name" size="sm" />
-                    <div>
-                      <div class="font-medium text-ink-gray-9">{{ a.name }}</div>
-                      <div class="text-xs text-ink-gray-6">
+                    <div class="min-w-0 max-w-[14rem]">
+                      <div class="font-medium text-ink-gray-9 truncate" :title="a.name">
+                        {{ a.name }}
+                      </div>
+                      <div class="text-xs text-ink-gray-6 truncate">
                         {{ a.sector.split("—")[0].trim() }}
                       </div>
                     </div>

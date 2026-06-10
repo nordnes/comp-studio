@@ -7,7 +7,9 @@
 // ===== types =====
 export interface RoundDef { id: string; label: string }
 export interface RoundVals { post: number; raise: number; esop: number }
-export interface Scenario { label: string; tgeMult: number; [roundId: string]: any }
+// v2 (COM-152): preTgeLiquidity — a liquidity event before TGE converts token awards 1:1 into
+// equity ("until we launch a token, all protocol value goes into equity", all-hands 16 Apr).
+export interface Scenario { label: string; tgeMult: number; preTgeLiquidity?: boolean; [roundId: string]: any }
 export interface Tier { name: string; mult: number; days?: number }
 export interface Milestone { id: string; label: string }
 export interface Objective { id: string; category: 'capital' | 'customer' | 'partnership' | 'governance'; label: string; trigger: string; uplift: number; gate: string }
@@ -490,6 +492,17 @@ export function tgeFdvFor(plan: Plan, scenKey: string, walk: any) {
   return (s.tgeMult || 1) * (anchor?.post || 0);
 }
 
+// v2 (COM-152): the pre-TGE liquidity fallback — token awards re-state 1:1 as EQUITY, net of
+// the same dilution walk (a token-% point becomes an equity-% point; RTAs carry no strike, so
+// the restatement is pct × retention × exit value). The toggle is per SCENARIO.
+export const preTgeLiquidity = (plan: Plan, scenKey: string) => !!plan.scenarios[scenKey]?.preTgeLiquidity;
+export function tokenValueFor(plan: Plan, scenKey: string, walk: any, tkPct: number, grantRound = 'bridge') {
+  if (!preTgeLiquidity(plan, scenKey)) return tkPct * tgeFdvFor(plan, scenKey, walk);
+  const grant = walk.byId[grantRound] || walk.byId.bridge;
+  const retention = safeDiv(grant.N, walk.exit.N);
+  return tkPct * retention * walk.exit.post;
+}
+
 // v2 (COM-144): plan.currentStage is a MILESTONE id ('mainnet'/'tge' are not rounds) — a raw
 // walk.byId[currentStage] lookup silently regresses to bridge past Series A. The most-recent
 // ROUND at the current stage = the last walk step whose id is a milestone at/before currentStage.
@@ -544,11 +557,16 @@ export function computeGrant(grant: Grant, plan: Plan, scenKey: string) {
       ? valueToQuantity(grant.valueUSD as number, 'rta', { tgeFdv: tgeFdvFor(plan, scenKey, w), tokenSupply: plan.tokenSupply })
       : null;
     const qty = lapsed ? 0 : (ok(grant.quantity) ? grant.quantity : (derivedTk ?? 0));
-    const value = qty * tokenPps;
+    // COM-152: under this scenario's pre-TGE fallback the award re-states 1:1 as equity —
+    // qty/supply of company value, net of the same dilution walk, no strike (RTAs carry none).
+    const asEquity = preTgeLiquidity(plan, scenKey);
+    const value = asEquity
+      ? tokenValueFor(plan, scenKey, w, safeDiv(qty, plan.tokenSupply), grant.round)
+      : qty * tokenPps;
     // A failed token derivation (FDV/supply degenerate) flags like the option path — the UI must
     // distinguish "derivation failed" from "granted nothing" (review finding; a lapsed row flags
     // nothing — its zero is the lifecycle, not the maths).
-    return { id: grant.id, instrument: 'rta' as Instrument, round: grant.round, roundLabel: roundLabel(plan, grant.round), quantity: qty, derived: derivedTk != null, strikePps: null, fmvPps: tokenPps, exitPps: null, exerciseCost: 0, stepUp: null, tokenPps, value, netAtExit: value, underwater: wantsDerive && derivedTk == null, lapsed };
+    return { id: grant.id, instrument: 'rta' as Instrument, round: grant.round, roundLabel: roundLabel(plan, grant.round), quantity: qty, derived: derivedTk != null, strikePps: null, fmvPps: tokenPps, exitPps: null, exerciseCost: 0, stepUp: null, tokenPps, value, netAtExit: value, underwater: wantsDerive && derivedTk == null, lapsed, tokenAsEquity: asEquity };
   }
   const strikePps = ok(grant.strikePps) ? grant.strikePps : round.price;
   const exitPps = safeDiv(exit.post, exit.N);
@@ -611,8 +629,9 @@ export function computeAdvisor(a: Advisor, plan: Plan, tiers: Tier[], objectives
     const exitVal = exit.post;
     const fdv = tgeFdvFor(plan, k, w);
     const netEqAt = (pct: number, V: number) => Math.max(0, pct * (retention * V - strikeBasis));
-    const equity = netEqAt(eqPct, exitVal), token = tkPct * fdv;
-    return { key: k, label: plan.scenarios[k].label, retention, strikeBasis, exitVal, fdv, grantN: grant.N, exitN: exit.N, grantPrice: grant.price, netEqAt, equity, token, total: equity + token, underwater: retention * exitVal < strikeBasis };
+    // COM-152: under the pre-TGE fallback the token leg re-states 1:1 as equity (no strike).
+    const equity = netEqAt(eqPct, exitVal), token = tokenValueFor(plan, k, w, tkPct, grantRound);
+    return { key: k, label: plan.scenarios[k].label, retention, strikeBasis, exitVal, fdv, grantN: grant.N, exitN: exit.N, grantPrice: grant.price, netEqAt, equity, token, total: equity + token, underwater: retention * exitVal < strikeBasis, tokenAsEquity: preTgeLiquidity(plan, k) };
   });
   const sb = scen.find(x => x.key === baseScenKey(plan)) || scen[0];
 
@@ -681,6 +700,7 @@ function computeAdvisorFromGrants(a: Advisor, plan: Plan) {
       // per-scenario flag off THIS scenario's rows (a base-keyed count misses the scenario
       // where the grant actually is underwater — review finding)
       underwater: rows.some(r => r.instrument === 'option' && r.underwater), rows,
+      tokenAsEquity: preTgeLiquidity(plan, k),
     };
   });
   const sb = scen.find(x => x.key === baseKey) || scen[0];

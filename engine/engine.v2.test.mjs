@@ -761,5 +761,49 @@ console.log('\nT12 · Exercise windows & the Clause 3.6 backstop (COM-151):');
     && ENG.addYearsISO('junk', 9) === 'junk');
 }
 
+// ---- T13: pre-TGE liquidity fallback (COM-152 — live-bound) ----
+// A liquidity event before TGE converts token awards 1:1 into equity, net of the same walk.
+console.log('\nT13 · Token→equity 1:1 pre-TGE fallback (COM-152):');
+{
+  const dflt = ENG.DEFAULT();
+  const plan = JSON.parse(JSON.stringify(dflt.plan));
+  plan.scenarios.base.preTgeLiquidity = true;
+  const w = ENG.walkScenario(plan, 'base');
+  const retention = w.byId.bridge.N / w.exit.N;
+  A('toggle ON: tokenValueFor re-states tkPct × retention × exitVal (no strike); OFF keeps tkPct × FDV',
+    near(ENG.tokenValueFor(plan, 'base', w, 0.003, 'bridge'), 0.003 * retention * 500e6, 1)
+    && near(ENG.tokenValueFor(dflt.plan, 'base', ENG.walkScenario(dflt.plan, 'base'), 0.003, 'bridge'), 0.003 * 600e6, 1));
+  A('v1 advisor path: the toggled scenario re-states; other scenarios untouched; flag rides the row',
+    (() => {
+      const c = ENG.computeAdvisor(dflt.advisors[0], plan, dflt.tiers, dflt.objectives);
+      const sBase = c.scen.find(s => s.key === 'base'), sCons = c.scen.find(s => s.key === 'conservative');
+      return near(sBase.token, c.tkPct * retention * 500e6, 1) && sBase.tokenAsEquity === true
+        && near(sCons.token, sCons.fdv * c.tkPct, 1) && sCons.tokenAsEquity === false;
+    })());
+  A('board totals follow the toggle (base-case cost shifts between ON and OFF)',
+    (() => {
+      const on = ENG.computeBoard(dflt.advisors, plan, dflt.tiers, dflt.objectives).cost.base;
+      const off = ENG.computeBoard(dflt.advisors, dflt.plan, dflt.tiers, dflt.objectives).cost.base;
+      return Math.abs(on - off) > 1000;
+    })());
+  A('grant-advisor rta row re-states under the toggle (tokens/supply of walk value, flagged)',
+    (() => {
+      const g = { id: 't', instrument: 'rta', round: 'bridge', quantity: 1e6, curve: 'rta', vestStartISO: '2026-06-01', lifecycle: 'granted' };
+      const rOn = ENG.computeGrant(g, plan, 'base');
+      const rOff = ENG.computeGrant(g, dflt.plan, 'base');
+      return near(rOn.value, (1e6 / 10e9) * retention * 500e6, 1) && rOn.tokenAsEquity === true
+        && near(rOff.value, 1e6 * 0.06, 1) && rOff.tokenAsEquity === false;
+    })());
+  A('round-trip: the toggle survives reconcile on the active map AND inside saved sets',
+    (() => {
+      const rt = JSON.parse(JSON.stringify(dflt));
+      rt.plan.scenarios.base.preTgeLiquidity = true;
+      rt.plan.scenarioSets = [{ id: 's', scenarios: { x: { label: 'X', tgeMult: 2, preTgeLiquidity: true, seriesA: { post: 1e8, raise: 1e6, esop: 0.1 } } }, baseScenario: 'x' }];
+      const r = ENG.reconcile(rt);
+      return r.plan.scenarios.base.preTgeLiquidity === true
+        && r.plan.scenarioSets[0].scenarios.x.preTgeLiquidity === true;
+    })());
+}
+
 console.log(`\n${pass} passed, ${fail} failed, ${pending} pending(v2).`);
 process.exit(fail ? 1 : 0);

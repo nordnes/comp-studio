@@ -2137,3 +2137,18 @@ round-confirm dialog + cancel; test advisor cleaned. vp 0 · 22/22 both · build
 
 **★ WAVE 6 COMPLETE: COM-99/100/111/112/122/125/107, PRs #61–#67.** M9 = 64 Done / 1 open (COM-87
 deferred-by-decision is NOT in M9 scope... correction: remaining = COM-139 + COM-141 in W7 + the gate.)
+
+## 2026-06-10 — COM-139 (Δ4 CoC-acceleration legal correction) BUILT + HELD [M9 finish-loop W7 #1]
+
+**COM-139 (P1 High, ~20 LOC, 4 files) — BUILT, PR OPEN + HELD (NOT merged; Linear stays In
+Progress).** The one sanctioned exception to corpus-verbatim: Plan rules v9 deleted Rule 9.2, so the
+reference TSX's "Change-of-control acceleration is at Board discretion" line is stale (spec v2 Δ4 /
+Appendix C). Proposition fine print now reads: "No automatic or discretionary change-of-control
+acceleration under the plan (Plan rules v9); on a change of control the acquirer may roll over
+awards, and vested options remain exercisable per the plan rules." VestingTimeline caption carries
+the short form. Configure's CoC-acceleration % control REMOVED — verified cocAccelPct is inert in
+the frozen engine (type+default only, never computed; field stays in state → no schema change).
+CLAUDE.md exception note rewritten to name Plan v9 / spec Appendix C as the source of truth on that
+line. Proof: bundle grep 0 for the old sentence, both new strings present; rendered live on
+/proposition + /advisors, 0 console errors. vp 0 · 22/22 both · build 0. **Merge gate: Charlie (GC)
+wording sign-off — Robin pinged in the PR body. propText() carries no CoC line (no change needed).**

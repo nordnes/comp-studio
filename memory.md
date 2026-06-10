@@ -2454,3 +2454,20 @@ never trust an agent's own revert claim. The 209/0/0-green-with-mutants fact is 
 strongest case for mutation-grade pins.** Store-level suite (bootstrap migration + claim
 semantics are test-invisible) → the Wave-7 R5.2 item. vp 0/10 · 22/22 both · 215/0/0 ·
 build 0 · 7/7 live. Next: Wave-1 boundary grader → Wave 2 (COM-149 → 147 → 148, M10 UI).
+
+## 2026-06-10 — Panel 004 (10/10) + R6.1 code-split + COM-149 (dual curves) [W1 gate + W2 #1]
+
+**Panel 004 (Wave-1 boundary): 10/10 PASS — R2.4 full (SCHEMA changed exactly once, PR #84 only),
+R5.3 full population (11/11 PRs mirrored), R5.1 all 40 exports by-name.** It flagged R6.1 at 0.4%
+gzip headroom → **fix(rubric) PR #85: route-level code-splitting** (each view a lazy chunk; chart
+code loads only where drawn; initial /overview payload 238,209 B gzip — below even the pre-wave
+sum baseline). **R6.1 was SELF-CONTRADICTORY (its named remedy raises its gzip-SUM metric via
+chunk overhead: 288,896→303,937 with zero functional change) → corrected per the rubric's own
+protocol to initial-load gzip ≤ 290 kB + total ≤ 1.0 MB minified, numbers preserved inline for
+R8.4. Distilled rule: when a rubric criterion names its own remedy, CHECK the remedy moves the
+metric the right way — a self-contradictory criterion is the worst rubric bug because following
+instructions fails the test.** **COM-149 (S, PR #86) — DONE: dual-curve VestingTimeline** (equity
+staircase · token dashed accrual ramp + flat-zero distributable area before m24, all via
+distributableFrac; the stale v1 token curve killed; 3.6 backstop dates in the caption; COM-152
+fallback note). 11/11 live incl. flat-zero geometry proof. vp 0/10 · 22/22 · 215/0/0 · build 0.
+Next: COM-147 (scenario-set editor).

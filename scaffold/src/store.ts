@@ -19,6 +19,7 @@ import {
   type State,
   type Scenario,
 } from "./engine";
+import { reconcileGovernance, type ComplianceItem, type Governance } from "./governance";
 
 const KEY = "raiku-advisor-comp-v5";
 type SavedMap = Record<string, State>;
@@ -70,6 +71,9 @@ interface Store {
   // COM-82: transient pin-to-compare selection (COM-86 reads it) — UI-only, NEVER enters
   // State/persist/#s= hash; scrubbed against the live roster in fixSel().
   pinnedIds: string[];
+  // COM-141: the Governance Table v4 checklist — company-level fact, so it lives BESIDE the
+  // board map (one slice per storage key, shared across saved boards) and outside State/#s=.
+  gov: Governance;
 }
 
 function bootstrap(): Store {
@@ -121,6 +125,7 @@ function bootstrap(): Store {
     showMgr: false,
     storageOk,
     pinnedIds: [],
+    gov: reconcileGovernance(persisted?.governance),
   };
 }
 
@@ -150,7 +155,8 @@ function validImport(o: any): boolean {
 function persist() {
   store.saved[store.S.name] = store.S;
   store.last = store.S.name;
-  if (!lsSet({ scenarios: store.saved, last: store.last })) store.storageOk = false;
+  if (!lsSet({ scenarios: store.saved, last: store.last, governance: store.gov }))
+    store.storageOk = false;
 }
 function fixSel() {
   if (!store.S.advisors.find((a) => a.id === store.selId))
@@ -410,6 +416,17 @@ export function useStudio() {
     persist();
   }
 
+  // ---- governance checklist (COM-141) — the four user-owned fields; canonical text is seed-only ----
+  function setGovItem(
+    id: string,
+    patch: Partial<Pick<ComplianceItem, "status" | "owner" | "evidence" | "note">>,
+  ) {
+    const it = store.gov.items.find((i) => i.id === id);
+    if (!it) return;
+    Object.assign(it, patch);
+    persist();
+  }
+
   // ---- roadmap CSV (SET_ROADMAP merge) ----
   function setRoadmap(roadmap: any) {
     const r = roadmap || {};
@@ -466,7 +483,7 @@ export function useStudio() {
   function delBoard(name: string) {
     delete store.saved[name];
     if (store.last === name) store.last = Object.keys(store.saved)[0] || "";
-    lsSet({ scenarios: store.saved, last: store.last });
+    lsSet({ scenarios: store.saved, last: store.last, governance: store.gov });
   }
   function toggleMgr(v?: boolean) {
     store.showMgr = v == null ? !store.showMgr : v;
@@ -611,6 +628,7 @@ export function useStudio() {
     delScenario,
     setAdvisorCase,
     setAdvisorTargetExit,
+    setGovItem,
     setRoadmap,
     importRoadmap,
     downloadRoadmap,

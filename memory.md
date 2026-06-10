@@ -1811,3 +1811,27 @@ truncate bite in table-auto layout); Compare sticky col 12rem; FootballField lab
 **★ WAVE 2 (hardening) COMPLETE: COM-133/134/137/138/136, PRs #31–#35.** M9 = 31 Done / 34 open.
 Next: wave-boundary frosty re-verify → WAVE 3 (the frappe-ui adopt cluster: 104 → 105 → 94 → 121 →
 103 → 102 → 101 → 106 → 96; §4 decisions pre-made).
+
+## 2026-06-10 — COM-104 (frappe-ui Sidebar adopt) DONE [M9 finish-loop W3 #1]
+
+**COM-104 (P3 Med, L, 119/96 LOC, App.vue) — DONE + MERGED.** Robin's pre-made call: adopt the primitive,
+KEEP the hand-rolled scrim+translate drawer as the wrapper. The aside keeps only drawer mechanics
+(fixed/translate/inert per COM-135); `<Sidebar :sections disable-collapse>` inside renders the canonical
+rail (menu-bar #F8F8F8 bg · surface-selected #FFF active card + shadow · sentence-case h3 section labels —
+COM-121's sidebar half landed free). Header slot = wordmark/badge/COM-137-strip/Search/Saved/Case;
+footer-items = Configure + Share/More.
+- **frappe-ui 0.1.278 Sidebar API facts (verified from source):** exports Sidebar/SidebarHeader/
+  SidebarItem/SidebarSection; `SidebarItem.to` navigates via **router.replace** (history-erasing — pass
+  `onClick: () => router.push(to)` instead); a STRING `icon` prop renders as literal text (use the
+  `#sidebar-item`/`#icon` slots for css-class lucide icons); `~icons/lucide/*` imports inside the lib
+  resolve via the frappeui vite plugin (lucideIcons.js — our config comment already says the plugin is
+  required for exactly this); `disableCollapse` kills BOTH the collapse toggle and the <sm icon-rail
+  (`shouldCollapse = (collapsed || isMobile) && !disableCollapse`); aria-current is NOT set by the lib —
+  pass it as a fallthrough attr onto SidebarItem (lands on the Button root). Also verified existing:
+  CommandPalette+Item, KeyboardShortcut, Switch, Breadcrumbs, Tabs, ListView family (NO ItemListRow —
+  COM-103 must use ListView/ListRow or keep markup).
+- Verified: desktop rail + active card + aria-current tracking + history GROWS on nav (push); 375px
+  COM-135 cycle intact (inert/scrim/focus/Esc); ⌘K trigger + Case select + Share/More functional; zero
+  console errors. vp 0 · 22/22 both · build 0.
+- **New zsh gotcha: backticks inside a double-quoted `git commit -m "..."` get command-substituted**
+  (ate a word; amended). Single-quote commit messages or use Write+`-F`.

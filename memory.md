@@ -1922,3 +1922,19 @@ font-display styling — ONE form idiom beats the editorial accent on an editing
 Only the hidden CSV file input remains bare.
 - Verified live: tier rename through TextInput persisted to localStorage + reverted; FormControl date
   renders in the grants group w/ stored value 2027-06-30. vp 0 · 22/22 both · build 0 · zero console errors.
+
+## 2026-06-10 — COM-96 (roster primitives, option B) DONE — ★ WAVE 3 COMPLETE [M9 finish-loop W3 #9]
+
+**COM-96 (P3 Med, L, ~230 LOC, 6 files) — DONE + MERGED.** Robin's pre-made call: local primitives, NOT
+ListView (decision recorded in RosterTable.vue's header — its single-row-object model fights dynamic
+scenario columns/col-spans/aggregate footers). `components/roster/`: RosterIdentity (avatar+name+sector,
+owns COM-136 truncation), TierBadge ($value logic centralized), RosterTable (chrome + tfoot total band —
+COM-118 neutral, NOT the prompt's stale "amber total row"), RosterRow (the M7 focusable-row contract).
+Board table + Overview cards consume; values stay view-computed. **Compare adoption deferred** (sticky
+col + Spread/Pin) — commented on the issue per the sanctioned split.
+- Verified: headers/4 rows/caption/tfoot band identical; row Enter → /advisors w/ breadcrumb name;
+  Overview cards render via primitives; screenshot cohesive. vp 0 · 22/22 both · build 0.
+
+**★ WAVE 3 (frappe-ui adopt cluster) COMPLETE: COM-104/105/94/121/103/102/101/106/96, PRs #36–#44.**
+M9 = 40 Done / 25 open. Next: WAVE 4 visual system (108 Panel → 119/120 FootballField → 113 Overview
+hero → 115 Board cost range → 114 Proposition hero → 117 MetricBand LAST).

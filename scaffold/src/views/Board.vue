@@ -3,7 +3,7 @@
 // grouped bar, Robin's call) and potential scatter (custom SVG — frappe-charts has no scatter in 1.6.2).
 import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
-import { Avatar, Button, Badge, Dropdown, TabButtons } from "frappe-ui";
+import { Button, Badge, Dropdown, TabButtons } from "frappe-ui";
 import { useStudio } from "../store";
 import { useEditor } from "../composables/useEditor";
 import {
@@ -26,6 +26,10 @@ import FootballField from "../components/FootballField.vue";
 import FrappeChart from "../components/FrappeChart.vue";
 import Term from "../components/Term.vue";
 import EmptyState from "../components/EmptyState.vue";
+import RosterTable from "../components/roster/RosterTable.vue";
+import RosterRow from "../components/roster/RosterRow.vue";
+import RosterIdentity from "../components/roster/RosterIdentity.vue";
+import TierBadge from "../components/roster/TierBadge.vue";
 
 const { store, board, select, addAdvisor, delAdvisor, setPath } = useStudio();
 const { openEditor } = useEditor();
@@ -261,114 +265,81 @@ const caseTotalSum = computed(() =>
     <div class="grid lg:grid-cols-12 gap-8">
       <div class="lg:col-span-8 space-y-6">
         <!-- roster table -->
-        <!-- COM-88: the roster de-boxes — row border-b + the amber total row do the separating -->
-        <div class="overflow-x-auto print-area">
-          <table class="w-full text-sm" style="min-width: 560px">
-            <caption class="sr-only">
-              Advisory board roster — base equity, earned uplift and net value per advisor, with the
-              board total.
-            </caption>
-            <thead>
-              <tr class="border-b border-outline-gray-2 text-left text-ink-gray-6">
-                <th class="px-4 py-3 font-normal">Advisor</th>
-                <th class="px-4 py-3 font-normal">Tier</th>
-                <th class="px-4 py-3 font-normal text-right">Base eq</th>
-                <th class="px-4 py-3 font-normal text-right">Earned</th>
-                <th class="px-4 py-3 font-normal text-right">
-                  Net · {{ S.plan.scenarios[bc].label }}
-                </th>
-                <th class="px-2 py-3 no-print" />
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="{ a, c } in board.rows"
-                :key="a.id"
-                tabindex="0"
-                role="button"
-                :aria-label="`Open ${a.name}`"
-                class="border-b border-outline-gray-1 cursor-pointer hover:bg-surface-gray-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--ink-gray-6)] focus-visible:bg-surface-gray-1"
-                @click="open(a.id)"
-                @keydown.enter="open(a.id)"
-                @keydown.space.prevent="open(a.id)"
+        <!-- COM-88 de-boxed · COM-96: chrome + row a11y live in the shared roster primitives;
+             the engine values keep rendering here (values arrive as props, no math inside) -->
+        <RosterTable
+          :columns="[
+            { label: 'Advisor' },
+            { label: 'Tier' },
+            { label: 'Base eq', align: 'right' },
+            { label: 'Earned', align: 'right' },
+            { label: `Net · ${S.plan.scenarios[bc].label}`, align: 'right' },
+            { label: '', noPrint: true },
+          ]"
+          caption="Advisory board roster — base equity, earned uplift and net value per advisor, with the board total."
+        >
+          <RosterRow
+            v-for="{ a, c } in board.rows"
+            :key="a.id"
+            :aria-label="`Open ${a.name}`"
+            @open="open(a.id)"
+          >
+            <td class="px-4 py-3">
+              <RosterIdentity :name="a.name" :sector="a.sector.split('—')[0].trim()" />
+            </td>
+            <td class="px-4 py-3">
+              <TierBadge :mode="a.mode" :tier-name="S.tiers[a.tier]?.name" />
+            </td>
+            <td class="px-4 py-3 tabular-nums text-right text-ink-gray-8">
+              {{ fPct(c.baseEq, 2) }}
+            </td>
+            <td
+              class="px-4 py-3 tabular-nums text-right"
+              :class="c.earnedUplift > 0 ? 'text-ink-green-3' : 'text-ink-gray-6'"
+            >
+              +{{ (c.earnedUplift * 100).toFixed(0) }}%<span
+                v-if="c.pendingUplift > 0"
+                class="text-ink-amber-strong"
               >
-                <td class="px-4 py-3">
-                  <!-- COM-136: a long legal name truncates instead of shoving numeric columns
-                       off-screen (max-w caps the cell's preferred width in table-auto layout) -->
-                  <div class="flex items-center gap-2.5 min-w-0">
-                    <Avatar :label="a.name" size="sm" />
-                    <div class="min-w-0 max-w-[14rem]">
-                      <div class="font-medium text-ink-gray-9 truncate" :title="a.name">
-                        {{ a.name }}
-                      </div>
-                      <div class="text-xs text-ink-gray-6 truncate">
-                        {{ a.sector.split("—")[0].trim() }}
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td class="px-4 py-3">
-                  <Badge
-                    :label="a.mode === 'value' ? '$value' : S.tiers[a.tier]?.name || '—'"
-                    theme="orange"
-                    variant="subtle"
-                    size="sm"
-                  />
-                </td>
-                <td class="px-4 py-3 tabular-nums text-right text-ink-gray-8">
-                  {{ fPct(c.baseEq, 2) }}
-                </td>
-                <td
-                  class="px-4 py-3 tabular-nums text-right"
-                  :class="c.earnedUplift > 0 ? 'text-ink-green-3' : 'text-ink-gray-6'"
-                >
-                  +{{ (c.earnedUplift * 100).toFixed(0) }}%<span
-                    v-if="c.pendingUplift > 0"
-                    class="text-ink-amber-strong"
+                +{{ (c.pendingUplift * 100).toFixed(0)
+                }}<Term k="awaitingGate"
+                  ><span class="ml-1 text-xs font-sans">pending</span></Term
+                ></span
+              >
+            </td>
+            <td class="px-4 py-3 tabular-nums text-right font-medium text-ink-gray-9">
+              {{ fUSD(sFor(c).total) }}
+            </td>
+            <td class="px-2 py-3 no-print">
+              <Dropdown :options="rowMenu(a)" placement="right">
+                <template #trigger>
+                  <button
+                    aria-label="Advisor actions"
+                    class="inline-flex shrink-0 items-center justify-center size-8 rounded hover:bg-surface-gray-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-gray-6)] text-ink-gray-6"
+                    @click.stop
+                    @keydown.stop
                   >
-                    +{{ (c.pendingUplift * 100).toFixed(0)
-                    }}<Term k="awaitingGate"
-                      ><span class="ml-1 text-xs font-sans">pending</span></Term
-                    ></span
-                  >
-                </td>
-                <td class="px-4 py-3 tabular-nums text-right font-medium text-ink-gray-9">
-                  {{ fUSD(sFor(c).total) }}
-                </td>
-                <td class="px-2 py-3 no-print">
-                  <Dropdown :options="rowMenu(a)" placement="right">
-                    <template #trigger>
-                      <button
-                        aria-label="Advisor actions"
-                        class="inline-flex shrink-0 items-center justify-center size-8 rounded hover:bg-surface-gray-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-gray-6)] text-ink-gray-6"
-                        @click.stop
-                        @keydown.stop
-                      >
-                        <span class="lucide-ellipsis size-4" aria-hidden="true" />
-                      </button>
-                    </template>
-                  </Dropdown>
-                </td>
-              </tr>
-              <!-- COM-118: the total is a sum, not the current case — neutral band, amber stays
-                   reserved for the company-cost conclusion below -->
-              <tr class="bg-surface-gray-1 border-t border-outline-gray-2">
-                <td class="px-4 py-3 font-medium text-ink-gray-9">
-                  Board · {{ board.rows.length }}
-                </td>
-                <td />
-                <td class="px-4 py-3 tabular-nums text-right font-medium text-ink-gray-9">
-                  {{ fPct(baseEqSum, 2) }}
-                </td>
-                <td />
-                <td class="px-4 py-3 tabular-nums text-right font-medium text-ink-gray-9">
-                  {{ fUSD(caseTotalSum) }}
-                </td>
-                <td class="no-print" />
-              </tr>
-            </tbody>
-          </table>
-        </div>
+                    <span class="lucide-ellipsis size-4" aria-hidden="true" />
+                  </button>
+                </template>
+              </Dropdown>
+            </td>
+          </RosterRow>
+          <!-- COM-118: the total is a sum, not the current case — the primitive renders the
+               neutral band; amber stays reserved for the company-cost conclusion below -->
+          <template #total>
+            <td class="px-4 py-3 font-medium text-ink-gray-9">Board · {{ board.rows.length }}</td>
+            <td />
+            <td class="px-4 py-3 tabular-nums text-right font-medium text-ink-gray-9">
+              {{ fPct(baseEqSum, 2) }}
+            </td>
+            <td />
+            <td class="px-4 py-3 tabular-nums text-right font-medium text-ink-gray-9">
+              {{ fUSD(caseTotalSum) }}
+            </td>
+            <td class="no-print" />
+          </template>
+        </RosterTable>
         <!-- scenario range by advisor -->
         <div class="print-area">
           <div class="text-sm text-ink-gray-6 mb-3">Scenario range by advisor · net value</div>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useRouter } from "vue-router";
-import { Alert, Avatar, Button, Badge, Dropdown } from "frappe-ui";
+import { Alert, Button, Dropdown } from "frappe-ui";
 import { useStudio } from "../store";
 import { useEditor } from "../composables/useEditor";
 import {
@@ -16,6 +16,8 @@ import {
   BENCH,
 } from "../engine";
 import PageHeader from "../components/PageHeader.vue";
+import RosterIdentity from "../components/roster/RosterIdentity.vue";
+import TierBadge from "../components/roster/TierBadge.vue";
 import PoolAllocation from "../components/PoolAllocation.vue";
 import Term from "../components/Term.vue";
 import EmptyState from "../components/EmptyState.vue";
@@ -160,17 +162,10 @@ const hasBudget = computed(() => flags.value.some((f) => f.t === "budget"));
             class="text-left bg-surface-white rounded border border-outline-gray-1 p-4 cursor-pointer hover:bg-surface-gray-1 hover:border-outline-gray-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--ink-gray-6)]"
           >
             <div class="flex items-center justify-between gap-2">
-              <div class="flex items-center gap-2 min-w-0">
-                <Avatar :label="a.name" size="sm" />
-                <span class="font-medium text-ink-gray-9 truncate">{{ a.name }}</span>
-              </div>
+              <!-- COM-96: identity + tier pill come from the shared roster primitives -->
+              <RosterIdentity :name="a.name" max-w="max-w-full" />
               <div class="flex items-center gap-1 shrink-0">
-                <Badge
-                  :label="a.mode === 'value' ? '$value' : S.tiers[a.tier]?.name || '—'"
-                  theme="orange"
-                  variant="subtle"
-                  size="sm"
-                />
+                <TierBadge :mode="a.mode" :tier-name="S.tiers[a.tier]?.name" />
                 <Dropdown :options="rowMenu(a)" placement="right" class="no-print">
                   <template #trigger>
                     <button

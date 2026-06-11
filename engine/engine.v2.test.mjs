@@ -1776,5 +1776,41 @@ console.log('\nT28 · Guardrail flag identity (COM-176):');
     ENG.justificationKey('iraj', 'band-breach') === 'iraj::band-breach');
 }
 
+// ---- T29: by-value top-ups derive at the base-case exit path (UXS-A / ux-sweep AP-2) ----
+console.log('\nT29 · Top-up by value — base-case exit derivation (UXS-A):');
+{
+  const dflt = ENG.DEFAULT();
+  A('the derived count makes the grant WORTH the approved dollars at the base case (round-trip within rounding)',
+    (() => {
+      const d = ENG.topUpQuantityForValue(75000, dflt.plan);
+      if (!d) return false;
+      const g = { id: 'g-t29', instrument: 'option', round: d.round, quantity: d.qty, curve: 'cert-v3', vestStartISO: '2026-06-11', lifecycle: 'draft' };
+      const cg = ENG.computeGrant(g, dflt.plan, ENG.baseScenKey(dflt.plan));
+      return d.qty > 0 && Math.abs(cg.netAtExit - 75000) <= Math.abs(cg.exitPps - cg.strikePps) / 2 + 1e-6
+        && cg.quantity === d.qty && !cg.underwater;
+    })());
+  A('the old intrinsic-spread path is exactly the degenerate case: valueToQuantity at the pricing round returns null (strike == FMV)',
+    (() => {
+      const w = ENG.walkScenario(dflt.plan, ENG.baseScenKey(dflt.plan));
+      const step = ENG.currentRoundStep(dflt.plan, w);
+      return ENG.valueToQuantity(75000, 'option', { fmvPps: step.price, strikePps: step.price }) === null;
+    })());
+  A('a recorded valuation prices the strike and the derivation still clears via the exit path',
+    (() => {
+      const plan = JSON.parse(JSON.stringify(dflt.plan));
+      plan.valuation = { ppsUSD: 1800, basis: 'SAV', dateISO: '2026-06-11' };
+      const d = ENG.topUpQuantityForValue(75000, plan);
+      return d != null && d.strikePps === 1800 && d.qty > 0;
+    })());
+  A('degenerate base (exit clears no spread) refuses with null — never a silent $0 count',
+    (() => {
+      const plan = JSON.parse(JSON.stringify(dflt.plan));
+      plan.valuation = { ppsUSD: 1e12, basis: 'SAV', dateISO: '2026-06-11' };
+      return ENG.topUpQuantityForValue(75000, plan) === null
+        && ENG.topUpQuantityForValue(0, dflt.plan) === null
+        && ENG.topUpQuantityForValue(-5, dflt.plan) === null;
+    })());
+}
+
 console.log(`\n${pass} passed, ${fail} failed, ${pending} pending(v2).`);
 process.exit(fail ? 1 : 0);

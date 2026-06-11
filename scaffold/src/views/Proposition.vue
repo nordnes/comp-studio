@@ -13,6 +13,7 @@ import {
   fNum,
   fMult,
   fDate,
+  vestedFrac,
   baseScenKey,
   roundLabel,
   FUNDING_ROUND_CARVEOUT,
@@ -66,7 +67,8 @@ function propText(): string {
     ),
     `  Earned: +${(cc.earnedUplift * 100).toFixed(0)}% · ceiling +${(cc.ceilUplift * 100).toFixed(0)}%.`,
     "",
-    `Net value by scenario: ${cc.scen.map((s: any) => `${s.label} ${fUSD(s.total)}`).join(" · ")}.`,
+    `Net value by scenario: ${cc.scen.map((s: any) => `${s.label} (${fUSD(s.exitVal)} exit) ${fUSD(s.total)}`).join(" · ")}.`,
+    `Mechanics: net equity = options × (per-share exit value − strike), floor $0. You: ${fNum(cc.equityShares)} options at ${fPps(cc.strikePps)}/share (exercise cost ${fUSD(cc.exerciseCost)}); base-case net ${fUSD(cc.baseBaseEqNet)}. Vesting: 25%/yr over 4 years; tokens 25% at cliff then monthly, distributable from month 24.`,
     targetLine.value,
     `Equity is options struck at the bridge price; values net of exercise cost and dilution through future rounds. A discussion draft, not a binding offer.`,
   ]
@@ -115,6 +117,12 @@ const targetView = computed(() => {
   }
   return { exitVal: s[s.length - 1].exitVal, total: s[s.length - 1].total };
 });
+// COM-172: the year-1 tranche through the ENGINE's own vesting curve (no view math)
+const yearTrancheShares = computed(
+  () =>
+    (vestedFrac(12, S.value.plan.equityVestYears, S.value.plan.equityCliff) || 0) *
+    (c.value?.equityShares || 0),
+);
 const targetLine = computed(
   () =>
     `At a ~${fUSD(targetView.value.exitVal)} exit, this package is worth ~${fUSD(targetView.value.total)} net — net of strike & dilution · not a forecast.`,
@@ -352,7 +360,7 @@ const targetLine = computed(
                     s.key === baseScenKey(S.plan) ? 'text-ink-amber-strong' : 'text-ink-gray-7'
                   "
                 >
-                  {{ s.label }} · {{ fPct(s.retention, 0) }} kept
+                  {{ s.label }} · {{ fUSD(s.exitVal) }} exit · {{ fPct(s.retention, 0) }} kept
                 </td>
                 <td
                   class="py-2.5 tabular-nums text-right font-medium text-ink-gray-9 whitespace-nowrap"
@@ -367,6 +375,30 @@ const targetLine = computed(
           </table>
           <!-- COM-84: the explored target outcome survives into the document the advisor keeps -->
           <p class="text-p-sm text-ink-gray-7">{{ targetLine }}</p>
+
+          <!-- COM-172: the explicit payout mechanics, in the advisor's OWN numbers (the Carta
+               'better offer letter' pattern). Every figure is a direct engine export; the formula
+               is stated, not recomputed. -->
+          <div class="space-y-2">
+            <div class="section-label">How the equity figure is computed</div>
+            <p class="text-p-sm text-ink-gray-7 leading-relaxed">
+              Net equity = options × (per-share value at exit − strike), never below zero. For you:
+              <b class="tabular-nums">{{ fNum(c.equityShares) }}</b> options struck at
+              <b class="tabular-nums">{{ fPps(c.strikePps) }}</b
+              >/share — exercising them all costs
+              <b class="tabular-nums">{{ fUSD(c.exerciseCost) }}</b
+              >, and at the base-case exit they are worth
+              <b class="tabular-nums">{{ fUSD(c.baseBaseEqNet) }}</b> net of that cost. Tokens ({{
+                fPct(c.baseTk, 3)
+              }}
+              of supply) carry no exercise cost.
+            </p>
+            <p class="text-p-sm text-ink-gray-7 leading-relaxed">
+              Vesting: <b class="tabular-nums">{{ fNum(yearTrancheShares) }}</b> options (25%) at
+              each of the four anniversaries; tokens vest 25% at the cliff then monthly, with
+              nothing distributable before 24 months of service.
+            </p>
+          </div>
         </div>
 
         <Divider class="my-4" />

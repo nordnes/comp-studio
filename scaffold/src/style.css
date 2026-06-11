@@ -261,3 +261,11 @@ button[role="combobox"]:focus-visible {
 .focus-visible\:ring-outline-gray-3:focus-visible {
   --tw-ring-color: var(--ink-gray-6);
 }
+
+/* UXS-I (ux-sweep DR-14): frappe-charts axis/legend text rendered below the DESIGN_SYSTEM
+   >=11px floor at chart scale. */
+.frappe-chart .x.axis text,
+.frappe-chart .y.axis text,
+.frappe-chart .legend-dataset-text {
+  font-size: 11px;
+}

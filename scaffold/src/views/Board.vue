@@ -244,6 +244,10 @@ const costRange = computed(() => {
     floor: { label: S.value.plan.scenarios[first].label, v: board.value.cost[first] || 0 },
     base: { label: S.value.plan.scenarios[bc.value].label, v: board.value.cost[bc.value] || 0 },
     ceil: { label: S.value.plan.scenarios[last].label, v: board.value.cost[last] || 0 },
+    // UXS-I (ux-sweep OB-8): when the projected case IS an endpoint, the same label+figure
+    // rendered twice on the page's money conclusion — the coinciding endpoint hides.
+    showFloor: keys.length > 1 && bc.value !== first,
+    showCeil: keys.length > 1 && bc.value !== last,
   };
 });
 
@@ -252,6 +256,8 @@ const ranges = computed(() =>
   board.value.rows.map(({ a, c }: any) => {
     const totals = c.scen.map((s: any) => s.total);
     return {
+      id: a.id, // UXS-I (ux-sweep OB-3): two 'New advisor's both shorten to 'New a.' — keys
+      // must be identity, or Vue patches the wrong row's bars
       name: shortName(a.name, rosterNames.value),
       lo: Math.min(...totals),
       base: c.baseCaseTotal,
@@ -422,7 +428,7 @@ const caseTotalSum = computed(() =>
           <div class="space-y-3">
             <div
               v-for="r in ranges"
-              :key="r.name"
+              :key="r.id"
               class="ff-row grid grid-cols-[8rem_1fr_7rem] items-center gap-3"
             >
               <span class="text-xs text-ink-gray-7 min-w-0 truncate" :title="r.name">{{
@@ -447,18 +453,20 @@ const caseTotalSum = computed(() =>
           <!-- COM-115: one RANGE, not three equal tiles — floor and ceiling quiet at the ends,
                the projected case bold in the middle, the shared FootballField idiom beneath.
                COM-125: with a single scenario there IS no range — only the base figure renders. -->
-          <div class="flex items-end justify-between gap-4">
-            <div v-if="scenKeys(S.plan).length > 1">
+          <!-- UXS-I (ux-sweep OB-5): flex-wrap + min-w-0 — at exactly 1024 the col-span-4
+               minimum clipped the ceiling column and scrolled the whole page 38px sideways -->
+          <div class="flex items-end justify-between gap-4 flex-wrap">
+            <div v-if="costRange.showFloor" class="min-w-0">
               <div class="text-xs text-ink-gray-6 mb-1">{{ costRange.floor.label }}</div>
               <div class="text-sm tabular-nums text-ink-gray-7">
                 {{ fUSD(costRange.floor.v) }}
               </div>
             </div>
-            <div class="text-center">
+            <div class="text-center min-w-0">
               <div class="text-xs text-ink-amber-strong mb-1">{{ costRange.base.label }}</div>
               <div class="figure-md text-ink-gray-9">{{ fUSD(costRange.base.v) }}</div>
             </div>
-            <div v-if="scenKeys(S.plan).length > 1" class="text-right">
+            <div v-if="costRange.showCeil" class="text-right min-w-0">
               <div class="text-xs text-ink-gray-6 mb-1">{{ costRange.ceil.label }}</div>
               <div class="text-sm tabular-nums text-ink-gray-7">{{ fUSD(costRange.ceil.v) }}</div>
             </div>
@@ -498,7 +506,7 @@ const caseTotalSum = computed(() =>
           </div>
           <div class="text-xs tabular-nums text-ink-gray-6">
             <Term k="tgeFdv">TGE FDV</Term> {{ fUSD(stairFdv) }} ·
-            {{ fMult(S.plan.scenarios[baseScenKey(S.plan)].tgeMult) }} ×
+            {{ fMult(S.plan.scenarios[baseScenKey(S.plan)].tgeMult) }}
             {{ roundLabel(S.plan, S.plan.tgeAnchor) }}
           </div>
         </div>

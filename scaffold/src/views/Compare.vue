@@ -256,6 +256,7 @@ const abRows = computed(() => {
                       ? 'text-ink-red-3'
                       : 'text-ink-gray-5'
                 "
+                :title="`vs the Net (base case) column`"
                 >{{ cell.delta > 0 ? "↑" : cell.delta < 0 ? "↓" : ""
                 }}{{ Math.abs(cell.delta) }}%</span
               >
@@ -367,6 +368,7 @@ const abRows = computed(() => {
                       ? 'text-ink-red-3'
                       : 'text-ink-gray-5'
                 "
+                :title="`vs the Net (base case) column`"
                 >{{ cell.delta > 0 ? "↑" : cell.delta < 0 ? "↓" : ""
                 }}{{ Math.abs(cell.delta) }}%</span
               >

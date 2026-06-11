@@ -287,7 +287,7 @@ const backstop = computed(() => {
         <div>
           <dt class="text-xs text-ink-gray-6">Engagement</dt>
           <dd class="text-ink-gray-9">
-            {{ sel.years }} yrs · from {{ sel.startDate || todayISO() }}
+            {{ sel.years }} yrs · from {{ fDateDay(sel.startDate || todayISO()) }}
           </dd>
         </div>
         <div>
@@ -323,9 +323,9 @@ const backstop = computed(() => {
       <div
         v-if="!precond.ok"
         class="mt-3 text-p-xs text-ink-amber-strong"
-        :title="precond.outstanding.join(' · ')"
+        :title="precond.outstanding.join('; ')"
       >
-        Pre-conditions outstanding: {{ precond.outstanding.join(" · ") }} — the Proposition prints
+        Pre-conditions outstanding: {{ precond.outstanding.join("; ") }} — the Proposition prints
         watermarked until green.
       </div>
       <!-- UXS-C (ux-sweep AP-14): the recorded departure leaves a visible trace where the

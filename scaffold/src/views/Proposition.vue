@@ -332,7 +332,7 @@ const targetLine = computed(
         <div
           class="px-8 sm:px-12 py-2.5 border-b border-outline-amber-2 bg-surface-amber-1 text-p-xs text-ink-amber-strong"
         >
-          Watermarked — pre-conditions outstanding: {{ precond.outstanding.join(" · ") }}. The
+          Watermarked — pre-conditions outstanding: {{ precond.outstanding.join("; ") }}. The
           watermark lifts when the Governance register is green and checks clear.
         </div>
       </template>
@@ -455,7 +455,7 @@ const targetLine = computed(
                 >
                   {{ fUSD(s.total) }}
                 </td>
-                <td class="py-2.5 pl-6 text-p-xs text-ink-gray-6 hidden sm:table-cell">
+                <td class="py-2.5 pl-6 text-p-xs tabular-nums text-ink-gray-6 hidden sm:table-cell">
                   eq {{ s.underwater ? "underwater" : fUSD(s.equity) }} · tok {{ fUSD(s.token) }}
                 </td>
               </tr>
@@ -489,8 +489,9 @@ const targetLine = computed(
           </div>
         </div>
 
-        <Divider class="my-4" />
-        <div class="text-p-xs text-ink-gray-6 leading-relaxed">
+        <!-- UXS-I (ux-sweep DR-13): the Divider doubled the border-y closing edge above —
+             one rule carries the separation -->
+        <div class="mt-4 text-p-xs text-ink-gray-6 leading-relaxed">
           Ackermann Systems Engineering Ltd (t/a Raiku), Cayman Islands. Options over ordinary
           non-voting shares (ESOP), strike at the {{ roundLabel(S.plan, c.grantRound) }} price; net
           exercise permitted. Tokens via Restricted Token Award. Equity vests

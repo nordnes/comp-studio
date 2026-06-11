@@ -25,6 +25,7 @@ import {
   type Scenario,
   fPps,
   fUSD,
+  fDateDay,
   makeScenarioSet,
   planWithSet,
   makeProposition,
@@ -960,7 +961,7 @@ export function useStudio() {
       `Review scheduled ${data.scheduledISO} (${data.trigger === "event" ? data.eventNote || "round event" : "calendar"})`,
     );
     persist();
-    flash(`Review scheduled · ${data.scheduledISO}`);
+    flash(`Review scheduled · ${fDateDay(data.scheduledISO)}`);
   }
   function completeReview(
     advisorId: string,

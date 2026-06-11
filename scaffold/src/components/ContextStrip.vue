@@ -20,7 +20,7 @@ const fdv = computed(() => tgeFdvFor(plan.value, baseScenKey(plan.value), w.valu
     <span class="tabular-nums text-ink-gray-7"
       ><Term k="tgeFdv">TGE FDV</Term> {{ fUSD(fdv) }}
       <span class="text-ink-gray-6"
-        >({{ fMult(plan.scenarios[baseScenKey(plan)].tgeMult) }} ×
+        >({{ fMult(plan.scenarios[baseScenKey(plan)].tgeMult) }}
         {{ roundLabel(plan, plan.tgeAnchor) }})</span
       ></span
     >

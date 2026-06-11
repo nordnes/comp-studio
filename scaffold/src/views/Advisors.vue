@@ -31,6 +31,7 @@ import {
   ADVISOR_STAGES,
   advisorStage,
   fDateDay,
+  DOC_STATUSES,
 } from "../engine";
 import { grantPreconditions } from "../governance";
 import NumIn from "../components/NumIn.vue";
@@ -567,9 +568,19 @@ const backstop = computed(() => {
                       </button>
                     </span>
                   </div>
-                  <p v-if="g.docStatus || g.docUrl" class="text-p-xs text-ink-gray-6 mt-0.5 pl-19">
-                    docs: {{ g.docStatus || "—"
-                    }}<a
+                  <p
+                    v-if="g.docStatus || g.docUrl"
+                    class="text-p-xs text-ink-gray-6 mt-0.5 pl-19 flex items-center gap-1.5 flex-wrap"
+                  >
+                    <!-- UXS-L (ux-sweep AP-10): the doc status was a dead-end read-out — top-up
+                         grants were born 'in-draft' with no way to advance or clear it -->
+                    docs:
+                    <Select
+                      :model-value="g.docStatus || ''"
+                      :options="DOC_STATUSES.map((d) => ({ label: d, value: d }))"
+                      aria-label="Document status"
+                      @update:model-value="(v) => updateGrant(sel.id, g.id, { docStatus: v })"
+                    /><a
                       v-if="g.docUrl"
                       class="underline ml-1"
                       :href="g.docUrl"
@@ -596,7 +607,8 @@ const backstop = computed(() => {
                   ><span class="tabular-nums text-ink-gray-9">{{ fUSD(c.baseEqNet) }}</span>
                 </div>
                 <div class="flex justify-between py-2">
-                  <span class="text-ink-gray-6">Shares @ bridge</span
+                  <span class="text-ink-gray-6"
+                    >Shares @ {{ roundLabel(S.plan, c.grantRound) }}</span
                   ><span class="tabular-nums text-ink-gray-9">{{ fNum(c.equityShares) }}</span>
                 </div>
                 <div class="flex justify-between py-2">

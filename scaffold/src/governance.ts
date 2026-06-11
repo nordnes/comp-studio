@@ -187,7 +187,7 @@ export const GOV_SEED = (): Governance => ({
     // kills MFN flow-through; this is the notification duty that fires only if drafting deviates.
     item(
       "open7",
-      "C.6 · 7",
+      "C.6.7",
       GROUP_OPEN,
       "MFN notifications at bridge — if the bridge deviates from seed terms",
       "Conditional on the C-7 drafting check: MFN notifications are due at the bridge if it deviates from seed terms.",
@@ -196,7 +196,7 @@ export const GOV_SEED = (): Governance => ({
     ),
     item(
       "open10",
-      "C.6 · 10",
+      "C.6.10",
       GROUP_OPEN,
       "HMRC SAV valuation",
       "Before the first grant; the same valuation feeds 409A for US grantees.",
@@ -205,7 +205,7 @@ export const GOV_SEED = (): Governance => ({
     ),
     item(
       "open11",
-      "C.6 · 11",
+      "C.6.11",
       GROUP_OPEN,
       "Corporate-wallet RTA audit",
       "Token-side audit: any contractor whose RTA pays to a corporate wallet — the s431 election is unavailable if so.",
@@ -214,7 +214,7 @@ export const GOV_SEED = (): Governance => ({
     ),
     item(
       "open12",
-      "C.6 · 12",
+      "C.6.12",
       GROUP_OPEN,
       "Series-A releases — Pantera & Lightspeed",
       "Series A: express Pantera release of ss.8–13; Lightspeed express written consent terminating s.6(a).",

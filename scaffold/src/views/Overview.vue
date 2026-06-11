@@ -51,7 +51,7 @@ import Term from "../components/Term.vue";
 import EmptyState from "../components/EmptyState.vue";
 import Panel from "../components/Panel.vue";
 
-const { store, board, select, delAdvisor, setPath } = useStudio();
+const { addAdvisor, store, board, select, delAdvisor, setPath } = useStudio();
 // COM-167: blocking semantics — the O13 pre-condition check per package
 const precond = (a: any) => grantPreconditions(a, store.gov);
 // COM-182: FAST-band freshness on the benchmark panel
@@ -147,13 +147,18 @@ const hasBudget = computed(() => flags.value.some((f) => f.t === "budget"));
     title="No advisors yet."
     body="Add your first advisor to model a package — a uniform base that grows with performance, net of strike and dilution against the company plan."
   >
+    <!-- UXS-L (ux-sweep C10): this button only NAVIGATED — it now adds + opens the editor
+         like every other 'Add advisor' (the dialog is global; no route change needed) -->
     <Button
       variant="solid"
       theme="gray"
       icon-left="lucide-plus"
       label="Add advisor"
       class="mt-2"
-      route="/board"
+      @click="
+        addAdvisor();
+        openEditor();
+      "
     />
   </EmptyState>
 

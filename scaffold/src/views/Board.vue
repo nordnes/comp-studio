@@ -40,6 +40,12 @@ import GrantDecisionWizard from "../components/GrantDecisionWizard.vue";
 import BandPlacement from "../components/BandPlacement.vue";
 
 const { flash, store, board, select, addAdvisor, delAdvisor, setPath, justifyFlag } = useStudio();
+// UXS-L (ux-sweep C10): 'Add advisor' did three different things depending on where you
+// clicked — every entry point now creates AND opens the editor (the palette's behavior).
+function addAndEdit() {
+  addAdvisor();
+  openEditor();
+}
 const { openEditor } = useEditor();
 const router = useRouter();
 const S = computed(() => store.S);
@@ -336,7 +342,7 @@ const caseTotalSum = computed(() =>
       icon-left="lucide-plus"
       label="Add advisor"
       class="mt-2"
-      @click="addAdvisor"
+      @click="addAndEdit"
     />
   </EmptyState>
 
@@ -366,7 +372,7 @@ const caseTotalSum = computed(() =>
           theme="gray"
           icon-left="lucide-plus"
           label="Add"
-          @click="addAdvisor"
+          @click="addAndEdit"
         />
       </template>
     </PageHeader>

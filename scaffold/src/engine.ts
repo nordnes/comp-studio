@@ -327,7 +327,7 @@ export const TOKEN_POOLS_DEFAULT: TokenPool[] = [
   { id: 'team', label: 'Team', poolPct: 0.20, allocatedPct: 0.127316 },
   { id: 'advisors', label: 'Advisors', poolPct: 0.05, allocatedPct: 0.0317448, note: 'Headroom is the binding constraint on new advisor token awards (open decision #5)' },
   { id: 'investors', label: 'Investors', poolPct: 0.20, allocatedPct: 0.177189 },
-  { id: 'cex', label: 'CEX', poolPct: 0.20, allocatedPct: 0, note: "The 10% figure is Coinbase's screening quote, not an allocation" },
+  { id: 'cex', label: 'CEX', poolPct: 0.20, allocatedPct: 0, note: "Headroom shows 20% of supply; Coinbase's screening quote suggested ~10% — a screening figure, not an allocation" },
 ];
 export const tokenPoolHeadroom = (p: TokenPool) => Math.max(0, p.poolPct - p.allocatedPct);
 

@@ -8,7 +8,7 @@ Repo: **github.com/nordnes/comp-studio** · Linear: **COM** project "Advisor Com
 | Dev server | `vp dev` | `npm run dev` (`vite`) |
 | Lint + format + typecheck | `vp check` | — |
 | Build | `vp build` | `npm run build` (`vite build`) → `dist` |
-| Engine tests | `vp test` | `npm run test` (`node engine.test.mjs`) |
+| Engine + store tests | `vp test` | `npm run test` (both 22-vector suites + the v2 spec suite + `store.test.mjs` — the R5.2 slice round-trips) |
 | Preview | `vp preview` | `npm run preview` |
 
 Vercel build settings: **Build `npm run build` · Output `dist`** · SPA rewrite in `vercel.json`. Deploy with the Claude Code **Vercel connector** (`deploy_to_vercel`).

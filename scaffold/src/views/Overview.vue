@@ -32,6 +32,7 @@ const STAGE_THEME: Record<string, string> = {
 import PageHeader from "../components/PageHeader.vue";
 import RosterIdentity from "../components/roster/RosterIdentity.vue";
 import TierBadge from "../components/roster/TierBadge.vue";
+import KeyDatesRadar from "../components/KeyDatesRadar.vue";
 import PoolAllocation from "../components/PoolAllocation.vue";
 import Term from "../components/Term.vue";
 import EmptyState from "../components/EmptyState.vue";
@@ -261,6 +262,8 @@ const hasBudget = computed(() => flags.value.some((f) => f.t === "budget"));
       </div>
 
       <div class="space-y-6">
+        <!-- COM-173: the cross-advisor key-dates radar — the at-a-glance surface owns it -->
+        <KeyDatesRadar />
         <PoolAllocation :board="board" :committed="S.plan.committedAdvisorTokenPct" />
         <Panel class="space-y-2">
           <div class="section-label">Benchmark</div>

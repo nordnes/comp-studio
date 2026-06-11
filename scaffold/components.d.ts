@@ -22,6 +22,7 @@ declare module 'vue' {
     FrappeChart: typeof import('./src/components/FrappeChart.vue')['default']
     GrantDecisionWizard: typeof import('./src/components/GrantDecisionWizard.vue')['default']
     GrowthWaterfall: typeof import('./src/components/GrowthWaterfall.vue')['default']
+    KeyDatesRadar: typeof import('./src/components/KeyDatesRadar.vue')['default']
     MixBreakdown: typeof import('./src/components/MixBreakdown.vue')['default']
     NumIn: typeof import('./src/components/NumIn.vue')['default']
     PackageEditor: typeof import('./src/components/PackageEditor.vue')['default']

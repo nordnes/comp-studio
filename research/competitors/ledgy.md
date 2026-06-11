@@ -1,60 +1,111 @@
-# Ledgy — Deep Dive
+# Ledgy — competitor deep-dive (2026-06-11)
 
-**Service:** https://ledgy.com · **Researched:** 2026-06-11 (agent deep-dive, cited) · Part of the 12-service competitive survey — see [INDEX.md](INDEX.md).
+## Snapshot — positioning, target user, company status, pricing
 
----
+**Positioning.** Ledgy AG (Zürich, founded 2017) markets itself as "the world's first unified platform for all non-cash compensation: equity, deferred compensation, carried interest, pensions, and savings — one login, one source of truth" (https://ledgy.com/). It is the leading EU/UK equity-plan platform — effectively "Carta for Europe" (https://techcrunch.com/podcast/ledgy-a-carta-for-european-startups-to-manage-equity-and-cap-tables-raises-22m-from-nea-sequoia-and-more/) — spanning private-company cap tables through public-company share-plan administration (SAYE, trading & settlement), with a 2025–26 push into executive compensation (deferred comp live; carried interest "COMING SOON" on the nav as of 2026-06-11, https://ledgy.com/carried-interest).
 
-**Research value: high** — Extensive primary documentation found: full pricing-page feature matrix, employee dashboard anatomy (verbatim customer guide), 2026 AI strategy post, and concrete review quotes.
+**Target user.** Finance, legal, and people/reward teams at EU/UK scale-ups through post-IPO companies; named customers include Revolut, DeepL, Personio, Synthesia, Motorway, Aiven, Syncona, Climeworks (https://ledgy.com/customer-stories).
 
-# Ledgy Deep-Dive (extends prior coverage)
+**Company status.** ~$22M Series B (Sep 2022) led by NEA with Sequoia, Speedinvest, btov, Visionaries Club, VI Partners; Series A ($10M, 2021) led by Sequoia; 2,500+ customer companies in 45+ countries at Series B time; CEO/co-founder Yoko Spirig (https://ledgy.com/blog/ledgy-series-b, https://www.fintechfutures.com/investment-management/equity-management-platform-ledgy-raises-22m-series-b). Still private; no later round verified [uncertain whether any post-2022 raise exists].
 
-## Positioning & pricing
-Repositioned (2025–26) as "the world's first unified platform for all non-cash compensation: equity, deferred compensation, carried interest, pensions, and savings" and "leading AI-powered equity & executive compensation software." New CEO Armon Bättig; CSC partnership powers an exec-comp offering. Tiers (official pricing page):
-- **Launch (free, ≤50 stakeholders):** multi-entry cap table, equity plans/grants, simple vesting, stakeholder dashboards, employee scenarios, self-serve.
-- **Scale (from €3k/yr, 50+ stakeholders):** + data room/document folders, selective publishing, full transaction history w/ docs, 70+ HRIS, DocuSign/Skribble e-signing, on/offboarding automation (2 workflows), automated granting, vesting tranche builder (≤5 performance conditions), end-to-end exercising, document templating, investor dashboard, valuation calculator, custom reporting/preset views, EMI1/EMI40/Register of Members, tax & payroll reporting, automated share certificates, Companies House reporting, independent HMRC/409a/BSPCE valuations, AI chat support.
-- **Enterprise (custom, 200+):** + unlimited performance conditions & offboarding, global mobility reporting, GraphQL API, dividends workflows, **customisable + localised dashboards**, bank-details collection, **full transaction audit trails, role-based access levels**, SAML SSO/SCIM/2FA enforcement, **Document Auditor**, restriction & holding periods, IPO readiness team.
-- **Public-company plan:** trading & settlement (nominee Zedra, broker Winterflood, paying agent Airwallex; orders in 170 countries/60+ currencies, real-time order tracking), share-price scenario calculator, insider management, blackout periods.
-- **Financial reporting add-ons:** Essentials €3k/yr (tranche-level IFRS 2/FRS 102/ASC 718 expensing, Black-Scholes, volatility/risk-free rates, graded/straight-line amortisation, forfeiture rates, **locked report history**, disclosures); Advanced €5k/yr (+cost-centre movements, performance conditions, journal entries); DTA report extra. Vendr benchmarks: Scale ~€8–25k, Enterprise €25–50k+ actual annual spend.
+**Pricing (as listed 2026-06-11, https://ledgy.com/company-pricing):**
+- **Launch** — Free. Max 50 stakeholders, multi-entity cap table, equity plans/grants, simple vesting, stakeholder dashboards, employee scenarios, self-serve support. (Footer banner says free plan covers "up to 25 stakeholders" — the page is internally inconsistent.)
+- **Scale** — "Starts at €3k/year." Adds 70+ HRIS integrations, DocuSign/Skribble e-sign, on/offboarding automation (≤2 offboarding workflows), automated granting, vesting tranche builder (≤5 performance conditions), end-to-end exercising, document templating, data room, investor dashboard, valuation calculator, custom reporting, EMI1/EMI40/Register of Members, tax-rate & payroll reporting, automated share certificates, UK Companies House reporting, independent HMRC/409A/BSPCE valuations.
+- **Enterprise** — Custom. Adds 200+ stakeholders, unlimited performance conditions/offboarding workflows, global mobility reporting, GraphQL API, dividends workflows, customisable/localised dashboards, stakeholder bank-details collection, full transaction audit trails, role-based access, SAML SSO + SCIM, 2FA enforcement, Document Auditor, restriction/holding periods, IPO readiness team.
+- **Public** — Custom. Share-plan administration, trading & settlement (broker/paying agent, nominee services), insider management, blackout periods, share-price scenario calculator, multi-language dashboards.
+- **Financial-reporting add-ons** — Essentials "starts at €3k/year" (tranche-level expensing, Black-Scholes, volatility/risk-free rates, graded/straight-line amortisation, forfeiture rates, locked report history, disclosures); Advanced "starts at €5k/year" (cost-centre movements, performance conditions, journal entries & multi-currency "coming soon"); DTA report as extra.
+- Discounts: 50% off year one for startups with <€5m funding; 20% climate discount (https://ledgy.com/pricing — legacy page; same offers). Third-party sources cite multi-year discounts of 10–25% (https://www.vendr.com/marketplace/ledgy) [secondary].
 
-## Feature inventory (by module)
-- **Cap table:** dynamic transaction-based (issuances, secondaries, convertibles, splits, valuations, any currency), docs attached per transaction, customisable columns/views/aggregate grouping, fully- vs non-diluted %, anti-dilution provisions, multi-entity.
-- **Scenario & exit modeling:** funding-round stacking, liquidation preferences, waterfall + **breakpoint analysis**, dilution projections; unlimited scenarios on paid tiers (free = 1, mid = 3 historically).
-- **Equity plans:** ESOP, VSOP, LTIP, EMI, CSOP, RSUs, options, warrants, growth/hurdle shares, BSPCE, SARs, STAK; automation rules triggered on HRIS sync; bulk granting + bulk document/signature workflows; leaver/joiner status tags.
-- **AI (April 2026 post):** **AI Auditor** cross-checks documents against transactions, flags missing links/data mismatches in one dashboard; AI validation at data entry, cross-jurisdiction compliance monitoring; explicit principle that "all AI actions are explainable and auditable — users can see the reasoning behind any AI alert."
+## Complete feature inventory — by module
 
-## Key workflows
-Grant → template doc generated → e-signed (DocuSign/Skribble/native) → auto-attached to transaction → employee invited (admin previews-as-stakeholder first) → vesting tracked → exercise request in-app → settlement. Migration = 4 stages (setup, extraction, import, validation), "weeks not months."
+- **Cap Table Management [R]** — multi-entity cap tables; share classes incl. super-voting; transactions: financing rounds, capital increases, share transfers, convertibles (cap/discount/interest), stock splits, share-class conversions, decreases, payouts, dividends; share numbers/lots; fractional shares; multi-currency transactions; bulk import/edit via spreadsheet; stakeholder anonymisation when sharing; pooled investments; per-transaction audit trail; "Transactions Grid view (Beta)". (https://ledgy.com/cap-table, https://help.ledgy.com/en/collections/4640-cap-table-share-classes, https://help.ledgy.com/en/collections/4639-transactions)
+- **Equity Pools & Plans [R]** — Pools vs Plans hierarchy; pool increase/decrease; pools from reserved shares; exclude pool from cap table (dilution settings); grant presets per plan; automated granting rules triggered on HRIS sync (Beta); plan types: ESOP, VSOP, LTIP, EMI, CSOP, RSU, options, warrants, growth/hurdle shares, BSPCE, SAR, STAK, EBT; "any kind of vesting schedule": simple (duration/interval/cliff), custom periods, performance conditions, milestones, multi-trigger (e.g. time + exit event), tranche builder, accelerated-vesting date, rounding up/down/nearest. (https://help.ledgy.com/en/collections/4643-equity-pools-plans, https://help.ledgy.com/en/articles/445435-how-to-setup-any-kind-of-vesting-schedule-in-ledgy)
+- **Scenario / exit modeling [R]** — Financing-round modeling (rounds & scenarios; legacy Premium tier listed "unlimited rounds & scenarios", https://ledgy.com/pricing); dilution-impact views and "valuation projections, funding scenarios and exit planning" with conservative/moderate/aggressive cases (https://ledgy.com/blog/scenario-modelling-for-equity). **Stakeholder Scenarios** (employee-facing): admin defines named valuation events each with **Share value (probable)** required plus optional **optimistic** and **conservative** values, plus an optional self-serve calculator with min/max/default share price and **dilution-per-round** assumption (https://help.ledgy.com/en/articles/20542-how-to-set-up-stakeholder-scenarios). Waterfall/liquidation-preference exit modeling is referenced in third-party comparisons [uncertain — no first-party help article found; the legacy pricing page lists convertibles & round modeling but not waterfalls].
+- **Employee/stakeholder portal [R]** — personal dashboard with grants, vesting schedule, "Equity Value Growth" scenario tile with slider, portfolio breakdown (vested/unvested/on-hold), document access with **AI-generated document summaries** ("What this document is about", toggleable), message-the-admin button, delegate access, KPI sharing & investor updates; admin "preview as stakeholder"; localised/customisable dashboards (Enterprise). (https://help.ledgy.com/en/articles/463180-how-do-i-configure-the-stakeholder-dashboard-settings, https://ledgy.com/employee-equity-communications)
+- **Document automation & e-sign [R]** — templating with `{variable}` placeholders (full registry below); bulk generation of grant letters/share certificates/notice-of-exercise/termination letters/holding confirmations; signing via Ledgy native signatures, DocuSign, or Skribble; dynamic grant dates set from final signature; Document Auditor (verify equity documentation); Data Room with selective publishing. (https://help.ledgy.com/en/collections/4648-documents, https://help.ledgy.com/en/articles/20587-which-variables-can-i-use-for-my-document-templates)
+- **HRIS integrations [NR]** — 70+ (BambooHR, Personio, HiBob, Humaans, Lucca, CharlieHR, Workday via ISU, SAP SuccessFactors, Darwinbox, Factorial, Deel…); field mapping, sync status tags, on/offboarding workflows. (https://help.ledgy.com/en/collections/178181-hris-integrations)
+- **Exercising & settlement [R-partial]** — end-to-end exercise windows and request workflow (request → review → accept → publish); cash settlement; RSU/PSU release election windows; FMV-at-exercise and gain/loss computed per settlement. (https://help.ledgy.com/en/articles/429182-end-to-end-exercise-window-and-request-workflow-video-tutorial)
+- **Financial reporting [NR]** — IFRS 2 / ASC 718 / FRS 102 share-based-payment expensing; tranche-level expensing; Black-Scholes & Monte Carlo (Public tier); automated volatility & risk-free rates; graded or straight-line amortisation; terminations & forfeiture rates; disclosures report; journal entries; cost-centre movements; deferred tax assets; diluted EPS; locked report history; social-security accruals. (https://ledgy.com/financial-reporting, https://ledgy.com/company-pricing)
+- **Compliance & ops reporting [R-partial]** — country-specific compliance reports, EMI1/EMI40, UK Companies House, Register of Members, tax rules engine, global mobility reporting, FATCA/CRS collection, holding confirmations/payroll statements, custom reports with preset views, recurring/scheduled reports. (https://ledgy.com/equity-compliance)
+- **Valuations [NR]** — brokered independent HMRC, 409A, BSPCE & fair-market valuations via partner experts. (https://ledgy.com/company-valuations)
+- **Public-company suite [NR]** — share-plan admin at scale, trading & settlement (broker/paying-agent integration, nominee services, Winterflood partnership), SAYE administration, insider management, trading restriction/blackout periods, share-price scenario calculator. (https://ledgy.com/share-plan-administration, https://ledgy.com/trading-and-settlement, https://ledgy.com/saye)
+- **Executive compensation [R-partial]** — deferred compensation fund plans, carried interest allocations/distributions (coming soon), unified exec total-comp view. (https://ledgy.com/executive-compensation, https://ledgy.com/deferred-compensation)
+- **Equity events [NR]** — cash dividends with record/payment dates and tax withholding; dividend equivalents for grant holders. (https://help.ledgy.com/en/collections/1422301-equity-events)
+- **Pay transparency** — no dedicated pay-transparency or comp-benchmarking product found; nearest analogue is their annual **State of Equity / Equity Data Pulse** benchmark reports (https://ledgy.com/reports/state-of-equity-2026). [No EU-Pay-Transparency-Directive feature verified.]
+- **Platform/admin [R]** — Admin Home task inbox, Cmd+K command bar, custom fields on stakeholders & transactions, custom collaborator roles, GraphQL API (Enterprise), API-key management, configurable session length, base-currency switch. (https://help.ledgy.com/en/articles/496622-how-do-i-use-the-admin-homepage-in-ledgy)
 
-## UI/UX documentation (concrete)
-- **Navigation:** top-level marketing IA = Cap table / Equity plan automation / Scenario & exit modeling / dashboards; in-app left-side menu pattern (per peer tools and Ledgy course screenshots).
-- **Employee dashboard anatomy** (Camunda's internal Ledgy guide): (1) **"Today's Value" card top-left** — net value of *vested* shares only at current valuation; (2) **Equity Value Growth bar chart + slider calculator** — bars show total potential value at each historical company valuation; slider models a user-chosen future valuation; (3) **Vesting Breakdown chart** — accrued vs to-come over the full journey; (4) **grants list** with per-grant shares + vesting schedule; cost-to-exercise shown. Company-pushed conservative/moderate/aggressive presets sit beside the custom slider; forecasting tool optionally factors dilution from future rounds.
-- **Tables:** column/view customisation with aggregate grouping; Excel export respects custom views, **PDF export does not** (a named user complaint).
-- **Admin trust features:** preview-as-stakeholder before invite; selective publishing (choose which cap-table info each stakeholder group sees); real-time status tags.
+## UI/UX documentation
 
-## Review sentiment
-G2 4.7/5; Capterra 4.9/5 (29 reviews). Praise: "shows information which would take hours to find… in one click, visually appealing"; "easy for employees to track and understand the value of their options with simple scenario modelling"; "easier to navigate than Global Shares or ComputerShare"; support replies <1 day. Complaints: PDF export ignores custom views; investors lack the scenario-modelling feature companies have; historic-data implementation is effortful; limited custom-report filters/flexibility; confusing notifications; no phone/24-7 support; occasional bugs.
+**IA / navigation.** Sidebar app with sections evidenced in help docs: **Home** (Admin Home) · **Stakeholders** · **Transactions** (Grid view beta) · **Equity Plans > Pools & Plans** · **Documents/Data Room** · **Reporting > Compliance / Operational / Financial** · **Scenarios** · **Company Settings** (Stakeholder Dashboard, billing, SSO/SCIM, API). A global **Command Bar (Cmd+K / Ctrl+K)** searches pages, stakeholders, transactions, and actions (https://help.ledgy.com/en/articles/496622-how-do-i-use-the-admin-homepage-in-ledgy). Multi-company switcher at `app.ledgy.com/home/companies/`.
 
-## Takeaways for Comp Studio
-1. **(9d formula inspectability / 9a provenance):** Ledgy's AI stance — "every alert shows its reasoning, all actions auditable" — is the market bar for trust surfaces; Comp Studio's formula-inspection and benchmark-provenance panels should similarly show the *why* inline, not in docs.
-2. **(9c sealed versions):** Ledgy sells **"locked report history"** as a paid financial-reporting feature and full transaction audit trails as Enterprise-only — sealed proposition versions are a recognized, monetizable governance primitive; mirror the "locked once issued" semantics.
-3. **(9b band placement / WS-F charts):** The employee dashboard formula — value-today card + valuation-history bar chart + slider for custom future valuation + preset conservative/moderate/aggressive anchors — is the proven layout; place Comp Studio's band anchors as labeled points on the same interactive valuation axis.
-4. **(9e vesting timeline / WS-G):** Ledgy splits "Vesting Breakdown" (accrued vs to-come) from the per-grant list; keep Comp Studio's timeline cumulative with cliff visually called out (their education course renders the cliff as a step jump at month 12).
-5. **(WS-B dialogs / WS-C feedback):** Preview-as-stakeholder before sending, and selective publishing per audience, are the two safety affordances reviewers value; a "preview as Robin/advisor" mode before sealing a proposition letter maps directly. Also note their top complaint — exports that don't match the configured view — as a defect class to avoid in Comp Studio's print/PDF path.
+**Admin Home (key screen).** Deliberately a *task inbox*, not a stats dashboard: an "Open Tasks" prioritised list (document signatures awaiting publication, exercise/RSU requests to review, draft transactions to approve, pending HRIS syncs, scheduled updates to confirm, stakeholders to on/offboard) — clicking a task row deep-links to the completion page. A "Quick Stats" strip shows stakeholder-invitation %, open equity windows, pending signatures. A "New view" toggle lets users revert to the old dashboard (gradual-migration pattern). (Same URL.)
+
+**Stakeholder dashboard (key screen).** Tiles: holdings grid, vesting breakdown chart, "Equity Value Growth" chart with the scenario bars (conservative/probable/optimistic per named event, rendered as grouped bars along a timeline) and an optional **share-price slider** calculator; portfolio breakdown modal (vested/unvested/on-hold); documents with AI summaries in a viewer sidebar. Admin-side controls are explicit named toggles, e.g. "Show 'Vesting breakdown' chart", "Assume outstanding vesting triggers were met", "Hide total number of shares from stakeholders" (so employees can't reverse-engineer company valuation), "Show document AI summary" (https://help.ledgy.com/en/articles/463180-how-do-i-configure-the-stakeholder-dashboard-settings, https://help.ledgy.com/en/articles/20542-how-to-set-up-stakeholder-scenarios).
+
+**Forms/wizards.** Scenario setup is a settings panel with two toggles ("Enable calculator for stakeholders, allowing them to set their own valuations" / "Define potential future scenarios") and a chronological row-editor: Valuation event name (required), Estimated time (free text, e.g. "Q2 2023", "Far future"), Share value probable/optimistic/conservative. The holdings-grid customiser opens a live preview "as stakeholder X", lets the admin add/remove/filter/group columns, then "Set default view" applies it to all stakeholders. Bulk operations run through an "easy-edit spreadsheet" import/edit modal. Template validation pre-checks misspelled `{variables}` and missing data before generation; unresolved variables render literally as "undefined".
+
+**Charts & interactions.** Bar/grouped-bar for equity value growth scenarios; vesting breakdown timeline; dilution-change comparisons in round modeling; slider-driven what-if calculator on the employee side (slider bounded by admin-set min/max share price). Screenshot evidence in help articles and https://ledgy.com/blog/scenario-modelling-for-equity.
+
+**Visual tone.** Clean fintech SaaS: white surfaces, generous whitespace, card/tile layout, rounded data-grid tables, status tags (e.g. stakeholder onboarding states), marketing brand uses warm orange/cream with dark navy text. Help centre is Intercom-based; app instrumented with Sentry. Mobile: responsive web app; no native mobile app found [uncertain]. Accessibility: no published a11y/VPAT statement found [uncertain].
+
+**Review evidence on UX.** "Ledgy stands out for user-friendliness… an intuitive interface that makes equity management tasks simple," vs Carta's "steeper learning curve" (https://www.g2.com/compare/carta-carta-vs-ledgy). Capterra ease-of-use 4.7/5, overall ~4.9/5 across ~29 reviews; but "the tool is not super intuitive initially and would appreciate improved UX" appears among cons (https://www.capterra.com/p/173939/Ledgy/reviews/).
+
+## Known criticisms & limitations (review-sourced)
+
+- **Price** — "quite expensive, particularly challenging for smaller startups" (https://www.g2.com/products/ledgy/reviews?qs=pros-and-cons).
+- **Advanced-equity gaps** — "limited features for advanced equity needs"; "some limitations with specific share schemes (growth shares, CSOP etc) mean that you have to 'reverse engineer' share schemes which is hazardous" (https://www.g2.com/products/ledgy/reviews).
+- **Bugs/reporting hiccups** — "technical issues like bugs and reporting hiccups, though fixes are usually made swiftly" (https://www.g2.com/products/ledgy/reviews).
+- **Support hours/channels** — no phone support; chat bot not 24/7; painful for non-European timezones (https://www.g2.com/products/ledgy/reviews?qs=pros-and-cons).
+- **Report flexibility** — requests for more filters/flexibility in custom reports; signature witnessing requires paid DocuSign instead of being built in (https://www.capterra.com/p/173939/Ledgy/reviews/).
+- **Scenario-engine sharp edge** — employee scenario slider silently sticks at 0 when grants come from a pool excluded from the cap table (diluted share capital = 0) — documented as an FAQ rather than fixed in-product (https://help.ledgy.com/en/articles/20542-how-to-set-up-stakeholder-scenarios).
+
+## Data, benchmarks & methodology
+
+Ledgy publishes proprietary benchmarks from anonymised platform data: **State of Equity 2026** report (https://ledgy.com/reports/state-of-equity-2026) and the **Equity Data Pulse** series (e.g. H2 2024: employee equity pools at Series B up 58% since 2023, https://ledgy.com/blog/scenario-modelling-for-equity). Methodology details are gated behind the report downloads [uncertain]. Valuations (409A/HMRC/BSPCE) are produced by partner experts, not an in-house model (https://ledgy.com/company-valuations). Financial-reporting math: Black-Scholes (private/Essentials) and Monte Carlo (Public), with automated volatility and risk-free-rate inputs (https://ledgy.com/company-pricing).
+
+## Integrations & security/compliance
+
+**Integrations:** 70+ HRIS (BambooHR, Personio, HiBob, Workday, SAP SuccessFactors, Deel, Darwinbox, Factorial, Lucca, CharlieHR, Humaans…); e-sign DocuSign + Skribble + native Ledgy signatures; brokers/paying agents incl. Winterflood for public-company trading; GraphQL API (Enterprise); SCIM provisioning from Google/Okta/Azure (https://ledgy.com/company-pricing, https://help.ledgy.com/en/collections/178181-hris-integrations).
+
+**Security/compliance:** ISO 27001:2022 certified; TLS 1.3; annual pen tests; least-privilege; GDPR; SOC 2 Type 1 (per product FAQ, https://ledgy.com/equity-plan-automation); data hosted on servers in Switzerland; SAML SSO + SCIM + enforced 2FA; custom role-based access; configurable session length; per-transaction audit trails; public Trust Centre at https://trust.ledgy.com/ and status page https://ledgy.instatus.com/ (https://ledgy.com/ "Enterprise-ready security").
+
+## Patterns worth borrowing for Advisor Comp Studio
+
+1. **Three-value scenario rows** — each valuation event carries *probable* (required) + *optimistic*/*conservative* (optional), entered chronologically and rendered as grouped bars per event. Maps 1:1 onto Conservative/Base/Aggressive; the "first row = Present state" expert tip is a nice anchoring convention (https://help.ledgy.com/en/articles/20542-how-to-set-up-stakeholder-scenarios).
+2. **Bounded what-if slider** — admin sets min/max/default share price and dilution-per-round; the advisor-facing view gets a slider that can't produce absurd numbers. Good fit for an advisor-facing FDV slider in the Proposition view.
+3. **Information-asymmetry toggles** — explicit switches like "Hide total number of shares" so recipients see *their* value but can't back out the company valuation; directly applicable to a watermarked advisor Proposition (confidential cap-table mechanics hidden, net-of-strike value shown).
+4. **Admin Home as a task inbox** — pending consents, unsigned documents, drafts awaiting review surfaced as a prioritised clickable list with a Quick Stats strip; a strong model for the governance/consents checklist.
+5. **Preview-as-stakeholder + "Set default view"** — configure the recipient grid while live-previewing a real person's dashboard, then apply globally. Borrow for previewing the advisor Proposition before export.
+6. **Template variables with validation** — `{stakeholder.name}`, `{strikePrice}`, `{totalStrikePrice}` (= amount × strike — they ship net-of-strike building blocks as first-class fields), loop sections `{#stakeholder.grants}…{/}` and conditional blocks `{#stakeholder.hasGrants}…{/}`, plus pre-generation validation of misspelled/missing variables (https://help.ledgy.com/en/articles/20587-which-variables-can-i-use-for-my-document-templates).
+7. **"New view" escape-hatch toggle** when redesigning a core screen — ship the redesign with a one-click revert (https://help.ledgy.com/en/articles/496622-how-do-i-use-the-admin-homepage-in-ledgy).
+8. **Cmd+K command bar** over a deep sidebar — search pages, people, and actions; cheap to add and matches an internal-tool audience.
 
 ## Sources
-- https://ledgy.com/company-pricing — full tier feature matrix
-- https://ledgy.com/ — unified-platform positioning, module list
-- https://ledgy.com/cap-table — cap table features
-- https://ledgy.com/equity-plan-automation — plan types, automation rules
-- https://ledgy.com/employee-equity-communications — dashboard, preview-as-stakeholder
-- https://confluence.camunda.com/spaces/BP/pages/178594092/Ledgy+-+Equity+Management+Solution — employee dashboard anatomy (customer guide)
-- https://ledgy.com/blog/scenario-modelling-for-equity — scenario presets, employee simulation
-- https://ledgy.com/blog/ai-powered-equity-management-platform — AI Auditor, explainability (Apr 2026)
-- https://ledgy.com/blog/2024-at-ledgy — trading/settlement (Zedra/Winterflood/Airwallex), public-co launch
-- https://ledgy.com/blog/a-new-era-of-executive-compensation — CSC partnership
-- https://www.vendr.com/marketplace/ledgy · https://costbench.com/software/equity-management/ledgy/ — actual pricing benchmarks
-- https://www.capterra.co.za/software/173939/ledgy · https://www.g2.com/it/products/ledgy/reviews · https://www.joinsecret.com/ledgy/reviews — review quotes
-- https://www.zendikt.com/product/ledgy — EU-leader positioning, trade-offs
-- https://docs.ledgy.com/ — GraphQL API (captable, vesting, documentCount fields)
 
- I've gathered what I need, so I'm ready to compile the structured markdown report with all the requested sections, keeping it dense and focused within the token limit.
+**[primary] — vendor pages/docs**
+- https://ledgy.com/ — homepage, positioning, security claims (accessed 2026-06-11)
+- https://ledgy.com/company-pricing — current plans & add-ons (2026-06-11)
+- https://ledgy.com/pricing — legacy pricing page (Premium tier; round-modeling limits)
+- https://ledgy.com/equity-plan-automation · https://ledgy.com/cap-table · https://ledgy.com/financial-reporting · https://ledgy.com/equity-compliance · https://ledgy.com/company-valuations · https://ledgy.com/share-plan-administration · https://ledgy.com/trading-and-settlement · https://ledgy.com/saye · https://ledgy.com/executive-compensation · https://ledgy.com/deferred-compensation · https://ledgy.com/carried-interest · https://ledgy.com/ipo-preparation
+- https://help.ledgy.com/en/ — Help Centre (Admin Guide 155 articles; Stakeholder Resources 19; Account & Access 8)
+- https://help.ledgy.com/en/collections/1079721-admin-guide — full admin IA
+- https://help.ledgy.com/en/articles/496622-how-do-i-use-the-admin-homepage-in-ledgy — Admin Home, Open Tasks, Quick Stats, Cmd+K (updated 2026-04-09)
+- https://help.ledgy.com/en/articles/463180-how-do-i-configure-the-stakeholder-dashboard-settings — dashboard toggles, holdings grid customiser (2026-02-10)
+- https://help.ledgy.com/en/articles/20542-how-to-set-up-stakeholder-scenarios — scenario fields, slider, FAQ (2026-04-20)
+- https://help.ledgy.com/en/articles/20587-which-variables-can-i-use-for-my-document-templates — template variable registry (2026-04-16)
+- https://help.ledgy.com/en/collections/4650-templating · https://help.ledgy.com/en/collections/178181-hris-integrations
+- https://ledgy.com/blog/scenario-modelling-for-equity — scenario modeling positioning (2024-11-12)
+- https://ledgy.com/blog/ledgy-series-b — funding · https://trust.ledgy.com/ · https://ledgy.instatus.com/ · https://ledgy.com/reports/state-of-equity-2026
+
+**[review]**
+- https://www.g2.com/products/ledgy/reviews and https://www.g2.com/products/ledgy/reviews?qs=pros-and-cons — pros/cons quotes
+- https://www.capterra.com/p/173939/Ledgy/reviews/ — ratings (4.9 overall, 4.7 ease-of-use, ~29 reviews)
+- https://www.g2.com/compare/carta-carta-vs-ledgy — UX vs Carta
+
+**[secondary]**
+- https://techcrunch.com/podcast/ledgy-a-carta-for-european-startups-to-manage-equity-and-cap-tables-raises-22m-from-nea-sequoia-and-more/ — Series B
+- https://www.fintechfutures.com/investment-management/equity-management-platform-ledgy-raises-22m-series-b — Series B details
+- https://www.vendr.com/marketplace/ledgy — multi-year discount ranges [uncertain]
+- https://www.getapp.com/finance-accounting-software/a/ledgy/ · https://www.softwareadvice.com/investment-management/ledgy-profile/
+
+**Marked [uncertain]:** first-party waterfall/liquidation-preference exit modeling; any post-2022 funding round; native mobile app; a11y statement; benchmark-report methodology (gated).

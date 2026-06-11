@@ -14,7 +14,7 @@
   <div class="mx-auto w-full px-5 py-8" style="max-width:60rem">
     <div class="frame p-4 mb-6 no-print flex flex-wrap items-center gap-3" style="background:var(--surface-gray-1)">
       <span class="text-sm"><strong>Sealed render · v1</strong> — issued 11 Jun 2026, bound to pipeline stage "signed".</span>
-      <span class="prov-chip tnum" title="Deterministic fingerprint — re-derivable from the sealed inputs"><span class="prov-dot prov-good"></span>sha256 · 4f2a…9c1e</span>
+      <button class="prov-chip tnum" style="cursor:pointer" onclick="copySha()" aria-label="Copy the sha256 fingerprint of this sealed render"><span class="prov-dot prov-good"></span>sha256 · 4f2a…9c1e <span class="eyebrow" style="font-size:0.6875rem">· copy</span></button>
       <span class="eyebrow">This page never changes. Edits to the package land on the <a class="underline" href="proposition.html">live draft</a>.</span>
     </div>
 
@@ -44,5 +44,13 @@
   <div class="print-footer"><span>Raiku Labs — Confidential · Sealed v1, not a binding offer</span><span>Prepared for Iraj Ispahani · 11 Jun 2026</span></div>
 </div>
 <script src="assets/proto.js"></script>
+<script>
+function copySha(){
+  const sha = '4f2a7d8e1b6c3a59f0e4d2c8b7a6915e3f8d0c2a4b6e8f1d3c5a7b9e0f2d9c1e';
+  navigator.clipboard.writeText(sha).then(
+    ()=>toast('Fingerprint copied — sha256 4f2a…9c1e'),
+    ()=>toast('Copy blocked by the browser — select and copy manually'));
+}
+</script>
 </body>
 </html>

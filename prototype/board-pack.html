@@ -14,7 +14,7 @@
   <div class="mx-auto w-full px-5 py-8 print-area" style="max-width:60rem">
     <div class="flex justify-between items-baseline mb-8">
       <div>
-        <div class="eyebrow">Confidential · Discussion draft · prepared 11 Jun 2026</div>
+        <div class="eyebrow">Confidential · Discussion draft · prepared <span class="pack-date tnum">today</span></div>
         <h1 class="font-display text-3xl">Advisory board pack.</h1>
       </div>
       <div class="text-right text-sm" style="color:var(--ink-gray-6)">Raiku Labs<br/>Case: <span data-case-label>Base</span> · Stage: <span data-stage-label>Bridge close</span></div>
@@ -31,15 +31,15 @@
 
     <div class="section-label mb-2">2 · Roster</div>
     <div class="overflow-x-auto mb-8">
-    <table class="data" style="min-width:640px">
-      <thead><tr><th>Advisor</th><th>Tier</th><th>Stage</th><th class="num">Base eq</th><th class="num">Net · <span data-case-label>Base</span></th><th class="num">Compa</th></tr></thead>
+    <table class="data" style="min-width:720px">
+      <thead><tr><th>Advisor</th><th>Tier</th><th>Stage</th><th class="num">Base eq</th><th class="num">Tokens · of supply</th><th class="num">Net · <span data-case-label>Base</span></th><th class="num">Compa</th></tr></thead>
       <tbody>
-        <tr><td>Iraj Ispahani</td><td>Anchor</td><td>iterating</td><td class="num">1.50%</td><td class="num" data-money='{"con":"$1.87M","base":"$7.67M","agg":"$21.4M"}'>$7.67M</td><td class="num">1.12</td></tr>
-        <tr><td>Robert Reoch</td><td>Strategic</td><td>proposed</td><td class="num">1.00%</td><td class="num" data-money='{"con":"$1.25M","base":"$5.11M","agg":"$14.3M"}'>$5.11M</td><td class="num">1.09</td></tr>
-        <tr><td>Martin Keller</td><td>Strategic</td><td>proposed</td><td class="num">1.00%</td><td class="num" data-money='{"con":"$1.25M","base":"$5.11M","agg":"$14.3M"}'>$5.11M</td><td class="num">1.09</td></tr>
-        <tr><td>Kerim Derhalli</td><td>Strategic</td><td>proposed</td><td class="num">1.00%</td><td class="num" data-money='{"con":"$1.25M","base":"$5.11M","agg":"$14.3M"}'>$5.11M</td><td class="num">1.09</td></tr>
-        <tr><td>Carl Bang</td><td>Base</td><td>modeled</td><td class="num">0.50%</td><td class="num" data-money='{"con":"$624K","base":"$2.56M","agg":"$7.14M"}'>$2.56M</td><td class="num">1.04</td></tr>
-        <tr><td>Rajesh Mehta</td><td>Base</td><td>modeled</td><td class="num">0.50%</td><td class="num" data-money='{"con":"$624K","base":"$2.56M","agg":"$7.14M"}'>$2.56M</td><td class="num">1.04</td></tr>
+        <tr><td>Iraj Ispahani</td><td>Anchor</td><td>iterating</td><td class="num">1.50%</td><td class="num">0.90%</td><td class="num" data-money='{"con":"$1.87M","base":"$7.67M","agg":"$21.4M"}'>$7.67M</td><td class="num">1.12</td></tr>
+        <tr><td>Robert Reoch</td><td>Strategic</td><td>proposed</td><td class="num">1.00%</td><td class="num">0.60%</td><td class="num" data-money='{"con":"$1.25M","base":"$5.11M","agg":"$14.3M"}'>$5.11M</td><td class="num">1.09</td></tr>
+        <tr><td>Martin Keller</td><td>Strategic</td><td>proposed</td><td class="num">1.00%</td><td class="num">0.60%</td><td class="num" data-money='{"con":"$1.25M","base":"$5.11M","agg":"$14.3M"}'>$5.11M</td><td class="num">1.09</td></tr>
+        <tr><td>Kerim Derhalli</td><td>Strategic</td><td>proposed</td><td class="num">1.00%</td><td class="num">0.60%</td><td class="num" data-money='{"con":"$1.25M","base":"$5.11M","agg":"$14.3M"}'>$5.11M</td><td class="num">1.09</td></tr>
+        <tr><td>Carl Bang</td><td>Base</td><td>modeled</td><td class="num">0.50%</td><td class="num">0.30%</td><td class="num" data-money='{"con":"$624K","base":"$2.56M","agg":"$7.14M"}'>$2.56M</td><td class="num">1.04</td></tr>
+        <tr><td>Rajesh Mehta</td><td>Base</td><td>modeled</td><td class="num">0.50%</td><td class="num">0.30%</td><td class="num" data-money='{"con":"$624K","base":"$2.56M","agg":"$7.14M"}'>$2.56M</td><td class="num">1.04</td></tr>
       </tbody>
     </table>
     </div>
@@ -60,8 +60,14 @@
 
     <p class="eyebrow">Net of strike, pre-tax, scenario-diluted. A discussion draft, not a binding offer or legal/financial advice.</p>
   </div>
-  <div class="print-footer"><span>Raiku Labs — Confidential · Discussion draft, not a binding offer</span><span>Board pack · 11 Jun 2026</span></div>
+  <div class="print-footer"><span>Raiku Labs — Confidential · Discussion draft, not a binding offer</span><span>Board pack · <span class="pack-date tnum">today</span></span></div>
 </div>
 <script src="assets/proto.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const stamp = new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+  document.querySelectorAll('.pack-date').forEach(el=>{el.textContent=stamp;});
+});
+</script>
 </body>
 </html>

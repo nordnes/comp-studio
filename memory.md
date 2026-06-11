@@ -3252,3 +3252,64 @@ Cursor browser against :5174.
 - **Deferred:** across-scenarios table values don't re-scale when a non-Anchor tier is saved (only the
   summary line + band section commit, per task scope); ⌘K advisor entries still unparameterized
   (cross-page, Wave 1A noted the same).
+
+## 2026-06-11 — Prototype fix Wave 1C: compare / governance / configure (CRITIQUE.md P0–P2)
+
+Wave 1C of the three-agent prototype fix run (siblings took board/overview and advisor/dialogs).
+Files touched: `prototype/compare.html`, `prototype/governance.html`, `prototype/configure.html`,
+additive-only edits to `prototype/assets/proto.js` + `tokens.css`.
+
+- **Compare case binding completed.** Every money figure now case-bound: 14 bound elements (6 matrix
+  Spread cells + new totals-row spread + 6 A/B cells + the live "active case:" label) all change on a
+  case switch (verified by element-text diff: 14/14). Per-scenario Net columns stay fixed by design;
+  the active column gets an amber `td[data-case-active].case-active` highlight (7 cells incl. totals)
+  + header flag, both following the live case. Stage switch re-prices the strike line
+  ($1,572.95 → $3,145.90 at Series B, verified).
+- **Compare chart fidelity floor.** Kept the hand-rolled SVG (no CDN dependency): 4 horizontal
+  gridlines (outline-gray-1), 5 y-tick labels ($0–$20M), per-bar values on hover/click/focus via
+  `data-pop` (hover delegation added to proto.js — additive, benefits every data-pop on every page),
+  per-bar aria-labels, legend = swatch + name only (position lives in the svg aria-label). Meta
+  narration ("position is the non-color channel") removed from visible copy.
+- **Governance register rendered 15/15** (the 14 spec rows A-1→C.6·12 + the G-1 guardrail exception),
+  grouped A · Pool & resolution / B · Executive grants / C · Bridge & investor rights / D · Plumbing /
+  C.6 · Open items / Guardrail exceptions. Every row: status dot (CSS derives from `data-rag`, so it
+  flips with the RAG) · id · title · one-line description · owner/timing eyebrow · RAG radiogroup.
+  The ellipsis placeholder line is gone.
+- **Counts derive from DOM.** Filter chips recount from `#register [data-item]` on load and on every
+  flip (wireRag now syncs `row.dataset.rag` + fires `window.onRagFlip`; undo restores both). Verified:
+  15/10/5/0 → flip C-4 green → 15/9/5/1, dot turns green, audit row appended with the why-note,
+  undo restores everything incl. the log. Filters hide empty section labels + show an inline empty
+  state; print emulation strips chrome and keeps all 15 rows ("Print register" header action works).
+  Dead `href="#"` artifact links removed.
+- **Configure rail is real.** Anchor links + `aria-current` swap on click AND scroll
+  (IntersectionObserver, topmost-intersecting wins, click wins for 800ms, bottom-of-page activates the
+  last section). Verified: click → Benchmarks sticks; scroll → Cap table / Grants & pools / Benchmarks.
+- **NumIn re-anchors for real.** Bridge commit now drives a hook: strike scales linearly
+  ($1,572.95 at $90M → $1,660.34 at $95M, exact round-trip on undo), scenario-path "% kept" cells and
+  the board-net eyebrow re-render through the engine pass (data JSON rewritten + new
+  `window.renderProtoState`). Reset also re-anchors. Mark closed / + Add round / Accept v2026-Q2 all
+  re-verified with real undo round-trips.
+- **Dead chrome swept on my three pages.** Compare "Pin set" → "Download (CSV)" (real file via
+  exportTableCsv); all 10 `title=` tooltips on configure + 3 on governance converted to `data-pop`
+  popovers (hover/click/focus); ⚠ glyph replaced with text.
+- **Verification:** all flows exercised live via CDP in a locked browser tab (a sibling agent
+  navigated the shared tab mid-probe — re-ran in an own locked tab); zero horizontal overflow on all
+  three pages at 1440/1024/768/375 (iframe harness).
+- **Deferred:** matrix A/B selects still single-option (fork-B adds v2 — multi-package selection is
+  out of scope); governance n-of-m approval counts exist only on rows that had them (no invented
+  data); % kept / board-net re-anchor is the sanctioned 2-value mock, not engine math.
+
+## 2026-06-11 (close-out) — session end state; the resume point
+- Robin closed the interactive session here. **Everything committed + pushed + live:** tip ==
+  origin == the latest successful Production deployment (verified by ref + content markers).
+  Branches: local & remote = default + main only; the orphan preserved at
+  archive/m8-handoff-relaxed-faraday; one worktree.
+- **The rubric run's formal exit is PARKED, not failed.** Panel 010: product fully green
+  (G2/G3/G4 28/28); G1's operational items all cleared by FIX-10 except **R5.3, which waits on
+  Robin's protocol waiver** (PRs #128/#132 merged without same-PR spec mirrors; mirrored
+  post-hoc in #135's T31; history can't be retro-mirrored). **RESUME = Robin says "waive it" →
+  add the dated waiver entry to RUBRIC_V2_FINISH.md in a docs: PR → run panels 011 + 012 (the
+  010 harness script is in the session workflows dir; brief pattern in docs/rubric-grades/010)
+  → two clean panels → Wave 8 → the Wave-8.5 closing grader's all-PASS.**
+- Open externals: Wave 6 Supabase invoices (human) → then COM-33/34/35; the backlog stands at
+  M14 (COM-200…236) + M15 hardening (COM-237…244) + COM-199's P2 tail.

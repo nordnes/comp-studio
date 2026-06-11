@@ -134,7 +134,7 @@
 
       <!-- mobile drawer -->
       <div class="dlg-backdrop" id="nav-drawer" role="dialog" aria-modal="true" aria-label="Navigation" style="justify-content:flex-start;padding:0">
-        <div style="background:var(--surface-gray-1);width:260px;max-width:80vw;height:100%;overflow-y:auto;border-right:1px solid var(--outline-gray-1)">
+        <div class="drawer-panel" style="background:var(--surface-gray-1);width:260px;max-width:80vw;height:100%;overflow-y:auto;border-right:1px solid var(--outline-gray-1)">
           <div class="px-5 pt-5 pb-2 flex items-center justify-between">
             <span class="font-display text-lg">Raiku Labs</span>
             <button class="btn" onclick="closeDialog('nav-drawer')" aria-label="Close navigation">&#10005;</button>

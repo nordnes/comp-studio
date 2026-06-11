@@ -115,7 +115,7 @@ body{font-family:Inter,system-ui,sans-serif}
               <button class="text-xs underline" style="color:var(--ink-gray-6)" onclick="requestReverify(this)">re-verify</button>
             </div>
             <div class="flex flex-wrap items-center gap-3">
-              <div class="flex-1 min-w-[230px]"><div class="font-medium">Board token bucket</div><div class="tnum" style="color:var(--ink-gray-6)">4.50% of supply ring-fenced · 4.83% at ceiling ⚠</div></div>
+              <div class="flex-1 min-w-[230px]"><div class="font-medium">Board token bucket</div><div class="tnum" style="color:var(--ink-gray-6)">4.50% of supply ring-fenced · 4.83% at ceiling — over</div></div>
               <span class="prov-chip" data-pop="Token-launch template norms, verified Jun 2026"><span class="prov-dot prov-good"></span>template norm · advisors 2.5–3% · 12mo lock + 24mo unlock</span>
               <span class="prov-chip" data-pop="Category benchmark, 150+ projects"><span class="prov-dot prov-mid"></span>category benchmark · advisors+partners 1.5%</span>
             </div>
@@ -252,13 +252,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // section rail: aria-current follows clicks AND scroll position
   const rail = [...document.querySelectorAll('#sec-rail a')];
+  const sections = ['sec-captable', 'sec-pools', 'sec-data', 'sec-benchmarks'];
   const setRail = id => rail.forEach(a =>
     a.getAttribute('href') === '#' + id ? a.setAttribute('aria-current', 'true') : a.removeAttribute('aria-current'));
-  rail.forEach(a => a.addEventListener('click', () => setRail(a.getAttribute('href').slice(1))));
+  let clickedAt = 0;
+  rail.forEach(a => a.addEventListener('click', () => { clickedAt = Date.now(); setRail(a.getAttribute('href').slice(1)); }));
   const io = new IntersectionObserver(entries => {
-    entries.forEach(en => { if (en.isIntersecting) setRail(en.target.id); });
-  }, { rootMargin: '-64px 0px -60% 0px' });
-  ['sec-captable', 'sec-pools', 'sec-data', 'sec-benchmarks'].forEach(id => io.observe(document.getElementById(id)));
+    if (Date.now() - clickedAt < 800) return; // the click already chose; don't fight the scroll
+    if (scrollY + innerHeight >= document.body.scrollHeight - 4) { setRail(sections[sections.length - 1]); return; }
+    const vis = entries.filter(en => en.isIntersecting)
+      .sort((x, y) => x.boundingClientRect.top - y.boundingClientRect.top);
+    if (vis.length) setRail(vis[0].target.id);
+  }, { rootMargin: '-64px 0px -55% 0px' });
+  sections.forEach(id => io.observe(document.getElementById(id)));
 });
 function markClosed(btn, name){
   const status = btn.closest('.frame').querySelector('.round-status');

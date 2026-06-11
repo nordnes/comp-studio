@@ -55,41 +55,45 @@ body{font-family:Inter,system-ui,sans-serif}
 
         <div class="grid sm:grid-cols-[1fr,220px] gap-6 mb-8 items-start">
           <div>
-            <div class="eyebrow mb-1">The package across outcomes · net of strike &amp; dilution<sup class="tnum">1,2</sup> · not a forecast · <span data-case-label>Base</span> case shown</div>
+            <div class="eyebrow mb-1">The package across outcomes · net of strike &amp; dilution · not a forecast · <span data-case-label>Base</span> case shown</div>
             <div class="font-display text-4xl tnum mb-3"><span data-money='{"con":"$1.87M","base":"$7.67M","agg":"$21.4M"}'>$7.67M</span><sup class="text-base" style="color:var(--ink-gray-5)">1</sup></div>
             <table class="data">
               <tbody>
-                <tr data-case-active="con"><td>Conservative · $300.0M exit · 32% kept <span class="case-active-flag">shown</span></td><td class="num">$1.87M<sup style="color:var(--ink-gray-5)">2</sup></td></tr>
-                <tr data-case-active="base"><td><strong>Base · $500.0M exit · 48% kept</strong> <span class="case-active-flag">shown</span></td><td class="num font-medium">$7.67M<sup style="color:var(--ink-gray-5)">2</sup></td></tr>
-                <tr data-case-active="agg"><td>Aggressive · $750.0M exit · 58% kept <span class="case-active-flag">shown</span></td><td class="num">$21.4M<sup style="color:var(--ink-gray-5)">2</sup></td></tr>
+                <tr data-case-active="con"><td>Conservative · $300.0M exit · 32% kept <span class="case-active-flag">shown</span></td><td class="num">$1.87M</td></tr>
+                <tr data-case-active="base"><td><strong>Base · $500.0M exit · 48% kept</strong> <span class="case-active-flag">shown</span></td><td class="num font-medium">$7.67M</td></tr>
+                <tr data-case-active="agg"><td>Aggressive · $750.0M exit · 58% kept <span class="case-active-flag">shown</span></td><td class="num">$21.4M</td></tr>
               </tbody>
             </table>
-            <div class="text-sm tnum mt-2" style="color:var(--ink-gray-7)">eq <span data-money='{"con":"$73K","base":"$2.27M","agg":"$5.23M"}'>$2.27M</span><sup style="color:var(--ink-gray-5)">1,4</sup> · tok <span data-money='{"con":"$1.80M","base":"$5.40M","agg":"$16.2M"}'>$5.40M</span><sup style="color:var(--ink-gray-5)">3</sup> <span class="eyebrow">(9.0M RKU — value first, count second)</span></div>
+            <div class="text-sm tnum mt-2" style="color:var(--ink-gray-7)">eq <span data-money='{"con":"$73K","base":"$2.27M","agg":"$5.23M"}'>$2.27M</span> · tok <span data-money='{"con":"$1.80M","base":"$5.40M","agg":"$16.2M"}'>$5.40M</span> <span class="eyebrow">(9.0M RKU — value first, count second)</span></div>
           </div>
           <aside class="text-xs p-3 rounded" style="background:var(--surface-gray-1);color:var(--ink-gray-7)">
             <strong>What "% kept" means.</strong> Future funding rounds dilute everyone; "kept" is the share of today's percentage you retain on that path. It is applied to every figure on this page — education inline, where the number is.
           </aside>
         </div>
 
-        <!-- detented slider: named anchors + valuation events -->
+        <!-- detented slider: named anchors + valuation events. The control never prints;
+             its conclusion line does (DESIGN_SYSTEM print grammar: controls stripped, conclusions kept). -->
         <div class="mb-8">
-          <div class="eyebrow mb-2">Explore the outcome (drag — it snaps to the named anchors)</div>
-          <input type="range" id="exit" class="exit" min="100" max="1000" step="10" value="500" list="exit-detents" aria-label="Exit valuation in millions; snaps to Conservative 300, Base 500, TGE FDV 600, Aggressive 750">
-          <datalist id="exit-detents"><option value="300"></option><option value="500"></option><option value="600"></option><option value="750"></option></datalist>
-          <div class="relative h-9 text-[11px] tnum" style="color:var(--ink-gray-5)" aria-hidden="true">
-            <span class="absolute" style="left:0">$100M</span>
-            <span class="absolute -translate-x-1/2 text-center" style="left:22%">▲<br>Conservative $300M</span>
-            <span class="absolute -translate-x-1/2 text-center font-medium" style="left:44.5%;color:var(--ink-amber-strong)">▲<br>Base $500M</span>
-            <span class="absolute -translate-x-1/2 text-center" style="left:55.5%">▲<br>TGE FDV $600M</span>
-            <span class="absolute -translate-x-1/2 text-center" style="left:72%">▲<br>Aggressive $750M</span>
-            <span class="absolute right-0">$1.0B</span>
+          <div class="no-print">
+            <div class="eyebrow mb-2">Explore the outcome (drag — it snaps to the named anchors)</div>
+            <input type="range" id="exit" class="exit" min="100" max="1000" step="10" value="500" list="exit-detents" aria-label="Exit valuation in millions; snaps to Conservative 300, Base 500, TGE FDV 600, Aggressive 750">
+            <datalist id="exit-detents"><option value="300"></option><option value="500"></option><option value="600"></option><option value="750"></option></datalist>
+            <div class="relative h-9 text-[11px] tnum" style="color:var(--ink-gray-5)" aria-hidden="true">
+              <span class="absolute" style="left:0">$100M</span>
+              <span class="absolute -translate-x-1/2 text-center" style="left:22%">▲<br>Conservative $300M</span>
+              <span class="absolute -translate-x-1/2 text-center font-medium" style="left:44.5%;color:var(--ink-amber-strong)">▲<br>Base $500M</span>
+              <span class="absolute -translate-x-1/2 text-center" style="left:55.5%">▲<br>TGE FDV $600M</span>
+              <span class="absolute -translate-x-1/2 text-center" style="left:72%">▲<br>Aggressive $750M</span>
+              <span class="absolute right-0">$1.0B</span>
+            </div>
           </div>
+          <div class="print-only eyebrow">The modeled outcome</div>
           <div class="text-sm tnum font-medium" id="exit-out" style="color:var(--ink-gray-9)">$7.67M net at $500M</div>
         </div>
 
         <!-- at signing vs at milestones -->
         <div class="mb-8">
-          <div class="eyebrow mb-2">What this is worth at signing — and at each milestone<sup class="tnum">2,5</sup></div>
+          <div class="eyebrow mb-2">What this is worth at signing — and at each milestone</div>
           <div class="grid sm:grid-cols-2 gap-px rounded-lg overflow-hidden border" style="border-color:var(--outline-gray-1);background:var(--outline-gray-1)">
             <div class="p-4" style="background:var(--surface-white)">
               <div class="eyebrow">At signing · today</div>
@@ -129,7 +133,7 @@ body{font-family:Inter,system-ui,sans-serif}
         <!-- vesting & key dates -->
         <div class="grid sm:grid-cols-2 gap-6 mb-8">
           <div>
-            <div class="eyebrow mb-2">Vesting<sup class="tnum">5</sup></div>
+            <div class="eyebrow mb-2">Vesting</div>
             <table class="data text-sm">
               <tbody>
                 <tr><td>Equity</td><td class="num">4 yrs · annual tranches · 12-mo cliff</td></tr>
@@ -151,7 +155,7 @@ body{font-family:Inter,system-ui,sans-serif}
 
         <!-- the corpus as numbered, per-figure footnotes (screen AND print) -->
         <div class="mb-8">
-          <div class="eyebrow mb-2">Notes — each note is bound to the figures it qualifies</div>
+          <div class="eyebrow mb-2">Notes — the fine print behind every figure above</div>
           <ol class="text-xs leading-relaxed space-y-1.5 list-decimal pl-4 legal-fineprint" style="color:var(--ink-gray-6)">
             <li>Every equity figure is net of strike ($1,572.95, the Bridge price) and pre-tax. Options over ordinary non-voting shares (ESOP); net exercise permitted. Strike subject to an agreed HMRC SAV / 409A valuation before first grant.</li>
             <li>Scenario figures apply that path's dilution ("% kept") and are a discussion draft, not a forecast, a binding offer, or legal/financial advice. Subject to required investor consents.</li>
@@ -207,7 +211,7 @@ body{font-family:Inter,system-ui,sans-serif}
     </div>
   </div>
 </div>
-  <div class="print-footer"><span>Raiku Labs — Confidential · Discussion draft, not a binding offer</span><span>Prepared for Iraj Ispahani · 11 Jun 2026</span></div>
+  <div class="print-footer"><span>Raiku Labs — Confidential · Discussion draft, not a binding offer</span><span>Prepared for Iraj Ispahani · ref 4f2a…9c1e</span></div>
 <script src="assets/proto.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded',()=>{

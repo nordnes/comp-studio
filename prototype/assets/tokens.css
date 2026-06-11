@@ -29,6 +29,11 @@
   --chart-warning: #8c3a2b;
   --chart-median: #6e7a8a;
   --scrim: rgba(31, 29, 26, 0.45);
+  /* Motion scale — ease-out only (quint), state stays the source of truth */
+  --motion-fast: 120ms;
+  --motion-base: 180ms;
+  --motion-slow: 240ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 }
 html { color-scheme: light; }
 body { background: var(--surface-white); color: var(--ink-gray-9); font-feature-settings: "cv05"; }
@@ -41,8 +46,7 @@ body { background: var(--surface-white); color: var(--ink-gray-9); font-feature-
 
 /* Engine render pass: figures whose text changed pulse briefly (subtle Espresso amber fade) */
 @keyframes value-pulse { 0% { background-color: var(--surface-amber-1); } 100% { background-color: transparent; } }
-.value-pulse { animation: value-pulse 600ms ease-out; border-radius: 3px; }
-@media (prefers-reduced-motion: reduce) { .value-pulse { animation: none; } }
+.value-pulse { animation: value-pulse 600ms var(--ease-out); border-radius: 3px; }
 
 /* Case-bound "active" flag: shown only when the element's data-case-active matches the live case */
 .case-active-flag { display: none; font-size: 0.6875rem; font-weight: 600; padding: 1px 6px; border-radius: 999px; background: var(--surface-amber-1); color: var(--ink-amber-strong); vertical-align: middle; }
@@ -88,18 +92,37 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible, input:focus-vis
 .prov-dot { width: 6px; height: 6px; border-radius: 999px; }
 .prov-good { background: var(--ink-green-3); } .prov-mid { background: var(--ink-amber-3); } .prov-low { background: var(--ink-red-3); }
 
-/* Dialog system (WS-B AppDialog grammar) */
+/* Dialog system (WS-B AppDialog grammar).
+   Motion: ENTER animates when .open is added (scrim fade + panel scale/fade);
+   EXIT is instant class removal — visibility is never gated on animationend. */
+@keyframes scrim-in { from { background-color: transparent; } to { background-color: var(--scrim); } }
+@keyframes dlg-in { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
 .dlg-backdrop { position: fixed; inset: 0; background: var(--scrim); display: none; align-items: center; justify-content: center; z-index: 50; padding: 24px; }
-.dlg-backdrop.open { display: flex; }
+.dlg-backdrop.open { display: flex; animation: scrim-in var(--motion-base) var(--ease-out); }
+.dlg-backdrop.open .dlg { animation: dlg-in var(--motion-base) var(--ease-out); }
 .dlg { background: var(--surface-white); border-radius: 12px; width: 100%; max-width: 640px; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 24px 60px rgba(31,29,26,.25); }
+
+/* Drawer (mobile nav): slides in from the left when its backdrop opens */
+@keyframes drawer-in { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+.dlg-backdrop.open .drawer-panel { animation: drawer-in var(--motion-base) var(--ease-out); }
 .dlg-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid var(--outline-gray-1); flex: 0 0 auto; }
 .dlg-body { padding: 20px; overflow-y: auto; flex: 1 1 auto; }
 .dlg-foot { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 20px; border-top: 1px solid var(--outline-gray-1); flex: 0 0 auto; background: var(--surface-gray-1); border-radius: 0 0 12px 12px; }
 
-/* Toast w/ undo (WS-C) */
+/* Toast w/ undo (WS-C) — slides in from the right; removal is instant */
+@keyframes toast-in { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: translateX(0); } }
 #toast-region { position: fixed; bottom: 20px; right: 20px; z-index: 60; display: flex; flex-direction: column; gap: 8px; }
-.toast { background: var(--ink-gray-9); color: #fff; border-radius: 8px; padding: 10px 14px; font-size: 0.875rem; display: flex; align-items: center; gap: 14px; box-shadow: 0 8px 24px rgba(0,0,0,.25); }
+.toast { background: var(--ink-gray-9); color: #fff; border-radius: 8px; padding: 10px 14px; font-size: 0.875rem; display: flex; align-items: center; gap: 14px; box-shadow: 0 8px 24px rgba(0,0,0,.25); animation: toast-in var(--motion-base) var(--ease-out); }
 .toast button { color: #f3c969; font-weight: 600; }
+
+/* Hover transitions: surface-affecting properties only, on the fast tick */
+.btn, .preset-chip, .status-chip, .prov-chip, .mini-chip, .rag button, .band-avatar,
+a.frame, .frame[role=radio], [role=tab] {
+  transition: background-color var(--motion-fast) var(--ease-out),
+              box-shadow var(--motion-fast) var(--ease-out),
+              border-color var(--motion-fast) var(--ease-out),
+              color var(--motion-fast) var(--ease-out);
+}
 
 /* Buttons */
 .btn { display: inline-flex; align-items: center; gap: 6px; font-size: 0.875rem; font-weight: 500; border-radius: 8px; padding: 6px 12px; border: 1px solid var(--outline-gray-2); background: var(--surface-white); color: var(--ink-gray-8); }
@@ -133,7 +156,9 @@ table.data td { padding: 9px 10px; border-bottom: 1px solid var(--outline-gray-1
 table.data th.num, table.data td.num { text-align: right; font-variant-numeric: tabular-nums; }
 .delta-up { color: var(--ink-green-3); } .delta-down { color: var(--ink-red-3); }
 
-/* Tabs (advisor detail) */
+/* Tabs (advisor detail) — the entering panel crossfades in; hiding stays instant */
+@keyframes panel-in { from { opacity: 0; } to { opacity: 1; } }
+[data-tabpanel]:not([hidden]) { animation: panel-in var(--motion-fast) var(--ease-out); }
 [role=tablist] { display: flex; gap: 18px; border-bottom: 1px solid var(--outline-gray-1); overflow-x: auto; }
 [role=tablist] [role=tab] { white-space: nowrap; flex: 0 0 auto; }
 [role=tab] { font-size: 0.875rem; padding: 6px 2px; border-bottom: 2px solid transparent; color: var(--ink-gray-6); }
@@ -141,8 +166,7 @@ table.data th.num, table.data td.num { text-align: right; font-variant-numeric: 
 
 /* Scenario-range rows (Board): track + case-bound marker, repositioned by the data-pos render hook */
 .range-track { position: relative; height: 8px; border-radius: 999px; background: var(--surface-gray-3); }
-.range-marker { position: absolute; top: -4px; bottom: -4px; width: 3px; border-radius: 2px; background: var(--chart-capital); transform: translateX(-50%); transition: left .35s cubic-bezier(.22, .61, .36, 1); }
-@media (prefers-reduced-motion: reduce) { .range-marker { transition: none; } }
+.range-marker { position: absolute; top: -4px; bottom: -4px; width: 3px; border-radius: 2px; background: var(--chart-capital); transform: translateX(-50%); transition: left var(--motion-slow) var(--ease-out); }
 
 /* Mini status chips (Overview roster cards): quiet gray default, amber = pre-conditions pending */
 .mini-chip { display: inline-flex; align-items: center; font-size: 0.6875rem; font-weight: 500; line-height: 1.5; padding: 1px 7px; border-radius: 999px; background: var(--surface-gray-2); color: var(--ink-gray-7); }
@@ -159,4 +183,16 @@ table.data th.num, table.data td.num { text-align: right; font-variant-numeric: 
   .print-area { box-shadow: none !important; border: none !important; }
   .print-footer { display: flex; position: fixed; bottom: 0; left: 0; right: 0; justify-content: space-between; font-size: 10px; color: var(--ink-gray-6); padding: 4px 8px; }
   .wm { display: block !important; }
+  .print-only { display: block !important; }
+}
+.print-only { display: none; }
+
+/* Reduced motion: every animation/transition collapses to instant.
+   End-states stay correct because state (classes/attributes) drives visibility, not animation. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

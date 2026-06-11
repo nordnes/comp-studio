@@ -44,9 +44,9 @@
         <tr><td>Robert Reoch</td><td class="num">0.60%</td><td class="num">6.0M</td><td class="num" data-money='{"con":"$1.20M","base":"$3.60M","agg":"$10.8M"}'>$3.60M</td><td class="num">0%</td><td class="num">12 mo</td><td class="num">24 mo</td><td>monthly</td><td class="num">4 yr · 12-mo cliff</td></tr>
         <tr><td>Martin Keller</td><td class="num">0.60%</td><td class="num">6.0M</td><td class="num" data-money='{"con":"$1.20M","base":"$3.60M","agg":"$10.8M"}'>$3.60M</td><td class="num">0%</td><td class="num">12 mo</td><td class="num">24 mo</td><td>monthly</td><td class="num">4 yr · 12-mo cliff</td></tr>
         <tr><td>Kerim Derhalli</td><td class="num">0.60%</td><td class="num">6.0M</td><td class="num" data-money='{"con":"$1.20M","base":"$3.60M","agg":"$10.8M"}'>$3.60M</td><td class="num">0%</td><td class="num">12 mo</td><td class="num">24 mo</td><td>monthly</td><td class="num">4 yr · 12-mo cliff</td></tr>
-        <tr><td>Carl Bang</td><td class="num">0.30%</td><td class="num">3.0M</td><td class="num" data-money='{"con":"$600K","base":"$1.80M","agg":"$5.40M"}'>$1.80M</td><td class="num">0%</td><td class="num">12 mo</td><td class="num">24 mo</td><td>monthly</td><td class="num">4 yr · 12-mo cliff</td></tr>
+        <tr><td>Carl Bang <span class="eyebrow">· negotiated</span></td><td class="num">0.30%</td><td class="num">3.0M</td><td class="num" data-money='{"con":"$600K","base":"$1.80M","agg":"$5.40M"}'>$1.80M</td><td class="num">0%</td><td class="num font-medium" style="color:var(--ink-amber-strong)">6 mo</td><td class="num font-medium" style="color:var(--ink-amber-strong)">18 mo</td><td>monthly</td><td class="num">4 yr · 12-mo cliff</td></tr>
         <tr><td>Rajesh Mehta</td><td class="num">0.30%</td><td class="num">3.0M</td><td class="num" data-money='{"con":"$600K","base":"$1.80M","agg":"$5.40M"}'>$1.80M</td><td class="num">0%</td><td class="num">12 mo</td><td class="num">24 mo</td><td>monthly</td><td class="num">4 yr · 12-mo cliff</td></tr>
-        <tr class="font-medium" style="background:var(--surface-gray-1)"><td>Board · 6</td><td class="num">3.30%</td><td class="num">33.0M</td><td class="num" data-money='{"con":"$6.60M","base":"$19.8M","agg":"$59.4M"}'>$19.8M</td><td class="num">0%</td><td class="num">12 mo</td><td class="num">24 mo</td><td>monthly</td><td class="num">—</td></tr>
+        <tr class="font-medium" style="background:var(--surface-gray-1)"><td>Board · 6</td><td class="num">3.30%</td><td class="num">33.0M</td><td class="num" data-money='{"con":"$6.60M","base":"$19.8M","agg":"$59.4M"}'>$19.8M</td><td class="num">0%</td><td class="num">6–12 mo</td><td class="num">18–24 mo</td><td>monthly</td><td class="num">—</td></tr>
       </tbody>
     </table>
     </div>
@@ -61,7 +61,7 @@
         <!-- twin tracks + Today cursor -->
         <div class="section-label mb-2">Vested vs unlocked · board total <span class="eyebrow">· two curves, never collapsed — dash = non-color channel</span></div>
         <div class="frame p-5 overflow-x-auto">
-          <svg viewBox="0 0 720 260" class="w-full" style="min-width:560px" role="img" aria-label="Twin-track chart: tokens vested (solid) versus unlocked (dashed staircase) over 72 months from engagement; today cursor at month 0 shows zero vested, zero unlocked">
+          <svg viewBox="0 0 720 266" class="w-full" style="min-width:560px" role="img" aria-label="Twin-track chart: tokens vested (solid) versus unlocked (dashed staircase) over 72 months from engagement; Carl's earlier 6-month lockup starts a small unlock ramp before the board joins at TGE plus 12; today cursor at month 0 shows zero vested, zero unlocked">
             <line x1="50" y1="20" x2="50" y2="200" stroke="var(--outline-gray-2)"/>
             <line x1="50" y1="200" x2="700" y2="200" stroke="var(--outline-gray-2)"/>
             <g font-size="11" fill="var(--ink-gray-5)" text-anchor="end">
@@ -69,8 +69,8 @@
             </g>
             <!-- vested: cliff at M12 → 25%, then monthly to 100% at M48 -->
             <path d="M50,200 L158,200 L158,156 L482,24 L700,24" fill="none" stroke="var(--chart-capital)" stroke-width="2.5"/>
-            <!-- unlocked: 0 until TGE(M22)+12 = M34 → staircase to 100% at M58 -->
-            <path d="M50,200 L356,200 L370,193 L384,186 L398,178 L412,171 L426,163 L440,156 L454,148 L468,141 L482,134 L496,126 L510,119 L524,111 L538,104 L552,96 L566,89 L580,81 L594,74 L608,66 L622,59 L636,51 L650,44 L664,36 L678,29 L692,24 L700,24" fill="none" stroke="var(--chart-uplift)" stroke-width="2.5" stroke-dasharray="6,4"/>
+            <!-- unlocked: Carl's 6-mo lockup opens a small ramp at TGE+7; the board joins at TGE+12 → staircase to fully liquid -->
+            <path d="M50,200 L313,200 L327,199 L341,197 L356,196 L370,189 L384,182 L398,174 L412,167 L426,159 L440,152 L454,144 L468,137 L482,130 L496,122 L510,115 L524,107 L538,100 L552,92 L566,85 L580,77 L594,70 L608,62 L622,55 L636,47 L650,40 L664,32 L678,27 L692,24 L700,24" fill="none" stroke="var(--chart-uplift)" stroke-width="2.5" stroke-dasharray="6,4"/>
             <!-- today cursor -->
             <line x1="50" y1="20" x2="50" y2="200" stroke="var(--ink-gray-9)" stroke-width="1.5" stroke-dasharray="2,3"/>
             <g font-size="11">
@@ -88,8 +88,8 @@
             </g>
             <line x1="290" y1="20" x2="290" y2="200" stroke="var(--ink-amber-3)" stroke-dasharray="4,3"/>
             <g font-size="11">
-              <text x="496" y="120" fill="var(--chart-capital)" font-weight="600">vested (service)</text>
-              <text x="430" y="185" fill="var(--chart-uplift)" font-weight="600">unlocked (market)</text>
+              <text x="696" y="14" text-anchor="end" fill="var(--chart-capital)" font-weight="600">vested (service)</text>
+              <text x="430" y="185" text-anchor="middle" fill="var(--chart-uplift)" font-weight="600">unlocked (market)</text>
             </g>
           </svg>
         </div>
@@ -104,16 +104,16 @@
       </div>
 
       <aside class="min-w-0">
-        <div class="section-label mb-3">Unlock calendar · first 6 unlocks <span class="eyebrow">(base path)</span></div>
+        <div class="section-label mb-3">Unlock calendar · the months that matter <span class="eyebrow">(base path)</span></div>
         <div class="divide-y text-sm" style="border-color:var(--outline-gray-1)">
-          <div class="py-2.5 flex justify-between gap-2"><span class="tnum">TGE+13 <span class="eyebrow">· first unlock</span></span><span class="tnum font-medium" data-money='{"con":"$275K","base":"$825K","agg":"$2.48M"}'>$825K</span></div>
-          <div class="py-2.5 flex justify-between gap-2"><span class="tnum">TGE+14</span><span class="tnum" data-money='{"con":"$275K","base":"$825K","agg":"$2.48M"}'>$825K</span></div>
-          <div class="py-2.5 flex justify-between gap-2"><span class="tnum">TGE+15</span><span class="tnum" data-money='{"con":"$275K","base":"$825K","agg":"$2.48M"}'>$825K</span></div>
-          <div class="py-2.5 flex justify-between gap-2"><span class="tnum">TGE+16</span><span class="tnum" data-money='{"con":"$275K","base":"$825K","agg":"$2.48M"}'>$825K</span></div>
-          <div class="py-2.5 flex justify-between gap-2"><span class="tnum">TGE+17</span><span class="tnum" data-money='{"con":"$275K","base":"$825K","agg":"$2.48M"}'>$825K</span></div>
-          <div class="py-2.5 flex justify-between gap-2"><span class="tnum">TGE+18</span><span class="tnum" data-money='{"con":"$275K","base":"$825K","agg":"$2.48M"}'>$825K</span></div>
+          <div class="py-2.5 flex justify-between gap-2"><span class="tnum">TGE+7 <span class="eyebrow">· first unlock — Carl's 6-mo lockup ends</span></span><span class="tnum font-medium" data-money='{"con":"$33K","base":"$100K","agg":"$300K"}'>$100K</span></div>
+          <div class="py-2.5 flex justify-between gap-2"><span class="tnum">TGE+8</span><span class="tnum" data-money='{"con":"$33K","base":"$100K","agg":"$300K"}'>$100K</span></div>
+          <div class="py-2.5 flex justify-between gap-2"><span class="tnum">TGE+12</span><span class="tnum" data-money='{"con":"$33K","base":"$100K","agg":"$300K"}'>$100K</span></div>
+          <div class="py-2.5 flex justify-between gap-2"><span class="tnum">TGE+13 <span class="eyebrow">· the other five join</span></span><span class="tnum font-medium" data-money='{"con":"$283K","base":"$850K","agg":"$2.55M"}'>$850K</span></div>
+          <div class="py-2.5 flex justify-between gap-2"><span class="tnum">TGE+14</span><span class="tnum" data-money='{"con":"$283K","base":"$850K","agg":"$2.55M"}'>$850K</span></div>
+          <div class="py-2.5 flex justify-between gap-2"><span class="tnum">TGE+15</span><span class="tnum" data-money='{"con":"$283K","base":"$850K","agg":"$2.55M"}'>$850K</span></div>
         </div>
-        <p class="eyebrow mt-3 tnum">1.375M RKU/month across the board (33.0M ÷ 24). Months are TGE-relative — TGE timing is a scenario assumption (base: 2028), so the calendar re-anchors when the case changes. Unlock ≠ sale: this is when selling becomes <em>possible</em>.</p>
+        <p class="eyebrow mt-3 tnum">Carl unlocks 167K RKU/month from TGE+7 (6-mo lockup · 18-mo unlock); the other five add 1.25M/month from TGE+13. Months are TGE-relative — TGE timing is a scenario assumption (base: 2028), so the calendar re-anchors when the case changes. Unlock ≠ sale: this is when selling becomes <em>possible</em>.</p>
       </aside>
     </div>
   </div>

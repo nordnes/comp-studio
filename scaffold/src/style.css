@@ -220,3 +220,11 @@ button[role="combobox"]:focus-visible {
     margin: 14mm;
   }
 }
+
+/* UXS-F1 (ux-sweep DR-1): the app chrome (sticky header z-20 hosting the budget banner) painted
+   OVER every dialog's title bar and close button — the frappe-ui Dialog overlay carries no
+   z-index of its own. The overlay (which contains the panel) now outranks the chrome; toasts
+   stay above everything (frappe-ui pins them at z-[2147483647]). */
+.dialog-overlay {
+  z-index: 50;
+}

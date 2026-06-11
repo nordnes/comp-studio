@@ -7,6 +7,7 @@
 // (stage → rolled-off). Zero money math in the view.
 import { ref, computed } from "vue";
 import { Badge, Button, Dialog, FormControl, Switch } from "frappe-ui";
+import { DialogDescription } from "reka-ui";
 import { useStudio } from "../store";
 import {
   BAD_LEAVER_LIMBS,
@@ -60,6 +61,9 @@ const dialogOptions = computed(() => ({
   <Dialog v-model="open" :options="dialogOptions">
     <template #body-content>
       <div v-if="sel" class="space-y-5">
+        <DialogDescription class="block text-p-sm text-ink-gray-6 -mt-1">
+          Model the leaver outcome under the plan rules; recording it commits the numbers.
+        </DialogDescription>
         <!-- classification: date + death + the six limbs -->
         <div class="flex items-end gap-4 flex-wrap">
           <FormControl

@@ -20,9 +20,11 @@ import {
   ListRowItem,
   Breadcrumbs,
 } from "frappe-ui";
+import { DialogDescription } from "reka-ui";
 import { useStudio } from "./store";
 import { confirmDestroy } from "./confirm";
 import Term from "./components/Term.vue";
+import ConfirmDestroyDialog from "./components/ConfirmDestroyDialog.vue";
 import CommandPalette from "./components/CommandPalette.vue";
 import PackageEditor from "./components/PackageEditor.vue";
 import { fUSD, fPct, scenKeys, baseScenKey, setList } from "./engine";
@@ -509,14 +511,23 @@ const openCmdK = () => window.dispatchEvent(new Event("open-command-palette"));
       </div>
 
       <!-- Saved-board manager (Mgr) -->
-      <Dialog v-model="store.showMgr" :options="{ title: 'Saved boards', size: 'lg' }">
+      <ConfirmDestroyDialog />
+      <Dialog
+        v-model="store.showMgr"
+        :options="{
+          title: 'Saved boards',
+          size: 'lg',
+        }"
+      >
         <template #body-content>
-          <p class="text-p-sm text-ink-gray-6 mb-4">
-            Saves are local to this browser. The active board saves continuously under its own name;
-            <b>Save copy</b> freezes a checkpoint that only changes again if you load it. To share a
-            board with the council, use <b>Copy state</b> (clipboard) or <b>Export JSON</b> (file)
-            from the actions menu.
-          </p>
+          <DialogDescription as-child>
+            <p class="text-p-sm text-ink-gray-6 mb-4">
+              Saves are local to this browser. The active board saves continuously under its own
+              name; <b>Save copy</b> freezes a checkpoint that only changes again if you load it. To
+              share a board with the council, use <b>Copy state</b> (clipboard) or
+              <b>Export JSON</b> (file) from the actions menu.
+            </p>
+          </DialogDescription>
           <div v-if="!savedNames.length" class="text-sm text-ink-gray-6 mb-4">
             No saved boards yet.
           </div>

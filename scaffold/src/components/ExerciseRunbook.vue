@@ -6,6 +6,7 @@
 // scope); zero money math in the view — exerciseRunbook composes COM-151/153/168.
 import { ref, computed, watch } from "vue";
 import { Badge, Button, Dialog, TextInput } from "frappe-ui";
+import { DialogDescription } from "reka-ui";
 import { useStudio } from "../store";
 import { exerciseRunbook, computeGrant, baseScenKey, fUSD, fPps, fNum, todayISO } from "../engine";
 const props = defineProps<{ sel: any; grant: any | null }>();
@@ -35,6 +36,10 @@ const dialogOptions = computed(() => ({
   <Dialog v-model="open" :options="dialogOptions">
     <template #body-content>
       <div v-if="pack && grant" class="space-y-4">
+        <DialogDescription class="block text-p-sm text-ink-gray-6 -mt-1">
+          Window, election and checklist for exercising this grant — display truth, no Board
+          discretion simulated.
+        </DialogDescription>
         <div class="flex items-end gap-3 flex-wrap">
           <div>
             <div class="text-xs text-ink-gray-6 mb-1">

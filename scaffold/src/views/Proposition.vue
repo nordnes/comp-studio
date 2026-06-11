@@ -7,6 +7,7 @@ import { computed, ref } from "vue";
 import { Avatar, Badge, Button, Divider, FormControl } from "frappe-ui";
 import { useStudio } from "../store";
 import {
+  computeAdvisor,
   fUSD,
   fPps,
   fPct,
@@ -48,7 +49,21 @@ function saveNote(v: any) {
 }
 const S = computed(() => store.S);
 const sel = computed(() => selected.value?.a);
-const c = computed(() => selected.value?.c);
+// UXS-B (ux-sweep AP-3): the LETTER always speaks the board's plan. The per-advisor case
+// override is an internal analysis lens (COM-81, /advisors) — under it the old override-lensed
+// `selected.c` made the headline read the override figure as "Guaranteed base" while the table
+// amber-marked the board base: one document, two answers. The lens never enters the document;
+// the no-print banner below says so when one is active.
+const c = computed(() =>
+  sel.value
+    ? (computeAdvisor(sel.value, S.value.plan, S.value.tiers, S.value.objectives) as any)
+    : null,
+);
+const overrideActive = computed(
+  () =>
+    !!(sel.value as any)?.caseOverride &&
+    (sel.value as any).caseOverride !== baseScenKey(S.value.plan),
+);
 // COM-164 (Δ12): the version register — figures FROZEN at snapshot; the delta line compares the
 // live computed base against each sent version (current minus sent).
 const versions = computed(() => ((sel.value as any)?.propositions || []) as any[]);
@@ -285,6 +300,16 @@ const targetLine = computed(
          target-outcome sentence below, so the component's print line is suppressed here. -->
     <ExitSlider :c="c" :sel="sel" :print-line="false" tone="quiet" />
 
+    <!-- UXS-B (AP-3): the lens-isolation note — visible only when an override is active -->
+    <div
+      v-if="overrideActive"
+      class="no-print rounded border border-outline-amber-2 bg-surface-amber-1 px-4 py-2.5 text-p-xs text-ink-amber-strong"
+    >
+      Viewing note: {{ sel.name }} carries an internal case lens ({{
+        S.plan.scenarios[(sel as any).caseOverride]?.label || (sel as any).caseOverride
+      }}) on the Advisors page. The letter below speaks the board's base case — the lens never
+      enters the document.
+    </div>
     <div class="print-area bg-surface-white rounded border border-outline-gray-2 relative">
       <!-- COM-167 (success criterion #6): the letter can always be printed, but it carries the
            watermark until every gating pre-condition is GREEN — on screen AND in print. The

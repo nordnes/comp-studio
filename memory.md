@@ -2730,3 +2730,19 @@ adversarial verify) · competitive-research (4 groups: cap-table/equity · comp 
 advisor/board+token tools · modeling UX → synthesis). Next: fix panel-008 FAILs → triage
 ux-sweep CONFIRMED findings into PRs/issues → create research-backed improvement issues → work
 them → panel 009.
+
+## 2026-06-11 — Panel 008 fixed + M13 created + the first four M13 issues [W7 + sweep]
+
+**Panel 008 (full rubric, 4-grader workflow): 39 PASS / 9 FAIL / 6 BLOCKED-EXTERNAL.** Product
+FAILs fixed in PR #110: **fPps** (per-share money NEVER through fUSD — the runbook printed
+'$2K / $2K' for two different prices; a missed store.ts import threw a ReferenceError the live
+probe caught — formatter sweeps must grep EVERY consumer incl. non-view files) · consent audit
+kind + setGovItem status-flip events · the NumIn Enter+blur double-commit killed (commit once
+per edit session) · TierBadge orange→gray (R4.2) · combobox focus-visible ring (R4.4) ·
+preTgeLiquidity pinned (R5.1). R7.2/R7.3 doc+memory refreshes done; R1.2 cured by the epic
+closes; R8.4 resolves at loop exit. **M13 'Final sweep' milestone created on Linear with 11
+research-backed issues (COM-172…182; sources cited per issue; delta-scoped vs what shipped).**
+Done so far: COM-172 (payout table + formula, PR #111) · COM-173 (key-dates radar, PR #112) ·
+COM-181 (diff narrative — engine diffNarrative, PR #113) · COM-179 (band-placement chart,
+PR #114). v2 suite 266. Queue: 174/182/176 (S) · 175/177/178/180 (M) + the ux-sweep CONFIRMED
+findings (workflow still verifying).

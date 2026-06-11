@@ -96,7 +96,7 @@ function propText(): string {
     a.sector,
     "",
     `BASE (guaranteed): ${fUSD(cc.baseCaseBase)} net at base case`,
-    `  Equity: ${fPct(cc.baseEq, 3)} — ${fNum(cc.baseEq * b.grantN)} options at ${fPps(cc.strikePps)} (net of strike), granted at the bridge, ${plan.equityVestYears}yr/${plan.equityCliff}mo.`,
+    `  Equity: ${fPct(cc.baseEq, 3)} — ${fNum(cc.baseEq * b.grantN)} options at ${fPps(cc.strikePps)} (net of strike), granted at the ${roundLabel(plan, (a as any).grantRound || "bridge")}, ${plan.equityVestYears}yr/${plan.equityCliff}mo.`,
     `  Tokens: ${fPct(cc.baseTk, 3)} of supply (RTA), valued at TGE FDV (${fMult(plan.scenarios[baseScenKey(plan)].tgeMult)}× ${roundLabel(plan, plan.tgeAnchor)} = ${fUSD(b.fdv)} base).`,
     a.hasCash ? `  Cash: ${fUSD(a.cashAnnual)}/yr post-Series A.` : "",
     "",
@@ -111,7 +111,7 @@ function propText(): string {
     `Net value by scenario: ${cc.scen.map((s: any) => `${s.label} (${fUSD(s.exitVal)} exit) ${fUSD(s.total)}`).join(" · ")}.`,
     `Mechanics: net equity = options × (per-share exit value − strike), floor $0. You: ${fNum(cc.equityShares)} options at ${fPps(cc.strikePps)}/share (exercise cost ${fUSD(cc.exerciseCost)}); base-case net ${fUSD(cc.baseBaseEqNet)}. Vesting: 25%/yr over 4 years; tokens 25% at cliff then monthly, distributable from month 24.`,
     targetLine.value,
-    `Equity is options struck at the bridge price; values net of exercise cost and dilution through future rounds. A discussion draft, not a binding offer.`,
+    `Equity is options struck at the ${roundLabel(plan, (a as any).grantRound || "bridge")} price; values net of exercise cost and dilution through future rounds. A discussion draft, not a binding offer.`,
   ]
     .filter(Boolean)
     .join("\n");
@@ -213,7 +213,7 @@ const targetLine = computed(
             theme="gray"
             icon-left="lucide-git-commit-horizontal"
             :label="`Save v${(versions[versions.length - 1]?.version || 0) + 1}`"
-            title="Snapshot this proposition as the next sent version (Δ12 — the straw-man artefact)"
+            :title="`Freezes this letter as v${(versions[versions.length - 1]?.version || 0) + 1} for the audit trail — later edits create v${(versions[versions.length - 1]?.version || 0) + 2}`"
             @click="snapshotProposition(sel.id)"
           />
         </template>
@@ -461,6 +461,11 @@ const targetLine = computed(
               </tr>
             </tbody>
           </table>
+          <!-- UXP 6.4: '% kept' gets its one-line explainer at first use in the letter -->
+          <p class="text-p-xs text-ink-gray-6">
+            “% kept” is your share retained after dilution through each scenario's funding path —
+            the engine walks every later round.
+          </p>
           <!-- COM-84: the explored target outcome survives into the document the advisor keeps -->
           <p class="text-p-sm text-ink-gray-7">{{ targetLine }}</p>
 

@@ -3,7 +3,7 @@
 // deleted in COM-110). Every structural list (rounds/scenarios/tiers/milestones/objectives) edits
 // through the store's reducer-parity actions incl. delete-cascades. Numbers use the shared NumIn editor.
 import { computed, ref } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 // COM-106: Configure joins the Advisors form idiom — TextInput for inline labels, FormControl for
 // the date; NumIn stays (the deliberate click-to-edit numeric). setPath wiring unchanged.
 import { Badge, Button, Select, Switch, TextInput, FormControl } from "frappe-ui";
@@ -81,6 +81,7 @@ const GROUPS = [
 ] as const;
 type GroupKey = (typeof GROUPS)[number]["key"];
 const route = useRoute();
+const router = useRouter();
 const group = ref<GroupKey>(
   GROUPS.some((g) => g.key === route.query.group) ? (route.query.group as GroupKey) : "cap",
 );
@@ -193,7 +194,10 @@ function recordValuation(ppsUSD: number) {
                 : 'text-ink-gray-7 hover:bg-surface-gray-2'
             "
             :aria-current="group === g.key ? 'true' : undefined"
-            @click="group = g.key"
+            @click="
+              group = g.key;
+              router.replace({ query: { group: g.key } });
+            "
           >
             <span class="block text-sm" :class="group === g.key ? 'font-medium' : ''">{{
               g.label
@@ -611,7 +615,7 @@ function recordValuation(ppsUSD: number) {
                       :aria-pressed="!!s.starred"
                       @click="updateSet(s.id, { starred: !s.starred })"
                     >
-                      {{ s.starred ? "★ base set" : "set base" }}
+                      {{ s.starred ? "★ default set" : "make default" }}
                     </button>
                     <span class="ml-auto flex items-center gap-1">
                       <Button

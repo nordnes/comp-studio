@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Prototype map · Comp Studio prototype</title>
+<script src="https://cdn.tailwindcss.com?v=3.4"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,350;9..144,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<style>body{font-family:Inter,system-ui,sans-serif}</style>
+</head>
+<body>
+<div id="page" data-patterns="This page is the map — each linked page footer lists its own applied patterns with finding numbers (UX_IMPROVEMENT_PLAN.md) and research sources (research/COMPETITIVE_LANDSCAPE.md · research/competitors/INDEX.md).">
+  <div class="mx-auto w-full px-5 py-10" style="max-width:60rem">
+    <h1 class="font-display text-3xl mb-2">The planned design, end to end.</h1>
+    <p class="text-sm mb-8" style="color:var(--ink-gray-6)">High-fidelity prototype of Advisor Comp Studio after the M14 UX overhaul — every screen applies the
+    10-pass review fixes and the research-backed patterns from the 12-service survey. Static HTML; numbers are the real engine anchors. Internal &amp; confidential · discussion draft.</p>
+
+    <div class="section-label mb-3">Screens</div>
+    <div class="grid sm:grid-cols-2 gap-4 mb-10">
+      <a href="overview.html" class="frame p-4 hover:shadow-sm"><div class="font-medium mb-1">Overview</div><div class="text-sm" style="color:var(--ink-gray-6)">Shell v2: status chip replaces the banner · skip link · stable header</div></a>
+      <a href="board.html" class="frame p-4 hover:shadow-sm"><div class="font-medium mb-1">Board</div><div class="text-sm" style="color:var(--ink-gray-6)">People-on-band tier strips · aggregated guardrail callout with quantified delta · health strip</div></a>
+      <a href="advisor.html" class="frame p-4 hover:shadow-sm"><div class="font-medium mb-1">Advisor detail</div><div class="text-sm" style="color:var(--ink-gray-6)">Today-marker trajectory · annotation lanes · exit slider v2 with preset chips</div></a>
+      <a href="compare.html" class="frame p-4 hover:shadow-sm"><div class="font-medium mb-1">Compare</div><div class="text-sm" style="color:var(--ink-gray-6)">A/B with named columns + Δ column · case-bound labels · header-level deltas</div></a>
+      <a href="governance.html" class="frame p-4 hover:shadow-sm"><div class="font-medium mb-1">Governance</div><div class="text-sm" style="color:var(--ink-gray-6)">RAG radiogroups with inline why-note · filterable audit log with artifact links</div></a>
+      <a href="proposition.html" class="frame p-4 hover:shadow-sm"><div class="font-medium mb-1">Proposition</div><div class="text-sm" style="color:var(--ink-gray-6)">Version chips + sealed-render model · watermark/hero fix · view-as-advisor</div></a>
+      <a href="configure.html" class="frame p-4 hover:shadow-sm"><div class="font-medium mb-1">Configure</div><div class="text-sm" style="color:var(--ink-gray-6)">Denominated money entry · commit toast with Undo · 3-axis benchmark provenance + accept-with-preview</div></a>
+      <a href="dialogs.html" class="frame p-4 hover:shadow-sm"><div class="font-medium mb-1">Dialog system</div><div class="text-sm" style="color:var(--ink-gray-6)">AppDialog grammar: max-height, sticky chrome, dim, inline validation · “show the formula” popover</div></a>
+      <a href="board-pack.html" class="frame p-4 hover:shadow-sm"><div class="font-medium mb-1">Board pack</div><div class="text-sm" style="color:var(--ink-gray-6)">Print-ready pack: cost conclusion, roster, guardrails, decisions requested · confidential footer</div></a>
+      <a href="proposition-v1.html" class="frame p-4 hover:shadow-sm"><div class="font-medium mb-1">Sealed proposition v1</div><div class="text-sm" style="color:var(--ink-gray-6)">The immutable issued render with a verifiable fingerprint — edits demote to draft</div></a>
+    </div>
+    <p class="text-sm mb-10" style="color:var(--ink-gray-6)">Try it live: <strong>⌘K</strong> opens the palette anywhere · the sidebar <strong>Case</strong> selector recomputes every figure on every page · all dialogs close on Escape/backdrop · advisor tabs, Edit package, Schedule review and Model departure are on the Advisor page.</p>
+
+    <div class="section-label mb-3">What changed vs production (the spine)</div>
+    <table class="data mb-10">
+      <thead><tr><th>Change</th><th>Replaces (finding)</th><th>Pattern source</th></tr></thead>
+      <tbody>
+        <tr><td>Compact status chip + popover dialog</td><td>~70px permanent banner (1.4)</td><td>OpenComp health strip</td></tr>
+        <tr><td>AppDialog: max-h 85vh · sticky head/foot · dim</td><td>off-screen dialog headers (1.2/2.3/2.5)</td><td>frappe-ui `bare` spec + Tailwind Plus</td></tr>
+        <tr><td>Toast + Undo on every consequential commit</td><td>silent mutations (4.2/5.1)</td><td>UXS-D timeline extended · Pave soft-stops</td></tr>
+        <tr><td>People-on-band tier strips + ladder rail</td><td>repeated amber warning wall (1.5)</td><td>Complete leveling · Ravio market line · Barley fix-cost</td></tr>
+        <tr><td>Today-marker vesting + annotation lanes</td><td>colliding chart labels (1.8)</td><td>Liquifi/Coinbase TM</td></tr>
+        <tr><td>Exit slider: two-tone track + preset chips</td><td>readonly all-black slider (1.7)</td><td>Carta simulator · Secfi</td></tr>
+        <tr><td>3-axis provenance chips + accept-with-preview</td><td>“12mo old — re-verify” text flag (COM-182)</td><td>Carta Total Comp · Pave consistency labels</td></tr>
+        <tr><td>“Show the formula” popover on computed figures</td><td>opaque numbers</td><td>The field-wide gap (Carta’s #1 complaint) — our differentiator</td></tr>
+        <tr><td>Sealed version chips on the letter</td><td>cryptic “Save v1” (6.2/6.5)</td><td>PandaDoc sealed renders · Ledgy locked reports</td></tr>
+      </tbody>
+    </table>
+    <p class="eyebrow">Sources: UX_IMPROVEMENT_PLAN.md · research/COMPETITIVE_LANDSCAPE.md · research/UI_LIBRARY_LANDSCAPE.md · research/competitors/INDEX.md</p>
+  </div>
+</div>
+<script src="assets/proto.js"></script>
+</body>
+</html>

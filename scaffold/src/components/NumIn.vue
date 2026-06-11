@@ -79,7 +79,7 @@ function commit() {
     class="w-full min-w-0 bg-surface-white border border-outline-gray-3 rounded px-2 py-1 text-sm tabular-nums text-ink-gray-9 outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--ink-gray-6)] focus:border-outline-gray-3"
     @blur="commit"
     @keydown.enter.prevent="commit"
-    @keydown.escape="edit = false"
+    @keydown.escape.stop="edit = false"
   />
   <button
     v-else

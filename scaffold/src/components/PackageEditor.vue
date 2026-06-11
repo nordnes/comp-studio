@@ -32,7 +32,7 @@ import NumIn from "./NumIn.vue";
 import EquityBenchmark from "./EquityBenchmark.vue";
 import Term from "./Term.vue";
 
-const { store, selected, setPath, addIntroduction, updateIntroduction, removeIntroduction } =
+const { store, selected, setPath, flash, addIntroduction, updateIntroduction, removeIntroduction } =
   useStudio();
 const { open } = useEditor();
 const S = computed(() => store.S);
@@ -49,8 +49,13 @@ const dialogOptions = computed(() => ({
   size: "lg" as const,
 }));
 
-// Snapshot on open; Cancel restores it (revert), Save keeps the live edits. JSON clone — structuredClone
-// throws on Vue's reactive proxy.
+// Snapshot on open; edits autosave live (setPath), so the dialog's contract is draft-like:
+// ONLY the Save button keeps the edits. UXS-F2 (ux-sweep AP-1): Escape, the X button and
+// outside-click used to silently KEEP everything (the old watch nulled the snapshot on any
+// close; only the Cancel button reverted) — an operator who experimented and Escaped had
+// silently re-priced the package. Now the close-watch is the single revert point: any close
+// that still holds a snapshot reverts to it; save() clears the snapshot first, so its close
+// is the one path that keeps. JSON clone — structuredClone throws on Vue's reactive proxy.
 const cloneAdv = (a: any) => JSON.parse(JSON.stringify(a));
 const snapshot = ref<any>(null);
 const isDirty = computed(
@@ -58,15 +63,23 @@ const isDirty = computed(
     !!snapshot.value && !!sel.value && JSON.stringify(sel.value) !== JSON.stringify(snapshot.value),
 );
 watch(open, (v) => {
-  snapshot.value = v && sel.value ? cloneAdv(sel.value) : null;
+  if (v) {
+    snapshot.value = sel.value ? cloneAdv(sel.value) : null;
+    return;
+  }
+  if (snapshot.value) {
+    if (isDirty.value) {
+      setPath(["advisors", i.value], cloneAdv(snapshot.value));
+      flash("Edits discarded — Save keeps changes");
+    }
+    snapshot.value = null;
+  }
 });
 function cancel(close: () => void) {
-  if (snapshot.value) setPath(["advisors", i.value], cloneAdv(snapshot.value));
-  snapshot.value = null;
-  close();
+  close(); // the close-watch reverts
 }
 function save(close: () => void) {
-  snapshot.value = null;
+  snapshot.value = null; // claimed: this close keeps the edits
   close();
 }
 
@@ -105,7 +118,12 @@ function setObjState(id: string, st: string) {
 <template>
   <Dialog v-model="open" :options="dialogOptions">
     <template #body-content>
-      <div v-if="sel" class="space-y-5">
+      <!-- UXS-F2 (ux-sweep DR-4): the editor is ~2040px of form — cap the BODY and scroll it
+           internally so the title and Save/Cancel stay on screen at every viewport. -->
+      <div
+        v-if="sel"
+        class="pkg-body space-y-5 max-h-[calc(100dvh-16rem)] overflow-y-auto overscroll-contain pr-1"
+      >
         <!-- Identity -->
         <div class="space-y-4">
           <div class="section-label">Identity</div>
@@ -600,3 +618,15 @@ function setObjState(id: string, st: string) {
     </template>
   </Dialog>
 </template>
+
+<style scoped>
+/* UXS-F2 (ux-sweep DR-5): native select triggers size to their longest option and overflow the
+   375px panel by ~80px — grid cells need min-width:0 and the selects must respect the column. */
+.pkg-body :deep(select) {
+  max-width: 100%;
+  min-width: 0;
+}
+.pkg-body :deep(.grid > *) {
+  min-width: 0;
+}
+</style>

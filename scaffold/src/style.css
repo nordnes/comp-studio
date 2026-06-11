@@ -228,3 +228,36 @@ button[role="combobox"]:focus-visible {
 .dialog-overlay {
   z-index: 50;
 }
+
+/* ===== UXS-G (ux-sweep OB-2): the AA floor on Espresso ink tokens =====
+   axe measured the light inks below 4.5:1 at body sizes on their real surfaces:
+   ink-green-2 (the +N% uplift lines) 4.06 on white · ink-red-3 (pool figures, the budget
+   alert rows) 4.42 on white / 3.75 on surface-red-1 · ink-blue-2 (pipeline stage chips)
+   3.16 on surface-blue-2 · ink-gray-5 (sidebar section headers, breadcrumb, chrome labels)
+   4.17 on white. Re-pointed at the next AA-passing stop of the SAME Espresso scale —
+   DESIGN_SYSTEM §5: 'Text contrast AA everywhere; never gray-5/gray-4 for information'. */
+:root {
+  /* this frappe-ui pin (0.1.278) tokenises as --ink-* (the utilities read
+     var(--ink-green-3, #278F5E) etc.) — override THOSE names, not the newer --text-ink-*. */
+  --ink-green-3: #137949; /* green-700 — 5.44:1 on white (was green-600 #278F5E, 4.06) */
+  --ink-green-2: #278f5e; /* green-600 — icon/graphic green clears 3:1 (was green-500, 2.62) */
+  --ink-red-3: #cc2929; /* red-600 — 5.36 on white · 4.55 on surface-red-1 (was red-500) */
+  --ink-blue-2: #005ca3; /* blue-800 — 6.13:1 on surface-blue-2 (was blue-500, 3.16) */
+  --ink-gray-5: var(--ink-gray-6); /* gray-5 was #7C7C7C, 4.17 — informational chrome reads AA */
+}
+
+/* ===== UXS-G (ux-sweep DR-2): ONE focus vocabulary =====
+   Three coexisted: browser-default blue (banner link/X, search, Term spans), the frappe-ui
+   gray ring (~1.7:1), and the app's ink-gray-6 ring — while the sidebar's primary nav had
+   NO indication at all (WCAG 2.4.7). Bare interactive elements get the app ring; the
+   frappe-ui gray ring re-points at the same ink. :where() keeps specificity at zero so any
+   component with a deliberate ring idiom still wins. */
+:where(a, button, [tabindex]:not([tabindex="-1"]), select, summary):focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 1px var(--surface-white),
+    0 0 0 3px var(--ink-gray-6);
+}
+.focus-visible\:ring-outline-gray-3:focus-visible {
+  --tw-ring-color: var(--ink-gray-6);
+}

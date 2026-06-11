@@ -25,6 +25,7 @@ const decisions = computed(() => [...(store.S.decisions || [])].reverse());
 // COM-170: the audit tail, newest first (display caps at 50; the slice keeps MAX_AUDIT_EVENTS)
 const auditTail = computed(() => [...store.audit].reverse().slice(0, 50));
 const AUDIT_THEME: Record<string, string> = {
+  justification: "gray",
   grant: "blue",
   review: "green",
   stage: "gray",
@@ -301,6 +302,10 @@ const evidenceHref = (it: ComplianceItem) =>
           }}</Badge>
           <span class="text-ink-gray-7 shrink-0">{{ e.subject }}</span>
           <span class="text-p-xs text-ink-gray-6">{{ e.summary }}</span>
+          <!-- COM-176: the why-note — the rationale recorded WITH the action, rendered with it -->
+          <span v-if="e.why" class="basis-full pl-39 text-p-xs italic text-ink-gray-6"
+            >why: {{ e.why }}</span
+          >
         </div>
       </div>
       <p class="text-p-xs text-ink-gray-6 mt-1">

@@ -32,7 +32,14 @@ import {
   type Instrument,
 } from "./engine";
 import { reconcileGovernance, type ComplianceItem, type Governance } from "./governance";
-import { reconcileAudit, MAX_AUDIT_EVENTS, type AuditEvent, type AuditKind } from "./audit";
+import {
+  reconcileAudit,
+  reconcileJustifications,
+  MAX_AUDIT_EVENTS,
+  type AuditEvent,
+  type AuditKind,
+  type Justification,
+} from "./audit";
 
 const KEY = "raiku-advisor-comp-v5";
 type SavedMap = Record<string, State>;
@@ -89,6 +96,8 @@ interface Store {
   gov: Governance;
   // COM-170: the append-only audit trail — beside the board map like gov, outside State/#s=.
   audit: AuditEvent[];
+  // COM-176: explain-or-close rationale, keyed advisorId::kind — beside gov/audit, shared.
+  justifications: Record<string, Justification>;
 }
 
 function bootstrap(): Store {
@@ -154,6 +163,7 @@ function bootstrap(): Store {
     pinnedIds: [],
     gov: reconcileGovernance(persisted?.governance),
     audit: reconcileAudit(persisted?.audit),
+    justifications: reconcileJustifications(persisted?.justifications),
   };
 }
 
@@ -184,7 +194,13 @@ function persist() {
   store.saved[store.S.name] = store.S;
   store.last = store.S.name;
   if (
-    !lsSet({ scenarios: store.saved, last: store.last, governance: store.gov, audit: store.audit })
+    !lsSet({
+      scenarios: store.saved,
+      last: store.last,
+      governance: store.gov,
+      audit: store.audit,
+      justifications: store.justifications,
+    })
   )
     store.storageOk = false;
 }
@@ -219,13 +235,14 @@ function undoToast(what: string) {
 
 // COM-170: the ONLY write path into the audit trail — append, cap the tail, persist with the
 // next mutation. No remove/edit API exists by design (append-only; M6 hardens it server-side).
-function appendAudit(kind: AuditKind, subject: string, summary: string) {
+function appendAudit(kind: AuditKind, subject: string, summary: string, why?: string) {
   store.audit.push({
     id: uid("au"),
     atISO: new Date().toISOString(),
     kind,
     subject,
     summary,
+    ...(why ? { why } : {}),
   });
   if (store.audit.length > MAX_AUDIT_EVENTS)
     store.audit.splice(0, store.audit.length - MAX_AUDIT_EVENTS);
@@ -768,6 +785,33 @@ export function useStudio() {
     persist();
     undoToast("proposition version");
   }
+  // COM-176: explain-or-close — acknowledge a guardrail flag with a one-line justification.
+  // The flag stays VISIBLE (acknowledged, quieter); it only disappears when the package changes
+  // enough that it stops firing. The rationale lands on the audit trail as a why-note.
+  function justifyFlag(advisorName: string, key: string, flagText: string, note: string) {
+    const trimmed = (note || "").trim();
+    if (!trimmed) {
+      flash("A justification needs a line — why is this package right anyway?");
+      return;
+    }
+    store.justifications[key] = { note: trimmed, atISO: todayISO() };
+    appendAudit("justification", advisorName, `Guardrail acknowledged: ${flagText}`, trimmed);
+    persist();
+    flash("Justification recorded");
+  }
+  // COM-176: post-hoc rationale on a sent version — the FIGURES stay frozen (COM-164); the note
+  // is metadata ("why this version moved"), surfaced in the register beside the deltas.
+  function annotateProposition(advisorId: string, versionId: string, note: string) {
+    const a: any = store.S.advisors.find((x) => x.id === advisorId);
+    const v =
+      a && Array.isArray(a.propositions) && a.propositions.find((x: any) => x.id === versionId);
+    if (!v) return;
+    const trimmed = (note || "").trim();
+    v.note = trimmed || undefined;
+    if (trimmed) appendAudit("proposition", a.name, `Proposition v${v.version} annotated`, trimmed);
+    persist();
+    flash(trimmed ? `v${v.version} note saved` : `v${v.version} note cleared`);
+  }
 
   // COM-161 (F20): first-class capital introductions — the per-intro pipeline that the Board
   // rollup reads. CONVERTING from the v1 aggregate fields seeds EARNED intro rows from
@@ -910,6 +954,7 @@ export function useStudio() {
       "review",
       a.name,
       `Review completed: ${data.outcome}, signed off by ${approver}${data.outcome === "top-up" && (data.topUpValueUSD || data.topUpQuantity) ? ` · top-up ${data.topUpValueUSD ? `$${data.topUpValueUSD}` : `${data.topUpQuantity} options`} at the current round` : ""}`,
+      data.note, // COM-176: the review note IS the rationale — it rides the event as the why
     );
     persist();
     undoToast(`review (${data.outcome})`);
@@ -1178,6 +1223,8 @@ export function useStudio() {
     removeIntroduction,
     snapshotProposition,
     removeProposition,
+    justifyFlag,
+    annotateProposition,
     recordDecision,
     removeDecision,
     setAdvisorCase,

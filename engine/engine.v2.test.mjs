@@ -1758,5 +1758,23 @@ console.log('\nT27 · Proposition letter status + activation drift (COM-174):');
     })());
 }
 
+// ---- T28: guardrail flag identity — kind-keyed explain-or-close (COM-176, live-bound) ----
+console.log('\nT28 · Guardrail flag identity (COM-176):');
+{
+  const dflt = ENG.DEFAULT();
+  const g = ENG.generosityCheck(dflt.advisors, dflt.plan, dflt.tiers, dflt.objectives);
+  A('flagItems mirror flags exactly (text-for-text, same order) — the strings did not move',
+    g.rows.every(r => r.flags.length === r.flagItems.length
+      && r.flags.every((t, i) => r.flagItems[i].text === t)));
+  A('kinds are stable vocabulary: band-breach fires on the fixture (Iraj 1.5% > 1.0% Expert ceiling)',
+    (() => {
+      const iraj = g.rows.find(r => r.advisorId === 'iraj');
+      return iraj.flagItems.some(f => f.kind === 'band-breach')
+        && g.rows.every(r => r.flagItems.every(f => ['band-breach', 'day-rate', 'totality'].includes(f.kind)));
+    })());
+  A('justificationKey is advisorId::kind — figure drift in the text never moves the key',
+    ENG.justificationKey('iraj', 'band-breach') === 'iraj::band-breach');
+}
+
 console.log(`\n${pass} passed, ${fail} failed, ${pending} pending(v2).`);
 process.exit(fail ? 1 : 0);

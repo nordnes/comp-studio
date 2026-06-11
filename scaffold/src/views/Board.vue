@@ -3,7 +3,7 @@
 // grouped bar, Robin's call) and potential scatter (custom SVG — frappe-charts has no scatter in 1.6.2).
 import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
-import { Button, Badge, Dropdown, TabButtons } from "frappe-ui";
+import { Button, Badge, Dropdown, TabButtons, FormControl } from "frappe-ui";
 import { useStudio } from "../store";
 import { confirmDestroy } from "../confirm";
 import { useEditor } from "../composables/useEditor";
@@ -18,6 +18,7 @@ import {
   fMult,
   BENCH,
   generosityCheck,
+  justificationKey,
   benchStaleness,
   fDate,
 } from "../engine";
@@ -38,7 +39,7 @@ import CapitalRollupPanel from "../components/CapitalRollupPanel.vue";
 import GrantDecisionWizard from "../components/GrantDecisionWizard.vue";
 import BandPlacement from "../components/BandPlacement.vue";
 
-const { store, board, select, addAdvisor, delAdvisor, setPath } = useStudio();
+const { store, board, select, addAdvisor, delAdvisor, setPath, justifyFlag } = useStudio();
 const { openEditor } = useEditor();
 const router = useRouter();
 const S = computed(() => store.S);
@@ -149,6 +150,24 @@ const sn = (n: string) => shortName(n, rosterNames.value);
 const generosity = computed(() =>
   generosityCheck(S.value.advisors, S.value.plan, S.value.tiers, S.value.objectives),
 );
+// COM-176: explain-or-close state — which flag is being justified + the draft line
+const justifying = ref("");
+const justifyNote = ref("");
+const jKey = justificationKey;
+const justifiedOf = (advisorId: string, kind: string) =>
+  store.justifications[justificationKey(advisorId, kind)] || null;
+function recordJustification(r: any) {
+  const key = justifying.value;
+  const kind = key.split("::")[1];
+  const fi = r.flagItems.find((x: any) => x.kind === kind);
+  if (!fi) return;
+  justifyFlag(r.name, key, fi.text, justifyNote.value);
+  if (justifyNote.value.trim()) {
+    justifying.value = "";
+    justifyNote.value = "";
+  }
+}
+
 // COM-182: anchor freshness at point of use (the chips render only when stale)
 const medianStaleness = computed(() => benchStaleness("advisorMedian"));
 const postMoneyStaleness = computed(() => benchStaleness("postMoney"));
@@ -541,13 +560,55 @@ const caseTotalSum = computed(() =>
               {{ r.status === "above" ? "▲" : r.status === "below" ? "▼" : "◆" }}
               {{ r.compa.toFixed(2) }}
             </span>
-            <span v-if="r.flags.length" class="basis-full space-y-0.5">
+            <!-- COM-176: explain-or-close — an unjustified flag is loud and asks for a line;
+                 a justified one stays visible but acknowledged (quiet, with the why beside it). -->
+            <span v-if="r.flagItems.length" class="basis-full space-y-0.5">
               <span
-                v-for="(f, i) in r.flags"
-                :key="i"
-                class="block text-p-xs text-ink-amber-strong"
-                >{{ f }}</span
+                v-for="fi in r.flagItems"
+                :key="fi.kind"
+                class="block text-p-xs"
+                :class="
+                  justifiedOf(r.advisorId, fi.kind) ? 'text-ink-gray-6' : 'text-ink-amber-strong'
+                "
               >
+                {{ fi.text }}
+                <template v-if="justifiedOf(r.advisorId, fi.kind)">
+                  <span class="text-ink-gray-7">
+                    — justified: “{{ justifiedOf(r.advisorId, fi.kind)!.note }}” ({{
+                      fDate(justifiedOf(r.advisorId, fi.kind)!.atISO)
+                    }})</span
+                  >
+                </template>
+                <button
+                  v-else-if="justifying !== jKey(r.advisorId, fi.kind)"
+                  class="ml-1 underline decoration-dotted text-ink-gray-6 hover:text-ink-gray-8 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-gray-6)] rounded"
+                  @click="justifying = jKey(r.advisorId, fi.kind)"
+                >
+                  justify
+                </button>
+              </span>
+              <span
+                v-if="justifying && justifying.startsWith(r.advisorId + '::')"
+                class="flex items-center gap-2 pt-1"
+              >
+                <FormControl
+                  v-model="justifyNote"
+                  type="text"
+                  size="sm"
+                  class="w-96"
+                  placeholder="Why is this package right anyway? (one line, lands on the audit trail)"
+                  aria-label="Justification"
+                  @keydown.enter="recordJustification(r)"
+                />
+                <Button size="sm" variant="subtle" label="Record" @click="recordJustification(r)" />
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  theme="gray"
+                  label="Cancel"
+                  @click="((justifying = ''), (justifyNote = ''))"
+                />
+              </span>
             </span>
           </div>
         </div>

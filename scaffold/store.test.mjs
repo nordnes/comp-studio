@@ -4,7 +4,12 @@
 // ENGINE's reconcile and are covered by name in engine/engine.v2.test.mjs T17/T18/T22/T24/T25.)
 // Wired into the QA gate via `npm test` (engine suite + this file). Node ≥22 runs the TS sources
 // directly (erasable annotations), the same convention as the v2 spec suite.
-import { reconcileAudit, MAX_AUDIT_EVENTS, AUDIT_KINDS } from "./src/audit.ts";
+import {
+  reconcileAudit,
+  reconcileJustifications,
+  MAX_AUDIT_EVENTS,
+  AUDIT_KINDS,
+} from "./src/audit.ts";
 import { reconcileGovernance, GOV_SEED } from "./src/governance.ts";
 
 let pass = 0,
@@ -155,6 +160,67 @@ A(
     const seedStatus = g.items[0].status;
     const r = reconcileGovernance({ items: [{ id, status: "mauve" }] });
     return r.items.find((i) => i.id === id).status === seedStatus;
+  })(),
+);
+
+// ---- justifications + why-notes (COM-176) ----
+console.log("\nJustifications · explain-or-close round-trips (COM-176):");
+A(
+  "audit: a why-note survives the round-trip; junk/empty why is dropped, the event kept",
+  (() => {
+    const ev = (why) => ({
+      id: "w1",
+      atISO: "2026-06-11T10:00:00.000Z",
+      kind: "justification",
+      subject: "Iraj",
+      summary: "Guardrail acknowledged: Band breach",
+      ...(why !== undefined ? { why } : {}),
+    });
+    const good = reconcileAudit([ev("strategic anchor — Carl signed off 11 Jun")]);
+    const junk = reconcileAudit([ev(42)]);
+    const empty = reconcileAudit([ev("")]);
+    return (
+      good.length === 1 &&
+      good[0].why === "strategic anchor — Carl signed off 11 Jun" &&
+      junk.length === 1 &&
+      !("why" in junk[0]) &&
+      empty.length === 1 &&
+      !("why" in empty[0])
+    );
+  })(),
+);
+A(
+  "audit: the justification kind is vocabulary (enum-guarded like every other kind)",
+  AUDIT_KINDS.includes("justification") &&
+    reconcileAudit([
+      {
+        id: "x",
+        atISO: "2026-06-11T10:00:00.000Z",
+        kind: "not-a-kind",
+        subject: "",
+        summary: "junk",
+      },
+    ]).length === 0,
+);
+A(
+  "justifications: missing/junk → {}; valid entries survive byte-for-byte; junk entries drop",
+  (() => {
+    const j = {
+      "iraj::band-breach": { note: "anchor tier is deliberate", atISO: "2026-06-11" },
+      "bad::1": { note: "", atISO: "2026-06-11" },
+      "bad::2": { note: "x" },
+      "bad::3": "junk",
+    };
+    const r = reconcileJustifications(j);
+    return (
+      reconcileJustifications(undefined) !== null &&
+      Object.keys(reconcileJustifications(undefined)).length === 0 &&
+      Object.keys(reconcileJustifications("junk")).length === 0 &&
+      Object.keys(reconcileJustifications([1, 2])).length === 0 &&
+      Object.keys(r).length === 1 &&
+      r["iraj::band-breach"].note === "anchor tier is deliberate" &&
+      r["iraj::band-breach"].atISO === "2026-06-11"
+    );
   })(),
 );
 

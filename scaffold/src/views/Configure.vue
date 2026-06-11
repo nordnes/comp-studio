@@ -243,7 +243,7 @@ function recordValuation(ppsUSD: number) {
               <div class="section-label mb-3">
                 Bridge (fixed grant event) · cap table {{ fNum(S.S.plan.fdPreESOP) }} FD pre-ESOP
               </div>
-              <div class="grid sm:grid-cols-4 gap-4">
+              <div class="grid sm:grid-cols-4 gap-4 [&>*]:min-w-0">
                 <div>
                   <div class="text-xs text-ink-gray-6 mb-1">Bridge post-money</div>
                   <NumIn
@@ -694,7 +694,10 @@ function recordValuation(ppsUSD: number) {
                   </div>
                   <div>
                     <div class="text-xs text-ink-gray-6 mb-1">Advisor pool sizing</div>
+                    <!-- UXS-K (ux-sweep DR-9): the trigger sized to its longest option and
+                         overflowed the Constitutional-baseline panel by 60px -->
                     <Select
+                      class="w-full min-w-0"
                       :model-value="S.S.plan.advisorPoolShares"
                       :options="poolOpts"
                       @update:model-value="(v) => setP('advisorPoolShares', Number(v))"

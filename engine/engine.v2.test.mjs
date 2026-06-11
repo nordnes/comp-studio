@@ -308,6 +308,21 @@ console.log('\nT7 · Scenario sets & composed walk (COM-143):');
         // a cheaper exit with the SAME raise dilutes harder: cost falls AND founder % falls
         && diff.deltas.cost < 0 && diff.b.founderPct < diff.a.founderPct;
     })());
+  // COM-181: the diff narrative — deterministic sentences over diffSets
+  A('diffNarrative: names the costlier side, ranks the drivers, reports founder/pool movement',
+    (() => {
+      const d = ENG.DEFAULT();
+      const floorSet = ENG.makeScenarioSet('floor', '$90m floor', d.plan);
+      floorSet.scenarios.base.seriesC.post = 300e6;
+      const planWith = { ...d.plan, scenarioSets: [floorSet] };
+      const diff = ENG.diffSets(d.advisors, planWith, d.tiers, d.objectives, '', 'floor');
+      const story = ENG.diffNarrative(diff, 'working', '$90m floor');
+      const same = ENG.diffNarrative(ENG.diffSets(d.advisors, planWith, d.tiers, d.objectives, '', ''), 'working', 'working');
+      return story.length >= 2
+        && story[0].includes('$90m floor costs') && story[0].includes('driven by:')
+        && story.some(l => l.includes('Founder at exit moves down'))
+        && same[0].includes('cost the same');
+    })());
   // COM-147: the workbook's auto-callouts, engine-generated (A.3 headline observations)
   A('headlineObservations: founder walk 77.72% → 65.63% (−12.09pp) + the ESOP-driver line (10% vs 5.6%)',
     (() => {

@@ -76,9 +76,13 @@ current.
   governance scope, M10–M12 build mapping, detail appendices A–F (the granular numbers/legal/session register).
 - `DESIGN_SYSTEM.md` — **the design handoff**: tokens, layout grammar (reading column · borders earn their
   place · settings two-column), frappe-ui idioms/gotchas, chart + a11y + print rules. Build new surfaces inside it.
-- `DEV_WORKFLOW.md` — commands + the per-issue loop. **`ULTRACODE_V2_FINISH.md` — THE live build-run
-  prompt** (finish everything: M10 engine v2 under the RFC §7 gate · M10 UI · M11 · M12 · legacy triage ·
-  M6 hardening; authorized by Robin 2026-06-10 — "Nothing is blocked"). `engine/ENGINE_V2_RFC.md` = the
+- `DEV_WORKFLOW.md` — commands + the per-issue loop (`npm test` runs ALL suites: both 22-vector +
+  the v2 spec suite + `store.test.mjs`). **`ULTRACODE_V2_FINISH.md` — the live build-run prompt**
+  (authorized by Robin 2026-06-10). Run state as of 2026-06-11: **M10 + M11 + M12 SHIPPED**
+  (PRs #68–#110; v2 suite 22→265 vectors, zero pendings; grader panels in `docs/rubric-grades/`),
+  legacy triage closed (COM-21/28/31/61 + epics COM-5/7). **Wave 6 (COM-34/35 auth+persistence) is
+  BLOCKED-EXTERNAL**: Supabase project creation fails on overdue Raiku-org invoices (human-only) —
+  prod still serves confidential figures pre-auth (COM-33). `engine/ENGINE_V2_RFC.md` = the
   engine-wave contract. `ULTRACODE_M9_FINISH.md` + `ULTRACODE_M9_PD2.md` are completed predecessors.
 - `engine/` — the v1 reference engine + BOTH test suites + the v2 RFC. `scaffold/` — the wired,
   build-green project root (`scaffold/src/engine.ts` is the live engine).

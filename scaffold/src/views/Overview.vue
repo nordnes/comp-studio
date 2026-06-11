@@ -199,10 +199,13 @@ const hasBudget = computed(() => flags.value.some((f) => f.t === "budget"));
             @keydown.space.prevent="open(a.id)"
             class="text-left p-4 cursor-pointer hover:bg-surface-gray-1 hover:border-outline-gray-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--ink-gray-6)]"
           >
-            <div class="flex items-center justify-between gap-2">
+            <!-- COM-31 residual: the chip group must WRAP at narrow widths — shrink-0 on a
+                 four-chip row forced the card's min-content to ~449px and the page to 461
+                 at a 375 viewport (the Wave-5 audit's /overview offender) -->
+            <div class="flex items-start justify-between gap-2 flex-wrap">
               <!-- COM-96: identity + tier pill come from the shared roster primitives -->
               <RosterIdentity :name="a.name" max-w="max-w-full" />
-              <div class="flex items-center gap-1 shrink-0">
+              <div class="flex items-center gap-1 flex-wrap justify-end">
                 <!-- COM-167: the blocking chip — pre-conditions outstanding (O13) -->
                 <Badge
                   v-if="!precond(a).ok"

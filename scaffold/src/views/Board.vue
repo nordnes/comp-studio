@@ -305,8 +305,11 @@ const caseTotalSum = computed(() =>
       >
     </div>
 
+    <!-- COM-31 residual: min-w-0 on the grid columns — grid items default to min-width:auto,
+         which let the roster table's explicit minWidth propagate PAST its overflow-x-auto
+         wrapper and pin the mobile layout viewport at 572px (the COM-156 lesson, applied) -->
     <div class="grid lg:grid-cols-12 gap-8">
-      <div class="lg:col-span-8 space-y-6">
+      <div class="lg:col-span-8 space-y-6 min-w-0">
         <!-- roster table -->
         <!-- COM-88 de-boxed · COM-96: chrome + row a11y live in the shared roster primitives;
              the engine values keep rendering here (values arrive as props, no math inside) -->
@@ -407,7 +410,7 @@ const caseTotalSum = computed(() =>
         </div>
       </div>
 
-      <div class="lg:col-span-4 space-y-6">
+      <div class="lg:col-span-4 space-y-6 min-w-0">
         <PoolAllocation :board="board" :committed="S.plan.committedAdvisorTokenPct" />
         <div class="rounded border border-outline-amber-2 bg-surface-amber-2 p-5 space-y-3">
           <div class="text-sm text-ink-amber-strong flex items-center gap-2">

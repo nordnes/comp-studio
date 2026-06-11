@@ -441,7 +441,9 @@ const openCmdK = () => window.dispatchEvent(new Event("open-command-palette"));
             </button>
             <!-- COM-101: frappe-ui Breadcrumbs — real wayfinding (board root → /overview, view
                  crumb routes; advisor crumb routeless until /advisors/:id exists) -->
-            <nav aria-label="Breadcrumb" class="flex items-center min-w-0">
+            <!-- COM-31 residual: overflow-hidden actually CONTAINS the crumbs — min-w-0 alone
+                 let the active crumb spill 2–23px past 375 (the Wave-5 audit's finding) -->
+            <nav aria-label="Breadcrumb" class="flex items-center min-w-0 overflow-hidden">
               <Breadcrumbs :items="breadcrumbItems" />
             </nav>
             <!-- COM-62: teleport target for the active view's primary action(s) -->

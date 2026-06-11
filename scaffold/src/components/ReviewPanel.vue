@@ -188,7 +188,9 @@ const outcomeOpts = REVIEW_OUTCOMES.map((o) => ({ label: o, value: o }));
       <p class="text-p-xs text-ink-gray-6">
         No one decides their own comp — grandparent approval minimum (B.1 #5). A top-up appends a
         draft option grant priced at the then-current round{{
-          outcome === "top-up" ? ` (${fUSD(topUpValue)} by value)` : ""
+          outcome === "top-up"
+            ? ` (${fUSD(topUpValue)} base-case value → options at the current round)`
+            : ""
         }}; it shows on the Instruments tab.
       </p>
     </div>

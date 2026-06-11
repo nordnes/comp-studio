@@ -1038,16 +1038,26 @@ export function useStudio() {
   }
 
   // COM-148: same-advisor A/B — fork a candidate package (offer v2) for one person.
-  function duplicateAdvisor(id: string) {
+  // UXS-E (ux-sweep CGC-2/C4): the fork JOINS the live roster (board cost moves, guardrails can
+  // trip — the same person counts twice until one package is removed). That is the A/B mechanic
+  // by design, but it must be UNDOABLE and SAID OUT LOUD — and the caller gets the new id so the
+  // B slot wires itself instead of making the operator rediscover "(B)" in a dropdown.
+  function duplicateAdvisor(id: string): string | undefined {
     const src: any = store.S.advisors.find((a) => a.id === id);
-    if (!src) return;
+    if (!src) return undefined;
+    pushUndo();
     const copy = clone(src);
     copy.id = uid("a");
     copy.name = `${src.name} (B)`;
     const at = store.S.advisors.findIndex((a) => a.id === id);
     store.S.advisors.splice(at + 1, 0, copy);
     persist();
-    flash(`Forked "${src.name}" as an A/B candidate`);
+    toast.create({
+      message: `Forked "${src.name}" as an A/B candidate — it counts in board totals until you remove one of the pair`,
+      type: "info",
+      action: { label: "Undo", onClick: bindUndo() },
+    });
+    return copy.id;
   }
 
   // ---- per-advisor projection (PD2 / COM-82): case override + target exit ----

@@ -1732,5 +1732,31 @@ console.log('\nT26 · Exercise runbook: window → election → checklist (COM-1
     })());
 }
 
+// ---- T27: signed-version binding — letter status + activation drift (COM-174, live-bound) ----
+console.log('\nT27 · Proposition letter status + activation drift (COM-174):');
+{
+  const dflt = ENG.DEFAULT();
+  const a = dflt.advisors[0]; // tier-mode (tier 2) — tier is the deterministic mover
+  const v = ENG.makeProposition(a, dflt.plan, dflt.tiers, dflt.objectives, 'pv1', 1, '2026-06-11');
+  A('status vocabulary: absent reads sent (the COM-164 contract); junk heals to sent; the enum carries all four',
+    ENG.propositionStatus(v) === 'sent' && ENG.propositionStatus({ ...v, status: 'garbage' }) === 'sent'
+      && ENG.propositionStatus({ ...v, status: 'signed' }) === 'signed'
+      && JSON.stringify(ENG.PROPOSITION_STATUSES) === JSON.stringify(['draft', 'sent', 'signed', 'superseded']));
+  A('drift: an unchanged plan+package recomputes bit-identical — no drift, no lines',
+    (() => { const d = ENG.propositionDrift(a, dflt.plan, dflt.tiers, dflt.objectives, v); return !d.drifted && d.lines.length === 0; })());
+  A('drift: a package move after signing trips the guard with named figure lines (frozen → live)',
+    (() => {
+      const d = ENG.propositionDrift({ ...a, tier: 0 }, dflt.plan, dflt.tiers, dflt.objectives, v);
+      return d.drifted && d.lines.some(l => l.startsWith('base')) && d.lines.every(l => l.includes('→'));
+    })());
+  A('drift: a plan move (base-scenario FDV) also trips it — the guard reads the world, not just the package',
+    (() => {
+      const plan = JSON.parse(JSON.stringify(dflt.plan));
+      plan.scenarios[plan.baseScenario].tgeMult = plan.scenarios[plan.baseScenario].tgeMult * 2;
+      const d = ENG.propositionDrift(a, plan, dflt.tiers, dflt.objectives, v);
+      return d.drifted;
+    })());
+}
+
 console.log(`\n${pass} passed, ${fail} failed, ${pending} pending(v2).`);
 process.exit(fail ? 1 : 0);

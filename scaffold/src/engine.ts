@@ -129,7 +129,21 @@ export interface PropositionVersion {
   scenKey: string;
   package: { mode?: string; tier?: number; annualValue?: number; years?: number; splitOptions?: number; grantRound?: string; hasCash?: boolean; cashAnnual?: number };
   figures: { baseCaseTotal: number; baseCaseCeil: number; eqPct: number; tkPct: number; equityShares: number; strikePps: number; cashTotal: number };
+  // v2 (COM-174): the letter-status lifecycle + signature dates + optional consent reference
+  status?: PropositionStatus;
+  sentISO?: string;
+  signedISO?: string;
+  consentRef?: string;
 }
+
+// v2 (COM-174): which letter actually governs. ABSENT reads 'sent' (the COM-164 contract: a
+// snapshot records what went out); junk heals to 'sent' the same way. 'signed' is set ONLY by
+// the pipeline's bound flip, which supersedes every other version (Ledgy supersession) — the
+// audit log cannot repair "which letter governs" after the fact.
+export const PROPOSITION_STATUSES = ['draft', 'sent', 'signed', 'superseded'] as const;
+export type PropositionStatus = (typeof PROPOSITION_STATUSES)[number];
+export const propositionStatus = (v: PropositionVersion): PropositionStatus =>
+  (PROPOSITION_STATUSES as readonly string[]).includes(v.status as string) ? (v.status as PropositionStatus) : 'sent';
 
 // v2 (COM-159): the offer-pipeline stages — modeled → proposed (straw-man via Iraj) →
 // iterating → referenced & cleared (references + DBS/Swiss sub-states ride checkStatus) →
@@ -138,7 +152,7 @@ export interface PropositionVersion {
 // 'loi'), not a special case here.
 export const ADVISOR_STAGES = ['modeled', 'proposed', 'iterating', 'referenced', 'offer-issued', 'signed', 'active', 'rolled-off'] as const;
 export type AdvisorStage = (typeof ADVISOR_STAGES)[number];
-export interface StageEvent { stage: AdvisorStage; atISO: string; note?: string; docUrl?: string }
+export interface StageEvent { stage: AdvisorStage; atISO: string; note?: string; docUrl?: string; versionId?: string /* COM-174: the letter bound at 'signed' */ }
 export const advisorStage = (a: Advisor): AdvisorStage =>
   (ADVISOR_STAGES as readonly string[]).includes(a.stage as string) ? (a.stage as AdvisorStage) : 'modeled';
 
@@ -231,6 +245,9 @@ export const todayISO = () => new Date().toISOString().slice(0, 10);
 export const monthsBetween = (aISO: string, bISO: string) => { const a = new Date(aISO), b = new Date(bISO); if (isNaN(+a) || isNaN(+b)) return 0; return (b.getFullYear() - a.getFullYear()) * 12 + (b.getMonth() - a.getMonth()); };
 export const addMonthsISO = (iso: string, n: number) => { const d = new Date(iso); if (isNaN(+d)) return iso; d.setMonth(d.getMonth() + n); return d.toISOString().slice(0, 10); };
 export const fDate = (iso: string) => { const d = new Date(iso); if (isNaN(+d)) return '—'; return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }); };
+// v2 (COM-174): day precision for the letter register — a signature date is a legal date, and
+// two versions in the same month must stay distinguishable (matches the board-pack mark style).
+export const fDateDay = (iso: string) => { const d = new Date(iso); if (isNaN(+d)) return '—'; return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }); };
 
 // ===== dynamic round/scenario helpers =====
 export const roundList = (plan: Plan) => ['bridge', ...(((plan && plan.rounds) || []).map(r => r.id))];
@@ -1401,6 +1418,27 @@ export function makeProposition(a: Advisor, plan: Plan, tiers: Tier[], objective
       strikePps: c.strikePps, cashTotal: c.cashTotal,
     },
   };
+}
+
+// v2 (COM-174): the activation drift guard — a live recompute against the bound letter's FROZEN
+// figures. Both sides come from this engine, so unchanged inputs are bit-identical; the relative
+// tolerance (1e-6) only absorbs float noise — any real plan/package move trips it. Returns named
+// per-figure lines for the warning toast; pure, never mutates.
+export function propositionDrift(a: Advisor, plan: Plan, tiers: Tier[], objectives: Objective[], v: PropositionVersion, tol = 1e-6) {
+  const c: any = computeAdvisor(a, plan, tiers, objectives);
+  const F: Array<[keyof PropositionVersion['figures'], string, (n: number) => string]> = [
+    ['baseCaseTotal', 'base', fUSD], ['baseCaseCeil', 'ceiling', fUSD],
+    ['eqPct', 'equity', (n) => fPct(n, 2)], ['tkPct', 'token', (n) => fPct(n, 2)],
+    ['equityShares', 'shares', fNum], ['strikePps', 'strike', fPps], ['cashTotal', 'cash', fUSD],
+  ];
+  const lines: string[] = [];
+  for (const [k, label, fmt] of F) {
+    const frozen = v.figures?.[k];
+    const live = c[k];
+    if (!ok(frozen) || !ok(live)) continue;
+    if (Math.abs(live - frozen) > tol * Math.max(1, Math.abs(frozen))) lines.push(`${label} ${fmt(frozen)} → ${fmt(live)}`);
+  }
+  return { drifted: lines.length > 0, lines };
 }
 
 // v2 (COM-162): a round close CRYSTALLISES gated capital-introduction uplifts — every intro

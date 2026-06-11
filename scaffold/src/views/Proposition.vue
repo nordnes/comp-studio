@@ -17,6 +17,8 @@ import {
   baseScenKey,
   roundLabel,
   FUNDING_ROUND_CARVEOUT,
+  propositionStatus,
+  fDateDay,
 } from "../engine";
 import { CONFIDENTIAL_EYEBROW } from "../constants";
 import { grantPreconditions } from "../governance";
@@ -33,6 +35,13 @@ const c = computed(() => selected.value?.c);
 // COM-164 (Δ12): the version register — figures FROZEN at snapshot; the delta line compares the
 // live computed base against each sent version (current minus sent).
 const versions = computed(() => ((sel.value as any)?.propositions || []) as any[]);
+// COM-174: status → badge theme (Espresso: green = the governing letter; the rest stay quiet)
+const PSTATUS_THEME: Record<string, string> = {
+  draft: "gray",
+  sent: "blue",
+  signed: "green",
+  superseded: "gray",
+};
 // COM-167: the watermark gate (O13 / success criterion #6)
 const precond = computed(() => grantPreconditions(sel.value as any, store.gov));
 const sb = computed(() => c.value?.base);
@@ -186,7 +195,14 @@ const targetLine = computed(
       <div class="divide-y divide-outline-gray-1 text-sm">
         <div v-for="v in versions" :key="v.id" class="py-2 flex items-center gap-3 flex-wrap">
           <Badge theme="gray" variant="subtle">v{{ v.version }}</Badge>
+          <!-- COM-174: the letter status — signed governs; signing supersedes the rest -->
+          <Badge :theme="PSTATUS_THEME[propositionStatus(v)]" variant="subtle">{{
+            propositionStatus(v)
+          }}</Badge>
           <span class="tabular-nums text-ink-gray-9 w-24 shrink-0">{{ fDate(v.atISO) }}</span>
+          <span v-if="v.signedISO" class="text-p-xs text-ink-gray-6 tabular-nums">
+            signed {{ fDateDay(v.signedISO) }}{{ v.consentRef ? ` · ${v.consentRef}` : "" }}
+          </span>
           <span class="tabular-nums text-p-xs text-ink-gray-7">
             {{ fUSD(v.figures.baseCaseTotal) }} base · {{ fUSD(v.figures.baseCaseCeil) }} ceiling ·
             {{ fPct(v.figures.eqPct, 2) }} eq · {{ fPct(v.figures.tkPct, 2) }} tok

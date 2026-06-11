@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // FAST advisor-equity band gauge + verdict (Advisors, tier mode). CSS gauge (reference 1428-1444).
 import { computed } from "vue";
-import { BENCH, benchLevelForTier, fPct, clamp } from "../engine";
+import { BENCH, benchLevelForTier, fPct, clamp, fDate } from "../engine";
 const props = defineProps<{ sel: any; c: any }>();
 const band = computed(() => BENCH.advisorEquity[benchLevelForTier(props.sel.tier || 0)]);
 const eq = computed(() => props.c.baseEq);
@@ -49,7 +49,7 @@ const vcol = computed(() =>
     <p class="text-p-xs mt-1 text-ink-gray-6">
       FAST {{ fPct(band.lo, 2) }}–{{ fPct(band.hi, 2) }} per head · advisory pool ~{{
         fPct(BENCH.advisorPool, 0)
-      }}. Source: {{ BENCH.advisorSrc }}.
+      }}. Source: {{ BENCH.advisorSrc }} · as of {{ fDate(BENCH.asOf.advisorEquity) }}.
     </p>
   </div>
 </template>

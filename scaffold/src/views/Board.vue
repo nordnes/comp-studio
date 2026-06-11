@@ -18,6 +18,8 @@ import {
   fMult,
   BENCH,
   generosityCheck,
+  benchStaleness,
+  fDate,
 } from "../engine";
 import { TIER_COLOR, chartHex, shortName } from "../constants";
 import PageHeader from "../components/PageHeader.vue";
@@ -147,6 +149,9 @@ const sn = (n: string) => shortName(n, rosterNames.value);
 const generosity = computed(() =>
   generosityCheck(S.value.advisors, S.value.plan, S.value.tiers, S.value.objectives),
 );
+// COM-182: anchor freshness at point of use (the chips render only when stale)
+const medianStaleness = computed(() => benchStaleness("advisorMedian"));
+const postMoneyStaleness = computed(() => benchStaleness("postMoney"));
 // COM-165: the Ispahani grant-decision wizard
 const wizardOpen = ref(false);
 const scatter = computed(() =>
@@ -484,8 +489,11 @@ const caseTotalSum = computed(() =>
           :options="stairOpts"
         />
         <p v-if="S.plan.showBenchmarks" class="text-p-xs text-ink-gray-6 mt-1">
-          Median = 2025 market post-money by stage ({{ BENCH.postMoneySrc }}). Raiku's plan runs
-          above median — an ambitious path.
+          Median = 2025 market post-money by stage ({{ BENCH.postMoneySrc }}, as of
+          {{ fDate(postMoneyStaleness.asOf || "")
+          }}<template v-if="postMoneyStaleness.stale">
+            — {{ postMoneyStaleness.ageMonths }}mo old, re-verify</template
+          >). Raiku's plan runs above median — an ambitious path.
         </p>
       </Panel>
 
@@ -497,7 +505,16 @@ const caseTotalSum = computed(() =>
         <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
           <div class="section-label">Generosity guardrails · the Sjöström check</div>
           <div class="text-xs tabular-nums text-ink-gray-6">
-            Anchor ~{{ fUSD(generosity.anchorUSD) }}/yr (US private-company advisory median)
+            Anchor ~{{ fUSD(generosity.anchorUSD) }}/yr (US private-company advisory median, as of
+            {{ fDate(medianStaleness.asOf || "") }})
+            <Badge
+              v-if="medianStaleness.stale"
+              theme="orange"
+              variant="subtle"
+              size="sm"
+              :title="`This anchor is ${medianStaleness.ageMonths} months old — re-verify before it carries a negotiation`"
+              >benchmark {{ medianStaleness.ageMonths }}mo old — re-verify</Badge
+            >
           </div>
         </div>
         <!-- COM-179: the band-placement chart — the roster on ONE bar; outliers in one glance -->

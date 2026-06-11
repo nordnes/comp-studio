@@ -308,6 +308,17 @@ console.log('\nT7 · Scenario sets & composed walk (COM-143):');
         // a cheaper exit with the SAME raise dilutes harder: cost falls AND founder % falls
         && diff.deltas.cost < 0 && diff.b.founderPct < diff.a.founderPct;
     })());
+  // COM-182: anchor provenance — as-of dates + the staleness verdict
+  A('benchStaleness: dates exist for every named anchor; a >12mo anchor reads stale; unknown anchors do not',
+    (() => {
+      const keys = ['postMoney', 'fdvCaution', 'advisorEquity', 'advisorMedian', 'dayRate'];
+      const allDated = keys.every(k => /^\d{4}-\d{2}-\d{2}$/.test(ENG.BENCH.asOf[k]));
+      const old = ENG.benchStaleness('postMoney', '2026-06-11'); // as-of 2025-06-01 → 12mo
+      const fresh = ENG.benchStaleness('advisorMedian', '2026-06-11'); // as-of 2026-05-27 → 0mo
+      const unknown = ENG.benchStaleness('vibes', '2026-06-11');
+      return allDated && old.stale === true && old.ageMonths >= 12
+        && fresh.stale === false && unknown.stale === false && unknown.asOf === null;
+    })());
   // COM-181: the diff narrative — deterministic sentences over diffSets
   A('diffNarrative: names the costlier side, ranks the drivers, reports founder/pool movement',
     (() => {

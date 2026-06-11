@@ -3,8 +3,8 @@
 // full-width decision projection (potential strip, growth waterfall, upside curve, detail expander).
 // Editing lives in the global "Edit package" Dialog (COM-76, components/PackageEditor.vue). All money
 // from the engine via the store.
-import { ref, computed } from "vue";
-import { useRouter } from "vue-router";
+import { watch, nextTick, ref, computed } from "vue";
+import { useRouter, RouterLink } from "vue-router";
 import { Badge, Button, Dropdown, Select, Tabs } from "frappe-ui";
 import { useStudio } from "../store";
 import { useEditor } from "../composables/useEditor";
@@ -90,6 +90,16 @@ const precond = computed(() => grantPreconditions(sel.value, store.gov));
 const signFlow = ref(false);
 const signVersionId = ref("");
 const stageTick = ref(0);
+// UXS-O (UXP 7.1): the signed-refusal must PERSIST at the control — the toast was gone in
+// seconds and the dropdown silently snapped back with zero explanation left in the DOM.
+const signRefusal = ref(false);
+watch(
+  () => sel.value?.id,
+  () => {
+    signRefusal.value = false;
+    signFlow.value = false;
+  },
+);
 const signOptions = computed(() =>
   (((sel.value as any)?.propositions || []) as any[]).map((v: any) => ({
     label: `v${v.version} · ${fDateDay(v.atISO)} · ${fUSD(v.figures.baseCaseTotal)} base`,
@@ -98,11 +108,17 @@ const signOptions = computed(() =>
 );
 function onStagePick(v: string) {
   if (!sel.value || v === advisorStage(sel.value as any)) return;
+  signRefusal.value = false;
   if (v === "signed") {
     const versions = ((sel.value as any).propositions || []) as any[];
+    // UXS-O (UXP 7.2): the :key remount yanked focus and scroll-jumped the page to the top —
+    // hold the scroll position across the remount.
+    const y = window.scrollY;
     stageTick.value++;
+    nextTick(() => window.scrollTo({ top: y }));
     if (!versions.length) {
-      setStage((sel.value as any).id, "signed"); // refuses with the fix named
+      setStage((sel.value as any).id, "signed"); // refuses with the fix named (toast)
+      signRefusal.value = true; // …and the explanation STAYS at the control (UXP 7.1)
       return;
     }
     signVersionId.value = versions[versions.length - 1].id;
@@ -359,6 +375,14 @@ const backstop = computed(() => {
         <span class="text-p-xs text-ink-gray-6 tabular-nums">
           {{ stageTrail }}
         </span>
+        <!-- UXS-O (UXP 7.1): the refusal persists until the operator acts — not just a toast -->
+        <p v-if="signRefusal" class="w-full mt-1 text-p-xs text-ink-red-3" role="alert">
+          Signing is blocked — there is no letter to bind.
+          <RouterLink to="/proposition" class="underline underline-offset-2"
+            >Save v1 on the Proposition page</RouterLink
+          >
+          first, then mark the pipeline signed.
+        </p>
         <!-- COM-174: the bound flip — signing names the governing letter; the binding lands in
              stageHistory + the audit log. No versions → setStage refuses and names the fix. -->
         <div v-if="signFlow" class="w-full mt-1 flex items-center gap-2 flex-wrap text-p-xs">
@@ -553,10 +577,12 @@ const backstop = computed(() => {
                         "
                         :aria-label="`Exercise runbook for this grant`"
                         title="Run an exercise event — window check, elections, the s431/409A checklist"
-                        class="inline-flex shrink-0 items-center justify-center size-8 rounded hover:bg-surface-gray-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-gray-6)] text-ink-gray-6 hover:text-ink-gray-8"
+                        class="inline-flex shrink-0 items-center gap-1 h-8 px-2 rounded hover:bg-surface-gray-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-gray-6)] text-ink-gray-6 hover:text-ink-gray-8"
                         @click="openRunbook(g)"
                       >
+                        <!-- UXS-O (UXP 7.5): the bare ▷ glyph gave sighted users no hint -->
                         <span class="lucide-play size-3.5" aria-hidden="true" />
+                        <span class="text-p-xs">Runbook</span>
                       </button>
                       <button
                         v-if="isExplicit"

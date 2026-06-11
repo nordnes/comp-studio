@@ -181,7 +181,8 @@ const dialogOptions = computed(() => ({
     <template #actions>
       <div class="flex justify-end gap-2">
         <Button variant="ghost" theme="gray" label="Close" @click="open = false" />
-        <Button variant="solid" theme="gray" label="Record departure (roll off)" @click="record" />
+        <!-- UXS-O (UXP 7.3): recording lapses awards — the button reads as destructive -->
+        <Button variant="solid" theme="red" label="Record departure (roll off)" @click="record" />
       </div>
     </template>
   </Dialog>

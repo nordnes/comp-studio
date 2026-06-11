@@ -2840,3 +2840,38 @@ folded into the synthesis. Next: file the 9 issues on Linear (M14) → WS-A (P0)
 - **Outstanding:** Linear MCP still down → task #13 (create UXS-A..O issues in M13, flip Done with
   PR links; COM-176 flip pending) — /tmp/claude/uxs-batches.md + /tmp/claude/linear-debt.md carry
   the full text. Wave 6 (COM-34/35) still blocked on Supabase invoices. The UXP still-open P2 tail.
+
+## 2026-06-11 — 12-service deep-dive research COMPLETE → research/competitors/ [M14 Phase 1+2]
+
+**Robin's directive: per-service agents covering ALL features/functions/UI-UX** (Ledgy, Capboard,
+Pave, OpenComp, Compa, Aeqium, Pequity, Comprehensive, Coinbase Token Manager, Hedgey, Complete-
+leveling, Levels.fyi). 12 parallel agents + hands-on browser passes (levels.fyi level-table/vesting
+UI, Capboard module map, Compa agentic-offer UI, Hedgey app structure; screenshots in
+research/competitors/assets/). **12 per-service files + INDEX.md written** (7-10K chars each, all
+cited). **Convergent patterns (INDEX §synthesis):** preview-before-commit/draft→publish is THE
+editing grammar · guardrails = hard-stop vs soft-stop-with-justification · provenance is a
+productized UI layer (Pave consistency labels, Compa citations, Levels.fyi verification ladder) ·
+tier placement = people-on-band strips (Complete) · vested≠unlocked co-plotted (token tools) ·
+preview-as-role everywhere · sealed/locked artifacts as trust signals · **"show the formula" = open
+gap field-wide (9d differentiator)** · niche uncontested. M&A: Liquifi→Coinbase, Hedgey→Anchorage,
+Magna→Kraken, Pequity→ADP. Debunked: "Pave acquired OpenComp" is false. **Phase 3 (Linear filing)
+BLOCKED: Linear MCP server not connected in-session** — needs enabling in Cursor Tools & MCP.
+
+## 2026-06-11 (evening) — FIX-9 shipped (PR #135); Linear backfilled live; panel 010 running
+- **Panel 009** (40/8/6 of 54): flows fully green (G2+G3 18/18, zero console errors); the 8 FAILs
+  were operational/perf. **FIX-9 (PR #135) cleared all eight:** T31 (fPps/fDateDay pins + the
+  #128/#132 §7-string mirrors → v2 287) · scaffold/fixtures/board-25x4.mjs + the ?fixture=25x4
+  lazy loader (8.8ms interaction on 25×4) · the R6.1 budget restored (1,039,432 → **969,733 B**
+  via the @headlessui/vue shim — FormControl's static Autocomplete import kept it reachable with
+  ZERO rendered consumers; the ⌘K palette now runs on reka primitives, full grammar probed — and
+  a plain Mgr list dropping @tanstack/virtual-core; payload 200.5 kB gz) · CLAUDE.md + auto-memory
+  refreshed · the research corpus committed · panel docs 008 (retro) + 009 written.
+- **Linear MCP reconnected (Robin OAuth'd linear-server):** COM-176 flipped Done with the comment;
+  **COM-183…199 created** (the UXS batches as Done with PR links; COM-199 = the open P2 tail).
+- **Distilled:** dompurify is LOAD-BEARING (sanitises toast messages carrying user-derived names)
+  — never shim it. frappe-ui sideEffects:false but FormControl→Autocomplete keeps headlessui
+  reachable — measure with source-map-explorer before assuming a shed. R8.4 = the exit checker
+  (mid-run FAIL by construction; tallied apart). zsh noclobber blocks `>` over existing files —
+  Write tool for file overwrites.
+- **Panel 010 RUNNING** (wf_0a1c27ff-0c4, hash index-P_vMgIRH.js). Exit = 010 + 011 zero-FAIL
+  (excl. the exit checker) → Wave 8 → the Wave-8.5 closing grader.

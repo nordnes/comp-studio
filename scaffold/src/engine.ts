@@ -1424,7 +1424,7 @@ export function generosityCheck(advisors: Advisor[], plan: Plan, tiers: Tier[], 
     const days = tiers[a.tier]?.days;
     if (a.mode !== 'value' && days && days > 0) {
       const impliedDayRate = safeDiv(annual, days * 12);
-      if (impliedDayRate > BENCH_DAY_RATE_USD * 2) flagItems.push({ kind: 'day-rate', text: `Day-rate reality: ~${fUSD(impliedDayRate)}/day implied — over 2× the magic-circle/Big-4 equivalent (${fUSD(BENCH_DAY_RATE_USD)}).` });
+      if (impliedDayRate > BENCH_DAY_RATE_USD * 2) flagItems.push({ kind: 'day-rate', text: `Day-rate reality: ~${fUSD(impliedDayRate)}/day implied — ${(impliedDayRate / BENCH_DAY_RATE_USD).toFixed(1)}× the magic-circle/Big-4 equivalent (${fUSD(BENCH_DAY_RATE_USD)}).` });
     }
     return { advisorId: a.id, name: a.name, annual, compa, status, flags: flagItems.map(f => f.text), flagItems, baseCaseTotal: c.baseCaseTotal };
   });

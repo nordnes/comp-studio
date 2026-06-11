@@ -174,8 +174,12 @@ const store = reactive<Store>(bootstrap());
 
 // COM-53: action feedback via frappe-ui Toast (rendered by the mounted FrappeUIProvider/ToastProvider),
 // replacing the old ephemeral header span. Failures route to an error toast; everything else to success.
-function flash(m: string) {
-  if (/fail|invalid|blocked|unavailable|exceed/i.test(m)) toast.error(m);
+// UXS-H (ux-sweep OB-10/CGC-9): the regex heuristic showed validation REJECTIONS as green
+// successes ('A decision needs a subject' carried a check mark). Failure sites now say so
+// explicitly; the heuristic stays only as the fallback for unlabelled calls.
+function flash(m: string, type?: "error" | "success") {
+  if (type === "error" || (!type && /fail|invalid|blocked|unavailable|exceed/i.test(m)))
+    toast.error(m);
   else toast.success(m);
 }
 // COM-45: trust-boundary check before applying an imported/pasted board — JSON.parse succeeds on junk
@@ -237,7 +241,7 @@ function bindUndo() {
 function restoreUndo(id?: string) {
   const idx = id ? undoStack.findIndex((e) => e.id === id) : undoStack.length - 1;
   if (idx < 0) {
-    flash("Nothing to restore — this change was already rewound");
+    flash("Nothing to restore — this change was already rewound", "error");
     return;
   }
   store.S = undoStack[idx].snap;
@@ -770,7 +774,7 @@ export function useStudio() {
   }) {
     const subject = (data.subject || "").trim();
     if (!subject) {
-      flash("A decision needs a subject — what grant is this about?");
+      flash("A decision needs a subject — what grant is this about?", "error");
       return false;
     }
     store.S.decisions = [
@@ -851,7 +855,7 @@ export function useStudio() {
   function justifyFlag(advisorName: string, key: string, flagText: string, note: string) {
     const trimmed = (note || "").trim();
     if (!trimmed) {
-      flash("A justification needs a line — why is this package right anyway?");
+      flash("A justification needs a line — why is this package right anyway?", "error");
       return;
     }
     store.justifications[key] = { note: trimmed, atISO: todayISO() };
@@ -976,7 +980,7 @@ export function useStudio() {
     // B.1 #5: no one decides their own comp — the approver must be a named OTHER person.
     const approver = (data.approver || "").trim();
     if (!approver || approver.toLowerCase() === (a.name || "").trim().toLowerCase()) {
-      flash("Approver required — no one signs off their own comp (B.1 #5)");
+      flash("Approver required — no one signs off their own comp (B.1 #5)", "error");
       return false;
     }
     // UXS-A (ux-sweep AP-2): "by value" derives the COUNT at the base-case exit path — at the
@@ -1033,7 +1037,11 @@ export function useStudio() {
       data.note, // COM-176: the review note IS the rationale — it rides the event as the why
     );
     persist();
-    undoToast(`review (${data.outcome})`);
+    toast.create({
+      message: `Review completed (${data.outcome})`,
+      type: "info",
+      action: { label: "Undo", onClick: bindUndo() },
+    });
     return true;
   }
 
@@ -1113,10 +1121,25 @@ export function useStudio() {
     const rd = new FileReader();
     rd.onload = () => {
       try {
-        setRoadmap(parseRoadmapCSV(String(rd.result), store.S.plan));
-        flash("Roadmap imported");
+        // UXS-H (ux-sweep CGC-6): parseRoadmapCSV never throws on junk — it returns an empty
+        // object, and the old unconditional success toast told the operator their dilution
+        // model was updated when NOTHING changed. Count the matched fields first.
+        const roadmap = parseRoadmapCSV(String(rd.result), store.S.plan);
+        const matched =
+          Object.keys(roadmap.bridge || {}).length +
+          (roadmap.esopStart != null ? 1 : 0) +
+          Object.values(roadmap.scenarios || {}).reduce(
+            (n: number, sc: any) => n + Object.keys(sc).length,
+            0,
+          );
+        if (!matched) {
+          flash("Nothing in that file matched the roadmap CSV format — no values changed", "error");
+          return;
+        }
+        setRoadmap(roadmap);
+        flash(`Roadmap imported — ${matched} value${matched === 1 ? "" : "s"} applied`);
       } catch {
-        flash("Invalid CSV");
+        flash("Invalid CSV", "error");
       }
     };
     rd.readAsText(file);

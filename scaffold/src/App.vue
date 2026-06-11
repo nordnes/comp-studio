@@ -493,8 +493,16 @@ const openCmdK = () => window.dispatchEvent(new Event("open-command-palette"));
                 <ul :class="board.warnings.length > 1 ? 'list-disc pl-4 space-y-0.5' : 'list-none'">
                   <li v-for="w in board.warnings" :key="w">{{ w }}</li>
                 </ul>
-                <router-link to="/board" class="mt-1 inline-block underline underline-offset-2"
+                <!-- UXS-H (C12/DR-15): the CTA is a dead self-link when you are already
+                     on /board — point at the pool panel below instead of reloading the page. -->
+                <router-link
+                  v-if="route.path !== '/board'"
+                  to="/board"
+                  class="mt-1 inline-block underline underline-offset-2"
                   >Review the pool on the Board</router-link
+                >
+                <span v-else class="mt-1 inline-block text-p-xs"
+                  >The pool allocation panel below has the detail.</span
                 >
               </template>
             </Alert>

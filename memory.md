@@ -2875,3 +2875,61 @@ BLOCKED: Linear MCP server not connected in-session** — needs enabling in Curs
   Write tool for file overwrites.
 - **Panel 010 RUNNING** (wf_0a1c27ff-0c4, hash index-P_vMgIRH.js). Exit = 010 + 011 zero-FAIL
   (excl. the exit checker) → Wave 8 → the Wave-8.5 closing grader.
+
+## 2026-06-11 — High-fidelity prototype SHIPPED → prototype/ [M14 Phase 3]
+
+**Robin's directive: hi-fi prototype of the planned design covering all areas.** Built static
+HTML+Tailwind(3.4 CDN)+vanilla-JS prototype in **prototype/** (9 pages, no build step): index (map +
+changelog) · overview · board · advisor · compare · governance · proposition · configure · dialogs.
+Espresso-faithful (tokens.css mirrors style.css: Fraunces/Inter, ink/outline grays, --chart-*),
+real engine anchors ($28.1M/$7.67M/$1,572.95/FDV $600M). **Every workstream fix demonstrated:**
+status chip replaces banner (1.4) · AppDialog grammar w/ working inline validation + focus move
+(WS-B/2.4, probe-verified) · toast+Undo on all commits (WS-C) · deep-link URL shown (1.1) ·
+denominated NumIn accepting "95M" (4.1) · people-on-band tier strips + ladder rail (9b/Complete) ·
+aggregated guardrail callout w/ quantified delta (1.5/Barley) · Today-marker trajectory + annotation
+lanes (9e/Liquifi, 1.8) · exit slider v2 preset chips + two-tone track (1.7/Carta/Secfi) · A/B named
+cols + Δ + case-bound labels (3.x/Runway) · RAG radiogroups + inline why-note (5.1/5.2) · filterable
+audit log w/ artifact links (5.4/Ledgy) · version chips + sealed-render model (9c/PandaDoc) ·
+3-axis provenance chips + accept-with-preview (9a/Carta TC) · formula popover (9d) · skip link.
+**Verified in-browser** (served 127.0.0.1:5174 — python http.server, terminal running): map/board/
+advisor/proposition/dialogs screenshotted; 375 = zero h-scroll, actions collapse to More. Gotchas:
+Cursor browser blocks file:// AND IPv6-only localhost binds (python http.server default) — bind
+127.0.0.1 explicitly; port 4173 was occupied by a prod vite preview. Next: Phase 4 Linear filing
+(still blocked on the Linear MCP connection); issues should link prototype pages as visual specs.
+
+## 2026-06-11 — Prototype v2 COMPLETE: all areas, interactive [Linear dropped from plan]
+
+**Robin's calls: NO Linear work — prototype only.** v2 shipped on top of v1 (prototype/, 11 pages
+now): **+board-pack.html** (print-ready pack: cost conclusion, roster, guardrails, decisions
+requested, confidential print footer) · **+proposition-v1.html** (the sealed immutable render w/
+sha fingerprint — 9c end-to-end; live letter's v1 chip links to it) · **advisor.html v2**: real
+tabs (Trajectory/Vesting w/ vested≠unlocked layering/Mix/Dilution staircase/Instruments) + Edit
+package dialog (1.2 fixed in AppDialog grammar, tier mini-cards, auto-grow notes) + Schedule
+review (Complete merit staging) + Model departure (good/bad-leaver, danger confirm + undo) ·
+**shell v2** (proto.js): working **⌘K palette** (grouped views+advisors, Enter opens, focus-
+trapped) · **mobile drawer** w/ scrim + case/stage switchers · **sidebar Case selector that
+recomputes every data-money figure on every page** (localStorage-persisted, toast+undo, case-bound
+labels via data-case-label — 3.1 app-wide) · print stylesheet (.no-print/.print-area/.print-footer)
+· governance audit-log filter w/ review·0 **empty state** · view-as-advisor actually hides
+internal-only panels. **Probe-verified:** case switch Base→Aggressive flips Floor/Current/Ceiling
+to $21.4M/$21.4M/$36.4M + relabels the deep link · tabs switch · palette opens on ⌘K · drawer opens
+at 375 w/ zero h-scroll · board-pack renders. Fixed: drawer case-select sync (.case-select
+querySelectorAll). Screenshots → prototype/screenshots/. Server: 127.0.0.1:5174 (long-running
+terminal — intentional, NOT stuck). Plan file rewritten prototype-only (Linear removed).
+
+## 2026-06-11 (night) — panel 010: flows/design/perf 28/28 green; FIX-10 (PR #136); the R5.3 waiver is the gate
+- **Panel 010** (45 P · 5 F · 1 exit-checker · 3 B of 54): **G2+G3+G4 zero FAILs** — all 19 flows
+  via grader-independent arithmetic, 0 console errors; axe 0/0; 969,733 B; 25×4 at ≤25.1 ms. Both
+  009 perf FAILs verified fixed to the byte.
+- **FIX-10 (PR #136) cleared 4 of G1's 6:** R1.2 citation appendices on COM-21/61 · R8.1 the
+  project status update (run outcome + panel-010 sections, onTrack) · R8.2 the ready-to-cut line
+  on COM-36 · R8.3 prototype/ committed (Robin's M14 static mock, secret-scanned) · + the three
+  /configure Select aria-labels (G4's non-failing axe note; criticals now 0 there too).
+- **THE GATE: R5.3.** PRs #128/#132 (1-line engine copy strings) merged without same-PR spec
+  mirrors; T31 mirrored them post-hoc in #135 — history can't be retro-mirrored. Needs ROBIN:
+  a protocol waiver entry (R8.4 anticipates "protocol-compliant waiver entries") or a docs:
+  rubric correction. Pinged via terminal notification + the Linear status update names it.
+  **Panel 011 HOLDS for this decision** — with the waiver, 011 + 012 can go clean → Wave 8 →
+  the Wave-8.5 closing grader.
+- New plugin noise: a semgrep PostToolUse hook (unauthenticated) intermittently flags Writes —
+  advisory only, files land; ignore unless Robin logs semgrep in.

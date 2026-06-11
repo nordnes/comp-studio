@@ -4,17 +4,27 @@
 // UPSTREAM BUG (verified byte-for-byte in 0.1.278): the lib's CommandPalette.vue root is a DOUBLED
 // <template> — a bare inner <template> compiles to a native (inert) template element, so its Dialog
 // renders into inert DOM and never teleports; the component is broken as shipped. This file is that
-// component's own template ported verbatim with the root fixed (plus our command wiring): same
-// frappe-ui Dialog + CommandPaletteItem, same headlessui Combobox interaction (↑/↓/↵ owned by the
-// lib stack), same classes. @headlessui/vue is frappe-ui's own dependency, declared explicitly.
+// component's own template ported with the root fixed (plus our command wiring): same frappe-ui
+// Dialog + CommandPaletteItem, same classes.
+// FIX-9 (panel 009 R6.1): the ↑/↓/↵ interaction moved from @headlessui/vue Combobox to the
+// reka-ui Combobox primitives — reka is ALREADY in the bundle via every frappe-ui component,
+// while headlessui entered it ONLY for this palette (~38 kB of total-JS budget). Same grammar:
+// reka owns arrow-nav/Enter; we own the query + filtering (ignore-filter); Escape falls through
+// to the Dialog. Highlight rides reka's data-highlighted attribute.
 // Pure UI over the store — no data layer. The parent keeps: the command list (groups recompute
 // against searchQuery — the palette does NOT filter), the 'open-command-palette' window event
 // (sidebar/mobile trigger), and the hidden Import file input.
 import { ref, computed, markRaw, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import { Dialog, FeatherIcon, CommandPaletteItem } from "frappe-ui";
-import { DialogTitle, DialogDescription } from "reka-ui";
-import { Combobox, ComboboxInput, ComboboxOption, ComboboxOptions } from "@headlessui/vue";
+import {
+  DialogTitle,
+  DialogDescription,
+  ComboboxRoot,
+  ComboboxInput,
+  ComboboxContent,
+  ComboboxItem,
+} from "reka-ui";
 import { useStudio } from "../store";
 import { useEditor } from "../composables/useEditor";
 import { confirmDestroy } from "../confirm";
@@ -149,9 +159,11 @@ const groups = computed(() => {
   ];
 });
 
+const picked = ref<Cmd | null>(null);
 function onSelect(item: Cmd | null) {
-  if (!item) return;
+  if (!item || item.disabled) return;
   show.value = false;
+  picked.value = null; // the palette never keeps a selection
   item.run?.();
 }
 
@@ -193,41 +205,41 @@ function onImportFile(e: Event) {
         <DialogDescription class="sr-only">
           Search advisors, actions and pages; arrow keys navigate, Enter opens.
         </DialogDescription>
-        <Combobox nullable @update:model-value="onSelect">
+        <ComboboxRoot
+          :open="true"
+          ignore-filter
+          :model-value="picked"
+          @update:model-value="(v) => onSelect(v as Cmd | null)"
+        >
           <div class="relative">
             <div class="absolute inset-y-0 left-0 flex items-center pl-4.5">
               <FeatherIcon name="search" class="h-4 w-4" />
             </div>
             <ComboboxInput
               placeholder="Search"
-              class="w-full border-none bg-transparent py-3 pl-11.5 pr-4.5 text-base text-ink-gray-8 placeholder-ink-gray-4 focus:ring-0"
+              class="w-full border-none bg-transparent py-3 pl-11.5 pr-4.5 text-base text-ink-gray-8 placeholder-ink-gray-4 focus:ring-0 focus:outline-none"
               :value="searchQuery"
               autocomplete="off"
-              @change="searchQuery = $event.target.value"
+              @input="searchQuery = ($event.target as HTMLInputElement).value"
             />
           </div>
-          <ComboboxOptions
-            class="max-h-96 overflow-auto border-t border-gray-100"
-            static
-            :hold="true"
-          >
+          <ComboboxContent class="max-h-96 overflow-auto border-t border-gray-100">
             <div v-for="group in groups" :key="group.title" class="mb-2 mt-4.5 first:mt-3">
               <div v-if="!group.hideTitle" class="mb-2.5 px-4.5 text-base text-ink-gray-5">
                 {{ group.title }}
               </div>
-              <ComboboxOption
+              <ComboboxItem
                 v-for="item in group.items"
                 :key="item.name"
-                v-slot="{ active }"
                 :value="item"
-                class="px-2.5"
+                class="px-2.5 outline-none [&[data-highlighted]>div]:bg-surface-gray-2"
                 :disabled="item.disabled"
               >
-                <component :is="group.component" :item="item" :active="active" />
-              </ComboboxOption>
+                <component :is="group.component" :item="item" :active="false" />
+              </ComboboxItem>
             </div>
-          </ComboboxOptions>
-        </Combobox>
+          </ComboboxContent>
+        </ComboboxRoot>
       </div>
     </template>
   </Dialog>

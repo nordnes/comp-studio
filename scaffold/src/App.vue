@@ -14,10 +14,6 @@ import {
   Sidebar,
   SidebarItem,
   KeyboardShortcut,
-  ListView,
-  ListRows,
-  ListRow,
-  ListRowItem,
   Breadcrumbs,
 } from "frappe-ui";
 import { DialogDescription } from "reka-ui";
@@ -159,12 +155,6 @@ const boardSwitcherOptions = computed(() => [
     items: [{ label: "Manage boards…", icon: "lucide-pen", onClick: () => toggleMgr() }],
   },
 ]);
-const savedListOptions = {
-  selectable: false,
-  showTooltip: false,
-  onRowClick: (r: any) => loadBoard(r.name),
-};
-
 function onImportFile(e: Event) {
   const f = (e.target as HTMLInputElement).files?.[0];
   if (f) importJSON(f);
@@ -615,47 +605,45 @@ const openCmdK = () => window.dispatchEvent(new Event("open-command-palette"));
           <div v-if="!savedNames.length" class="text-sm text-ink-gray-6 mb-4">
             No saved boards yet.
           </div>
-          <!-- COM-103: ListView/ListRow/ListRowItem replace the hand-rolled ul — prefix slot is
-               the current-board check (a fixed slot, so labels align), suffix the delete action -->
-          <ListView
-            v-else
-            class="mb-5 rounded border border-outline-gray-1 p-1"
-            :columns="[{ label: 'Board', key: 'name' }]"
-            :rows="savedRows"
-            row-key="name"
-            :options="savedListOptions"
-          >
-            <ListRows>
-              <ListRow v-for="row in savedRows" :key="row.name" :row="row" v-slot="{ item }">
-                <ListRowItem :item="item" :column="{ key: 'name' }">
-                  <template #prefix>
-                    <span
-                      :class="row.current ? 'lucide-check text-ink-green-3' : ''"
-                      class="size-4 shrink-0"
-                      aria-hidden="true"
-                    />
-                  </template>
-                  <template #suffix>
-                    <Button
-                      class="ml-auto"
-                      variant="ghost"
-                      theme="red"
-                      size="sm"
-                      icon="lucide-trash-2"
-                      label="Delete board"
-                      @click.stop="
-                        confirmDestroy(
-                          'Delete board',
-                          `Delete saved board ${row.name}? This cannot be undone.`,
-                          () => delBoard(row.name),
-                        )
-                      "
-                    />
-                  </template>
-                </ListRowItem>
-              </ListRow>
-            </ListRows>
-          </ListView>
+          <!-- FIX-9 (panel 009 R6.1): a plain list replaces ListView here — the Mgr list is
+               the ONLY ListView in the app and it virtualises <10 rows while pulling
+               @tanstack/virtual-core (~30 kB of the total-JS budget). Same grammar: fixed
+               check slot · name · row-click loads · delete suffix. (Reverts COM-103's
+               component adoption for THIS one list, on the measured budget evidence.) -->
+          <ul v-else class="mb-5 rounded border border-outline-gray-1 p-1" role="list">
+            <li v-for="row in savedRows" :key="row.name">
+              <div
+                role="button"
+                tabindex="0"
+                class="flex w-full items-center gap-2 rounded px-2 py-1.5 text-base cursor-pointer hover:bg-surface-gray-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-gray-6)]"
+                @click="loadBoard(row.name)"
+                @keydown.enter="loadBoard(row.name)"
+                @keydown.space.prevent="loadBoard(row.name)"
+              >
+                <span
+                  :class="row.current ? 'lucide-check text-ink-green-3' : ''"
+                  class="size-4 shrink-0"
+                  aria-hidden="true"
+                />
+                <span class="min-w-0 truncate text-ink-gray-8">{{ row.name }}</span>
+                <Button
+                  class="ml-auto"
+                  variant="ghost"
+                  theme="red"
+                  size="sm"
+                  icon="lucide-trash-2"
+                  label="Delete board"
+                  @click.stop="
+                    confirmDestroy(
+                      'Delete board',
+                      `Delete saved board ${row.name}? This cannot be undone.`,
+                      () => delBoard(row.name),
+                    )
+                  "
+                />
+              </div>
+            </li>
+          </ul>
           <div class="flex items-end gap-2">
             <div class="flex-1">
               <TextInput

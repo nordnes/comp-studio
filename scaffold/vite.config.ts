@@ -16,6 +16,10 @@ export default defineConfig({
   resolve: {
     alias: {
       "feather-icons": fileURLToPath(new URL("./src/shims/feather-icons.ts", import.meta.url)),
+      // FIX-9 (panel 009 R6.1): headlessui ships only for three frappe-ui components none of
+      // which render here (FormControl's static Autocomplete import keeps it reachable) —
+      // 27.7 kB of total-JS budget for zero rendered code. See src/shims/headlessui.ts.
+      "@headlessui/vue": fileURLToPath(new URL("./src/shims/headlessui.ts", import.meta.url)),
     },
   },
   // terser (2 compress passes) over esbuild-minify — measured ~3% smaller on this codebase,

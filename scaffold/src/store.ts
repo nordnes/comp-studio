@@ -173,6 +173,20 @@ function bootstrap(): Store {
 
 const store = reactive<Store>(bootstrap());
 
+// R6.3: the stress fixture loads on demand (?fixture=25x4) via a DYNAMIC import — the 25×4
+// board never ships in the entry bundle. Applied over the seeded state through the same
+// reconcile every board takes; nothing persists unless the operator mutates.
+if (
+  typeof location !== "undefined" &&
+  new URLSearchParams(location.search).get("fixture") === "25x4"
+) {
+  import("../fixtures/board-25x4.mjs").then((m: any) => {
+    const fx = m.board25x4();
+    store.S = reconcile({ ...store.S, name: fx.name, advisors: fx.advisors });
+    store.selId = store.S.advisors[0]?.id || "";
+  });
+}
+
 // COM-53: action feedback via frappe-ui Toast (rendered by the mounted FrappeUIProvider/ToastProvider),
 // replacing the old ephemeral header span. Failures route to an error toast; everything else to success.
 // UXS-H (ux-sweep OB-10/CGC-9): the regex heuristic showed validation REJECTIONS as green

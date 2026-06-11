@@ -78,11 +78,14 @@ current.
   place · settings two-column), frappe-ui idioms/gotchas, chart + a11y + print rules. Build new surfaces inside it.
 - `DEV_WORKFLOW.md` — commands + the per-issue loop (`npm test` runs ALL suites: both 22-vector +
   the v2 spec suite + `store.test.mjs`). **`ULTRACODE_V2_FINISH.md` — the live build-run prompt**
-  (authorized by Robin 2026-06-10). Run state as of 2026-06-11: **M10 + M11 + M12 SHIPPED**
-  (PRs #68–#110; v2 suite 22→265 vectors, zero pendings; grader panels in `docs/rubric-grades/`),
-  legacy triage closed (COM-21/28/31/61 + epics COM-5/7). **Wave 6 (COM-34/35 auth+persistence) is
-  BLOCKED-EXTERNAL**: Supabase project creation fails on overdue Raiku-org invoices (human-only) —
-  prod still serves confidential figures pre-auth (COM-33). `engine/ENGINE_V2_RFC.md` = the
+  (authorized by Robin 2026-06-10). Run state as of 2026-06-11 (late): **M10–M13 SHIPPED** —
+  M10–M12 in PRs #68–#110, then the **M13 final sweep** in PRs #111–#134 (COM-172…182 competitive
+  uplift + the 69-finding adversarially-verified ux-sweep + Robin's 10-pass UX_IMPROVEMENT_PLAN.md
+  loop, cross-referenced at its foot; Linear COM-183…199). v2 suite 22→287 vectors, zero pendings;
+  grader panels in `docs/rubric-grades/` (009 = Wave-7 pass #2). Legacy triage closed
+  (COM-21/28/31/61 + epics COM-5/7). **Wave 6 (COM-34/35 auth+persistence) is BLOCKED-EXTERNAL**:
+  Supabase project creation fails on overdue Raiku-org invoices (human-only) — prod still serves
+  confidential figures pre-auth (COM-33). `engine/ENGINE_V2_RFC.md` = the
   engine-wave contract. `ULTRACODE_M9_FINISH.md` + `ULTRACODE_M9_PD2.md` are completed predecessors.
 - `engine/` — the v1 reference engine + BOTH test suites + the v2 RFC. `scaffold/` — the wired,
   build-green project root (`scaffold/src/engine.ts` is the live engine).

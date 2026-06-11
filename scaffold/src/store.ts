@@ -212,16 +212,34 @@ function fixSel() {
 }
 
 // COM-70: lightweight Undo for reversible list deletes. Snapshot the whole working board before the
-// mutation, then offer "Undo" on an info toast (frappe-ui toast.create action). restoreUndo() swaps S
-// back. Catastrophic actions (Reset, delBoard) keep the confirm dialog instead. Engine untouched.
-let undoSnap: State | null = null;
+// mutation, then offer "Undo" on an info toast (frappe-ui toast.create action). Catastrophic
+// actions (Reset, delBoard) keep the confirm dialog instead. Engine untouched.
+// UXS-D (ux-sweep CGC-1): toasts stack and live 10–15s, so a single snapshot slot restored the
+// WRONG delete and orphaned the other. The stack is a timeline of pre-action snapshots; every
+// toast binds the id of ITS OWN moment. Restoring an entry rewinds to it and drops every NEWER
+// entry (their snapshots contain the undone action — restoring one later would redo it); older
+// entries stay valid deeper rewind points.
+type UndoEntry = { id: string; snap: State };
+let undoStack: UndoEntry[] = [];
+const MAX_UNDO = 8;
 function pushUndo() {
-  undoSnap = clone(store.S);
+  undoStack.push({ id: uid("un"), snap: clone(store.S) });
+  if (undoStack.length > MAX_UNDO) undoStack.shift();
 }
-function restoreUndo() {
-  if (!undoSnap) return;
-  store.S = undoSnap;
-  undoSnap = null;
+// bindUndo(): capture the snapshot the LAST pushUndo took — call at toast-creation time, never
+// at click time (the click may arrive after later actions pushed newer snapshots).
+function bindUndo() {
+  const id = undoStack[undoStack.length - 1]?.id;
+  return () => restoreUndo(id);
+}
+function restoreUndo(id?: string) {
+  const idx = id ? undoStack.findIndex((e) => e.id === id) : undoStack.length - 1;
+  if (idx < 0) {
+    flash("Nothing to restore — this change was already rewound");
+    return;
+  }
+  store.S = undoStack[idx].snap;
+  undoStack = undoStack.slice(0, idx);
   fixSel();
   persist();
   toast.success("Restored");
@@ -230,7 +248,7 @@ function undoToast(what: string) {
   toast.create({
     message: `Removed ${what}`,
     type: "info",
-    action: { label: "Undo", onClick: restoreUndo },
+    action: { label: "Undo", onClick: bindUndo() },
   });
 }
 
@@ -316,7 +334,7 @@ export function useStudio() {
     toast.create({
       message: "Reset to baseline",
       type: "info",
-      action: { label: "Undo", onClick: restoreUndo },
+      action: { label: "Undo", onClick: bindUndo() },
     });
   }
   function select(id: string) {
@@ -598,7 +616,7 @@ export function useStudio() {
     toast.create({
       message: `Switched to "${s.label}"`,
       type: "info",
-      action: { label: "Undo", onClick: restoreUndo },
+      action: { label: "Undo", onClick: bindUndo() },
     });
   }
   // COM-159: the offer pipeline — advance an advisor's stage; every transition appends to the
@@ -698,7 +716,7 @@ export function useStudio() {
     toast.create({
       message: `${label} closed — ${flipped ? `${flipped} capital uplift${flipped === 1 ? "" : "s"} crystallised; ` : ""}new grants price here${roundId === "seriesA" ? "; structural reviews scheduled" : ""}`,
       type: "info",
-      action: { label: "Undo", onClick: restoreUndo },
+      action: { label: "Undo", onClick: bindUndo() },
     });
   }
 
@@ -1063,7 +1081,19 @@ export function useStudio() {
   // ---- named multi-board manager (Mgr) ----
   function saveBoard(name?: string) {
     const nm = (name || store.S.name || "Untitled").trim();
-    if (nm) store.S.name = nm;
+    if (!nm) return;
+    // UXS-D (ux-sweep OB-6): a DIFFERENT name saves a FROZEN COPY — the checkpoint the operator
+    // was stashing ('pre-negotiation v1'). The old behavior renamed the live document, and
+    // persist()'s write-through meant the "saved" bundle kept mutating with every later edit —
+    // no checkpoint ever existed. The active board stays live under its own name (that slot
+    // saves continuously; a checkpoint becomes live again only when loaded).
+    if (nm !== store.S.name) {
+      store.saved[nm] = clone(store.S);
+      store.saved[nm].name = nm;
+      persist();
+      flash(`Checkpoint “${nm}” saved — still working on “${store.S.name}”`);
+      return;
+    }
     persist();
     flash(`Saved “${store.S.name}”`);
   }

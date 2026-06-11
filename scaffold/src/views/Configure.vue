@@ -249,6 +249,7 @@ function recordValuation(ppsUSD: number) {
                   <NumIn
                     :model-value="S.S.plan.bridge.post"
                     fmt="usd"
+                    :min="0"
                     aria-label="Bridge post"
                     @update:model-value="(v) => setPath(['plan', 'bridge', 'post'], v)"
                   />
@@ -258,9 +259,20 @@ function recordValuation(ppsUSD: number) {
                   <NumIn
                     :model-value="S.S.plan.bridge.raise"
                     fmt="usd"
+                    :min="0"
                     aria-label="Bridge raise"
                     @update:model-value="(v) => setPath(['plan', 'bridge', 'raise'], v)"
                   />
+                  <!-- UXS-J (ux-sweep CGC-5): raise > post sent the whole plan silently negative
+                       (founder −12.09%) with no signal which input broke it -->
+                  <p
+                    v-if="S.S.plan.bridge.raise > S.S.plan.bridge.post"
+                    class="mt-1 text-p-xs text-ink-red-3"
+                    role="alert"
+                  >
+                    Raise exceeds post-money — the dilution walk goes negative. Every downstream
+                    figure is nonsense until this is fixed.
+                  </p>
                 </div>
                 <div>
                   <div class="text-xs text-ink-gray-6 mb-1">ESOP at adoption</div>

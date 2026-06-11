@@ -52,6 +52,11 @@ const dialogOptions = computed(() => ({
               aria-label="Shares to exercise"
               @update:model-value="(v: string) => (qty = Number(v) || 0)"
             />
+            <!-- UXS-J (ux-sweep AP-12): the engine clamps to granted internally — the input
+                 showed 5,000 while every figure computed 858, with no cue -->
+            <p v-if="qty > maxQty" class="mt-1 text-p-xs text-ink-amber-strong" role="alert">
+              Clamped to the {{ fNum(maxQty) }} granted — the figures below use {{ fNum(maxQty) }}.
+            </p>
           </div>
           <Badge :theme="pack.blocked ? 'red' : 'green'" variant="subtle" class="mb-1.5">{{
             pack.blocked ? "blocked" : "clear to run"

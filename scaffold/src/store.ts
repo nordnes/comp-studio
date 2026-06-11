@@ -319,13 +319,46 @@ export function useStudio() {
           : "Valuation cleared — strikes fall back to round-derived",
       );
     }
+    // UXS-J (UXP 4.2): a numeric plan-baseline commit is the highest-blast-radius edit in the
+    // product (the bridge post re-anchors every strike) and used to land with NO toast and NO
+    // undo. Plan-rooted numeric leaf writes now snapshot + announce with Undo. Advisor-path
+    // writes keep their own contracts (the editor dialog, the wizard); plan.valuation is
+    // audited above; string lenses (baseScenario/currentStage) stay silent by design.
+    const planNumeric = path[0] === "plan" && typeof value === "number" && path[1] !== "valuation";
+    let prev: any;
+    if (planNumeric) {
+      let r: any = store.S;
+      for (let i = 0; i < path.length - 1 && r != null; i++) r = r[path[i]];
+      prev = r?.[path[path.length - 1]];
+    }
     let o: any = store.S;
     for (let i = 0; i < path.length - 1; i++) {
       if (o[path[i]] == null) o[path[i]] = typeof path[i + 1] === "number" ? [] : {};
       o = o[path[i]];
     }
+    if (planNumeric && prev !== value) pushUndo();
     o[path[path.length - 1]] = value;
     persist();
+    if (planNumeric && prev !== value) {
+      const leaf = String(path[path.length - 1]);
+      const label = path
+        .slice(1)
+        .filter((seg) => typeof seg === "string")
+        .join(" ");
+      const fmtted =
+        /pct|esop|frac/i.test(leaf) || (value > 0 && value < 1)
+          ? `${(value * 100).toFixed(2)}%`
+          : /mult/i.test(leaf)
+            ? `${value}×`
+            : value >= 1000
+              ? fUSD(value)
+              : String(value);
+      toast.create({
+        message: `Plan baseline · ${label} → ${fmtted}`,
+        type: "info",
+        action: { label: "Undo", onClick: bindUndo() },
+      });
+    }
   }
   function loadState(next: any) {
     store.S = reconcile(next);

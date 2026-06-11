@@ -24,12 +24,14 @@ import {
   type State,
   type Scenario,
   fPps,
+  fUSD,
   makeScenarioSet,
   planWithSet,
   makeProposition,
   propositionStatus,
   propositionDrift,
   topUpQuantityForValue,
+  applyDeparture,
   type Instrument,
 } from "./engine";
 import { reconcileGovernance, type ComplianceItem, type Governance } from "./governance";
@@ -676,6 +678,45 @@ export function useStudio() {
     flash(`Stage → ${stage}`);
   }
 
+  // UXS-C (ux-sweep C2+AP-14): RECORD a modeled departure — the commitment, not the what-if.
+  // The engine materialises the outcome into the grants (retained frozen, lapsed lapsed, cash
+  // accrued-only); the stage flips with the same record; undo restores the pre-departure board.
+  function recordDeparture(advisorId: string, leaverType: string, dateISO: string) {
+    const idx = store.S.advisors.findIndex((x) => x.id === advisorId);
+    const a: any = store.S.advisors[idx];
+    if (!a) return;
+    pushUndo();
+    const { advisor, model } = applyDeparture(
+      a,
+      leaverType as any,
+      dateISO,
+      store.S.plan,
+      store.S.tiers,
+      store.S.objectives,
+    );
+    (advisor as any).stage = "rolled-off";
+    (advisor as any).stageHistory = [
+      ...(Array.isArray(a.stageHistory) ? a.stageHistory : []),
+      {
+        stage: "rolled-off",
+        atISO: todayISO(),
+        note: `Departure recorded ${dateISO} · ${leaverType} leaver`,
+      },
+    ];
+    store.S.advisors[idx] = advisor;
+    appendAudit(
+      "stage",
+      a.name,
+      `Departure recorded ${dateISO} · ${leaverType} leaver · retained ${fUSD(model.retainedValueToday)} today / forfeited ${fUSD(model.forfeitedValueToday)} · ${Math.round(model.poolReturned).toLocaleString("en-US")} option shares return to the pool${model.boardDiscretion ? " · vested retention subject to Board discretion" : ""}`,
+    );
+    persist();
+    toast.create({
+      message: `Departure recorded — retained ${fUSD(model.retainedValueToday)} today, forfeited ${fUSD(model.forfeitedValueToday)}`,
+      type: "info",
+      action: { label: "Undo", onClick: bindUndo() },
+    });
+  }
+
   // COM-162 (F17): mark a round CLOSED — comp and fundraising move together. Re-pricing comes
   // free (currentRoundStep follows plan.currentStage, advanced here when a milestone shares the
   // round's id); gated capital uplifts crystallise via the engine; Series A additionally
@@ -1262,6 +1303,7 @@ export function useStudio() {
     activateSet,
     duplicateAdvisor,
     setStage,
+    recordDeparture,
     scheduleReview,
     completeReview,
     closeRound,

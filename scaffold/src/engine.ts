@@ -65,6 +65,9 @@ export interface Grant {
   docUrl?: string;                // the RTA/certificate link column from the workbook
   // v2 (COM-150): the value must be defensible against equivalent professional-services time.
   timeCommitment?: string;        // e.g. "~10 hrs/mo"
+  // v2 (UXS-C): true on rows a RECORDED DEPARTURE materialised — the retained count is the
+  // vested-to-date portion, already vested by construction; every curve consumer reads 1.
+  fullyVested?: boolean;
   // v2 (COM-171): true on rows the v6 migration MATERIALISED from the v1 implicit package.
   // Derived rows are a refreshed-on-load snapshot for v2-native readers; the PARAMETRIC fields
   // (mode/tier/annualValue/splitOptions/grantRound) stay authoritative for computation until
@@ -112,6 +115,9 @@ export interface Advisor {
   // appends to stageHistory (date + optional note/doc link). Departures hand off to F18.
   stage?: AdvisorStage;
   stageHistory?: StageEvent[];
+  // v2 (UXS-C): the RECORDED departure — set by applyDeparture, never by hand. Its presence
+  // means the grants below are the post-departure truth (retained frozen, lapsed lapsed).
+  departure?: DepartureRecord;
   // v2 (COM-164/Δ12): versioned propositions — the straw-man artefacts as SENT (via Iraj).
   // Each version snapshots the package INPUTS and the COMPUTED figures at send time, because
   // the plan keeps moving under a live negotiation: "what we sent" must stay reproducible even
@@ -599,6 +605,7 @@ export function reconcile(l: any): State {
             if (!(typeof g.docUrl === 'string' && /^https?:\/\//i.test(g.docUrl))) delete out.docUrl;
             if (!(typeof g.timeCommitment === 'string' && g.timeCommitment)) delete out.timeCommitment;
             if (g.derived !== true) delete out.derived; // strictly boolean-true (COM-171)
+            if (g.fullyVested !== true) delete out.fullyVested; // strictly boolean-true (UXS-C)
             return out;
           })
           // id-keyed money list: duplicate grant ids double-count the fold — first wins.
@@ -630,6 +637,17 @@ export function reconcile(l: any): State {
         if (!(typeof adv[k] === 'string' && adv[k])) delete adv[k];
       }
       if (!(CHECK_STATUSES as readonly string[]).includes(adv.checkStatus)) delete adv.checkStatus;
+      // v2 (UXS-C): the departure record — every field shape-guarded or the record goes (a junk
+      // record must never read as a recorded departure).
+      if (adv.departure != null) {
+        const dp: any = adv.departure;
+        const okDp = dp && typeof dp === 'object'
+          && typeof dp.dateISO === 'string' && dp.dateISO
+          && ['bad', 'good', 'death'].includes(dp.leaverType)
+          && [dp.retainedValue, dp.forfeitedValue, dp.retainedValueToday, dp.forfeitedValueToday, dp.poolReturned].every(ok)
+          && typeof dp.boardDiscretion === 'boolean';
+        if (!okDp) delete adv.departure;
+      }
       if (!(CONTRACTING_STRUCTURES as readonly string[]).includes(adv.contracting)) delete adv.contracting;
       if (Array.isArray(a.reviews)) {
         adv.reviews = a.reviews
@@ -1549,6 +1567,10 @@ export function vestedFracRTA(m: number) {
 // linearly from month 0 (a retainer earns by service, it has no cliff — prompt-set default,
 // flagged in the PR). Junk months fail closed to 0 on EVERY branch.
 export function vestedAtMonths(grant: Grant, m: number, years = 4, cliff = 12) {
+  // UXS-C: a departure-materialised retained row IS the vested portion — frozen at 1, before
+  // any curve math (and before the RTA service gate in distributableFrac: the gate's outcome
+  // is already encoded in whether the row survived the departure).
+  if (grant.fullyVested === true) return 1;
   if (!ok(m)) return 0;
   if (grant.instrument === 'cash') return clamp(m / (years * 12), 0, 1);
   return grant.curve === 'rta' ? vestedFracRTA(m) : vestedFrac(m, years, cliff);
@@ -1577,6 +1599,7 @@ export function vestedAtDate(grant: Grant, atISO: string, years = 4, cliff = 12)
 // award agreement), so it keys on instrument — never on the curve shape, which reconcile
 // deliberately allows to mismatch (review finding: an rta/cert-v3 grant must still be gated).
 export function distributableFrac(grant: Grant, m: number, serviceMonths: number, years = 4, cliff = 12) {
+  if (grant.fullyVested === true) return 1; // UXS-C: the departure already adjudicated the gate
   if (grant.instrument === 'rta' && !(ok(serviceMonths) && serviceMonths >= 24)) return 0;
   return vestedAtMonths(grant, m, years, cliff);
 }
@@ -1737,6 +1760,62 @@ export const PLAN_DISQUALIFICATION_WARNINGS = [
   'Discretionary cash substitution for lapsed awards can disqualify the plan — model cash separately, never as a swap.',
   'Retesting or re-pricing awards for a leaver outside the plan rules risks disqualification — only the written rules apply.',
 ] as const;
+
+// v2 (UXS-C / ux-sweep C2+AP-14): the RECORDED departure. modelDeparture is the what-if; this
+// is the commitment — the modeled outcome MATERIALISES into the grants so every surface
+// (totals, hero, pool, ceiling) tells the post-departure truth. Retained options/tokens freeze
+// at the vested-to-date count (fullyVested — already vested by construction; the 90-day window
+// math keeps the TRUE grant dates); fully-lapsed rows lapse (computeGrant zeroes them; lapsed
+// option shares already return to pool headroom); cash keeps the accrued dollars only. The
+// ceiling/performance upside dies with the engagement because the fold path (explicit grants)
+// carries no uplift — upliftViaGrants. Pure: returns the new advisor + the model; the store
+// wraps it (undo, audit, stage flip, persist).
+export interface DepartureRecord {
+  dateISO: string;
+  leaverType: LeaverType;
+  retainedValue: number;        // exit basis (base case)
+  forfeitedValue: number;
+  retainedValueToday: number;   // today/FMV basis
+  forfeitedValueToday: number;
+  poolReturned: number;         // lapsed option shares → pool headroom
+  boardDiscretion: boolean;     // vested retention subject to Board discretion (non-bad leaver)
+}
+export function applyDeparture(a: Advisor, leaverType: LeaverType, dateISO: string, plan: Plan, tiers: Tier[], objectives: Objective[]): { advisor: Advisor; model: ReturnType<typeof modelDeparture> } {
+  const model = modelDeparture(a, leaverType, dateISO, plan, tiers, objectives);
+  const grants: Grant[] = model.rows.map((r: any) => {
+    const g: any = { ...r.grant };
+    delete g.derived; // recording the departure is the explicit edit that claims the package
+    if (g.lifecycle === 'lapsed' || r.exercised) return g; // already-lapsed + issued shares ride through
+    if (g.instrument === 'cash') {
+      g.valueUSD = r.retainedQty; // the accrued dollars; the un-accrued remainder never falls due
+      delete g.quantity;
+      return g;
+    }
+    if (!(r.retainedQty > 0)) {
+      g.lifecycle = 'lapsed';
+      return g;
+    }
+    g.quantity = r.retainedQty;
+    delete g.valueUSD;
+    g.fullyVested = true;
+    return g;
+  });
+  const advisor: Advisor = {
+    ...a,
+    grants,
+    // the fold sums advisor-level cash AND cash grants — the claim must clear the parametric
+    // cash fields (the effectiveGrants contract, review 2026-06-10)
+    hasCash: false,
+    cashAnnual: 0,
+    departure: {
+      dateISO, leaverType,
+      retainedValue: model.retainedValue, forfeitedValue: model.forfeitedValue,
+      retainedValueToday: model.retainedValueToday, forfeitedValueToday: model.forfeitedValueToday,
+      poolReturned: model.poolReturned, boardDiscretion: model.boardDiscretion,
+    },
+  };
+  return { advisor, model };
+}
 
 // modelDeparture(advisor, leaverType, date) — per the issue (RFC-conformed name/signature).
 // Bad Leaver → vested AND unvested options lapse on cessation (Rule 5.8); tokens forfeit.

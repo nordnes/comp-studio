@@ -328,6 +328,24 @@ const backstop = computed(() => {
         Pre-conditions outstanding: {{ precond.outstanding.join(" · ") }} — the Proposition prints
         watermarked until green.
       </div>
+      <!-- UXS-C (ux-sweep AP-14): the recorded departure leaves a visible trace where the
+           package lives — what was retained, what lapsed, and under whose discretion. -->
+      <div
+        v-if="(sel as any).departure"
+        class="mt-3 text-p-xs text-ink-gray-7 tabular-nums border-t border-outline-gray-1 pt-3"
+      >
+        Rolled off {{ fDateDay((sel as any).departure.dateISO) }} ({{
+          (sel as any).departure.leaverType
+        }}
+        leaver) — retained {{ fUSD((sel as any).departure.retainedValueToday) }} today /
+        {{ fUSD((sel as any).departure.retainedValue) }} at exit · forfeited
+        {{ fUSD((sel as any).departure.forfeitedValueToday) }} today ·
+        {{ fNum((sel as any).departure.poolReturned) }} option shares returned to the pool<template
+          v-if="(sel as any).departure.boardDiscretion"
+        >
+          · vested retention subject to Board discretion</template
+        >.
+      </div>
       <div class="mt-4 pt-3 border-t border-outline-gray-1 flex items-center gap-3 flex-wrap">
         <span class="text-xs text-ink-gray-6">Pipeline</span>
         <Select

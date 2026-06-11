@@ -1812,5 +1812,59 @@ console.log('\nT29 · Top-up by value — base-case exit derivation (UXS-A):');
     })());
 }
 
+// ---- T30: recorded departures move the money (UXS-C / ux-sweep C2+AP-14, live-bound) ----
+console.log('\nT30 · applyDeparture — the recorded outcome materialises (UXS-C):');
+{
+  const dflt = ENG.DEFAULT();
+  const a = dflt.advisors[0]; // Iraj, parametric tier-mode
+  const before = ENG.computeAdvisor(a, dflt.plan, dflt.tiers, dflt.objectives);
+  A('a good-leaver departure mid-vest: the new total EQUALS the modeled retained value (exit basis) and the ceiling upside dies',
+    (() => {
+      const dateISO = '2028-06-11'; // 24 months in (start 2026-06-01): vested ≈ half
+      const { advisor, model } = ENG.applyDeparture(a, 'good', dateISO, dflt.plan, dflt.tiers, dflt.objectives);
+      const after = ENG.computeAdvisor(advisor, dflt.plan, dflt.tiers, dflt.objectives);
+      return Math.abs(after.baseCaseTotal - model.retainedValue) < 1
+        && after.baseCaseTotal < before.baseCaseTotal - 1
+        && after.baseCaseCeil === after.baseCaseTotal // upliftViaGrants: no ceiling upside
+        && advisor.departure && advisor.departure.leaverType === 'good';
+    })());
+  A('a bad leaver loses EVERYTHING pre-exercise: total 0; every option share returns to the pool',
+    (() => {
+      const { advisor, model } = ENG.applyDeparture(a, 'bad', '2028-06-11', dflt.plan, dflt.tiers, dflt.objectives);
+      const after = ENG.computeAdvisor(advisor, dflt.plan, dflt.tiers, dflt.objectives);
+      return after.baseCaseTotal === 0 && model.poolReturned > 0
+        && advisor.grants.every(g => g.instrument === 'cash' || g.lifecycle === 'lapsed');
+    })());
+  A('retained rows freeze fullyVested: the curve reads 1 forever after (runbook/timeline truth) while TRUE grant dates survive for the 3.6 windows',
+    (() => {
+      const { advisor } = ENG.applyDeparture(a, 'good', '2028-06-11', dflt.plan, dflt.tiers, dflt.objectives);
+      const kept = advisor.grants.find(g => g.instrument === 'option' && g.lifecycle !== 'lapsed');
+      return kept && kept.fullyVested === true
+        && ENG.vestedAtMonths(kept, 1) === 1 && ENG.distributableFrac(kept, 0, 0) === 1
+        && kept.vestStartISO === a.startDate;
+    })());
+  A('the board total moves: computeBoard before − after ≈ the forfeited value (exit basis)',
+    (() => {
+      const dateISO = '2028-06-11';
+      const { advisor, model } = ENG.applyDeparture(a, 'good', dateISO, dflt.plan, dflt.tiers, dflt.objectives);
+      const others = dflt.advisors.slice(1);
+      const bBefore = ENG.computeBoard(dflt.advisors, dflt.plan, dflt.tiers, dflt.objectives);
+      const bAfter = ENG.computeBoard([advisor, ...others], dflt.plan, dflt.tiers, dflt.objectives);
+      const baseKey = ENG.baseScenKey(dflt.plan);
+      return Math.abs((bBefore.cost[baseKey] - bAfter.cost[baseKey]) - model.forfeitedValue) < 1;
+    })());
+  A('reconcile round-trips the record byte-for-byte and drops junk (leaverType, NaN figures)',
+    (() => {
+      const { advisor } = ENG.applyDeparture(a, 'good', '2028-06-11', dflt.plan, dflt.tiers, dflt.objectives);
+      const rt = ENG.reconcile(JSON.parse(JSON.stringify({ ...dflt, advisors: [advisor] })));
+      const kept = rt.advisors[0].departure;
+      const junk = ENG.reconcile(JSON.parse(JSON.stringify({ ...dflt, advisors: [{ ...advisor, departure: { ...advisor.departure, leaverType: 'meh' } }] })));
+      const nan = ENG.reconcile(JSON.parse(JSON.stringify({ ...dflt, advisors: [{ ...advisor, departure: { ...advisor.departure, retainedValue: 'NaN' } }] })));
+      const fv = rt.advisors[0].grants.find(g => g.fullyVested);
+      return kept && kept.dateISO === '2028-06-11' && fv
+        && junk.advisors[0].departure === undefined && nan.advisors[0].departure === undefined;
+    })());
+}
+
 console.log(`\n${pass} passed, ${fail} failed, ${pending} pending(v2).`);
 process.exit(fail ? 1 : 0);

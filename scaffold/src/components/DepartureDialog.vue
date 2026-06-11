@@ -20,7 +20,7 @@ import {
 } from "../engine";
 const props = defineProps<{ sel: any }>();
 const open = defineModel<boolean>({ default: false });
-const { store, setStage } = useStudio();
+const { store, recordDeparture } = useStudio();
 
 const dateISO = ref(todayISO());
 const death = ref(false);
@@ -45,11 +45,9 @@ const fQty = (r: any, n: number) =>
   r.instrument === "cash" ? fUSD(n) : r.instrument === "rta" ? fTok(n) : fNum(n);
 
 function record() {
-  setStage(
-    props.sel.id,
-    "rolled-off",
-    `Departure modeled ${dateISO.value} · ${leaverType.value} leaver · retained ${fUSD(result.value.retainedValueToday)} (today basis)${result.value.boardDiscretion ? " · vested retention subject to Board discretion" : ""}`,
-  );
+  // UXS-C: recording COMMITS the modeled outcome — grants materialise (retained frozen, lapsed
+  // lapsed, cash accrued-only) and every surface moves; the stage flip rides the same record.
+  recordDeparture(props.sel.id, leaverType.value, dateISO.value);
   open.value = false;
 }
 const dialogOptions = computed(() => ({

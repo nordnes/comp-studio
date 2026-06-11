@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node engine.test.mjs"
+    "test": "node engine.test.mjs && node store.test.mjs && node ../engine/engine.test.mjs && node ../engine/engine.v2.test.mjs"
   },
   "dependencies": {
     "@headlessui/vue": "^1.7.23",

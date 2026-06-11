@@ -21,6 +21,17 @@ import {
 import { grantPreconditions } from "../governance";
 // COM-159: the pipeline chip — stage → Badge theme (status semantics carried by TEXT + theme;
 // gray = pre-offer modeling, blue = in motion, orange = gating steps, green = committed/live).
+// UXS-I (ux-sweep OB-9/C9): the chip vocabulary, explained at point of use (native title).
+const STAGE_TITLE: Record<string, string> = {
+  modeled: "Pipeline 1/8 · modeled — a package drafted in the studio; nothing sent",
+  proposed: "Pipeline 2/8 · proposed — the straw-man went out (via Iraj)",
+  iterating: "Pipeline 3/8 · iterating — terms moving in negotiation",
+  referenced: "Pipeline 4/8 · referenced & cleared — references and checks done",
+  "offer-issued": "Pipeline 5/8 · offer letter issued (Charlie)",
+  signed: "Pipeline 6/8 · signed — a letter version is bound and governs",
+  active: "Pipeline 7/8 · active — the engagement is running",
+  "rolled-off": "Pipeline 8/8 · rolled off — departed; retained value is frozen",
+};
 const STAGE_THEME: Record<string, string> = {
   modeled: "gray",
   proposed: "blue",
@@ -218,15 +229,21 @@ const hasBudget = computed(() => flags.value.some((f) => f.t === "budget"));
                   theme="orange"
                   size="sm"
                   variant="subtle"
-                  :title="precond(a).outstanding.join(' · ')"
+                  :title="precond(a).outstanding.join('; ')"
                   >{{ precond(a).outstanding.length }} pre-condition{{
                     precond(a).outstanding.length === 1 ? "" : "s"
                   }}</Badge
                 >
-                <!-- COM-159: the offer-pipeline stage chip -->
-                <Badge :theme="STAGE_THEME[advisorStage(a)] || 'gray'" size="sm" variant="subtle">{{
-                  advisorStage(a)
-                }}</Badge>
+                <!-- COM-159: the offer-pipeline stage chip. UXS-I (ux-sweep OB-9/C9): the
+                     vocabulary explains itself at first use — title names the stage meaning
+                     and where it sits in the pipeline. -->
+                <Badge
+                  :theme="STAGE_THEME[advisorStage(a)] || 'gray'"
+                  size="sm"
+                  variant="subtle"
+                  :title="STAGE_TITLE[advisorStage(a)]"
+                  >{{ advisorStage(a) }}</Badge
+                >
                 <TierBadge :mode="a.mode" :tier-name="S.tiers[a.tier]?.name" />
                 <Dropdown :options="rowMenu(a)" placement="right" class="no-print">
                   <template #trigger>

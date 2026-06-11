@@ -3,7 +3,7 @@
 // throughout; the app is light-only (COM-72 made Configure light, COM-110 deleted the dark branch).
 // Formats: usd / pct / pps / mult / num. Clamps to min/max. Enter commits, Escape cancels.
 import { ref, nextTick } from "vue";
-import { fUSD, fPct, fMult, fNum, ok, clamp } from "../engine";
+import { fUSD, fPct, fMult, fNum, fPps, ok, clamp } from "../engine";
 
 const props = withDefaults(
   defineProps<{
@@ -32,7 +32,7 @@ function fmtVal(v: number): string {
     : props.fmt === "pct"
       ? fPct(v, 2)
       : props.fmt === "pps"
-        ? `$${ok(v) ? v.toFixed(2) : "—"}`
+        ? fPps(v) // UXS-I (ux-sweep CGC-11): '$1572.95' beside a caption reading '$1,572.95'
         : props.fmt === "mult"
           ? fMult(v)
           : fNum(v);

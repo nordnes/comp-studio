@@ -8,7 +8,7 @@ import { ref, computed } from "vue";
 import { Button, Dialog, FormControl, Select, TextInput } from "frappe-ui";
 import { DialogDescription } from "reka-ui";
 import { useStudio } from "../store";
-import { ISPAHANI_STEPS, generosityCheck, poolGuardrail, fUSD, fPct } from "../engine";
+import { ISPAHANI_STEPS, generosityCheck, poolGuardrail, fUSD, fPct, fNum } from "../engine";
 const open = defineModel<boolean>({ default: false });
 const { store, recordDecision } = useStudio();
 const S = computed(() => store.S);
@@ -38,7 +38,11 @@ const stepContext = computed(() => {
   ctx[6] =
     `Live: board median ${fUSD(g.median)}; ` +
     g.rows.map((r) => `${r.name.split(" ")[0]} ${fUSD(r.annual)}/yr`).join(" · ");
-  ctx[7] = `Live: ${guard.value.msg}`;
+  // UXS-I (ux-sweep OB-11): poolGuardrail returns msg:'' at 'ok' — the bare 'Live:' read as a
+  // broken data feed. The ok state composes the affirmative line Configure already renders.
+  ctx[7] = guard.value.msg
+    ? `Live: ${guard.value.msg}`
+    : `Live: pool ${fNum(guard.value.poolShares)} of ${fNum(guard.value.cap)} — within the Constitutional Limit (Rule 13.10), headroom ${fNum(guard.value.headroom)}.`;
   return ctx;
 });
 

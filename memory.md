@@ -2746,3 +2746,25 @@ Done so far: COM-172 (payout table + formula, PR #111) · COM-173 (key-dates rad
 COM-181 (diff narrative — engine diffNarrative, PR #113) · COM-179 (band-placement chart,
 PR #114). v2 suite 266. Queue: 174/182/176 (S) · 175/177/178/180 (M) + the ux-sweep CONFIRMED
 findings (workflow still verifying).
+
+## 2026-06-11 — M13 continues: COM-182 + COM-174 shipped; ux-sweep verify resumed
+- **COM-182 (benchmark provenance) → Done** (PR #115): `BENCH.asOf` per-anchor dates + `benchStaleness()`
+  (≥12mo → stale) surfaced at point of use — Board generosity anchor (as-of + amber re-verify chip),
+  staircase median caption (2025 Carta correctly flags stale today), Overview/EquityBenchmark source lines.
+  Verified 4/4 live. v2 suite 267.
+- **COM-174 (signed-version binding) → Done** (PR #116, engine under §7): PROPOSITION_STATUSES
+  (draft→sent→signed→superseded), the pipeline → signed flip REFUSES without a bound letter version
+  (inline bind row), binding supersedes siblings + lands versionId in stageHistory+audit; signed→active
+  warns with named frozen→live deltas (propositionDrift, rel 1e-6); fDateDay (en-GB day precision) for
+  signature dates. T27 in v2 (271 vectors). Live probe 12/12.
+- **Gotchas:** frappe-ui Select = reka-ui `button[role="combobox"]` (NO native select) — probes click the
+  combobox then `getByRole('option')`. PackageEditor tier = aria-pressed mini-cards. vp's formatter is
+  OXFMT not prettier — fix formatting with file-scoped `vp fmt <file> --write` (the global `vp check --fix`
+  stays banned). Stacked toasts: flash() lands AFTER warning toasts — probes must scan allInnerTexts.
+- **ux-sweep:** the spend-limit-killed verify phase RESUMED via Workflow resumeFromRunId (wf_c4802215-4e4) —
+  5 lens audits + 10 verified findings came from cache; ~61 verifiers re-running. 71 raw findings recovered
+  from the journal to /tmp/claude/ux-raw-findings.json. 10 already-CONFIRMED: OB-2 (axe critical+serious),
+  OB-3 (dup Vue keys Board ranges), AP-1 (PackageEditor Escape/X keeps edits), OB-5 (1024px overflow),
+  OB-7 (precond chip separator), OB-8 (cost panel dup column), AP-5 (NumIn Escape closes dialog),
+  OB-9 (stage chip no legend), OB-10 (success toast on validation failure), OB-11 (dangling 'Live:').
+- Next: triage the full verified set → fix-PRs + M13 issues; remaining M13 queue COM-175/176/177/178/180.

@@ -2798,3 +2798,21 @@ findings (workflow still verifying).
 - v2 suite now **283 vectors**; engine edits under §7 throughout (anchors green every PR).
 - Queue: UXS-E (Fork B), F1 (z-stack+aria), G (focus+contrast), H (feedback truth), I (render),
   J (inputs), K (charts), L (IA copy) → then Wave-7 panel 009.
+
+## 2026-06-11 — 10-pass UX review loop COMPLETE → UX_IMPROVEMENT_PLAN.md [sweep]
+
+**Skills installed** (~/.agents/skills, per Robin's links): impeccable (pbakaus suite) ·
+web-design-guidelines (Vercel) · fixing-accessibility + baseline-ui (ibelick). **10 browser
+passes against prod be1da3f** (cursor-ide-browser, real-user interaction): shell/Overview →
+Board → Compare → Configure → Governance → Proposition/print → lifecycle → responsive →
+keyboard/SR → synthesis. ~50 findings logged in **UX_IMPROVEMENT_PLAN.md** (new, repo root),
+deduped into 8 workstreams / 9 proposed ≤450-LOC issues. **THE P0: overlay lifecycle wedging**
+— reka-ui gates teardown on transitionend; throttled/interrupted transitions leave
+body{pointer-events:none} (observed 30s mouse-dead), invisible-open dialogs, drawer re-opens.
+Other P1s: tall dialogs overflow viewport (header/close off-screen) · silent consequential
+mutations (bridge-post edit re-anchors EVERYTHING w/ no toast/undo; RAG flips; ephemeral
+signed-refusal) · raw-integer money editing (90000000) · no deep links + blank lazy-chunk
+flash · A/B "Base case" label follows the active case · 1024 header overlaps the banner.
+Verified strengths: print/watermark path, ⌘K palette, Configure layout, runbook content,
+audit log. A parallel reviewer appended duplicate pass-2/7/8 sections — findings agree,
+folded into the synthesis. Next: file the 9 issues on Linear (M14) → WS-A (P0) first.

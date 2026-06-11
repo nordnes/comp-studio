@@ -2698,3 +2698,17 @@ LINEAR DEBT now: COM-162,163,161,164,156,165,166,167,168,169,170 (11 issues need
 Done + comments when Linear returns). Next: the M12-boundary grader → Wave 5 (legacy triage:
 COM-28/21/31/61 + epics COM-5/7 — verify-then-close-with-evidence; needs Linear for the
 closes... triage what's verifiable now, defer flips).
+
+## 2026-06-11 — Panel 007 (12/15→fixed) + Wave 5 triage (COM-28/31 residuals shipped; 21 closeable) [M12 gate + W5]
+
+**Panel 007 (M12 boundary): 12 PASS / 1 FAIL** — the FAIL (R5.1 VALUATION_BASES unpinned) fixed
+same-commit-cycle (v2 264/0/0). **Wave-5 legacy audit** (fresh-context agent, 24/25 probes):
+COM-21 CLOSEABLE w/ evidence · COM-28 RESIDUAL → **PR #107**: token half → custom SVG (the
+COM-57 precedent), the $1B caution band ships (benchmarks-gated; the footer copy is now TRUE),
+per-scenario markers on BOTH halves, ChipRow flagged SUPERSEDED (ExitSlider + markers) ·
+COM-31 RESIDUAL → **PR #108**: every route now fits 375 INCLUDING the 'known legacy' Board 572
+(min-w-0 on grid columns — the COM-156 min-content lesson; the Overview 461 was a COM-167 chip
+regression; breadcrumb overflow-hidden). **WAVE 6 BLOCKED (recorded): Supabase project creation
+→ PaymentRequiredException (overdue Raiku-org invoices — human-only) + Linear down (can't read
+the L-sized COM-34/35 specs; security-review mandatory). Deferred with full notes in
+/tmp/claude/linear-debt.md.** Next: COM-5/7 epic verification → WAVE 7 (the perfection loop).

@@ -34,6 +34,7 @@ import TierBadge from "../components/roster/TierBadge.vue";
 import Panel from "../components/Panel.vue";
 import CapitalRollupPanel from "../components/CapitalRollupPanel.vue";
 import GrantDecisionWizard from "../components/GrantDecisionWizard.vue";
+import BandPlacement from "../components/BandPlacement.vue";
 
 const { store, board, select, addAdvisor, delAdvisor, setPath } = useStudio();
 const { openEditor } = useEditor();
@@ -499,6 +500,8 @@ const caseTotalSum = computed(() =>
             Anchor ~{{ fUSD(generosity.anchorUSD) }}/yr (US private-company advisory median)
           </div>
         </div>
+        <!-- COM-179: the band-placement chart — the roster on ONE bar; outliers in one glance -->
+        <BandPlacement :rows="generosity.rows" :anchor-u-s-d="generosity.anchorUSD" class="mb-3" />
         <div class="divide-y divide-outline-gray-1 text-sm">
           <div
             v-for="r in generosity.rows"

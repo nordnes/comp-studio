@@ -12,6 +12,7 @@ declare module 'vue' {
     BandPlacement: typeof import('./src/components/BandPlacement.vue')['default']
     CapitalRollupPanel: typeof import('./src/components/CapitalRollupPanel.vue')['default']
     CommandPalette: typeof import('./src/components/CommandPalette.vue')['default']
+    ConfirmDestroyDialog: typeof import('./src/components/ConfirmDestroyDialog.vue')['default']
     ContextStrip: typeof import('./src/components/ContextStrip.vue')['default']
     DepartureDialog: typeof import('./src/components/DepartureDialog.vue')['default']
     DilutionPath: typeof import('./src/components/DilutionPath.vue')['default']

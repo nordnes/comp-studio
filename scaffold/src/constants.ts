@@ -56,11 +56,18 @@ const CHART_HEX: Record<string, string> = {
 // COM-136: chart-label shortener — first name, plus a last initial when two advisors share it;
 // mononyms keep their single name and an empty name guards to "—". Presentation only.
 export function shortName(name: string, all: string[]): string {
-  const firstOf = (n: string) => (n || "").trim().split(/\s+/)[0] || "—";
-  const parts = (name || "").trim().split(/\s+/).filter(Boolean);
-  const f = firstOf(name);
+  // UXS-E (ux-sweep CGC-7): a parenthesised suffix — the "(B)" fork disambiguator — is not a
+  // surname; deriving the initial from it rendered "Iraj (.". The suffix strips for initial
+  // derivation and re-appends whole, so A/B candidates stay tellable apart: "Iraj I. (B)".
+  const m = (name || "").trim().match(/^(.*?)\s*(\([^)]*\))?$/);
+  const core = (m?.[1] || "").trim();
+  const suffix = m?.[2] ? ` ${m[2]}` : "";
+  const firstOf = (n: string) =>
+    ((n || "").trim().match(/^(.*?)\s*(\([^)]*\))?$/)?.[1] || "").trim().split(/\s+/)[0] || "—";
+  const parts = core.split(/\s+/).filter(Boolean);
+  const f = parts[0] || "—";
   const dup = all.filter((n) => firstOf(n) === f).length > 1;
-  return dup && parts.length > 1 ? `${f} ${parts[parts.length - 1][0]}.` : f;
+  return (dup && parts.length > 1 ? `${f} ${parts[parts.length - 1][0]}.` : f) + suffix;
 }
 
 export function chartHex(token: string): string {

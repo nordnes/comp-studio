@@ -144,6 +144,12 @@ const advisorOpts = computed(() => [
 ]);
 const abA = ref("");
 const abB = ref("");
+// UXS-E (C5): forking duplicates A AND selects the fork as B — the advertised purpose.
+function forkIntoB() {
+  if (!abA.value) return;
+  const id = duplicateAdvisor(abA.value);
+  if (id) abB.value = id;
+}
 const abSet = ref("");
 const abRows = computed(() => {
   const a = S.value.advisors.find((x) => x.id === abA.value);
@@ -513,14 +519,21 @@ const abRows = computed(() => {
             aria-label="Evaluate under set"
             @update:model-value="(v) => (abSet = v)"
           />
+          <!-- UXS-E (C5): the fork lands IN the B slot; without an A the button is disabled and
+               says why — never a silent no-op. -->
           <Button
             variant="subtle"
             theme="gray"
             size="sm"
             icon-left="lucide-copy"
             label="Fork B"
-            title="Duplicate package A as an editable B candidate"
-            @click="abA && duplicateAdvisor(abA)"
+            :disabled="!abA"
+            :title="
+              abA
+                ? 'Duplicate package A as an editable B candidate (selected as B)'
+                : 'Pick a package A first — the fork duplicates it'
+            "
+            @click="forkIntoB"
           />
         </div>
       </div>

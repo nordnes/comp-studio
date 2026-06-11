@@ -30,6 +30,7 @@ import {
   exerciseCheck,
   ADVISOR_STAGES,
   advisorStage,
+  fDateDay,
 } from "../engine";
 import { grantPreconditions } from "../governance";
 import NumIn from "../components/NumIn.vue";
@@ -82,6 +83,39 @@ const advisorCase = computed({
 });
 // COM-167: the O13 pre-condition check for the selected package
 const precond = computed(() => grantPreconditions(sel.value, store.gov));
+// COM-174: the signed flip is a BOUND transition — picking 'signed' opens the inline bind row
+// instead of flipping; every other stage flips directly. stageTick force-remounts the Select on
+// deferred/refused picks (the native select would otherwise keep showing the picked option).
+const signFlow = ref(false);
+const signVersionId = ref("");
+const stageTick = ref(0);
+const signOptions = computed(() =>
+  (((sel.value as any)?.propositions || []) as any[]).map((v: any) => ({
+    label: `v${v.version} · ${fDateDay(v.atISO)} · ${fUSD(v.figures.baseCaseTotal)} base`,
+    value: v.id,
+  })),
+);
+function onStagePick(v: string) {
+  if (!sel.value || v === advisorStage(sel.value as any)) return;
+  if (v === "signed") {
+    const versions = ((sel.value as any).propositions || []) as any[];
+    stageTick.value++;
+    if (!versions.length) {
+      setStage((sel.value as any).id, "signed"); // refuses with the fix named
+      return;
+    }
+    signVersionId.value = versions[versions.length - 1].id;
+    signFlow.value = true;
+    return;
+  }
+  signFlow.value = false;
+  setStage((sel.value as any).id, v);
+}
+function bindSigned() {
+  setStage((sel.value as any).id, "signed", undefined, signVersionId.value);
+  signFlow.value = false;
+}
+
 // COM-159: the audit trail line — the last three stage transitions, most recent last.
 const stageTrail = computed(() => {
   const h = Array.isArray(sel.value?.stageHistory) ? sel.value.stageHistory : [];
@@ -113,7 +147,11 @@ function printPage() {
 }
 const ff = computed(() => {
   const t = c.value.scen.map((s: any) => s.total);
-  return { lo: Math.min(...t), base: c.value.baseCaseTotal, hi: Math.max(...t) };
+  return {
+    lo: Math.min(...t),
+    base: c.value.baseCaseTotal,
+    hi: Math.max(...t),
+  };
 });
 function toProp() {
   router.push("/proposition");
@@ -130,7 +168,10 @@ const grantRows = computed(() =>
   })),
 );
 const grantRoundOpts = computed(() =>
-  roundList(S.value.plan).map((r) => ({ label: roundLabel(S.value.plan, r), value: r })),
+  roundList(S.value.plan).map((r) => ({
+    label: roundLabel(S.value.plan, r),
+    value: r,
+  })),
 );
 const lifecycleOpts = GRANT_LIFECYCLES.map((l) => ({ label: l, value: l }));
 const addGrantOpts = [
@@ -233,12 +274,15 @@ const backstop = computed(() => {
         <div>
           <dt class="text-xs text-ink-gray-6">Options / tokens</dt>
           <dd class="tabular-nums text-ink-gray-9">
-            {{ fPct(sel.splitOptions, 0) }} / {{ fPct(1 - sel.splitOptions, 0) }}
+            {{ fPct(sel.splitOptions, 0) }} /
+            {{ fPct(1 - sel.splitOptions, 0) }}
           </dd>
         </div>
         <div>
           <dt class="text-xs text-ink-gray-6">Sector</dt>
-          <dd class="text-ink-gray-9 truncate">{{ sel.sector.split("—")[0].trim() }}</dd>
+          <dd class="text-ink-gray-9 truncate">
+            {{ sel.sector.split("—")[0].trim() }}
+          </dd>
         </div>
         <div>
           <dt class="text-xs text-ink-gray-6">Engagement</dt>
@@ -248,7 +292,9 @@ const backstop = computed(() => {
         </div>
         <div>
           <dt class="text-xs text-ink-gray-6">Granted at</dt>
-          <dd class="text-ink-gray-9">{{ roundLabel(S.plan, sel.grantRound || "bridge") }}</dd>
+          <dd class="text-ink-gray-9">
+            {{ roundLabel(S.plan, sel.grantRound || "bridge") }}
+          </dd>
         </div>
         <div>
           <dt class="text-xs text-ink-gray-6">Tax residency</dt>
@@ -256,7 +302,9 @@ const backstop = computed(() => {
         </div>
         <div>
           <dt class="text-xs text-ink-gray-6">Cash</dt>
-          <dd class="text-ink-gray-9">{{ sel.hasCash ? fUSD(sel.cashAnnual) + "/yr" : "—" }}</dd>
+          <dd class="text-ink-gray-9">
+            {{ sel.hasCash ? fUSD(sel.cashAnnual) + "/yr" : "—" }}
+          </dd>
         </div>
         <div>
           <dt class="text-xs text-ink-gray-6">Performance</dt>
@@ -283,14 +331,33 @@ const backstop = computed(() => {
       <div class="mt-4 pt-3 border-t border-outline-gray-1 flex items-center gap-3 flex-wrap">
         <span class="text-xs text-ink-gray-6">Pipeline</span>
         <Select
+          :key="`stage-${advisorStage(sel)}-${stageTick}`"
           :model-value="advisorStage(sel)"
           :options="ADVISOR_STAGES.map((s) => ({ label: s, value: s }))"
           aria-label="Pipeline stage"
-          @update:model-value="(v) => v !== advisorStage(sel) && setStage(sel.id, v)"
+          @update:model-value="onStagePick"
         />
         <span class="text-p-xs text-ink-gray-6 tabular-nums">
           {{ stageTrail }}
         </span>
+        <!-- COM-174: the bound flip — signing names the governing letter; the binding lands in
+             stageHistory + the audit log. No versions → setStage refuses and names the fix. -->
+        <div v-if="signFlow" class="w-full mt-1 flex items-center gap-2 flex-wrap text-p-xs">
+          <span class="text-ink-gray-6">Which letter version was signed?</span>
+          <Select
+            v-model="signVersionId"
+            :options="signOptions"
+            aria-label="Signed letter version"
+          />
+          <Button size="sm" variant="solid" label="Bind & mark signed" @click="bindSigned" />
+          <Button
+            size="sm"
+            variant="subtle"
+            theme="gray"
+            label="Cancel"
+            @click="signFlow = false"
+          />
+        </div>
         <!-- COM-163: the F18 leaver flow — model the departure before recording it -->
         <Button
           variant="subtle"
@@ -387,7 +454,11 @@ const backstop = computed(() => {
                       :options="grantRoundOpts"
                       :aria-label="`Grant round`"
                       @update:model-value="
-                        (v) => updateGrant(sel.id, g.id, { round: v, strikePps: undefined })
+                        (v) =>
+                          updateGrant(sel.id, g.id, {
+                            round: v,
+                            strikePps: undefined,
+                          })
                       "
                     />
                     <span v-else class="text-ink-gray-7 w-28">{{ r.roundLabel }}</span>
@@ -553,7 +624,9 @@ const backstop = computed(() => {
                     </p>
                   </div>
                 </div>
-                <p class="text-p-xs mt-2 text-ink-gray-6">{{ FUNDING_ROUND_CARVEOUT }}</p>
+                <p class="text-p-xs mt-2 text-ink-gray-6">
+                  {{ FUNDING_ROUND_CARVEOUT }}
+                </p>
               </div>
             </div>
           </div>

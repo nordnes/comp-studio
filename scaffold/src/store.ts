@@ -27,6 +27,8 @@ import {
   makeScenarioSet,
   planWithSet,
   makeProposition,
+  propositionStatus,
+  propositionDrift,
   type Instrument,
 } from "./engine";
 import { reconcileGovernance, type ComplianceItem, type Governance } from "./governance";
@@ -583,9 +585,51 @@ export function useStudio() {
   }
   // COM-159: the offer pipeline — advance an advisor's stage; every transition appends to the
   // history (date + optional note) so the process is auditable end-to-end.
-  function setStage(advisorId: string, stage: string, note?: string) {
+  function setStage(advisorId: string, stage: string, note?: string, versionId?: string) {
     const a: any = store.S.advisors.find((x) => x.id === advisorId);
     if (!a) return;
+    // COM-174: the hard bind — 'signed' REFUSES without a bound letter version (which letter
+    // governs is unrecoverable after the fact). Binding supersedes every other version.
+    if (stage === "signed") {
+      const versions: any[] = Array.isArray(a.propositions) ? a.propositions : [];
+      const v = versions.find((x) => x.id === versionId);
+      if (!v) {
+        flash(
+          versions.length
+            ? "Signing is blocked — pick which letter version was signed"
+            : "Signing is blocked — no letter to bind. Save v1 on the Proposition page first",
+        );
+        return;
+      }
+      const today = todayISO();
+      a.propositions = versions.map((x: any) =>
+        x.id === versionId
+          ? { ...x, status: "signed", signedISO: today }
+          : { ...x, status: "superseded" },
+      );
+      a.stage = stage;
+      a.stageHistory = [
+        ...(Array.isArray(a.stageHistory) ? a.stageHistory : []),
+        { stage, atISO: today, versionId, ...(note ? { note } : {}) },
+      ];
+      appendAudit("stage", a.name, `Pipeline → signed (letter v${v.version} bound)`);
+      persist();
+      flash(`Stage → signed · letter v${v.version} bound`);
+      return;
+    }
+    // COM-174: the activation drift guard — the operator activates knowingly, never blindly.
+    if (stage === "active") {
+      const versions: any[] = Array.isArray(a.propositions) ? a.propositions : [];
+      const signed = [...versions].reverse().find((x: any) => propositionStatus(x) === "signed");
+      if (signed) {
+        const d = propositionDrift(a, store.S.plan, store.S.tiers, store.S.objectives, signed);
+        if (d.drifted)
+          toast.create({
+            message: `Live figures have drifted off the signed letter v${signed.version}: ${d.lines.join(" · ")}`,
+            type: "warning",
+          });
+      }
+    }
     a.stage = stage;
     a.stageHistory = [
       ...(Array.isArray(a.stageHistory) ? a.stageHistory : []),
@@ -699,7 +743,8 @@ export function useStudio() {
       todayISO(),
       note,
     );
-    a.propositions = [...versions, v];
+    // COM-174: a snapshot IS the send (the COM-164 contract) — stamp the letter status
+    a.propositions = [...versions, { ...v, status: "sent", sentISO: v.atISO }];
     if (!a.stage || a.stage === "modeled") {
       a.stage = "proposed";
       a.stageHistory = [

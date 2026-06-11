@@ -1606,6 +1606,9 @@ console.log('\nT25 · Valuation record: one valuation, everywhere consistent (CO
 {
   const dflt = ENG.DEFAULT();
   const g = { id: 'g1', instrument: 'option', round: 'bridge', quantity: 1000, curve: 'cert-v3', vestStartISO: '2026-06-01', lifecycle: 'granted' };
+  // panel 007 (R5.1): the vocabulary export, pinned by name
+  A('VALUATION_BASES is the named vocabulary (SAV · 409A · SAV/409A) the basis enum heals against',
+    ENG.VALUATION_BASES.join(',') === 'SAV,409A,SAV/409A');
   A('ABSENT valuation: strike/FMV stay round-derived — the anchors hold byte-for-byte',
     (() => {
       const r = ENG.computeGrant(g, dflt.plan, 'base');

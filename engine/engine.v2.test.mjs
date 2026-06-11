@@ -1866,5 +1866,29 @@ console.log('\nT30 · applyDeparture — the recorded outcome materialises (UXS-
     })());
 }
 
+// ---- T31: formatter + flag-string pins (panel 009 R5.1/R5.3 — every export gets a vector) ----
+console.log('\nT31 · fPps/fDateDay pins + the #128/#132 engine-string mirrors:');
+{
+  A('fPps: full dollars+cents, thousands-separated; junk fails closed to the em-dash',
+    ENG.fPps(1572.9525022155865) === '$1,572.95' && ENG.fPps(0) === '$0.00'
+      && ENG.fPps(1234567.891) === '$1,234,567.89' && ENG.fPps(NaN) === '—' && ENG.fPps(undefined) === '—');
+  A('fDateDay: en-GB day precision (signature dates are legal dates); junk fails closed',
+    ENG.fDateDay('2026-06-11') === '11 Jun 2026' && ENG.fDateDay('2026-01-02') === '2 Jan 2026'
+      && ENG.fDateDay('junk') === '—' && ENG.fDateDay('') === '—');
+  A('the day-rate flag names the ACTUAL multiple (PR #128 mirror) — never the old fixed "over 2×"',
+    (() => {
+      const dflt = ENG.DEFAULT();
+      const g = ENG.generosityCheck(dflt.advisors, dflt.plan, dflt.tiers, dflt.objectives);
+      const dr = g.rows.flatMap(r => r.flagItems).find(f => f.kind === 'day-rate');
+      return dr && /\d+\.\d× the magic-circle\/Big-4 equivalent/.test(dr.text) && !/over 2×/.test(dr.text);
+    })());
+  A('the CEX pool note names BOTH numbers (PR #132 mirror): the 20% headroom AND the ~10% screening quote',
+    (() => {
+      const cex = ENG.TOKEN_POOLS_DEFAULT.find(p => p.id === 'cex');
+      return cex && cex.poolPct === 0.20 && /Headroom shows 20% of supply/.test(cex.note)
+        && /~10%/.test(cex.note) && /screening figure, not an allocation/.test(cex.note);
+    })());
+}
+
 console.log(`\n${pass} passed, ${fail} failed, ${pending} pending(v2).`);
 process.exit(fail ? 1 : 0);

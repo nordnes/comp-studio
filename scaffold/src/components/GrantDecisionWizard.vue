@@ -6,6 +6,7 @@
 // "the strongest possible answer to 'defend it in a board conversation'."
 import { ref, computed } from "vue";
 import { Button, Dialog, FormControl, Select, TextInput } from "frappe-ui";
+import { DialogDescription } from "reka-ui";
 import { useStudio } from "../store";
 import { ISPAHANI_STEPS, generosityCheck, poolGuardrail, fUSD, fPct } from "../engine";
 const open = defineModel<boolean>({ default: false });
@@ -69,6 +70,9 @@ const dialogOptions = {
   <Dialog v-model="open" :options="dialogOptions">
     <template #body-content>
       <div class="space-y-4">
+        <DialogDescription class="block text-p-sm text-ink-gray-6 -mt-1">
+          Walk the nine steps with live context; recording lands a decision artefact on Governance.
+        </DialogDescription>
         <div class="flex items-end gap-3 flex-wrap">
           <TextInput
             v-model="subject"

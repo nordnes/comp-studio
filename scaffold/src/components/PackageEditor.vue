@@ -13,6 +13,7 @@ import {
   FormLabel,
   TextInput,
 } from "frappe-ui";
+import { DialogDescription } from "reka-ui";
 import { useStudio } from "../store";
 import { useEditor } from "../composables/useEditor";
 import {
@@ -124,6 +125,11 @@ function setObjState(id: string, st: string) {
         v-if="sel"
         class="pkg-body space-y-5 max-h-[calc(100dvh-16rem)] overflow-y-auto overscroll-contain pr-1"
       >
+        <!-- UXS-F1: our own description — options.message is only the slot FALLBACK, and this
+             dialog overrides #body-content. Doubles as aria-describedby + states the F2 contract. -->
+        <DialogDescription class="block text-p-sm text-ink-gray-6 -mt-1">
+          Edits preview live while the dialog is open — Save keeps them; any other close discards.
+        </DialogDescription>
         <!-- Identity -->
         <div class="space-y-4">
           <div class="section-label">Identity</div>

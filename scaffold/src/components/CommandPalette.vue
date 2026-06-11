@@ -13,6 +13,7 @@
 import { ref, computed, markRaw, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import { Dialog, FeatherIcon, CommandPaletteItem } from "frappe-ui";
+import { DialogTitle, DialogDescription } from "reka-ui";
 import { Combobox, ComboboxInput, ComboboxOption, ComboboxOptions } from "@headlessui/vue";
 import { useStudio } from "../store";
 import { useEditor } from "../composables/useEditor";
@@ -186,6 +187,12 @@ function onImportFile(e: Event) {
   <Dialog v-model="show" :options="{ size: 'xl', position: 'top' }" @after-leave="searchQuery = ''">
     <template #body>
       <div>
+        <!-- UXS-F1 (ux-sweep C3): the #body override removes the Dialog's built-in title — the
+             palette gets its own (screen-reader-only; reka stops warning, AT users get a name). -->
+        <DialogTitle class="sr-only">Command palette</DialogTitle>
+        <DialogDescription class="sr-only">
+          Search advisors, actions and pages; arrow keys navigate, Enter opens.
+        </DialogDescription>
         <Combobox nullable @update:model-value="onSelect">
           <div class="relative">
             <div class="absolute inset-y-0 left-0 flex items-center pl-4.5">

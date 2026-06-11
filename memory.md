@@ -2712,3 +2712,21 @@ regression; breadcrumb overflow-hidden). **WAVE 6 BLOCKED (recorded): Supabase p
 → PaymentRequiredException (overdue Raiku-org invoices — human-only) + Linear down (can't read
 the L-sized COM-34/35 specs; security-review mandatory). Deferred with full notes in
 /tmp/claude/linear-debt.md.** Next: COM-5/7 epic verification → WAVE 7 (the perfection loop).
+
+## 2026-06-11 — Linear debt CLEARED + the final-sweep machinery launched [W5 closed · sweep]
+
+**Linear reconnected → all 17 debt items applied:** COM-162/163/161/164/156/165 (M11) +
+COM-166/167/168/169/170 (M12) flipped Done w/ full evidence comments · COM-21 closed (audit
+evidence) · COM-28 closed (residual PR #107) · COM-31 closed (residual PR #108) · COM-61 closed
+(superseded by COM-76/91/95 — evidence in comment) · epics COM-5 + COM-7 closed (all children
+resolved) · status comments on COM-34/35 (blocked: Supabase org invoices, human-only),
+COM-33 (+ the Deployment Protection stopgap suggestion), COM-71. **Robin's new directive:
+comprehensive final sweep — UI/UX double-check ("quite a few items doesn't make sense or doesn't
+work") via dynamic workflows + design skills, competitive research, create Linear issues from
+findings, work them.** Installed via skills.sh: ux-audit (jezweb, interaction-first w/ hard
+gates) + design-review (nexu-io) → .agents/skills/. THREE workflows in flight: panel 008 (full
+rubric, 4 graders) · ux-sweep (5 lenses: 3 interaction audits + coherence + design review →
+adversarial verify) · competitive-research (4 groups: cap-table/equity · comp benchmarking ·
+advisor/board+token tools · modeling UX → synthesis). Next: fix panel-008 FAILs → triage
+ux-sweep CONFIRMED findings into PRs/issues → create research-backed improvement issues → work
+them → panel 009.

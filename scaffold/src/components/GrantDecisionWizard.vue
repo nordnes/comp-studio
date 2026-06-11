@@ -48,7 +48,16 @@ function reset() {
   decidedBy.value = "";
   answers.value = Array(ISPAHANI_STEPS.length).fill("");
 }
+// UXP 2.3/2.4: an empty submit must say so AT THE FIELD — the rejection toast renders
+// bottom-right outside the dialog's visual focus and the dialog otherwise just sits there.
+const subjectError = ref("");
 function record() {
+  if (!subject.value.trim()) {
+    subjectError.value = "Subject is required — what grant is this about?";
+    (document.querySelector('[aria-label="Decision subject"]') as HTMLElement | null)?.focus();
+    return;
+  }
+  subjectError.value = "";
   const ok = recordDecision({
     subject: subject.value,
     advisorId: advisorId.value || undefined,
@@ -74,13 +83,19 @@ const dialogOptions = {
           Walk the nine steps with live context; recording lands a decision artefact on Governance.
         </DialogDescription>
         <div class="flex items-end gap-3 flex-wrap">
-          <TextInput
-            v-model="subject"
-            class="flex-1 min-w-44"
-            size="sm"
-            placeholder="Subject — e.g. Iraj chair package v2"
-            aria-label="Decision subject"
-          />
+          <div class="flex-1 min-w-44">
+            <TextInput
+              v-model="subject"
+              size="sm"
+              placeholder="Subject — e.g. Iraj chair package v2"
+              aria-label="Decision subject"
+              :aria-invalid="subjectError ? 'true' : undefined"
+              @update:model-value="subjectError = ''"
+            />
+            <p v-if="subjectError" class="mt-1 text-p-xs text-ink-red-3" role="alert">
+              {{ subjectError }}
+            </p>
+          </div>
           <div>
             <div class="text-xs text-ink-gray-6 mb-1">About</div>
             <Select

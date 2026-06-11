@@ -39,7 +39,7 @@ import CapitalRollupPanel from "../components/CapitalRollupPanel.vue";
 import GrantDecisionWizard from "../components/GrantDecisionWizard.vue";
 import BandPlacement from "../components/BandPlacement.vue";
 
-const { store, board, select, addAdvisor, delAdvisor, setPath, justifyFlag } = useStudio();
+const { flash, store, board, select, addAdvisor, delAdvisor, setPath, justifyFlag } = useStudio();
 const { openEditor } = useEditor();
 const router = useRouter();
 const S = computed(() => store.S);
@@ -88,7 +88,9 @@ function rowMenu(a: any) {
   ];
 }
 function boardPack() {
-  window.print();
+  // UXP 2.5: the click answered with nothing while the print dialog spun up
+  flash("Preparing the board pack — the print dialog opens with the full pack");
+  setTimeout(() => window.print(), 150);
 }
 
 // COM-85: Board-LOCAL scenario projection — a presentation ref, NOT a store mutation, so the

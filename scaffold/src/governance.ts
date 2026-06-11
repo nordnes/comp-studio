@@ -51,7 +51,9 @@ export function grantPreconditions(
       if (b3 && b3.status !== "green") outstanding.push(`${b3.ref} ${b3.title}`);
     }
     if (advisor.checkStatus !== "clear")
-      outstanding.push("References / security checks not cleared");
+      outstanding.push(
+        "References / background check not cleared (set Background check in Edit package)",
+      );
   }
   return { ok: outstanding.length === 0, outstanding };
 }

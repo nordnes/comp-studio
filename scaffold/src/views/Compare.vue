@@ -168,8 +168,9 @@ const abRows = computed(() => {
   ];
   const fa = fmt(ca),
     fb = fmt(cb);
+  const caseLabel = S.value.plan.scenarios[baseScenKey(S.value.plan)]?.label || "Base";
   const labels = [
-    "Base case (net)",
+    `${caseLabel} case (net)`,
     "Ceiling (net)",
     "Equity % · options",
     "Token %",

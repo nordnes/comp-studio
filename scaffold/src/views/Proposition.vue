@@ -3,8 +3,8 @@
 // verbatim (non-voting shares, RTA, deed of adherence, net exercise, the v9 no-CoC-acceleration
 // position [COM-139/Δ4 — Plan v9 supersedes the reference TSX on that line], s431/409A by
 // residency, HMRC SAV, 9-yr/90-day backstop, investor consents). propText() = plain-text clipboard.
-import { computed } from "vue";
-import { Avatar, Badge, Button, Divider } from "frappe-ui";
+import { computed, ref } from "vue";
+import { Avatar, Badge, Button, Divider, FormControl } from "frappe-ui";
 import { useStudio } from "../store";
 import {
   fUSD,
@@ -28,7 +28,24 @@ import Term from "../components/Term.vue";
 import EmptyState from "../components/EmptyState.vue";
 import PageHeader from "../components/PageHeader.vue";
 
-const { store, selected, flash, addAdvisor, snapshotProposition, removeProposition } = useStudio();
+const {
+  store,
+  selected,
+  flash,
+  addAdvisor,
+  snapshotProposition,
+  removeProposition,
+  annotateProposition,
+} = useStudio();
+
+// COM-176: which version row is being annotated + the draft line
+const noting = ref("");
+const noteDraft = ref("");
+function saveNote(v: any) {
+  annotateProposition(sel.value.id, v.id, noteDraft.value);
+  noting.value = "";
+  noteDraft.value = "";
+}
 const S = computed(() => store.S);
 const sel = computed(() => selected.value?.a);
 const c = computed(() => selected.value?.c);
@@ -217,6 +234,36 @@ const targetLine = computed(
             }}{{ fUSD(c.baseCaseTotal - v.figures.baseCaseTotal) }} vs current
           </span>
           <span v-if="v.note" class="text-p-xs text-ink-gray-6">{{ v.note }}</span>
+          <!-- COM-176: rationale capture — annotate WHY this version moved (metadata only; the
+               figures stay frozen). The note lands on the audit trail as a why-note. -->
+          <button
+            v-if="noting !== v.id"
+            :aria-label="`Annotate version ${v.version}`"
+            class="inline-flex shrink-0 items-center justify-center size-7 rounded hover:bg-surface-gray-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-gray-6)] text-ink-gray-6"
+            :title="v.note ? 'Edit the why-note' : 'Add a why-note (rationale, on the record)'"
+            @click="((noting = v.id), (noteDraft = v.note || ''))"
+          >
+            <span class="lucide-pencil-line size-3.5" aria-hidden="true" />
+          </button>
+          <span v-if="noting === v.id" class="flex items-center gap-2 basis-full pt-1">
+            <FormControl
+              v-model="noteDraft"
+              type="text"
+              size="sm"
+              class="w-96"
+              placeholder="Why did this version move? (one line)"
+              aria-label="Version why-note"
+              @keydown.enter="saveNote(v)"
+            />
+            <Button size="sm" variant="subtle" label="Save note" @click="saveNote(v)" />
+            <Button
+              size="sm"
+              variant="ghost"
+              theme="gray"
+              label="Cancel"
+              @click="((noting = ''), (noteDraft = ''))"
+            />
+          </span>
           <button
             aria-label="Remove proposition version"
             class="ml-auto inline-flex shrink-0 items-center justify-center size-7 rounded hover:bg-surface-gray-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-gray-6)] text-ink-gray-6 hover:text-ink-red-3"

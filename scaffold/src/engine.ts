@@ -1368,29 +1368,40 @@ export function computeBoard(advisors: Advisor[], plan: Plan, tiers: Tier[], obj
 // reserve-depletion (Ispahani step 8) and totality-vs-peers. Pure reads; the UI renders.
 export const ADVISORY_MEDIAN_USD = 50000;   // Carl Sjöström's anchor (E.3)
 export const BENCH_DAY_RATE_USD = 10000;    // magic-circle/Big-4 equivalent day (E.3 reality test)
+// v2 (COM-176): a guardrail flag with a STABLE identity — `kind` keys the explain-or-close
+// justification (Figures.hr pattern); `text` carries the live figures and may drift under it.
+export interface GuardrailFlag { kind: 'band-breach' | 'day-rate' | 'totality'; text: string }
+export const justificationKey = (advisorId: string, kind: string) => `${advisorId}::${kind}`;
+
 export function generosityCheck(advisors: Advisor[], plan: Plan, tiers: Tier[], objectives: Objective[]) {
   const rows = advisors.map(a => {
     const c: any = computeAdvisor(a, plan, tiers, objectives);
     const annual = safeDiv(c.baseCaseTotal, Math.max(a.years || 4, 1e-9));
     const compa = safeDiv(annual, ADVISORY_MEDIAN_USD);
     const status: 'above' | 'inline' | 'below' = compa > 1.2 ? 'above' : compa < 0.8 ? 'below' : 'inline';
-    const flags: string[] = [];
+    // v2 (COM-176): flags carry a stable KIND beside the figure-bearing text — the explain-or-
+    // close justification is keyed on advisorId::kind, so it survives figure drift in the text
+    // but detaches the moment the package changes enough that the flag stops firing.
+    const flagItems: GuardrailFlag[] = [];
     const expert = BENCH.advisorEquity.expert;
-    if (c.eqPct > expert.hi) flags.push(`Band breach: ${fPct(c.eqPct, 2)} base equity exceeds the FAST Expert ceiling (${fPct(expert.hi, 2)}).`);
+    if (c.eqPct > expert.hi) flagItems.push({ kind: 'band-breach', text: `Band breach: ${fPct(c.eqPct, 2)} base equity exceeds the FAST Expert ceiling (${fPct(expert.hi, 2)}).` });
     const days = tiers[a.tier]?.days;
     if (a.mode !== 'value' && days && days > 0) {
       const impliedDayRate = safeDiv(annual, days * 12);
-      if (impliedDayRate > BENCH_DAY_RATE_USD * 2) flags.push(`Day-rate reality: ~${fUSD(impliedDayRate)}/day implied — over 2× the magic-circle/Big-4 equivalent (${fUSD(BENCH_DAY_RATE_USD)}).`);
+      if (impliedDayRate > BENCH_DAY_RATE_USD * 2) flagItems.push({ kind: 'day-rate', text: `Day-rate reality: ~${fUSD(impliedDayRate)}/day implied — over 2× the magic-circle/Big-4 equivalent (${fUSD(BENCH_DAY_RATE_USD)}).` });
     }
-    return { advisorId: a.id, name: a.name, annual, compa, status, flags, baseCaseTotal: c.baseCaseTotal };
+    return { advisorId: a.id, name: a.name, annual, compa, status, flags: flagItems.map(f => f.text), flagItems, baseCaseTotal: c.baseCaseTotal };
   });
   const board: string[] = [];
   // totality vs peers: one person far above the rest of the board
   const totals = rows.map(r => r.baseCaseTotal).sort((x, y) => x - y);
   const median = totals.length ? totals[Math.floor(totals.length / 2)] : 0;
   rows.forEach(r => {
-    if (totals.length >= 3 && median > 0 && r.baseCaseTotal > 2 * median)
-      r.flags.push(`Totality: ${fUSD(r.baseCaseTotal)} is over 2× the board median (${fUSD(median)}) — token + option + cash for one person vs peers.`);
+    if (totals.length >= 3 && median > 0 && r.baseCaseTotal > 2 * median) {
+      const text = `Totality: ${fUSD(r.baseCaseTotal)} is over 2× the board median (${fUSD(median)}) — token + option + cash for one person vs peers.`;
+      r.flags.push(text);
+      r.flagItems.push({ kind: 'totality', text });
+    }
   });
   // pool consumption / reserve depletion (Ispahani step 8: keep reserve for future hires)
   const b = computeBoard(advisors, plan, tiers, objectives);

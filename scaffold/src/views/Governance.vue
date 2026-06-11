@@ -19,10 +19,19 @@ const RIGHT_THEME: Record<string, string> = {
 import PageHeader from "../components/PageHeader.vue";
 import Panel from "../components/Panel.vue";
 
-const { store, setGovItem, removeDecision } = useStudio();
+const { explainConsent, store, setGovItem, removeDecision } = useStudio();
 // COM-165: the decision artefacts, newest first
 const decisions = computed(() => [...(store.S.decisions || [])].reverse());
 // COM-170: the audit tail, newest first (display caps at 50; the slice keeps MAX_AUDIT_EVENTS)
+// UXS-O (UXP 5.1): which item is offering the optional why right now
+const whyFor = ref("");
+const whyDraft = ref("");
+function submitWhy(it: any) {
+  explainConsent(it.ref, it.title, whyDraft.value);
+  whyFor.value = "";
+  whyDraft.value = "";
+}
+
 const auditTail = computed(() => [...store.audit].reverse().slice(0, 50));
 const AUDIT_THEME: Record<string, string> = {
   justification: "gray",
@@ -157,10 +166,35 @@ const evidenceHref = (it: ComplianceItem) =>
                     :aria-pressed="it.status === s.key"
                     class="px-2 py-1 text-xs font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--ink-gray-6)]"
                     :class="it.status === s.key ? s.on : 'text-ink-gray-5 hover:bg-surface-gray-1'"
-                    @click="setGovItem(it.id, { status: s.key })"
+                    @click="
+                      setGovItem(it.id, { status: s.key });
+                      whyFor = it.id;
+                    "
                   >
                     {{ s.label }}
                   </button>
+                </div>
+                <!-- UXS-O (UXP 5.1): the optional why AT the flip — one line, lands on the
+                     audit trail beside the consent event; Esc/blur just drops it -->
+                <div v-if="whyFor === it.id" class="mt-1.5 flex items-center gap-2">
+                  <FormControl
+                    v-model="whyDraft"
+                    type="text"
+                    size="sm"
+                    class="w-72"
+                    placeholder="Why? (optional — lands on the audit trail)"
+                    aria-label="Status rationale"
+                    @keydown.enter="submitWhy(it)"
+                    @keydown.escape="((whyFor = ''), (whyDraft = ''))"
+                  />
+                  <Button size="sm" variant="subtle" label="Record" @click="submitWhy(it)" />
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    theme="gray"
+                    label="Skip"
+                    @click="((whyFor = ''), (whyDraft = ''))"
+                  />
                 </div>
                 <Button
                   variant="ghost"

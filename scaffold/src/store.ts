@@ -226,11 +226,13 @@ function fixSel() {
 // toast binds the id of ITS OWN moment. Restoring an entry rewinds to it and drops every NEWER
 // entry (their snapshots contain the undone action — restoring one later would redo it); older
 // entries stay valid deeper rewind points.
-type UndoEntry = { id: string; snap: State };
+// UXS-O (UXP 5.1): entries also carry the GOV slice — a RAG flip changes grant gating
+// app-wide and must be undoable, but gov lives beside S, outside the old snapshots.
+type UndoEntry = { id: string; snap: State; gov: Governance };
 let undoStack: UndoEntry[] = [];
 const MAX_UNDO = 8;
 function pushUndo() {
-  undoStack.push({ id: uid("un"), snap: clone(store.S) });
+  undoStack.push({ id: uid("un"), snap: clone(store.S), gov: clone(store.gov) });
   if (undoStack.length > MAX_UNDO) undoStack.shift();
 }
 // bindUndo(): capture the snapshot the LAST pushUndo took — call at toast-creation time, never
@@ -246,6 +248,7 @@ function restoreUndo(id?: string) {
     return;
   }
   store.S = undoStack[idx].snap;
+  store.gov = undoStack[idx].gov;
   undoStack = undoStack.slice(0, idx);
   fixSel();
   persist();
@@ -1127,11 +1130,31 @@ export function useStudio() {
     if (!it) return;
     // panel 008 (R3.18): a STATUS flip is an audited consent/governance event (the gating
     // fact); owner/evidence/note edits are tracking metadata and stay off the trail.
+    // UXS-O (UXP 5.1): a STATUS flip changes grant-precondition gating app-wide (Overview
+    // chips, the Proposition watermark) — it announces itself with Undo now.
     if (patch.status && patch.status !== it.status) {
+      pushUndo();
       appendAudit("consent", it.ref, `${it.title}: ${it.status} → ${patch.status}`);
+      Object.assign(it, patch);
+      persist();
+      toast.create({
+        message: `${it.ref} · ${it.status === patch.status ? "" : ""}status → ${patch.status}`,
+        type: "info",
+        action: { label: "Undo", onClick: bindUndo() },
+      });
+      return;
     }
     Object.assign(it, patch);
     persist();
+  }
+  // UXS-O (UXP 5.1): the optional why AT the moment of a consent flip — append-only safe (a
+  // 'justification' event beside the consent event, the COM-176 vocabulary).
+  function explainConsent(ref: string, title: string, why: string) {
+    const trimmed = (why || "").trim();
+    if (!trimmed) return;
+    appendAudit("justification", ref, `${title}: status rationale`, trimmed);
+    persist();
+    flash("Rationale recorded");
   }
 
   // ---- roadmap CSV (SET_ROADMAP merge) ----
@@ -1386,6 +1409,7 @@ export function useStudio() {
     setAdvisorCase,
     setAdvisorTargetExit,
     setGovItem,
+    explainConsent,
     setRoadmap,
     importRoadmap,
     downloadRoadmap,

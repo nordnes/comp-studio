@@ -450,7 +450,9 @@ const openCmdK = () => window.dispatchEvent(new Event("open-command-palette"));
       <div class="flex-1 min-w-0 flex flex-col" :inert="isMobile && navOpen">
         <!-- COM-62: thin app-header — mobile menu toggle + breadcrumbs + teleported page action -->
         <header class="no-print sticky top-0 z-20 bg-surface-white border-b border-outline-gray-1">
-          <div class="flex items-center gap-3 h-12 px-3 sm:px-5">
+          <!-- UXS-O (UXP 8.1): min-h + wrap — at 1024 the teleported action cluster wrapped
+               OVER the budget banner because the row's height was fixed -->
+          <div class="flex items-center gap-3 min-h-12 py-1 flex-wrap px-3 sm:px-5">
             <button
               ref="navToggleRef"
               class="lg:hidden inline-flex items-center justify-center size-8 -ml-1 rounded hover:bg-surface-gray-2 text-ink-gray-7"

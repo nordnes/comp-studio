@@ -15,6 +15,8 @@ import {
   tgeFdvFor,
   BENCH,
   advisorStage,
+  benchStaleness,
+  fDate,
 } from "../engine";
 import { grantPreconditions } from "../governance";
 // COM-159: the pipeline chip — stage → Badge theme (status semantics carried by TEXT + theme;
@@ -41,6 +43,8 @@ import Panel from "../components/Panel.vue";
 const { store, board, select, delAdvisor, setPath } = useStudio();
 // COM-167: blocking semantics — the O13 pre-condition check per package
 const precond = (a: any) => grantPreconditions(a, store.gov);
+// COM-182: FAST-band freshness on the benchmark panel
+const fastStaleness = computed(() => benchStaleness("advisorEquity"));
 const { openEditor } = useEditor();
 const router = useRouter();
 const S = computed(() => store.S);
@@ -272,7 +276,12 @@ const hasBudget = computed(() => flags.value.some((f) => f.t === "budget"));
             <Term k="fast">FAST</Term> per-head 0.30–1.00% ·
             <Term k="advisoryPool">advisory pool</Term> ~{{ fPct(BENCH.advisorPool, 0) }}.
           </p>
-          <p class="text-p-xs text-ink-gray-6">Source: {{ BENCH.advisorSrc }}.</p>
+          <p class="text-p-xs text-ink-gray-6">
+            Source: {{ BENCH.advisorSrc }} · as of {{ fDate(BENCH.asOf.advisorEquity)
+            }}<template v-if="fastStaleness.stale">
+              · {{ fastStaleness.ageMonths }}mo old — re-verify</template
+            >.
+          </p>
         </Panel>
         <Alert :theme="hasBudget ? 'red' : 'yellow'" title="To confirm / alerts">
           <template #description>

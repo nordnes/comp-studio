@@ -252,8 +252,27 @@ export const BENCH = {
   } as Record<string, { lo: number; hi: number; label: string }>,
   advisorPool: 0.05,
   advisorSrc: 'Founder Institute FAST matrix; ~5% advisory-pool norm (2025)',
+  // v2 (COM-182): per-anchor AS-OF dates — provenance gets date semantics so staleness is
+  // computable at point of use (Ravio benchmark-freshness). The dates are when each source's
+  // data was current, not when it was typed in.
+  asOf: {
+    postMoney: '2025-06-01',
+    fdvCaution: '2025-12-01',
+    advisorEquity: '2025-06-01',
+    advisorMedian: '2026-05-27', // Carl's $50K data point (the 27 May session)
+    dayRate: '2026-05-27',
+  } as Record<string, string>,
 };
 export const benchLevelForTier = (ti: number) => (ti >= 2 ? 'expert' : ti === 1 ? 'strategic' : 'standard');
+
+// v2 (COM-182): the staleness verdict — a benchmark older than `months` (default 12) needs
+// re-verification before it carries a negotiation. Pure date arithmetic; the UI renders chips.
+export function benchStaleness(anchor: string, todayIso = todayISO(), months = 12) {
+  const asOf = BENCH.asOf[anchor];
+  if (!asOf) return { asOf: null, stale: false, ageMonths: null };
+  const age = fullMonthsBetween(asOf, todayIso);
+  return { asOf, stale: age >= months, ageMonths: age };
+}
 
 export const SCHEMA = 6;
 

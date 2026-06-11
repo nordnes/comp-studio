@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Board pack · Comp Studio prototype</title>
+<script src="https://cdn.tailwindcss.com?v=3.4"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,350;9..144,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<style>body{font-family:Inter,system-ui,sans-serif}</style>
+<script>window.PAGE_ACTIONS=[["Print pack",true,"window.print()"]];</script>
+</head>
+<body>
+<div id="page" data-patterns="extends the verified print path (6.1): chrome stripped via .no-print, confidential running footer, board-ready composition · 2.5-dup: Board pack is now a real page with a busy-free print action, not a silent button.">
+  <div class="mx-auto w-full px-5 py-8 print-area" style="max-width:60rem">
+    <div class="flex justify-between items-baseline mb-8">
+      <div>
+        <div class="eyebrow">Confidential · Discussion draft · prepared 11 Jun 2026</div>
+        <h1 class="font-display text-3xl">Advisory board pack.</h1>
+      </div>
+      <div class="text-right text-sm" style="color:var(--ink-gray-6)">Raiku Labs<br/>Case: <span data-case-label>Base</span> · Stage: Bridge close</div>
+    </div>
+
+    <div class="section-label mb-2">1 · The cost conclusion</div>
+    <div class="frame p-5 mb-8" style="background:var(--surface-amber-1);border-color:#ecd9b8">
+      <div class="flex flex-wrap gap-x-12 gap-y-3">
+        <div><div class="eyebrow" style="color:var(--ink-amber-strong)">Net to the board · <span data-case-label>Base</span></div>
+          <div class="font-display text-4xl tnum" data-money='{"con":"$6.87M","base":"$28.1M","agg":"$78.6M"}'>$28.1M</div></div>
+        <div class="text-sm tnum self-end" style="color:var(--ink-gray-7)">Equity 5.50% base (pre-uplift) · Tokens 3.30% earned / 4.83% at ceiling · Annual cash $0</div>
+      </div>
+    </div>
+
+    <div class="section-label mb-2">2 · Roster</div>
+    <table class="data mb-8">
+      <thead><tr><th>Advisor</th><th>Tier</th><th>Stage</th><th class="num">Base eq</th><th class="num">Net · <span data-case-label>Base</span></th><th class="num">Compa</th></tr></thead>
+      <tbody>
+        <tr><td>Iraj Ispahani</td><td>Anchor</td><td>iterating</td><td class="num">1.50%</td><td class="num" data-money='{"con":"$1.87M","base":"$7.67M","agg":"$21.4M"}'>$7.67M</td><td class="num">1.12</td></tr>
+        <tr><td>Robert Reoch</td><td>Strategic</td><td>proposed</td><td class="num">1.00%</td><td class="num" data-money='{"con":"$1.25M","base":"$5.11M","agg":"$14.3M"}'>$5.11M</td><td class="num">1.09</td></tr>
+        <tr><td>Martin Keller</td><td>Strategic</td><td>proposed</td><td class="num">1.00%</td><td class="num" data-money='{"con":"$1.25M","base":"$5.11M","agg":"$14.3M"}'>$5.11M</td><td class="num">1.09</td></tr>
+        <tr><td>Kerim Derhalli</td><td>Strategic</td><td>proposed</td><td class="num">1.00%</td><td class="num" data-money='{"con":"$1.25M","base":"$5.11M","agg":"$14.3M"}'>$5.11M</td><td class="num">1.09</td></tr>
+        <tr><td>Carl Bang</td><td>Base</td><td>modeled</td><td class="num">0.50%</td><td class="num" data-money='{"con":"$624K","base":"$2.56M","agg":"$7.14M"}'>$2.56M</td><td class="num">1.04</td></tr>
+        <tr><td>Rajesh Mehta</td><td>Base</td><td>modeled</td><td class="num">0.50%</td><td class="num" data-money='{"con":"$624K","base":"$2.56M","agg":"$7.14M"}'>$2.56M</td><td class="num">1.04</td></tr>
+      </tbody>
+    </table>
+
+    <div class="section-label mb-2">3 · Open guardrails &amp; governance</div>
+    <div class="frame p-4 mb-8 text-sm space-y-2">
+      <p><strong style="color:var(--ink-amber-strong)">Band breach:</strong> Iraj 1.50% &gt; FAST Expert 1.00% — delta 0.50pp ≈ $2.56M at base. Justification recorded on the audit trail.</p>
+      <p><strong style="color:var(--ink-red-3)">Token bucket:</strong> 4.83% at ceiling vs 4.50% ring-fenced — needs A-2 pool decision or ceiling trim (0.33pp).</p>
+      <p><strong>Register:</strong> 9 red · 5 amber · 0 green of 14 — propositions print watermarked until green.</p>
+    </div>
+
+    <div class="section-label mb-2">4 · Decisions requested</div>
+    <ol class="list-decimal pl-5 text-sm space-y-1 mb-10" style="color:var(--ink-gray-8)">
+      <li>A-2: fix the pool at 10% (≈5,368 shares) or 15% (≈8,523) of the 12,450 available.</li>
+      <li>Token-bucket policy at ceiling: scale the ring-fence or trim package ceilings.</li>
+      <li>Confirm the review cadence (semi-annual proposed) for the trajectory system.</li>
+    </ol>
+
+    <p class="eyebrow">Net of strike, pre-tax, scenario-diluted. A discussion draft, not a binding offer or legal/financial advice.</p>
+  </div>
+  <div class="print-footer"><span>Raiku Labs — Confidential · Discussion draft, not a binding offer</span><span>Board pack · 11 Jun 2026</span></div>
+</div>
+<script src="assets/proto.js"></script>
+</body>
+</html>

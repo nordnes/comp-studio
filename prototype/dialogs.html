@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dialog system · Comp Studio prototype</title>
+<script src="https://cdn.tailwindcss.com?v=3.4"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,350;9..144,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<style>body{font-family:Inter,system-ui,sans-serif}</style>
+<script>window.PAGE_ACTIONS=[];</script>
+</head>
+<body>
+<div id="page" data-patterns="WS-B AppDialog grammar: max-h 85vh · sticky header w/ always-visible close · scrollable body · sticky footer · bg-black/40 dim · Escape + backdrop close · state-driven teardown (WS-A: no transition-gated visibility) · 2.4 inline FormControl validation, primary action never silently fails · 2.6 wizard grouped into fieldsets, no dangling 'Live:' · 9d show-the-formula popover.">
+  <div class="mx-auto w-full px-5 py-8" style="max-width:60rem">
+    <h1 class="font-display text-3xl mb-1">One dialog grammar, everywhere.</h1>
+    <p class="text-sm mb-8" style="color:var(--ink-gray-6)">The shared AppDialog fixes the entire 1.2/2.3/2.5 class: tall content scrolls inside; the title and Close never leave the screen; the backdrop actually dims; teardown is state-driven so an interrupted animation can never wedge the page (the WS-A P0).</p>
+
+    <div class="flex flex-wrap gap-3 mb-10">
+      <button class="btn btn-solid" onclick="openDialog('tall-dlg')">Open the tall dialog (9-step wizard)</button>
+      <button class="btn" onclick="openDialog('confirm-dlg')">Open a danger confirm</button>
+      <span class="text-sm self-center formula-link tnum" tabindex="0" data-formula="board median $5.11M/yr
+Iraj $1.92M/yr ÷ $50K US advisory median = 38.3× (▲ above 1.2 grammar)">Try the formula popover on this figure: 38.3×</span>
+    </div>
+
+    <div class="section-label mb-2">The rules</div>
+    <table class="data" style="max-width:680px">
+      <tbody>
+        <tr><td>Panel</td><td>max-h 85vh · max-w by size token · internal scroll on the body only</td></tr>
+        <tr><td>Header / footer</td><td>sticky; Close always visible; primary action right-aligned in the footer</td></tr>
+        <tr><td>Backdrop</td><td>the ONE scrim (ink-gray-9 at 45%) — same as the mobile drawer</td></tr>
+        <tr><td>Validation</td><td>inline error at the field + focus moves there; the primary button never no-ops</td></tr>
+        <tr><td>Teardown</td><td>visibility bound to state, not transitionend; watchdog clears body pointer-events at zero open overlays</td></tr>
+        <tr><td>Z-scale</td><td>dropdown &lt; sticky &lt; scrim &lt; dialog &lt; toast &lt; tooltip — no 999s</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- tall wizard dialog -->
+  <div class="dlg-backdrop" id="tall-dlg" role="dialog" aria-modal="true" aria-label="New grant decision">
+    <div class="dlg">
+      <div class="dlg-head"><span class="font-medium">New grant decision · the Ispahani 9 steps</span><button class="btn" onclick="closeDialog('tall-dlg')" aria-label="Close">&#10005;</button></div>
+      <div class="dlg-body space-y-6 text-sm">
+        <div>
+          <label class="eyebrow block mb-1" for="subj">Decision subject *</label>
+          <input id="subj" class="w-full border rounded px-3 py-2" style="border-color:var(--outline-gray-2)" placeholder="e.g. Iraj chair package v2">
+          <p id="subj-err" class="hidden text-xs mt-1" style="color:var(--ink-red-3)" role="alert">Subject is required — the decision needs a name on the audit trail.</p>
+        </div>
+        <fieldset>
+          <legend class="section-label mb-2">Frame it (steps 1–3)</legend>
+          <div class="space-y-3">
+            <textarea class="w-full border rounded px-3 py-2" rows="2" style="border-color:var(--outline-gray-2)" placeholder="1. What performance/returns make each level of dilution acceptable"></textarea>
+            <textarea class="w-full border rounded px-3 py-2" rows="2" style="border-color:var(--outline-gray-2)" placeholder="2. Total dilution + cost acceptable per year, with approvals"></textarea>
+            <textarea class="w-full border rounded px-3 py-2" rows="2" style="border-color:var(--outline-gray-2)" placeholder="3. Eligibility criteria"></textarea>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend class="section-label mb-2">Size it (steps 4–7) <span class="eyebrow">· live: board median $5.11M; Iraj $1.92M/yr</span></legend>
+          <div class="space-y-3">
+            <textarea class="w-full border rounded px-3 py-2" rows="2" style="border-color:var(--outline-gray-2)" placeholder="4. The franchise situation — how critical, how replaceable"></textarea>
+            <textarea class="w-full border rounded px-3 py-2" rows="2" style="border-color:var(--outline-gray-2)" placeholder="5. Total compensation picture per participant"></textarea>
+            <textarea class="w-full border rounded px-3 py-2" rows="2" style="border-color:var(--outline-gray-2)" placeholder="6. Compare each total to market"></textarea>
+            <textarea class="w-full border rounded px-3 py-2" rows="2" style="border-color:var(--outline-gray-2)" placeholder="7. Compare to internal comparators"></textarea>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend class="section-label mb-2">Sustain it (steps 8–9)</legend>
+          <div class="space-y-3">
+            <textarea class="w-full border rounded px-3 py-2" rows="2" style="border-color:var(--outline-gray-2)" placeholder="8. Allocate the year's share, keep reserve for future hires"></textarea>
+            <textarea class="w-full border rounded px-3 py-2" rows="2" style="border-color:var(--outline-gray-2)" placeholder="9. Iterate for sustainability"></textarea>
+          </div>
+        </fieldset>
+        <p class="eyebrow">The verbatim Ispahani sequence (B.3). Recording leaves an artefact per decision.</p>
+      </div>
+      <div class="dlg-foot">
+        <button class="btn" onclick="closeDialog('tall-dlg')">Cancel</button>
+        <button class="btn btn-solid" onclick="
+          const s=document.getElementById('subj');
+          if(!s.value.trim()){document.getElementById('subj-err').classList.remove('hidden');s.focus();this.closest('.dlg-body, .dlg').querySelector('.dlg-body')?.scrollTo({top:0,behavior:'smooth'});}
+          else{closeDialog('tall-dlg');toast('Decision &quot;'+s.value+'&quot; recorded on the audit trail','Undo');}
+        ">Record decision</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- danger confirm -->
+  <div class="dlg-backdrop" id="confirm-dlg" role="dialog" aria-modal="true" aria-label="Delete scenario">
+    <div class="dlg" style="max-width:440px">
+      <div class="dlg-head"><span class="font-medium">Delete scenario "Conservative"?</span><button class="btn" onclick="closeDialog('confirm-dlg')" aria-label="Close">&#10005;</button></div>
+      <div class="dlg-body text-sm"><p>This removes the scenario from the set. Saved propositions that reference it keep their sealed renders. You can undo for 6 seconds.</p></div>
+      <div class="dlg-foot">
+        <button class="btn" onclick="closeDialog('confirm-dlg')">Cancel</button>
+        <button class="btn" style="background:var(--ink-red-3);border-color:var(--ink-red-3);color:#fff" onclick="closeDialog('confirm-dlg');toast('Scenario &quot;Conservative&quot; deleted','Undo')">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="assets/proto.js"></script>
+</body>
+</html>

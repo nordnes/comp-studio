@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Proposition / Iraj Ispahani · Comp Studio prototype</title>
+<script src="https://cdn.tailwindcss.com?v=3.4"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,350;9..144,500;9..144,350italic&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<style>
+body{font-family:Inter,system-ui,sans-serif}
+.wm { position:absolute; inset:0; overflow:hidden; pointer-events:none; }
+.wm span { position:absolute; font-size:42px; letter-spacing:.2em; font-weight:600; color:rgba(180,35,24,.07); transform:rotate(-28deg); white-space:nowrap; }
+</style>
+<script>window.PAGE_ACTIONS=[["Print",false],["Copy",false],["Save as sent version",true]];</script>
+</head>
+<body>
+<div id="page" data-patterns="6.5/9c version chip row + sealed-render model (PandaDoc/Ledgy: one immutable artifact per issued version; edits demote to draft) · 6.2 'Save as sent version' in user language · 6.3 watermark masked behind the hero (no glyph collision) · Complete: education inline next to each figure + view-as-advisor toggle · exit exploration lives INSIDE the letter flow.">
+  <div class="mx-auto w-full px-5 py-8" style="max-width:60rem">
+    <div class="flex flex-wrap items-center gap-3 mb-6 no-print">
+      <h1 class="font-display text-3xl mr-auto">The proposition.</h1>
+      <label class="flex items-center gap-2 text-sm" style="color:var(--ink-gray-7)">
+        <input type="checkbox" id="as-advisor"> View as advisor
+      </label>
+    </div>
+
+    <!-- version chips (sealed-render model) -->
+    <div class="flex flex-wrap items-center gap-2 mb-6 text-sm no-print internal-only">
+      <span class="eyebrow">Versions</span>
+      <a class="preset-chip" href="proposition-v1.html" title="Sealed render — immutable">v1 · sealed 11 Jun 🔒</a>
+      <span class="preset-chip on" title="Live draft — regenerates with the model">draft · live</span>
+      <span class="eyebrow">Editing after sealing always lands on the draft — sealed renders never change. Binding "signed" requires a sealed version.</span>
+    </div>
+
+    <div class="frame p-4 mb-6 no-print internal-only" style="background:var(--surface-amber-1);border-color:#ecd9b8">
+      <p class="text-sm" style="color:var(--ink-amber-strong)"><strong>Watermarked</strong> — pre-conditions outstanding: A-1 Bell Rock · A-2 Pool count · C.6·10 HMRC SAV · references. The watermark lifts when the Governance register is green and checks clear.</p>
+    </div>
+
+    <div class="frame relative overflow-hidden print-area">
+      <div class="wm" aria-hidden="true">
+        <span style="top:120px;left:-60px">PRE-CONDITIONS OUTSTANDING · DISCUSSION DRAFT</span>
+        <span style="top:380px;left:-20px">PRE-CONDITIONS OUTSTANDING · DISCUSSION DRAFT</span>
+        <span style="top:640px;left:-80px">PRE-CONDITIONS OUTSTANDING · DISCUSSION DRAFT</span>
+      </div>
+      <div class="p-8 relative">
+        <div class="flex justify-between text-sm mb-10">
+          <div><div class="eyebrow">Confidential · Discussion draft</div><div class="font-display text-lg">Raiku Labs</div><div class="eyebrow">Advisory Engagement Proposition</div></div>
+          <div class="text-right"><div class="eyebrow">Prepared for</div><div class="font-medium">Iraj Ispahani</div><div class="eyebrow">Asset Management — Hedge Funds &amp; Family Offices</div></div>
+        </div>
+
+        <!-- hero on a solid plate so the watermark never collides with the display type (6.3) -->
+        <div class="relative mb-10" style="background:var(--surface-white)">
+          <div class="eyebrow mb-2" style="color:var(--ink-amber-strong)">An invitation to the founding advisory board</div>
+          <div class="font-display text-5xl leading-tight">A 4-year engagement,<br><em style="color:var(--ink-amber-3)">a base that grows</em><br>with what you build.</div>
+        </div>
+
+        <div class="grid sm:grid-cols-[1fr,220px] gap-6 mb-8 items-start">
+          <div>
+            <div class="eyebrow mb-1">The package across outcomes · net of strike &amp; dilution · not a forecast</div>
+            <div class="font-display text-4xl tnum mb-3">$7.67M</div>
+            <table class="data">
+              <tbody>
+                <tr><td>Conservative · $300.0M exit · 32% kept</td><td class="num">$1.87M</td></tr>
+                <tr style="background:var(--surface-amber-1)"><td><strong>Base · $500.0M exit · 48% kept</strong></td><td class="num font-medium">$7.67M</td></tr>
+                <tr><td>Aggressive · $750.0M exit · 58% kept</td><td class="num">$21.4M</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <aside class="text-xs p-3 rounded" style="background:var(--surface-gray-1);color:var(--ink-gray-7)">
+            <strong>What "% kept" means.</strong> Future funding rounds dilute everyone; "kept" is the share of today's percentage you retain on that path. It is applied to every figure on this page — education inline, where the number is.
+          </aside>
+        </div>
+
+        <div class="mb-8">
+          <div class="eyebrow mb-2">Explore the outcome (you can drag this)</div>
+          <input type="range" id="exit" class="exit" min="100" max="1000" step="10" value="500" aria-label="Exit valuation in millions">
+          <div class="flex justify-between text-xs mt-1 tnum" style="color:var(--ink-gray-5)"><span>$100M</span><span id="exit-out" class="font-medium" style="color:var(--ink-gray-9)">$7.67M net at $500M</span><span>$1.0B</span></div>
+        </div>
+
+        <p class="text-xs leading-relaxed legal-fineprint" style="color:var(--ink-gray-6)">Ackermann Systems Engineering Ltd (t/a Raiku), Cayman Islands. Options over ordinary non-voting shares (ESOP), strike at the Bridge price; net exercise permitted. Tokens via Restricted Token Award. Equity vests 4yr/12mo annually with a 1-year cliff. No automatic or discretionary change-of-control acceleration under the plan (Plan rules v9); on a change of control the acquirer may roll over awards, and vested options remain exercisable per the plan rules. As a UK grantee, a s431 election is required within 14 days of exercise. Strike subject to an agreed HMRC SAV / 409A valuation before first grant. Subject to required investor consents. Not a binding offer or legal/financial advice.</p>
+      </div>
+    </div>
+  </div>
+</div>
+  <div class="print-footer"><span>Raiku Labs — Confidential · Discussion draft, not a binding offer</span><span>Prepared for Iraj Ispahani · 11 Jun 2026</span></div>
+<script src="assets/proto.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  wireSlider('exit','exit-out',v=>{const n=v==500?7.67:Math.max(0,(v-186.7))*0.00723+5.4;return '$'+n.toFixed(2).replace(/\.00$/,'.0')+'M net at $'+v+'M'});
+  document.getElementById('as-advisor').addEventListener('change',e=>{
+    document.querySelectorAll('.internal-only').forEach(el=>el.style.display=e.target.checked?'none':'');
+    toast(e.target.checked?'Viewing as Iraj — internal panels hidden':'Internal view restored');
+  });
+});
+</script>
+</body>
+</html>

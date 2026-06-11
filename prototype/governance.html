@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Governance · Comp Studio prototype</title>
+<script src="https://cdn.tailwindcss.com?v=3.4"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,350;9..144,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<style>body{font-family:Inter,system-ui,sans-serif}</style>
+<script>window.PAGE_ACTIONS=[["Export register",false]];</script>
+</head>
+<body>
+<div id="page" data-patterns="5.2 RAG triples are radiogroups (arrow-key cyclable) · 5.1 status flips toast w/ Undo + inline why-note at the moment of change (COM-176 surfaced) · 5.4 audit log promoted w/ kind filters + artifact links (Ledgy doc-binding) · 5.3 scroll-margin under sticky header.">
+  <div class="mx-auto w-full px-5 py-8" style="max-width:60rem">
+    <h1 class="font-display text-3xl mb-1">Governance &amp; consents.</h1>
+    <p class="text-sm mb-5" style="color:var(--ink-gray-6)">The Governance Table v4 as a live checklist. Tracking state for an internal discussion, not legal advice.</p>
+
+    <div class="flex items-center gap-4 text-sm mb-7">
+      <span class="tnum"><span class="inline-block w-2 h-2 rounded-full align-middle mr-1" style="background:var(--ink-red-3)"></span>9 red</span>
+      <span class="tnum"><span class="inline-block w-2 h-2 rounded-full align-middle mr-1" style="background:var(--ink-amber-3)"></span>5 amber</span>
+      <span class="tnum"><span class="inline-block w-2 h-2 rounded-full align-middle mr-1" style="background:var(--ink-green-3)"></span>0 green</span>
+      <span class="eyebrow">of 14 items · grants stay watermarked until green</span>
+    </div>
+
+    <div class="section-label mb-3">A · Pool &amp; resolution</div>
+    <div class="space-y-4 mb-10" id="register">
+      <div class="frame p-4" data-item="A-1" style="scroll-margin-top:64px">
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="flex-1 min-w-[260px]">
+            <div class="font-medium text-sm">A-1 · Bell Rock Memorandum confirmation</div>
+            <div class="text-sm" style="color:var(--ink-gray-6)">VERIFY — confirmation from Charlie / Bell Rock before the resolution is signed. <span class="eyebrow">Owner · Charlie / Bell Rock</span></div>
+          </div>
+          <div class="rag" aria-label="Status: A-1">
+            <button class="r" aria-checked="false">Red</button>
+            <button class="a" aria-checked="true">Amber</button>
+            <button class="g" aria-checked="false">Green</button>
+          </div>
+        </div>
+      </div>
+      <div class="frame p-4" data-item="A-2" style="scroll-margin-top:64px">
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="flex-1 min-w-[260px]">
+            <div class="font-medium text-sm">A-2 · Pool count / % decision (the Resolution 4/5 blanks)</div>
+            <div class="text-sm" style="color:var(--ink-gray-6)">OPEN — Board decision: 10% ≈ 5,368 shares / 15% ≈ 8,523 within the 12,450 available. <span class="eyebrow">Owner · Board</span></div>
+          </div>
+          <div class="rag" aria-label="Status: A-2">
+            <button class="r" aria-checked="true">Red</button>
+            <button class="a" aria-checked="false">Amber</button>
+            <button class="g" aria-checked="false">Green</button>
+          </div>
+        </div>
+      </div>
+      <div class="frame p-4" data-item="B-3" style="scroll-margin-top:64px">
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="flex-1 min-w-[260px]">
+            <div class="font-medium text-sm">B-3 · Pantera consent — per executive-officer grant</div>
+            <div class="text-sm" style="color:var(--ink-gray-6)">REQUIRED — Robin's grant: standalone, immediate, before the term sheet; not bundled with the bridge.</div>
+          </div>
+          <div class="rag" aria-label="Status: B-3">
+            <button class="r" aria-checked="true">Red</button>
+            <button class="a" aria-checked="false">Amber</button>
+            <button class="g" aria-checked="false">Green</button>
+          </div>
+        </div>
+      </div>
+      <p class="eyebrow">… 11 more register items (C-4 → C.6·12) follow the same row grammar.</p>
+    </div>
+
+    <div class="section-label mb-3">Audit log · append-only <span class="eyebrow">(promoted: filters + artifact links)</span></div>
+    <div class="frame p-4">
+      <div class="flex flex-wrap gap-1.5 mb-4" role="group" aria-label="Filter by kind">
+        <button class="preset-chip on" onclick="logFilter(this,'all')">All · 6</button><button class="preset-chip" onclick="logFilter(this,'some')">consent · 2</button><button class="preset-chip" onclick="logFilter(this,'some')">grant · 1</button><button class="preset-chip" onclick="logFilter(this,'some')">proposition · 2</button><button class="preset-chip" onclick="logFilter(this,'some')">decision · 1</button><button class="preset-chip" onclick="logFilter(this,'empty')">review · 0</button>
+      </div>
+      <div id="log-empty" class="hidden py-8 text-center text-sm" style="color:var(--ink-gray-6)">
+        No review events yet — the cadence projects the first checkpoint for Dec 2026.<br/>
+        <span class="eyebrow">Reviews record engagement, objectives earned and the board view; outcomes append here automatically.</span>
+      </div>
+      <div class="divide-y text-sm" style="border-color:var(--outline-gray-1)">
+        <div class="py-2.5 flex flex-wrap gap-x-3"><span class="eyebrow tnum w-32">Jun 11, 12:55</span><span class="text-xs px-1.5 rounded" style="background:var(--surface-gray-2)">consent</span><span>A-1 Bell Rock: amber → green</span><span class="eyebrow">why: "Charlie confirmed by email"</span><a href="#" class="underline text-xs ml-auto">artifact ↗</a></div>
+        <div class="py-2.5 flex flex-wrap gap-x-3"><span class="eyebrow tnum w-32">Jun 11, 12:41</span><span class="text-xs px-1.5 rounded" style="background:var(--surface-gray-2)">proposition</span><span>Iraj letter v1 sealed</span><a href="proposition.html" class="underline text-xs ml-auto">sealed render ↗</a></div>
+        <div class="py-2.5 flex flex-wrap gap-x-3"><span class="eyebrow tnum w-32">Jun 11, 11:18</span><span class="text-xs px-1.5 rounded" style="background:var(--surface-gray-2)">decision</span><span>Grant decision "Iraj chair package v2" recorded (9 steps)</span><a href="#" class="underline text-xs ml-auto">artifact ↗</a></div>
+      </div>
+      <p class="eyebrow mt-3">No edit or delete by design. Newest 1000 events kept locally; server-side integrity arrives with M6. Every event links the artifact that justifies it (Ledgy pattern).</p>
+    </div>
+  </div>
+</div>
+<script src="assets/proto.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>wireRag(document.getElementById('register')));
+function logFilter(btn, mode){
+  document.querySelectorAll('[aria-label="Filter by kind"] .preset-chip').forEach(c=>c.classList.remove('on'));
+  btn.classList.add('on');
+  const rows=document.querySelector('#log-empty').nextElementSibling;
+  document.getElementById('log-empty').classList.toggle('hidden', mode!=='empty');
+  rows.style.display = mode==='empty' ? 'none' : '';
+}
+</script>
+</body>
+</html>

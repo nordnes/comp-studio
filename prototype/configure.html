@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Configure · Comp Studio prototype</title>
+<script src="https://cdn.tailwindcss.com?v=3.4"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,350;9..144,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<style>
+body{font-family:Inter,system-ui,sans-serif}
+.numin { border-bottom: 1px dashed var(--outline-gray-2); cursor: text; }
+.numin:hover { background: var(--surface-gray-1); }
+</style>
+<script>window.PAGE_ACTIONS=[["Import CSV",false],["Download",false]];</script>
+</head>
+<body>
+<div id="page" data-patterns="4.1 denominated money entry — edit '90.0' with a fixed M unit, accepts '95M' shorthand, live preview · 4.2 every baseline commit toasts with Undo (UXS-D timeline extended) · 4.3 dotted-underline edit affordance · 9a Carta-TC 3-axis provenance chips + versioned accept-with-preview refresh · Capboard draft→Apply lifecycle on scenario sets.">
+  <div class="mx-auto w-full px-5 py-8" style="max-width:60rem">
+    <h1 class="font-display text-3xl mb-1">The plan everything is measured against.</h1>
+    <p class="text-sm mb-8" style="color:var(--ink-gray-6)">Dashed underline = editable in place. Every commit announces itself and can be undone.</p>
+
+    <div class="grid lg:grid-cols-[170px,1fr] gap-8">
+      <nav class="text-sm space-y-1 lg:sticky lg:top-20 self-start" aria-label="Configure sections">
+        <a href="#" class="block rounded px-2 py-1.5 font-medium" style="background:var(--surface-gray-3)">Cap table</a>
+        <a href="#" class="block rounded px-2 py-1.5" style="color:var(--ink-gray-7)">Grants &amp; pools</a>
+        <a href="#" class="block rounded px-2 py-1.5" style="color:var(--ink-gray-7)">Performance</a>
+        <a href="#" class="block rounded px-2 py-1.5" style="color:var(--ink-gray-7)">Benchmarks</a>
+      </nav>
+
+      <div class="space-y-10">
+        <section>
+          <div class="section-label mb-3">Bridge (fixed grant event) · cap table 48,317 FD pre-ESOP</div>
+          <div class="frame p-5 grid sm:grid-cols-3 gap-6">
+            <div>
+              <div class="eyebrow mb-1">Bridge post-money</div>
+              <div class="flex items-baseline gap-1">
+                <span class="numin tnum text-xl" contenteditable="true" id="bridge" role="textbox" aria-label="Bridge post-money, in millions of dollars: 90.0">$<span id="bridge-val">90.0</span></span>
+                <span class="text-sm font-medium" style="color:var(--ink-gray-5)">M</span>
+              </div>
+              <div class="text-xs mt-1" style="color:var(--ink-gray-5)">accepts "95M" / "95" — never raw zeros</div>
+            </div>
+            <div><div class="eyebrow mb-1">Bridge raise</div><div class="text-xl tnum">$5.0<span class="text-sm" style="color:var(--ink-gray-5)"> M</span></div></div>
+            <div><div class="eyebrow mb-1">ESOP at adoption</div><div class="text-xl tnum">10%</div></div>
+          </div>
+          <button class="btn mt-3" onclick="toast('Bridge post-money → $95.0M · every figure re-anchored','Undo')">Simulate a commit (toast + undo)</button>
+        </section>
+
+        <section>
+          <div class="section-label mb-3">Benchmark anchors · provenance <span class="eyebrow">(3-axis confidence + versioned refresh)</span></div>
+          <div class="frame p-5 space-y-4">
+            <div class="flex flex-wrap items-center gap-3">
+              <div class="flex-1 min-w-[240px]">
+                <div class="text-sm font-medium">Advisor equity per head · FAST matrix</div>
+                <div class="text-sm tnum" style="color:var(--ink-gray-6)">0.30% – 1.00% · board base 5.50%</div>
+              </div>
+              <span class="prov-chip" title="Founder Institute, published matrix"><span class="prov-dot prov-good"></span>source · FI</span>
+              <span class="prov-chip" title="As of Jun 2025 — 12 months old"><span class="prov-dot prov-mid"></span>recency · 12mo</span>
+              <span class="prov-chip" title="3 stages × engagement; stage-matched"><span class="prov-dot prov-good"></span>fit · pre-A</span>
+            </div>
+            <div class="flex flex-wrap items-center gap-3">
+              <div class="flex-1 min-w-[240px]">
+                <div class="text-sm font-medium">Advisory pool norm</div>
+                <div class="text-sm tnum" style="color:var(--ink-gray-6)">~5% of FD · Carta State of Pre-Seed 2025</div>
+              </div>
+              <span class="prov-chip"><span class="prov-dot prov-good"></span>source · Carta</span>
+              <span class="prov-chip" title="12 months old — refresh available"><span class="prov-dot prov-low"></span>recency · stale</span>
+              <span class="prov-chip"><span class="prov-dot prov-mid"></span>fit · adjacent</span>
+            </div>
+            <div class="p-3 rounded flex flex-wrap items-center gap-3 text-sm" style="background:var(--surface-gray-1)">
+              <span><strong>Update available</strong> — 2026 Carta data. Preview: pool norm 5% → 4.6%; flags Iraj band breach unchanged, clears none.</span>
+              <button class="btn" onclick="toast('Benchmarks v2026-Q2 accepted · anchors re-dated','Undo')">Accept v2026-Q2</button>
+              <button class="text-xs underline" style="color:var(--ink-gray-6)">keep pinned v2025-Q2</button>
+            </div>
+            <p class="eyebrow">Refreshes are versioned and explicit — never silent (Carta TC pattern). Anchor changes land on the audit trail.</p>
+          </div>
+        </section>
+
+        <section>
+          <div class="section-label mb-3">Scenario paths · draft → apply <span class="eyebrow">(Capboard lifecycle)</span></div>
+          <div class="frame p-5">
+            <div class="flex flex-wrap gap-2 mb-3">
+              <span class="preset-chip on">Main · applied</span>
+              <span class="preset-chip">"$90m floor per strategy memo" · draft</span>
+              <button class="preset-chip" onclick="toast('New draft scenario set created from Main','Undo')">+ new draft</button>
+            </div>
+            <p class="text-sm" style="color:var(--ink-gray-6)">Drafts are private sandboxes over the canonical plan. <strong>Apply</strong> is the explicit promote step — it records every transaction and toasts with Undo. The canonical record never mutates silently.</p>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="assets/proto.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const b = document.getElementById('bridge');
+  b.addEventListener('blur', () => {
+    let t = b.textContent.replace(/[^0-9.mM]/g, '').replace(/[mM]$/, '');
+    const v = parseFloat(t); if (isNaN(v)) { b.innerHTML = '$<span id="bridge-val">90.0</span>'; return; }
+    b.innerHTML = '$<span id="bridge-val">' + v.toFixed(1) + '</span>';
+    toast('Bridge post-money → $' + v.toFixed(1) + 'M · strike re-anchors everywhere', 'Undo');
+  });
+  b.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); b.blur(); } });
+});
+</script>
+</body>
+</html>

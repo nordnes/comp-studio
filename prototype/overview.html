@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Overview · Comp Studio prototype</title>
+<script src="https://cdn.tailwindcss.com?v=3.4"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,350;9..144,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<style>body{font-family:Inter,system-ui,sans-serif}</style>
+<script>window.PAGE_ACTIONS=[["Configure",false]];</script>
+</head>
+<body>
+<div id="page" data-patterns="1.4 banner→status chip (OpenComp health strip) · 1.1 deep-linkable advisor cards · 9.1 skip link · 9a provenance chips on the benchmark (Carta TC) · 9d formula popover on the hero figure · WS-G health strip on pool allocation.">
+  <div class="mx-auto w-full px-5 py-8" style="max-width:60rem">
+    <h1 class="font-display text-3xl mb-1">The advisory board, at a glance.</h1>
+    <p class="text-sm mb-6" style="color:var(--ink-gray-6)">A live snapshot against the company plan. Open an advisor to model their package.</p>
+
+    <div class="flex flex-wrap items-end gap-x-10 gap-y-4 mb-8">
+      <div>
+        <div class="eyebrow mb-1">Net cost · <span data-case-label>Base</span> case · <span style="color:var(--ink-amber-strong)">net of strike</span></div>
+        <div class="font-display text-5xl tnum formula-link" tabindex="0" data-money='{"con":"$6.87M","base":"$28.1M","agg":"$78.6M"}' data-formula="board net = Σ advisor net
+= Σ [options × (exit PPS − strike $1,572.95), floor 0] × % kept
++ Σ [token % × TGE FDV]
+base: $28.1M">$28.1M</div>
+        <div class="eyebrow mt-1 tnum">Conservative → Aggressive · $6.87M – $78.6M</div>
+      </div>
+      <dl class="flex gap-8 text-sm">
+        <div><dt class="eyebrow">Equity of company</dt><dd class="tnum font-medium">5.50% <span style="color:var(--ink-gray-5)">base, pre-uplift</span></dd></div>
+        <div><dt class="eyebrow">Tokens of supply</dt><dd class="tnum font-medium">3.30% <span style="color:var(--ink-gray-5)">earned</span></dd></div>
+        <div><dt class="eyebrow">Annual cash</dt><dd class="tnum font-medium">$0</dd></div>
+      </dl>
+    </div>
+
+    <div class="grid lg:grid-cols-[1fr,260px] gap-8">
+      <div>
+        <div class="section-label mb-3">Roster · open a package</div>
+        <div class="grid sm:grid-cols-2 gap-3">
+          <a href="advisor.html" class="frame p-4 hover:shadow-sm block">
+            <div class="flex items-center justify-between mb-1"><span class="font-medium">Iraj Ispahani</span><span class="text-xs px-2 py-0.5 rounded-full" style="background:var(--surface-gray-2);color:var(--ink-gray-7)">Anchor</span></div>
+            <div class="eyebrow mb-2">Asset Management · iterating</div>
+            <div class="font-display text-2xl tnum">$7.67M</div>
+            <div class="text-xs tnum" style="color:var(--ink-gray-6)">1.50% eq · 0.90% tok · <span class="delta-up">+70% at ceiling</span></div>
+          </a>
+          <a href="advisor.html" class="frame p-4 hover:shadow-sm block">
+            <div class="flex items-center justify-between mb-1"><span class="font-medium">Robert Reoch</span><span class="text-xs px-2 py-0.5 rounded-full" style="background:var(--surface-gray-2);color:var(--ink-gray-7)">Strategic</span></div>
+            <div class="eyebrow mb-2">Capital Markets · proposed</div>
+            <div class="font-display text-2xl tnum">$5.11M</div>
+            <div class="text-xs tnum" style="color:var(--ink-gray-6)">1.00% eq · 0.60% tok · <span class="delta-up">+30% at ceiling</span></div>
+          </a>
+          <a href="advisor.html" class="frame p-4 hover:shadow-sm block">
+            <div class="flex items-center justify-between mb-1"><span class="font-medium">Martin Keller</span><span class="text-xs px-2 py-0.5 rounded-full" style="background:var(--surface-gray-2);color:var(--ink-gray-7)">Strategic</span></div>
+            <div class="eyebrow mb-2">Asset Management · proposed</div>
+            <div class="font-display text-2xl tnum">$5.11M</div>
+            <div class="text-xs tnum" style="color:var(--ink-gray-6)">1.00% eq · 0.60% tok · <span class="delta-up">+40% at ceiling</span></div>
+          </a>
+          <a href="advisor.html" class="frame p-4 hover:shadow-sm block">
+            <div class="flex items-center justify-between mb-1"><span class="font-medium">Kerim Derhalli</span><span class="text-xs px-2 py-0.5 rounded-full" style="background:var(--surface-gray-2);color:var(--ink-gray-7)">Strategic</span></div>
+            <div class="eyebrow mb-2">Technology & FinTech · proposed</div>
+            <div class="font-display text-2xl tnum">$5.11M</div>
+            <div class="text-xs tnum" style="color:var(--ink-gray-6)">1.00% eq · 0.60% tok · <span class="delta-up">+80% at ceiling</span></div>
+          </a>
+          <a href="advisor.html" class="frame p-4 hover:shadow-sm block">
+            <div class="flex items-center justify-between mb-1"><span class="font-medium">Carl Bang</span><span class="text-xs px-2 py-0.5 rounded-full" style="background:var(--surface-gray-2);color:var(--ink-gray-7)">Base</span></div>
+            <div class="eyebrow mb-2">Payments & FX · modeled</div>
+            <div class="font-display text-2xl tnum">$2.56M</div>
+            <div class="text-xs tnum" style="color:var(--ink-gray-6)">0.50% eq · 0.30% tok</div>
+          </a>
+          <a href="advisor.html" class="frame p-4 hover:shadow-sm block">
+            <div class="flex items-center justify-between mb-1"><span class="font-medium">Rajesh Mehta</span><span class="text-xs px-2 py-0.5 rounded-full" style="background:var(--surface-gray-2);color:var(--ink-gray-7)">Base</span></div>
+            <div class="eyebrow mb-2">Payments & FX · modeled</div>
+            <div class="font-display text-2xl tnum">$2.56M</div>
+            <div class="text-xs tnum" style="color:var(--ink-gray-6)">0.50% eq · 0.30% tok</div>
+          </a>
+        </div>
+        <p class="eyebrow mt-4 tnum">Base path: Bridge $90.0M → Series A $120.0M → Series B $300.0M → Series C $500.0M · TGE FDV $600.0M.</p>
+      </div>
+
+      <aside class="space-y-7">
+        <div>
+          <div class="section-label mb-2">Key dates · next 90 days</div>
+          <p class="text-sm" style="color:var(--ink-gray-6)">Nothing lands in the next 90 days — no gates, tranches, reviews or backstops across the roster.</p>
+        </div>
+        <div>
+          <div class="section-label mb-2">Pool allocation · health</div>
+          <div class="space-y-3 text-sm">
+            <div>
+              <div class="flex justify-between text-xs mb-1"><span style="color:var(--ink-gray-6)">Equity (of 10% ESOP)</span><span class="tnum">5.50% → 8.05%</span></div>
+              <div class="h-2 rounded-full" style="background:var(--surface-gray-2)"><div class="h-2 rounded-full" style="width:55%;background:var(--surface-gray-7)"></div></div>
+            </div>
+            <div>
+              <div class="flex justify-between text-xs mb-1"><span style="color:var(--ink-gray-6)">Tokens (bucket 4.50%)</span><span class="tnum" style="color:var(--ink-red-3)">3.30% → 4.83%</span></div>
+              <div class="h-2 rounded-full" style="background:var(--surface-red-1)"><div class="h-2 rounded-full" style="width:100%;background:var(--ink-red-3)"></div></div>
+              <div class="text-xs mt-1" style="color:var(--ink-red-3)">Over bucket at ceiling · <button class="underline" onclick="openDialog('budget-detail-dlg')">resolve options</button></div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="section-label mb-2">Benchmark</div>
+          <p class="text-sm mb-2">Board base equity <strong>5.50%</strong> · FAST per-head 0.30–1.00% · advisory pool ~5%.</p>
+          <div class="flex flex-wrap gap-1.5">
+            <span class="prov-chip" title="Founder Institute FAST matrix"><span class="prov-dot prov-good"></span>source · FI FAST</span>
+            <span class="prov-chip" title="As of Jun 2025 — 12 months old"><span class="prov-dot prov-mid"></span>recency · 12mo</span>
+            <span class="prov-chip" title="Stage-matched sample"><span class="prov-dot prov-good"></span>fit · pre-A</span>
+          </div>
+          <button class="text-xs underline mt-2" style="color:var(--ink-gray-6)" onclick="toast('Benchmark refresh preview: 2026 Carta data moves the pool norm ~5%→4.6%. Accept on Configure.','')">Update available — preview impact</button>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- budget detail dialog (the chip's popover) -->
+  <div class="dlg-backdrop" id="budget-detail-dlg" role="dialog" aria-modal="true" aria-label="Budget warning detail">
+    <div class="dlg" style="max-width:480px">
+      <div class="dlg-head"><span class="font-medium">Budget warning</span><button class="btn" onclick="closeDialog('budget-detail-dlg')" aria-label="Dismiss">&#10005;</button></div>
+      <div class="dlg-body text-sm space-y-3">
+        <p>At ceiling, board tokens <strong class="tnum">4.83%</strong> exceed the board token bucket <strong class="tnum">4.50%</strong>.</p>
+        <p style="color:var(--ink-gray-6)">Cost to clear: trim ceilings by <strong class="tnum" style="color:var(--ink-gray-9)">0.33pp</strong> across the roster, or scale the ring-fenced bucket (Board decision A-2).</p>
+      </div>
+      <div class="dlg-foot"><button class="btn" onclick="closeDialog('budget-detail-dlg')">Dismiss for session</button><a class="btn btn-solid" href="board.html">Review the pool on the Board</a></div>
+    </div>
+  </div>
+</div>
+<script src="assets/proto.js"></script>
+</body>
+</html>

@@ -283,6 +283,7 @@ function recordValuation(ppsUSD: number) {
                   <Select
                     :model-value="S.S.plan.esopStart"
                     :options="esopOpts"
+                    aria-label="ESOP at adoption"
                     @update:model-value="(v) => setP('esopStart', Number(v))"
                   />
                 </div>
@@ -495,6 +496,7 @@ function recordValuation(ppsUSD: number) {
                   <Select
                     :model-value="S.S.plan.tgeAnchor"
                     :options="anchorOpts()"
+                    aria-label="TGE FDV anchor round"
                     @update:model-value="(v) => setP('tgeAnchor', v)"
                   />
                 </div>
@@ -704,6 +706,7 @@ function recordValuation(ppsUSD: number) {
                       class="w-full min-w-0"
                       :model-value="S.S.plan.advisorPoolShares"
                       :options="poolOpts"
+                      aria-label="Advisor pool sizing"
                       @update:model-value="(v) => setP('advisorPoolShares', Number(v))"
                     />
                   </div>

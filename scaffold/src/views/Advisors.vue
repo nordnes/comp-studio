@@ -10,6 +10,7 @@ import { useStudio } from "../store";
 import { useEditor } from "../composables/useEditor";
 import {
   fUSD,
+  fPps,
   fPct,
   fNum,
   fTok,
@@ -359,7 +360,7 @@ const backstop = computed(() => {
                   Grants ·
                   {{
                     S.plan.valuation
-                      ? `new grants strike/FMV at the agreed ${S.plan.valuation.basis} valuation (${fUSD(S.plan.valuation.ppsUSD)}/share, ${fDate(S.plan.valuation.dateISO)}); granted rows keep their strike`
+                      ? `new grants strike/FMV at the agreed ${S.plan.valuation.basis} valuation (${fPps(S.plan.valuation.ppsUSD)}/share, ${fDate(S.plan.valuation.dateISO)}); granted rows keep their strike`
                       : "per-grant strike from the grant round"
                   }}
                 </div>
@@ -393,7 +394,7 @@ const backstop = computed(() => {
                     <span class="text-xs tabular-nums text-ink-gray-6"
                       >strike
                       <span class="text-ink-gray-9">{{
-                        r.strikePps == null ? "—" : `$${r.strikePps.toFixed(2)}`
+                        r.strikePps == null ? "—" : fPps(r.strikePps)
                       }}</span></span
                     >
                     <span class="text-xs tabular-nums text-ink-gray-6"
@@ -403,7 +404,7 @@ const backstop = computed(() => {
                           ? "—"
                           : g.instrument === "rta"
                             ? `$${r.fmvPps.toFixed(3)}`
-                            : `$${r.fmvPps.toFixed(2)}`
+                            : fPps(r.fmvPps)
                       }}</span></span
                     >
                     <span class="flex items-center gap-1.5 text-xs text-ink-gray-6">
@@ -503,7 +504,7 @@ const backstop = computed(() => {
                 </div>
                 <div class="flex justify-between py-2">
                   <span class="text-ink-gray-6">Strike</span
-                  ><span class="tabular-nums text-ink-gray-9">${{ c.strikePps.toFixed(2) }}</span>
+                  ><span class="tabular-nums text-ink-gray-9">{{ fPps(c.strikePps) }}</span>
                 </div>
                 <div class="flex justify-between py-2">
                   <span class="text-ink-gray-6">Exercise cost</span

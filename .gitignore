@@ -28,3 +28,5 @@ npm-debug.log*
 **/.vite/
 .vercel
 .env*
+# third-party agent skills (installed via skills.sh — tooling, not product)
+.agents-tools/

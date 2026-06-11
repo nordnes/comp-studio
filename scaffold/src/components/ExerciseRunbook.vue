@@ -7,7 +7,7 @@
 import { ref, computed, watch } from "vue";
 import { Badge, Button, Dialog, TextInput } from "frappe-ui";
 import { useStudio } from "../store";
-import { exerciseRunbook, computeGrant, baseScenKey, fUSD, fNum, todayISO } from "../engine";
+import { exerciseRunbook, computeGrant, baseScenKey, fUSD, fPps, fNum, todayISO } from "../engine";
 const props = defineProps<{ sel: any; grant: any | null }>();
 const open = defineModel<boolean>({ default: false });
 const { store } = useStudio();
@@ -71,7 +71,7 @@ const dialogOptions = computed(() => ({
           <div>
             <div class="text-xs text-ink-gray-6">Strike / FMV per share</div>
             <div class="text-ink-gray-9">
-              {{ fUSD(pack.costs.strikePps) }} / {{ fUSD(pack.costs.fmvPps) }}
+              {{ fPps(pack.costs.strikePps) }} / {{ fPps(pack.costs.fmvPps) }}
             </div>
           </div>
         </div>

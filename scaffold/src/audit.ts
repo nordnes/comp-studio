@@ -13,6 +13,7 @@ export const AUDIT_KINDS = [
   "proposition",
   "decision",
   "introduction",
+  "consent", // panel 008 (R3.18): governance/consent register flips — the header promised it
 ] as const;
 export type AuditKind = (typeof AUDIT_KINDS)[number];
 

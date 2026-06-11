@@ -1606,6 +1606,15 @@ console.log('\nT25 · Valuation record: one valuation, everywhere consistent (CO
 {
   const dflt = ENG.DEFAULT();
   const g = { id: 'g1', instrument: 'option', round: 'bridge', quantity: 1000, curve: 'cert-v3', vestStartISO: '2026-06-01', lifecycle: 'granted' };
+  // panel 008 (R5.1): preTgeLiquidity pinned by name (T13 exercised only callers)
+  A('preTgeLiquidity reads the scenario flag by name: true only when the scenario sets it',
+    (() => {
+      const plan = JSON.parse(JSON.stringify(dflt.plan));
+      const off = ENG.preTgeLiquidity(plan, 'base');
+      plan.scenarios.base.preTgeLiquidity = true;
+      const on = ENG.preTgeLiquidity(plan, 'base');
+      return off === false && on === true && ENG.preTgeLiquidity(plan, 'aggressive') === false;
+    })());
   // panel 007 (R5.1): the vocabulary export, pinned by name
   A('VALUATION_BASES is the named vocabulary (SAV · 409A · SAV/409A) the basis enum heals against',
     ENG.VALUATION_BASES.join(',') === 'SAV,409A,SAV/409A');

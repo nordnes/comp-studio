@@ -49,6 +49,10 @@ async function start() {
   inputEl.value?.select();
 }
 function commit() {
+  // panel 008 (R3.18 wart): Enter commits and unmounts the input, whose unmount blur fires
+  // commit() AGAIN — the same value re-emitted, duplicating downstream effects (two identical
+  // audit events per edit). One commit per edit session.
+  if (!edit.value) return;
   let v = parseFloat(draft.value.replace(/[^0-9.-]/g, ""));
   if (!isNaN(v)) {
     if (props.fmt === "pct") v /= 100;

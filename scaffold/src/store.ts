@@ -23,6 +23,7 @@ import {
   SECTORS,
   type State,
   type Scenario,
+  fPps,
   makeScenarioSet,
   planWithSet,
   makeProposition,
@@ -269,7 +270,7 @@ export function useStudio() {
         "valuation",
         "plan",
         value
-          ? `Valuation recorded: $${value.ppsUSD}/share (${value.basis}, ${value.dateISO})`
+          ? `Valuation recorded: ${fPps(value.ppsUSD)}/share (${value.basis}, ${value.dateISO})`
           : "Valuation cleared — strikes fall back to round-derived",
       );
     }
@@ -906,6 +907,11 @@ export function useStudio() {
   ) {
     const it = store.gov.items.find((i) => i.id === id);
     if (!it) return;
+    // panel 008 (R3.18): a STATUS flip is an audited consent/governance event (the gating
+    // fact); owner/evidence/note edits are tracking metadata and stay off the trail.
+    if (patch.status && patch.status !== it.status) {
+      appendAudit("consent", it.ref, `${it.title}: ${it.status} → ${patch.status}`);
+    }
     Object.assign(it, patch);
     persist();
   }

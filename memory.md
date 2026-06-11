@@ -2816,3 +2816,27 @@ flash · A/B "Base case" label follows the active case · 1024 header overlaps t
 Verified strengths: print/watermark path, ⌘K palette, Configure layout, runbook content,
 audit log. A parallel reviewer appended duplicate pass-2/7/8 sections — findings agree,
 folded into the synthesis. Next: file the 9 issues on Linear (M14) → WS-A (P0) first.
+
+## 2026-06-11 (final stretch) — the UXS series complete: PRs #115–#134; panel 009 launched
+- **All 16 fix batches SHIPPED + merged** (every one live-probed on the built app, all gates green):
+  COM-182 #115 · COM-174 #116 · COM-176 #117 · UXS-A #119 (by-value top-ups; #118 closed: stale base) ·
+  UXS-D #120 · UXS-F2 #121 · UXS-C #122 (departures move money, T30) · UXS-B #123 · UXS-E #124 ·
+  UXS-F1 #125 · UXS-M #126 (the P0 pointer-events watchdog) · UXS-G #127 (AA token floor: axe
+  critical 0, contrast-serious 0 — the pin tokenises as --ink-*, NOT --text-ink-*) · UXS-H #128 ·
+  UXS-I #129 · UXS-J #130 (NumIn 95M shorthand + plan-baseline undo toasts) · UXS-K #131 (amber
+  41→20, scatter clamp/fan) · UXS-L #132 · UXS-O #133 (persistent refusals, gov rides the undo
+  timeline) · UXS-N #134 (deep links /advisors/:id, scroll reset, chunk skeleton, banner chip).
+- **Robin's parallel 10-pass loop** (UX_IMPROVEMENT_PLAN.md, committed + cross-referenced at the
+  bottom): its P0 (body pointer-events wedge) fixed by the #126 watchdog; WS-A..H mapped to PRs in
+  the cross-ref table; the still-open P2 tail is listed there for the Linear filing.
+- **Panel 008 retro-committed** (docs/rubric-grades/008: 38 PASS · 10 FAIL · 6 BLOCKED of 54 —
+  the 10 FAILs addressed across #110–#134). **Panel 009 RUNNING** (wf_c0fea6ad-dee, tip 57476c8,
+  served hash index-BFn0iq3m.js verified).
+- **RULES that recurred this stretch:** zsh heredocs mangle `!` AND `<!--` — patch scripts go
+  through Write-files, ALWAYS. App.vue watchers referencing useStudio() bindings must sit BELOW
+  the destructure (TDZ blank-screen). The sidebar group headers are BUTTONS (collapsible) — probes
+  must not click 'Board'/'Advisor' as nav. vp fmt ONLY the failing file. After every gh pr merge:
+  checkout deploy branch + pull BEFORE the next branch.
+- **Outstanding:** Linear MCP still down → task #13 (create UXS-A..O issues in M13, flip Done with
+  PR links; COM-176 flip pending) — /tmp/claude/uxs-batches.md + /tmp/claude/linear-debt.md carry
+  the full text. Wave 6 (COM-34/35) still blocked on Supabase invoices. The UXP still-open P2 tail.

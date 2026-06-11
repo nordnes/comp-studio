@@ -10,8 +10,10 @@
 body{font-family:Inter,system-ui,sans-serif}
 .numin { border-bottom: 1px dashed var(--outline-gray-2); cursor: text; }
 .numin:hover { background: var(--surface-gray-1); }
+#sec-rail a { color: var(--ink-gray-7); }
+#sec-rail a[aria-current] { background: var(--surface-gray-3); color: var(--ink-gray-9); font-weight: 500; }
 </style>
-<script>window.PAGE_ACTIONS=[["Import CSV",false],["Download",false]];</script>
+<script>window.PAGE_ACTIONS=[["Export paths (CSV)",false,"exportPaths()"]];</script>
 </head>
 <body>
 <div id="page" data-patterns="4.1 denominated money entry · 4.2 commit toasts with Undo · 4.3 dotted-underline edit affordance · 9a Carta-TC 3-axis provenance chips + versioned accept-with-preview · Capboard draft→Apply lifecycle · IMPROVEMENT_PLAN B3 three-value scenario rows (Ledgy conservative/probable/optimistic) · B4 comparable-anchored assumption chips (FORGD_DEEP_DIVE template norms · FAST v2 · Carta medians · Liquifi benchmark) — feeds spec Part 17 blanks · G1 XLSX export · CLAUDE_DESIGN_PROMPT §5.7 rounds cards + value bands + cash floor + review cadence + CSV import.">
@@ -20,133 +22,131 @@ body{font-family:Inter,system-ui,sans-serif}
     <p class="text-sm mb-8" style="color:var(--ink-gray-6)">Dashed underline = editable in place. Every commit announces itself and can be undone.</p>
 
     <div class="grid lg:grid-cols-[170px,minmax(0,1fr)] gap-8">
-      <nav class="text-sm space-y-1 lg:sticky lg:top-20 self-start" aria-label="Configure sections">
-        <a href="#" class="block rounded px-2 py-1.5 font-medium" style="background:var(--surface-gray-3)">Cap table</a>
-        <a href="#" class="block rounded px-2 py-1.5" style="color:var(--ink-gray-7)">Grants &amp; pools</a>
-        <a href="#" class="block rounded px-2 py-1.5" style="color:var(--ink-gray-7)">Performance</a>
-        <a href="#" class="block rounded px-2 py-1.5" style="color:var(--ink-gray-7)">Benchmarks</a>
+      <nav class="text-sm space-y-1 lg:sticky lg:top-20 self-start" aria-label="Configure sections" id="sec-rail">
+        <a href="#sec-captable" class="block rounded px-2 py-1.5" aria-current="true">Cap table</a>
+        <a href="#sec-pools" class="block rounded px-2 py-1.5">Grants &amp; pools</a>
+        <a href="#sec-data" class="block rounded px-2 py-1.5">Data</a>
+        <a href="#sec-benchmarks" class="block rounded px-2 py-1.5">Benchmarks</a>
       </nav>
 
       <div class="space-y-10 min-w-0">
-        <section>
+        <section id="sec-captable" style="scroll-margin-top:64px">
           <div class="section-label mb-3">Bridge (fixed grant event) · cap table 48,317 FD pre-ESOP</div>
           <div class="frame p-5 grid sm:grid-cols-3 gap-6">
             <div>
               <div class="eyebrow mb-1">Bridge post-money</div>
               <div class="flex items-baseline gap-1">
-                <span class="numin tnum text-xl" contenteditable="true" id="bridge" role="textbox" aria-label="Bridge post-money, in millions of dollars: 90.0">$<span id="bridge-val">90.0</span></span>
+                <span class="tnum text-xl" aria-hidden="true">$</span><span class="numin tnum text-xl" contenteditable="true" id="bridge" role="textbox" aria-label="Bridge post-money, in millions of dollars">90.0</span>
                 <span class="text-sm font-medium" style="color:var(--ink-gray-5)">M</span>
               </div>
-              <div class="text-xs mt-1" style="color:var(--ink-gray-5)">accepts "95M" / "95" — never raw zeros</div>
+              <div class="text-xs mt-1" style="color:var(--ink-gray-5)">accepts "95M" / "95" — never raw zeros · Enter commits</div>
             </div>
             <div><div class="eyebrow mb-1">Bridge raise</div><div class="text-xl tnum">$5.0<span class="text-sm" style="color:var(--ink-gray-5)"> M</span></div></div>
             <div><div class="eyebrow mb-1">ESOP at adoption</div><div class="text-xl tnum">10%</div></div>
           </div>
-          <button class="btn mt-3" onclick="toast('Bridge post-money → $95.0M · every figure re-anchored','Undo')">Simulate a commit (toast + undo)</button>
         </section>
 
         <section>
-          <div class="section-label mb-3">Roadmap · rounds <span class="eyebrow">(CSV import expects: round, post-money $M, ESOP top-up %, est. close)</span></div>
-          <div class="space-y-3">
+          <div class="section-label mb-3">Roadmap · rounds</div>
+          <div class="space-y-3" id="rounds-list">
             <div class="frame p-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
               <span class="font-medium w-20">Series A</span>
               <span class="tnum">post-money <strong>$120.0M</strong></span>
               <span class="tnum">ESOP top-up to 12%</span>
-              <span class="eyebrow tnum">est. H1 2027</span>
+              <span class="eyebrow tnum round-status">est. H1 2027</span>
               <span class="ml-auto flex gap-2">
-                <button class="btn" onclick="toast('Series A marked closed — actuals replace estimates, scenarios re-anchor','Undo')">Mark closed</button>
-                <button class="btn" aria-label="Delete Series A" onclick="openDialog('del-round-dlg')">✕</button>
+                <button class="btn" onclick="markClosed(this,'Series A')">Mark closed</button>
+                <button class="btn" aria-label="Delete Series A" onclick="askDeleteRound(this,'Series A')">✕</button>
               </span>
             </div>
             <div class="frame p-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
               <span class="font-medium w-20">Series B</span>
               <span class="tnum">post-money <strong>$300.0M</strong></span>
               <span class="tnum">ESOP held at 12%</span>
-              <span class="eyebrow tnum">est. 2028</span>
+              <span class="eyebrow tnum round-status">est. 2028</span>
               <span class="ml-auto flex gap-2">
-                <button class="btn" onclick="toast('Series B marked closed','Undo')">Mark closed</button>
-                <button class="btn" aria-label="Delete Series B" onclick="openDialog('del-round-dlg')">✕</button>
+                <button class="btn" onclick="markClosed(this,'Series B')">Mark closed</button>
+                <button class="btn" aria-label="Delete Series B" onclick="askDeleteRound(this,'Series B')">✕</button>
               </span>
             </div>
             <div class="frame p-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
               <span class="font-medium w-20">Series C</span>
               <span class="tnum">post-money <strong>$500.0M</strong></span>
               <span class="tnum">ESOP held at 12%</span>
-              <span class="eyebrow tnum">est. 2029</span>
+              <span class="eyebrow tnum round-status">est. 2029</span>
               <span class="ml-auto flex gap-2">
-                <button class="btn" onclick="toast('Series C marked closed','Undo')">Mark closed</button>
-                <button class="btn" aria-label="Delete Series C" onclick="openDialog('del-round-dlg')">✕</button>
+                <button class="btn" onclick="markClosed(this,'Series C')">Mark closed</button>
+                <button class="btn" aria-label="Delete Series C" onclick="askDeleteRound(this,'Series C')">✕</button>
               </span>
             </div>
-            <button class="btn" onclick="toast('Round added after Series C — name and post-money to fill','Undo')">+ Add round</button>
           </div>
-          <p class="text-sm mt-3" style="color:var(--ink-gray-6)">Grants price at the round in effect when they're made — top-ups from reviews always price at the <em>then-current</em> round; existing grants never re-price.</p>
+          <button class="btn mt-3" onclick="addRound()">+ Add round</button>
+          <p class="text-sm mt-3" style="color:var(--ink-gray-6)">Grants price at the round in effect when they're made — top-ups from reviews always price at the <em>then-current</em> round; existing grants never re-price. Stage: <span data-stage-label>Bridge close</span> · <span data-stage-text='{"bridge":"$1,572.95","seriesA":"$1,677.83","seriesB":"$3,145.90","seriesC":"$4,212.05"}'>$1,572.95</span>/share.</p>
         </section>
 
         <section>
-          <div class="section-label mb-3">Scenario paths · three values per event <span class="eyebrow">(Ledgy grammar: probable required, others optional)</span></div>
+          <div class="section-label mb-3">Scenario paths · three values per event <span class="eyebrow">(probable required, others optional)</span></div>
           <div class="frame p-5 overflow-x-auto">
-            <table class="data" style="min-width:560px">
-              <thead><tr><th>Event</th><th class="num">Conservative</th><th class="num">Probable (base) *</th><th class="num">Optimistic</th></tr></thead>
+            <table class="data" id="paths-table" style="min-width:560px">
+              <thead><tr><th>Event</th><th class="num" data-case-active="con">Conservative <span class="case-active-flag">active</span></th><th class="num" data-case-active="base">Probable (base) * <span class="case-active-flag">active</span></th><th class="num" data-case-active="agg">Optimistic <span class="case-active-flag">active</span></th></tr></thead>
               <tbody>
-                <tr><td>Exit valuation</td><td class="num">$300.0M · 32% kept</td><td class="num font-medium">$500.0M · 48% kept</td><td class="num">$750.0M · 58% kept</td></tr>
+                <tr><td>Exit valuation</td><td class="num">$300.0M · <span data-kept="32">32% kept</span></td><td class="num font-medium">$500.0M · <span data-kept="48">48% kept</span></td><td class="num">$750.0M · <span data-kept="58">58% kept</span></td></tr>
                 <tr><td>TGE FDV</td><td class="num">$200.0M</td><td class="num font-medium">$600.0M</td><td class="num">$1.80B</td></tr>
                 <tr><td>TGE timing</td><td class="num">no TGE (×)</td><td class="num font-medium">2028</td><td class="num">2027</td></tr>
                 <tr><td>Liquidity event</td><td class="num">trade sale</td><td class="num font-medium">Series-C secondary</td><td class="num">IPO / TGE</td></tr>
               </tbody>
             </table>
-            <div class="flex flex-wrap gap-2 mt-4">
-              <span class="preset-chip on">Main · applied</span>
-              <button class="preset-chip" onclick="toast('“$90m floor per strategy memo” opened as a draft over Main','Undo')">"$90m floor" · draft</button>
-              <button class="preset-chip" onclick="toast('New draft scenario set created from Main','Undo')">+ add scenario set</button>
-              <button class="btn ml-auto" onclick="toast('Base set on this draft → Conservative','Undo')">set base</button>
+            <div class="flex flex-wrap gap-2 mt-4" id="set-chips">
+              <span class="preset-chip on" id="main-chip">Main · applied</span>
+              <button class="preset-chip" onclick="openDraftSet(this)">"$90m floor" · draft</button>
+              <button class="preset-chip" onclick="addScenarioSet(this)">+ add scenario set</button>
             </div>
+            <p class="eyebrow mt-3 tnum">These paths drive every figure — board net at <span data-case-label>Base</span>: <span id="board-net" data-money='{"con":"$6.87M","base":"$28.1M","agg":"$78.6M"}' data-money-base='{"con":"$6.87M","base":"$28.1M","agg":"$78.6M"}'>$28.1M</span>.</p>
           </div>
         </section>
 
-        <section>
-          <div class="section-label mb-3">Grants &amp; pools · assumptions anchored to comparables <span class="eyebrow">(B4 — every borrowed number ships with provenance; feeds spec Part 17)</span></div>
+        <section id="sec-pools" style="scroll-margin-top:64px">
+          <div class="section-label mb-3">Grants &amp; pools · assumptions anchored to comparables <span class="eyebrow">— every borrowed number ships with provenance</span></div>
           <div class="frame p-5 space-y-4 text-sm">
             <div class="flex flex-wrap items-center gap-3">
               <div class="flex-1 min-w-[230px]"><div class="font-medium">Advisor pool size</div><div class="tnum" style="color:var(--ink-gray-6)">open: 10% ≈ 5,368 vs 15% ≈ 8,523 shares</div></div>
-              <span class="prov-chip" title="FAST v2 matrix, fi.co, as-of Aug 2020"><span class="prov-dot prov-mid"></span>FAST v2 · ~5% pool · fi.co · 2020</span>
-              <span class="prov-chip" title="Carta pre-seed advisor data, 2024"><span class="prov-dot prov-good"></span>Carta '24 · 0.21–0.25%/head</span>
-              <button class="text-xs underline" style="color:var(--ink-gray-6)" onclick="toast('Re-verify queued — provenance re-dated on confirm','')">re-verify</button>
+              <span class="prov-chip" data-pop="FAST v2 matrix, fi.co, as-of Aug 2020"><span class="prov-dot prov-mid"></span>FAST v2 · ~5% pool · fi.co · 2020</span>
+              <span class="prov-chip" data-pop="Carta pre-seed advisor data, 2024"><span class="prov-dot prov-good"></span>Carta '24 · 0.21–0.25%/head</span>
+              <button class="text-xs underline" style="color:var(--ink-gray-6)" onclick="requestReverify(this)">re-verify</button>
             </div>
             <div class="flex flex-wrap items-center gap-3">
               <div class="flex-1 min-w-[230px]"><div class="font-medium">Board token bucket</div><div class="tnum" style="color:var(--ink-gray-6)">4.50% of supply ring-fenced · 4.83% at ceiling ⚠</div></div>
-              <span class="prov-chip" title="Forgd Base Layer template, live walkthrough 2026-06-11"><span class="prov-dot prov-good"></span>Forgd template · advisors 2.5–3% · 12mo lock + 24mo unlock</span>
-              <span class="prov-chip" title="Liquifi benchmark report, 150+ projects"><span class="prov-dot prov-mid"></span>Liquifi · advisors+partners 1.5%</span>
+              <span class="prov-chip" data-pop="Token-launch template norms, verified Jun 2026"><span class="prov-dot prov-good"></span>template norm · advisors 2.5–3% · 12mo lock + 24mo unlock</span>
+              <span class="prov-chip" data-pop="Category benchmark, 150+ projects"><span class="prov-dot prov-mid"></span>category benchmark · advisors+partners 1.5%</span>
             </div>
             <div class="flex flex-wrap items-center gap-3">
               <div class="flex-1 min-w-[230px]"><div class="font-medium">Advisor value bands (tier × $)</div><div class="tnum" style="color:var(--ink-gray-6)">Anchor $5.1–9.0M · Strategic $3.4–6.0M · Base $1.7–3.0M</div></div>
               <span class="prov-chip"><span class="prov-dot prov-good"></span>FAST v2 · 0.25/0.20/0.15 · 1.00/0.80/0.60</span>
-              <span class="prov-chip" title="Part 17 open decision — Robin to confirm anchors"><span class="prov-dot prov-low"></span>anchors unconfirmed · Part 17</span>
+              <span class="prov-chip" data-pop="Open decision — Robin to confirm anchors"><span class="prov-dot prov-low"></span>anchors unconfirmed · open decision</span>
             </div>
             <div class="flex flex-wrap items-center gap-3">
               <div class="flex-1 min-w-[230px]"><div class="font-medium">Cash-floor policy</div><div class="tnum" style="color:var(--ink-gray-6)">$0/yr — equity+token only (FAST canon)</div></div>
               <span class="prov-chip"><span class="prov-dot prov-good"></span>FAST · equity-only comp is the norm</span>
-              <span class="prov-chip" title="Part 17 open decision"><span class="prov-dot prov-low"></span>policy open · Part 17</span>
+              <span class="prov-chip" data-pop="Open decision"><span class="prov-dot prov-low"></span>policy open · to confirm</span>
             </div>
             <div class="flex flex-wrap items-center gap-3">
-              <div class="flex-1 min-w-[230px]"><div class="font-medium">Review cadence</div><div class="tnum" style="color:var(--ink-gray-6)">semi-annual proposed · first checkpoint Dec 2026</div></div>
+              <div class="flex-1 min-w-[230px]"><div class="font-medium">Review cadence</div><div class="tnum" id="cadence-line" style="color:var(--ink-gray-6)">semi-annual proposed · first checkpoint Dec 2026</div></div>
               <span class="prov-chip"><span class="prov-dot prov-mid"></span>category norm · annual–semi-annual</span>
-              <button class="btn" onclick="toast('Cadence committed: semi-annual · checkpoints land on Key dates','Undo')">Confirm</button>
+              <button class="btn" id="cadence-btn" onclick="confirmCadence(this)">Confirm</button>
             </div>
           </div>
         </section>
 
-        <section>
-          <div class="section-label mb-3">Data · import &amp; export</div>
+        <section id="sec-data" style="scroll-margin-top:64px">
+          <div class="section-label mb-3">Data · export</div>
           <div class="frame p-5 flex flex-wrap items-center gap-3 text-sm">
-            <button class="btn" onclick="toast('Roadmap CSV import — columns: round, post-money $M, ESOP %, est. close')">Import roadmap CSV</button>
-            <button class="btn" onclick="toast('Export board (XLSX): roster · packages · 3 scenarios · guardrails · governance register · audit log — tabs per section (G1)')">Export board (XLSX)</button>
-            <button class="btn" style="color:var(--ink-red-3)" onclick="openDialog('del-round-dlg')">Reset to spec defaults…</button>
-            <span class="eyebrow">One button, everything — auditability is a trust feature (Forgd/Capboard table stakes).</span>
+            <button class="btn" onclick="exportPaths()">Export scenario paths (CSV)</button>
+            <button class="btn" style="color:var(--ink-red-3)" onclick="openDialog('reset-dlg')">Reset to defaults…</button>
+            <span class="eyebrow">Exports are built from the table on this page, at the active case.</span>
           </div>
         </section>
 
-        <section>
+        <section id="sec-benchmarks" style="scroll-margin-top:64px">
           <div class="section-label mb-3">Benchmark anchors · provenance <span class="eyebrow">(3-axis confidence + versioned refresh)</span></div>
           <div class="frame p-5 space-y-4">
             <div class="flex flex-wrap items-center gap-3">
@@ -154,9 +154,9 @@ body{font-family:Inter,system-ui,sans-serif}
                 <div class="text-sm font-medium">Advisor equity per head · FAST matrix</div>
                 <div class="text-sm tnum" style="color:var(--ink-gray-6)">0.30% – 1.00% · board base 5.50%</div>
               </div>
-              <span class="prov-chip" title="Founder Institute, published matrix"><span class="prov-dot prov-good"></span>source · FI</span>
-              <span class="prov-chip" title="As of Jun 2025 — 12 months old"><span class="prov-dot prov-mid"></span>recency · 12mo</span>
-              <span class="prov-chip" title="3 stages × engagement; stage-matched"><span class="prov-dot prov-good"></span>fit · pre-A</span>
+              <span class="prov-chip" data-pop="Founder Institute, published matrix"><span class="prov-dot prov-good"></span>source · FI</span>
+              <span class="prov-chip" data-pop="As of Jun 2025 — 12 months old"><span class="prov-dot prov-mid"></span>recency · 12mo</span>
+              <span class="prov-chip" data-pop="3 stages × engagement; stage-matched"><span class="prov-dot prov-good"></span>fit · pre-A</span>
             </div>
             <div class="flex flex-wrap items-center gap-3">
               <div class="flex-1 min-w-[240px]">
@@ -164,20 +164,20 @@ body{font-family:Inter,system-ui,sans-serif}
                 <div class="text-sm tnum" style="color:var(--ink-gray-6)">~5% of FD · Carta State of Pre-Seed 2025</div>
               </div>
               <span class="prov-chip"><span class="prov-dot prov-good"></span>source · Carta</span>
-              <span class="prov-chip" title="12 months old — refresh available"><span class="prov-dot prov-low"></span>recency · stale</span>
+              <span class="prov-chip" id="recency-chip" data-pop="12 months old — refresh available"><span class="prov-dot prov-low"></span>recency · stale</span>
               <span class="prov-chip"><span class="prov-dot prov-mid"></span>fit · adjacent</span>
             </div>
-            <div class="p-3 rounded flex flex-wrap items-center gap-3 text-sm" style="background:var(--surface-gray-1)">
+            <div class="p-3 rounded flex flex-wrap items-center gap-3 text-sm" id="bench-banner" style="background:var(--surface-gray-1)">
               <span><strong>Update available</strong> — 2026 Carta data. Preview: pool norm 5% → 4.6%; flags Iraj band breach unchanged, clears none.</span>
-              <button class="btn" onclick="toast('Benchmarks v2026-Q2 accepted · anchors re-dated','Undo')">Accept v2026-Q2</button>
-              <button class="text-xs underline" style="color:var(--ink-gray-6)">keep pinned v2025-Q2</button>
+              <button class="btn" onclick="acceptBenchmarks()">Accept v2026-Q2</button>
+              <button class="text-xs underline" style="color:var(--ink-gray-6)" onclick="keepPinned(this)">keep pinned v2025-Q2</button>
             </div>
-            <p class="eyebrow">Refreshes are versioned and explicit — never silent (Carta TC pattern). Anchor changes land on the audit trail.</p>
+            <p class="eyebrow">Refreshes are versioned and explicit — never silent. Anchor changes land on the audit trail.</p>
           </div>
         </section>
 
         <section>
-          <div class="section-label mb-3">Lifecycle · draft → apply <span class="eyebrow">(Capboard)</span></div>
+          <div class="section-label mb-3">Lifecycle · draft → apply</div>
           <p class="text-sm" style="color:var(--ink-gray-6)">Drafts are private sandboxes over the canonical plan. <strong>Apply</strong> is the explicit promote step — it records every transaction and toasts with Undo. The canonical record never mutates silently.</p>
         </section>
       </div>
@@ -187,27 +187,180 @@ body{font-family:Inter,system-ui,sans-serif}
   <!-- destructive confirm (shared grammar) -->
   <div class="dlg-backdrop" id="del-round-dlg" role="dialog" aria-modal="true" aria-label="Confirm destructive action">
     <div class="dlg" style="max-width:440px">
-      <div class="dlg-head"><span class="font-medium">Delete this round?</span><button class="btn" onclick="closeDialog('del-round-dlg')" aria-label="Close">&#10005;</button></div>
+      <div class="dlg-head"><span class="font-medium" id="del-round-title">Delete this round?</span><button class="btn" onclick="closeDialog('del-round-dlg')" aria-label="Close">&#10005;</button></div>
       <div class="dlg-body text-sm"><p>Scenario paths that reference it fall back to the prior round; sealed propositions keep their renders. You can undo for 6 seconds.</p></div>
       <div class="dlg-foot">
         <button class="btn" onclick="closeDialog('del-round-dlg')">Cancel</button>
-        <button class="btn" style="background:var(--ink-red-3);border-color:var(--ink-red-3);color:#fff" onclick="closeDialog('del-round-dlg');toast('Round deleted — scenarios re-anchored','Undo')">Delete round</button>
+        <button class="btn" style="background:var(--ink-red-3);border-color:var(--ink-red-3);color:#fff" onclick="doDeleteRound()">Delete round</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- reset confirm -->
+  <div class="dlg-backdrop" id="reset-dlg" role="dialog" aria-modal="true" aria-label="Reset to defaults">
+    <div class="dlg" style="max-width:440px">
+      <div class="dlg-head"><span class="font-medium">Reset to defaults?</span><button class="btn" onclick="closeDialog('reset-dlg')" aria-label="Close">&#10005;</button></div>
+      <div class="dlg-body text-sm"><p>Bridge post-money returns to $90.0M; the case returns to Base and the stage to Bridge close. You can undo for 6 seconds.</p></div>
+      <div class="dlg-foot">
+        <button class="btn" onclick="closeDialog('reset-dlg')">Cancel</button>
+        <button class="btn" style="background:var(--ink-red-3);border-color:var(--ink-red-3);color:#fff" onclick="doReset()">Reset</button>
       </div>
     </div>
   </div>
 </div>
 <script src="assets/proto.js"></script>
 <script>
+let bridgeValue = 90.0;
+const STRIKE_PER_M = 1572.95 / 90; // strike scales linearly with the post-money ($1,572.95 at $90.0M)
+// the re-anchor hook: strike + scenario-path "% kept" + board-net follow the bridge value
+function applyBridge(v) {
+  const strike = v * STRIKE_PER_M;
+  const sFmt = '$' + strike.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  document.querySelectorAll('[data-stage-text]').forEach(el => {
+    const o = JSON.parse(el.dataset.stageText); o.bridge = sFmt; el.dataset.stageText = JSON.stringify(o);
+  });
+  const f = (1 - 5 / v) / (1 - 5 / 90); // dilution at the fixed $5.0M raise
+  document.querySelectorAll('[data-kept]').forEach(el => {
+    el.textContent = (parseFloat(el.dataset.kept) * f).toFixed(1) + '% kept';
+  });
+  const net = document.getElementById('board-net');
+  const base = JSON.parse(net.dataset.moneyBase), scaled = {};
+  Object.keys(base).forEach(k => {
+    const x = parseFloat(base[k].replace(/[^0-9.]/g, '')) * f;
+    scaled[k] = '$' + (x >= 10 ? x.toFixed(1) : x.toFixed(2)) + 'M';
+  });
+  net.dataset.money = JSON.stringify(scaled);
+  renderProtoState(true);
+}
 document.addEventListener('DOMContentLoaded', () => {
   const b = document.getElementById('bridge');
-  b.addEventListener('blur', () => {
-    let t = b.textContent.replace(/[^0-9.mM]/g, '').replace(/[mM]$/, '');
-    const v = parseFloat(t); if (isNaN(v)) { b.innerHTML = '$<span id="bridge-val">90.0</span>'; return; }
-    b.innerHTML = '$<span id="bridge-val">' + v.toFixed(1) + '</span>';
-    toast('Bridge post-money → $' + v.toFixed(1) + 'M · strike re-anchors everywhere', 'Undo');
-  });
+  const commit = () => {
+    const cleaned = b.textContent.replace(/[^0-9.]/g, '');
+    const v = parseFloat(cleaned);
+    if (isNaN(v) || v <= 0) { b.textContent = bridgeValue.toFixed(1); return; }
+    if (v === bridgeValue) { b.textContent = bridgeValue.toFixed(1); return; }
+    const prev = bridgeValue;
+    bridgeValue = v;
+    b.textContent = v.toFixed(1);
+    applyBridge(v);
+    toast('Bridge post-money → $' + v.toFixed(1) + 'M — strike & scenario paths re-anchored', () => {
+      bridgeValue = prev; b.textContent = prev.toFixed(1); applyBridge(prev);
+    });
+  };
+  b.addEventListener('blur', commit);
   b.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); b.blur(); } });
+
+  // section rail: aria-current follows clicks AND scroll position
+  const rail = [...document.querySelectorAll('#sec-rail a')];
+  const setRail = id => rail.forEach(a =>
+    a.getAttribute('href') === '#' + id ? a.setAttribute('aria-current', 'true') : a.removeAttribute('aria-current'));
+  rail.forEach(a => a.addEventListener('click', () => setRail(a.getAttribute('href').slice(1))));
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(en => { if (en.isIntersecting) setRail(en.target.id); });
+  }, { rootMargin: '-64px 0px -60% 0px' });
+  ['sec-captable', 'sec-pools', 'sec-data', 'sec-benchmarks'].forEach(id => io.observe(document.getElementById(id)));
 });
+function markClosed(btn, name){
+  const status = btn.closest('.frame').querySelector('.round-status');
+  const prevText = status.textContent;
+  status.textContent = 'closed · actuals';
+  status.style.color = 'var(--ink-green-3)';
+  btn.disabled = true;
+  toast(name + ' marked closed — actuals replace estimates', () => {
+    status.textContent = prevText; status.style.color = ''; btn.disabled = false;
+  });
+}
+function addRound(){
+  const list = document.getElementById('rounds-list');
+  const row = document.createElement('div');
+  row.className = 'frame p-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm';
+  row.innerHTML = `<input class="font-medium border rounded px-2 py-1 w-28" style="border-color:var(--outline-gray-2)" value="Series D" aria-label="Round name">
+    <span class="tnum">post-money $<input class="border rounded px-2 py-1 w-24 tnum" style="border-color:var(--outline-gray-2)" value="800.0" aria-label="Post-money in millions">M</span>
+    <span class="eyebrow tnum round-status">draft — not yet in any path</span>
+    <span class="ml-auto"><button class="btn" aria-label="Delete new round" onclick="this.closest('.frame').remove()">✕</button></span>`;
+  list.appendChild(row);
+  row.querySelector('input').focus();
+  toast('Round added after Series C — name and post-money editable', () => row.remove());
+}
+let pendingDelete = null;
+function askDeleteRound(btn, name){
+  pendingDelete = { row: btn.closest('.frame'), name };
+  document.getElementById('del-round-title').textContent = 'Delete ' + name + '?';
+  openDialog('del-round-dlg');
+}
+function doDeleteRound(){
+  closeDialog('del-round-dlg');
+  if (!pendingDelete) return;
+  const { row, name } = pendingDelete;
+  const next = row.nextElementSibling, list = row.parentElement;
+  row.remove();
+  toast(name + ' deleted from the roadmap', () => list.insertBefore(row, next));
+  pendingDelete = null;
+}
+function openDraftSet(chip){
+  const main = document.getElementById('main-chip');
+  const wasOn = chip.classList.contains('on');
+  if (wasOn) return;
+  chip.classList.add('on'); chip.textContent = '"$90m floor" · draft · comparing';
+  main.classList.remove('on'); main.textContent = 'Main';
+  toast('Draft set “$90m floor” opened over Main', () => {
+    chip.classList.remove('on'); chip.textContent = '"$90m floor" · draft';
+    main.classList.add('on'); main.textContent = 'Main · applied';
+  });
+}
+function addScenarioSet(btn){
+  const chip = document.createElement('button');
+  chip.className = 'preset-chip';
+  chip.textContent = 'Set B · draft';
+  chip.onclick = () => openDraftSet(chip);
+  btn.before(chip);
+  toast('Draft scenario set created from Main', () => chip.remove());
+}
+function requestReverify(btn){
+  const chip = document.createElement('span');
+  chip.className = 'prov-chip';
+  chip.innerHTML = '<span class="prov-dot prov-mid"></span>re-verify requested · today';
+  btn.replaceWith(chip);
+  toast('Re-verify requested — marked on the assumption', () => chip.replaceWith(btn));
+}
+function confirmCadence(btn){
+  const line = document.getElementById('cadence-line');
+  const prev = line.textContent;
+  line.textContent = 'semi-annual confirmed · first checkpoint Dec 2026';
+  btn.disabled = true;
+  toast('Review cadence confirmed: semi-annual', () => { line.textContent = prev; btn.disabled = false; });
+}
+function acceptBenchmarks(){
+  const banner = document.getElementById('bench-banner');
+  const chip = document.getElementById('recency-chip');
+  const prevBanner = banner.innerHTML, prevChip = chip.innerHTML;
+  banner.innerHTML = '<span><strong>v2026-Q2 applied</strong> — pool norm anchor now 4.6%; provenance re-dated.</span>';
+  banner.style.background = 'var(--surface-green-1)';
+  chip.innerHTML = '<span class="prov-dot prov-good"></span>recency · current';
+  toast('Benchmarks v2026-Q2 accepted — anchors re-dated', () => {
+    banner.innerHTML = prevBanner; banner.style.background = ''; chip.innerHTML = prevChip;
+  });
+}
+function keepPinned(btn){
+  const banner = document.getElementById('bench-banner');
+  banner.style.display = 'none';
+  toast('Kept v2025-Q2 — update dismissed for this session', () => { banner.style.display = ''; });
+}
+function exportPaths(){
+  exportTableCsv('paths-table', 'scenario-paths.csv');
+  toast('Downloaded scenario-paths.csv — the table as shown');
+}
+function doReset(){
+  closeDialog('reset-dlg');
+  const b = document.getElementById('bridge');
+  const prevBridge = bridgeValue, prevCase = PROTO_STATE.caseKey, prevStage = PROTO_STATE.stageKey;
+  bridgeValue = 90.0; b.textContent = '90.0'; applyBridge(90);
+  setCase('base', { silent: true }); setStage('bridge', { silent: true });
+  toast('Reset — bridge $90.0M · case Base · stage Bridge close', () => {
+    bridgeValue = prevBridge; b.textContent = prevBridge.toFixed(1); applyBridge(prevBridge);
+    setCase(prevCase, { silent: true }); setStage(prevStage, { silent: true });
+  });
+}
 </script>
 </body>
 </html>

@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,350;9..144,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/tokens.css">
 <style>body{font-family:Inter,system-ui,sans-serif}</style>
-<script>window.PAGE_ACTIONS=[["Export schedule (XLSX)",false,"toast('Export token schedule (XLSX): per-advisor grants · vesting · lockup · 24-month unlock calendar — one file (G1)','')"],["Adjust in Configure",true,"location.href='configure.html'"]];</script>
+<script>window.PAGE_ACTIONS=[["Export schedule (CSV)",false,"exportSchedule()"],["Adjust in Configure",true,"location.href='configure.html'"]];</script>
 </head>
 <body>
 <div id="page" data-patterns="NEW VIEW · IMPROVEMENT_PLAN C1 twin vested/unlocked tracks + Today cursor (coinbase-token-manager.md: Vested≠Unlocked categories, decomposition popover) · C2 fiat-first token framing ($ primary, RKU secondary) · A5 KPI strip + green/red validation banner (FORGD_DEEP_DIVE 100%-allocated grammar) · Forgd emission-grid idiom (% at TGE · lockup · unlock duration · frequency) + template norms as provenance chips · Hedgey vesting-layer ≠ lockup-layer · F1 about-this-figure card w/ Quick-Adjust deep-link.">
@@ -15,7 +15,7 @@
     <h1 class="font-display text-3xl mb-1">Tokens — vested is not unlocked.</h1>
     <p class="text-sm mb-6" style="color:var(--ink-gray-6)">The board token bucket as a schedule: vesting (service) and lockup (market) are two separate layers, never collapsed. Dollar values at the scenario's TGE FDV. Internal &amp; confidential · discussion draft, not a binding offer.</p>
 
-    <!-- KPI strip + validation banner (Forgd grammar) -->
+    <!-- KPI strip + validation banner -->
     <div class="frame mb-8 overflow-hidden">
       <div class="grid sm:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x" style="border-color:var(--outline-gray-1)">
         <div class="p-4"><div class="eyebrow mb-1">Granted · of supply</div><div class="text-xl tnum font-medium">3.30% <span class="text-sm font-normal" style="color:var(--ink-gray-5)">earned · 33.0M RKU</span></div></div>
@@ -28,10 +28,10 @@
       </div>
     </div>
 
-    <!-- Forgd-style per-group unlock/emission grid -->
-    <div class="section-label mb-2">Unlock schedule · per advisor <span class="eyebrow">· the Forgd emission-grid idiom — every column labeled, units explicit</span></div>
+    <!-- per-group unlock/emission grid -->
+    <div class="section-label mb-2">Unlock schedule · per advisor <span class="eyebrow">· every column labeled, units explicit</span></div>
     <div class="overflow-x-auto mb-3">
-    <table class="data" style="min-width:980px">
+    <table class="data" id="unlock-grid" style="min-width:980px">
       <thead>
         <tr>
           <th>Advisor</th><th class="num">% supply</th><th class="num">RKU</th>
@@ -51,14 +51,14 @@
     </table>
     </div>
     <div class="flex flex-wrap gap-1.5 mb-10">
-      <span class="prov-chip" title="Forgd Base Layer template, live walkthrough 2026-06-11"><span class="prov-dot prov-good"></span>Forgd template · advisors 2.5–3% · 0% TGE · 12mo lock + 24mo monthly</span>
-      <span class="prov-chip" title="Dragonfly token comp canon"><span class="prov-dot prov-good"></span>Dragonfly · ~12mo team/advisor lockup standard</span>
-      <span class="prov-chip" title="Liquifi benchmark, 150+ projects (directional, post-acquisition)"><span class="prov-dot prov-mid"></span>Liquifi · advisors+partners 1.5% · directional</span>
+      <span class="prov-chip" title="Token-launch template norms, verified Jun 2026"><span class="prov-dot prov-good"></span>template norm · advisors 2.5–3% · 0% TGE · 12mo lock + 24mo monthly</span>
+      <span class="prov-chip" title="Investor token-comp canon"><span class="prov-dot prov-good"></span>market canon · ~12mo team/advisor lockup</span>
+      <span class="prov-chip" title="Category benchmark, 150+ projects — directional"><span class="prov-dot prov-mid"></span>category benchmark · advisors+partners 1.5% · directional</span>
     </div>
 
     <div class="grid lg:grid-cols-[minmax(0,1fr),320px] gap-8 mb-10">
       <div class="min-w-0">
-        <!-- C1 · twin tracks + Today cursor -->
+        <!-- twin tracks + Today cursor -->
         <div class="section-label mb-2">Vested vs unlocked · board total <span class="eyebrow">· two curves, never collapsed — dash = non-color channel</span></div>
         <div class="frame p-5 overflow-x-auto">
           <svg viewBox="0 0 720 260" class="w-full" style="min-width:560px" role="img" aria-label="Twin-track chart: tokens vested (solid) versus unlocked (dashed staircase) over 72 months from engagement; today cursor at month 0 shows zero vested, zero unlocked">
@@ -114,14 +114,16 @@
           <div class="py-2.5 flex justify-between gap-2"><span class="tnum">TGE+18</span><span class="tnum" data-money='{"con":"$275K","base":"$825K","agg":"$2.48M"}'>$825K</span></div>
         </div>
         <p class="eyebrow mt-3 tnum">1.375M RKU/month across the board (33.0M ÷ 24). Months are TGE-relative — TGE timing is a scenario assumption (base: 2028), so the calendar re-anchors when the case changes. Unlock ≠ sale: this is when selling becomes <em>possible</em>.</p>
-        <div class="frame p-4 mt-6" style="background:var(--surface-amber-1);border-color:#ecd9b8">
-          <div class="eyebrow mb-1" style="color:var(--ink-amber-strong)">Why this view exists</div>
-          <p class="text-sm" style="color:var(--ink-gray-8)">Forgd models the token, Carta models the equity — nobody models the <em>person's package</em> across both. This page is the token half of that seam, per advisor, in dollars first.</p>
-        </div>
       </aside>
     </div>
   </div>
 </div>
 <script src="assets/proto.js"></script>
+<script>
+function exportSchedule(){
+  exportTableCsv('unlock-grid','token-schedule.csv');
+  toast('Downloaded token-schedule.csv — the unlock grid at the active case');
+}
+</script>
 </body>
 </html>

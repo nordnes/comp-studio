@@ -36,7 +36,30 @@ body { background: var(--surface-white); color: var(--ink-gray-9); font-feature-
 .tnum { font-variant-numeric: tabular-nums; }
 .section-label { font-size: 0.875rem; font-weight: 500; color: var(--ink-gray-7); }
 .eyebrow { font-size: 0.8125rem; color: var(--ink-gray-6); }
-.frame { background: var(--surface-white); border: 1px solid var(--outline-gray-1); border-radius: 0.5rem; }
+.frame { background: var(--surface-white); border: 1px solid var(--outline-gray-1); border-radius: 0.5rem; scroll-margin-top: 64px; }
+[data-item], [tabindex="0"] { scroll-margin-top: 64px; }
+
+/* Engine render pass: figures whose text changed pulse briefly (subtle Espresso amber fade) */
+@keyframes value-pulse { 0% { background-color: var(--surface-amber-1); } 100% { background-color: transparent; } }
+.value-pulse { animation: value-pulse 600ms ease-out; border-radius: 3px; }
+@media (prefers-reduced-motion: reduce) { .value-pulse { animation: none; } }
+
+/* Case-bound "active" flag: shown only when the element's data-case-active matches the live case */
+.case-active-flag { display: none; font-size: 0.6875rem; font-weight: 600; padding: 1px 6px; border-radius: 999px; background: var(--surface-amber-1); color: var(--ink-amber-strong); vertical-align: middle; }
+[data-case-active].case-active .case-active-flag { display: inline-block; }
+tr[data-case-active].case-active { background: var(--surface-amber-1); }
+/* Active-column highlight: table cells opted in via data-case-active follow the live case */
+td[data-case-active].case-active { background: var(--surface-amber-1); font-weight: 500; }
+th[data-case-active].case-active { color: var(--ink-amber-strong); }
+
+/* Register status dot — derives from the row's data-rag, so it follows every flip */
+.rag-dot { display: inline-block; width: 7px; height: 7px; border-radius: 999px; margin-right: 7px; vertical-align: 1px; background: var(--ink-gray-4); }
+[data-rag="r"] .rag-dot { background: var(--ink-red-3); }
+[data-rag="a"] .rag-dot { background: var(--ink-amber-3); }
+[data-rag="g"] .rag-dot { background: var(--ink-green-3); }
+
+/* Click/focus popover trigger (replaces title= tooltips) */
+[data-pop] { cursor: pointer; }
 a:focus-visible, button:focus-visible, [tabindex]:focus-visible, input:focus-visible {
   outline: 2px solid var(--ink-gray-6); outline-offset: 2px; border-radius: 2px;
 }
@@ -55,6 +78,10 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible, input:focus-vis
 .band-avatar.out { background: var(--ink-red-3); }
 .band-avatar:hover, .band-avatar.sel { box-shadow: 0 0 0 2px var(--ink-amber-3); z-index: 2; }
 .band-tick { position: absolute; top: 100%; margin-top: 4px; font-size: 11px; color: var(--ink-gray-5); transform: translateX(-50%); }
+
+/* Departure modeled (advisor): the package summary dims & the name strikes for the session */
+.pkg-departed { opacity: .6; }
+.pkg-strike { text-decoration: line-through; text-decoration-color: var(--ink-red-3); }
 
 /* Provenance / confidence chips (Carta TC 3-axis — 9a) */
 .prov-chip { display: inline-flex; align-items: center; gap: 5px; font-size: 0.75rem; color: var(--ink-gray-7); border: 1px solid var(--outline-gray-1); background: var(--surface-gray-1); padding: 2px 8px; border-radius: 999px; cursor: default; }
@@ -111,6 +138,18 @@ table.data th.num, table.data td.num { text-align: right; font-variant-numeric: 
 [role=tablist] [role=tab] { white-space: nowrap; flex: 0 0 auto; }
 [role=tab] { font-size: 0.875rem; padding: 6px 2px; border-bottom: 2px solid transparent; color: var(--ink-gray-6); }
 [role=tab][aria-selected=true] { border-color: var(--ink-gray-9); color: var(--ink-gray-9); font-weight: 500; }
+
+/* Scenario-range rows (Board): track + case-bound marker, repositioned by the data-pos render hook */
+.range-track { position: relative; height: 8px; border-radius: 999px; background: var(--surface-gray-3); }
+.range-marker { position: absolute; top: -4px; bottom: -4px; width: 3px; border-radius: 2px; background: var(--chart-capital); transform: translateX(-50%); transition: left .35s cubic-bezier(.22, .61, .36, 1); }
+@media (prefers-reduced-motion: reduce) { .range-marker { transition: none; } }
+
+/* Mini status chips (Overview roster cards): quiet gray default, amber = pre-conditions pending */
+.mini-chip { display: inline-flex; align-items: center; font-size: 0.6875rem; font-weight: 500; line-height: 1.5; padding: 1px 7px; border-radius: 999px; background: var(--surface-gray-2); color: var(--ink-gray-7); }
+.mini-chip.amber { background: var(--surface-amber-1); color: var(--ink-amber-strong); }
+
+/* Chart legend swatch */
+.legend-swatch { display: inline-block; width: 10px; height: 10px; border-radius: 3px; }
 
 /* Print path (6.1 grammar): chrome stripped, watermark tiles, confidential footer */
 .print-footer { display: none; }

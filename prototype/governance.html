@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,350;9..144,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/tokens.css">
 <style>body{font-family:Inter,system-ui,sans-serif}</style>
-<script>window.PAGE_ACTIONS=[["Export register",false]];</script>
+<script>window.PAGE_ACTIONS=[["Print register",false,"window.print()"]];</script>
 </head>
 <body>
 <div id="page" data-patterns="5.2 RAG triples are radiogroups (arrow-key cyclable) · 5.1 status flips toast w/ Undo + inline why-note at the moment of change (COM-176 surfaced) · 5.4 audit log promoted w/ kind filters + artifact links (Ledgy doc-binding) · 5.3 scroll-margin under sticky header · IMPROVEMENT_PLAN E1 n-of-m consent progress + evidence embedded INSIDE the item (Carta consent triad, COMP_STUDIO_COMPETITIVE_RESEARCH cross-cutting) · A4 guardrail justifications travel here from the Board · summary chips filter the register.">
@@ -16,46 +16,46 @@
     <p class="text-sm mb-5" style="color:var(--ink-gray-6)">The Governance Table v4 as a live checklist. Tracking state for an internal discussion, not legal advice.</p>
 
     <div class="flex flex-wrap items-center gap-2 text-sm mb-7" role="group" aria-label="Filter register by status">
-      <button class="preset-chip on tnum" onclick="ragFilter(this,'all')">All · 14</button>
-      <button class="preset-chip tnum" onclick="ragFilter(this,'r')"><span class="inline-block w-2 h-2 rounded-full align-middle mr-1" style="background:var(--ink-red-3)"></span>9 red</button>
-      <button class="preset-chip tnum" onclick="ragFilter(this,'a')"><span class="inline-block w-2 h-2 rounded-full align-middle mr-1" style="background:var(--ink-amber-3)"></span>5 amber</button>
-      <button class="preset-chip tnum" onclick="ragFilter(this,'g')"><span class="inline-block w-2 h-2 rounded-full align-middle mr-1" style="background:var(--ink-green-3)"></span>0 green</button>
+      <button class="preset-chip on tnum" onclick="ragFilter(this,'all')">All · <span data-cnt="all">15</span></button>
+      <button class="preset-chip tnum" onclick="ragFilter(this,'r')"><span class="inline-block w-2 h-2 rounded-full align-middle mr-1" style="background:var(--ink-red-3)"></span><span data-cnt="r">10</span> red</button>
+      <button class="preset-chip tnum" onclick="ragFilter(this,'a')"><span class="inline-block w-2 h-2 rounded-full align-middle mr-1" style="background:var(--ink-amber-3)"></span><span data-cnt="a">5</span> amber</button>
+      <button class="preset-chip tnum" onclick="ragFilter(this,'g')"><span class="inline-block w-2 h-2 rounded-full align-middle mr-1" style="background:var(--ink-green-3)"></span><span data-cnt="g">0</span> green</button>
       <span class="eyebrow ml-2">chips filter the register · grants stay watermarked until green</span>
     </div>
 
-    <div class="section-label mb-3">A · Pool &amp; resolution</div>
     <div class="space-y-4 mb-10" id="register">
+      <div class="section-label reg-sec">A · Pool &amp; resolution</div>
       <div class="frame p-4" data-item="A-1" data-rag="a" style="scroll-margin-top:64px">
         <div class="flex flex-wrap items-center gap-3">
           <div class="flex-1 min-w-[260px]">
-            <div class="font-medium text-sm">A-1 · Bell Rock Memorandum confirmation</div>
+            <div class="font-medium text-sm"><span class="rag-dot" aria-hidden="true"></span>A-1 · Bell Rock Memorandum confirmation</div>
             <div class="text-sm" style="color:var(--ink-gray-6)">VERIFY — confirmation from Charlie / Bell Rock before the resolution is signed. <span class="eyebrow">Owner · Charlie / Bell Rock · before resolution signed</span></div>
           </div>
-          <span class="eyebrow tnum" title="Owner approvals toward unanimous consent">1 of 2 approved</span>
+          <span class="eyebrow tnum" data-pop="Owner approvals toward unanimous consent">1 of 2 approved</span>
           <div class="rag" aria-label="Status: A-1">
             <button class="r" aria-checked="false">Red</button>
             <button class="a" aria-checked="true">Amber</button>
             <button class="g" aria-checked="false">Green</button>
           </div>
         </div>
-        <!-- E1 · evidence embedded INSIDE the item (Carta consent triad) -->
+        <!-- evidence embedded INSIDE the item -->
         <details class="mt-3">
           <summary class="text-sm cursor-pointer underline" style="color:var(--ink-gray-7)">Evidence · what is being approved</summary>
           <div class="mt-2 p-3 rounded text-sm flex flex-wrap gap-x-8 gap-y-2" style="background:var(--surface-gray-1)">
             <span><span class="eyebrow">Memorandum</span> <span class="tnum">Bell Rock v3 · 28 May 2026</span></span>
             <span><span class="eyebrow">Confirms</span> Cayman ESOP mechanics + non-voting class</span>
             <span><span class="eyebrow">Approvals</span> Robin ✓ · Charlie — pending</span>
-            <a href="#" class="underline text-xs self-center">document ↗</a>
           </div>
         </details>
       </div>
       <div class="frame p-4" data-item="A-2" data-rag="r" style="scroll-margin-top:64px">
         <div class="flex flex-wrap items-center gap-3">
           <div class="flex-1 min-w-[260px]">
-            <div class="font-medium text-sm">A-2 · Pool count / % decision (the Resolution 4/5 blanks)</div>
+            <div class="font-medium text-sm"><span class="rag-dot" aria-hidden="true"></span>A-2 · Pool count / % decision (the Resolution 4/5 blanks)</div>
             <div class="text-sm" style="color:var(--ink-gray-6)">OPEN — Board decision: 10% ≈ 5,368 shares / 15% ≈ 8,523 within the 12,450 available. <span class="eyebrow">Owner · Board · blocks every grant</span></div>
+            <p class="eyebrow mt-1 tnum">Grants made now price at the <span data-stage-label>Bridge close</span> round.</p>
           </div>
-          <span class="eyebrow tnum" title="Owner approvals toward unanimous consent">0 of 3 approved</span>
+          <span class="eyebrow tnum" data-pop="Owner approvals toward unanimous consent">0 of 3 approved</span>
           <div class="rag" aria-label="Status: A-2">
             <button class="r" aria-checked="true">Red</button>
             <button class="a" aria-checked="false">Amber</button>
@@ -76,14 +76,14 @@
           </div>
         </details>
       </div>
-      <div class="section-label pt-2">B · Executive grants &amp; investor consents</div>
+      <div class="section-label reg-sec pt-2">B · Executive grants</div>
       <div class="frame p-4" data-item="B-3" data-rag="r" style="scroll-margin-top:64px">
         <div class="flex flex-wrap items-center gap-3">
           <div class="flex-1 min-w-[260px]">
-            <div class="font-medium text-sm">B-3 · Pantera consent — per executive-officer grant</div>
+            <div class="font-medium text-sm"><span class="rag-dot" aria-hidden="true"></span>B-3 · Pantera consent — per executive-officer grant</div>
             <div class="text-sm" style="color:var(--ink-gray-6)">REQUIRED — Robin's grant: standalone, immediate, before the term sheet; not bundled with the bridge. <span class="eyebrow">Owner · Robin · before term sheet</span></div>
           </div>
-          <span class="eyebrow tnum" title="Owner approvals toward unanimous consent">0 of 1 approved</span>
+          <span class="eyebrow tnum" data-pop="Owner approvals toward unanimous consent">0 of 1 approved</span>
           <div class="rag" aria-label="Status: B-3">
             <button class="r" aria-checked="true">Red</button>
             <button class="a" aria-checked="false">Amber</button>
@@ -92,16 +92,163 @@
         </div>
         <details class="mt-3">
           <summary class="text-sm cursor-pointer underline" style="color:var(--ink-gray-7)">Evidence · consent scope</summary>
-          <div class="mt-2 p-3 rounded text-sm" style="background:var(--surface-gray-1)">Pantera side-letter §3.2 — consent required for any executive-officer equity grant. Sequencing per spec Part 17: Robin's grant precedes the bridge term sheet. <a href="#" class="underline text-xs">side letter ↗</a></div>
+          <div class="mt-2 p-3 rounded text-sm" style="background:var(--surface-gray-1)">Pantera side-letter §3.2 — consent required for any executive-officer equity grant. Sequencing: Robin's grant precedes the bridge term sheet.</div>
         </details>
       </div>
-      <div class="frame p-4" data-item="G-1" data-rag="a" style="scroll-margin-top:64px">
+      <div class="section-label reg-sec pt-2">C · Bridge &amp; investor rights</div>
+      <div class="frame p-4" data-item="C-4" data-rag="r">
         <div class="flex flex-wrap items-center gap-3">
           <div class="flex-1 min-w-[260px]">
-            <div class="font-medium text-sm">G-1 · Guardrail exception — Iraj band breach (from the Board)</div>
-            <div class="text-sm" style="color:var(--ink-gray-6)">JUSTIFIED — 1.50% &gt; FAST Expert 1.00%; justification travels with the audit record (A4). <span class="eyebrow">Owner · Robin · board minute pending</span></div>
+            <div class="font-medium text-sm"><span class="rag-dot" aria-hidden="true"></span>C-4 · Pantera consent — Converting Securities &gt; $10m</div>
+            <div class="text-sm" style="color:var(--ink-gray-6)">REQUIRED — consent for Converting Securities above $10m, exercised at the bridge. <span class="eyebrow">Owner · Robin · at the bridge</span></div>
           </div>
-          <span class="eyebrow tnum">1 of 2 approved</span>
+          <div class="rag" aria-label="Status: C-4">
+            <button class="r" aria-checked="true">Red</button>
+            <button class="a" aria-checked="false">Amber</button>
+            <button class="g" aria-checked="false">Green</button>
+          </div>
+        </div>
+      </div>
+      <div class="frame p-4" data-item="C-5" data-rag="r">
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="flex-1 min-w-[260px]">
+            <div class="font-medium text-sm"><span class="rag-dot" aria-hidden="true"></span>C-5 · Pantera consent — further Token Warrants</div>
+            <div class="text-sm" style="color:var(--ink-gray-6)">REQUIRED — consent for further Token Warrants at the bridge; separate from consents 3 &amp; 4. <span class="eyebrow">Owner · Robin · at the bridge</span></div>
+          </div>
+          <div class="rag" aria-label="Status: C-5">
+            <button class="r" aria-checked="true">Red</button>
+            <button class="a" aria-checked="false">Amber</button>
+            <button class="g" aria-checked="false">Green</button>
+          </div>
+        </div>
+      </div>
+      <div class="frame p-4" data-item="C-6" data-rag="a">
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="flex-1 min-w-[260px]">
+            <div class="font-medium text-sm"><span class="rag-dot" aria-hidden="true"></span>C-6 · Pro-rata invitations — Pantera / Reciprocal / Lightspeed</div>
+            <div class="text-sm" style="color:var(--ink-gray-6)">OPEN — invite before the term sheet; document non-participation by reply email. <span class="eyebrow">Owner · Robin · before term sheet</span></div>
+          </div>
+          <div class="rag" aria-label="Status: C-6">
+            <button class="r" aria-checked="false">Red</button>
+            <button class="a" aria-checked="true">Amber</button>
+            <button class="g" aria-checked="false">Green</button>
+          </div>
+        </div>
+      </div>
+      <div class="frame p-4" data-item="C-7" data-rag="a">
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="flex-1 min-w-[260px]">
+            <div class="font-medium text-sm"><span class="rag-dot" aria-hidden="true"></span>C-7 · MFN drafting check</div>
+            <div class="text-sm" style="color:var(--ink-gray-6)">VERIFY — the bridge mirrors the seed terms exactly, which kills MFN flow-through. <span class="eyebrow">Owner · Counsel · at drafting</span></div>
+          </div>
+          <div class="rag" aria-label="Status: C-7">
+            <button class="r" aria-checked="false">Red</button>
+            <button class="a" aria-checked="true">Amber</button>
+            <button class="g" aria-checked="false">Green</button>
+          </div>
+        </div>
+      </div>
+      <div class="frame p-4" data-item="C-8" data-rag="r">
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="flex-1 min-w-[260px]">
+            <div class="font-medium text-sm"><span class="rag-dot" aria-hidden="true"></span>C-8 · Cap table as the pre-money opening position</div>
+            <div class="text-sm" style="color:var(--ink-gray-6)">OPEN — the cap table goes in as the pre-money opening position at the bridge. <span class="eyebrow">Owner · Robin · at the bridge</span></div>
+          </div>
+          <div class="rag" aria-label="Status: C-8">
+            <button class="r" aria-checked="true">Red</button>
+            <button class="a" aria-checked="false">Amber</button>
+            <button class="g" aria-checked="false">Green</button>
+          </div>
+        </div>
+      </div>
+      <div class="section-label reg-sec pt-2">D · Plumbing</div>
+      <div class="frame p-4" data-item="D-9" data-rag="r">
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="flex-1 min-w-[260px]">
+            <div class="font-medium text-sm"><span class="rag-dot" aria-hidden="true"></span>D-9 · Deed-of-adherence template</div>
+            <div class="text-sm" style="color:var(--ink-gray-6)">OPEN — drag-along, transfer restrictions, PoA; the sole contractual layer — no SHA. <span class="eyebrow">Owner · Counsel · before first grant</span></div>
+          </div>
+          <div class="rag" aria-label="Status: D-9">
+            <button class="r" aria-checked="true">Red</button>
+            <button class="a" aria-checked="false">Amber</button>
+            <button class="g" aria-checked="false">Green</button>
+          </div>
+        </div>
+      </div>
+      <div class="frame p-4" data-item="D-10" data-rag="r">
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="flex-1 min-w-[260px]">
+            <div class="font-medium text-sm"><span class="rag-dot" aria-hidden="true"></span>D-10 · Cap-table admin + ERS Annual Return setup</div>
+            <div class="text-sm" style="color:var(--ink-gray-6)">OPEN — cap-table administration and the ERS Annual Return registration, in place before the first grant. <span class="eyebrow">Owner · Ops · before first grant</span></div>
+          </div>
+          <div class="rag" aria-label="Status: D-10">
+            <button class="r" aria-checked="true">Red</button>
+            <button class="a" aria-checked="false">Amber</button>
+            <button class="g" aria-checked="false">Green</button>
+          </div>
+        </div>
+      </div>
+      <div class="section-label reg-sec pt-2">C.6 · Open items</div>
+      <div class="frame p-4" data-item="C.6·7" data-rag="a">
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="flex-1 min-w-[260px]">
+            <div class="font-medium text-sm"><span class="rag-dot" aria-hidden="true"></span>C.6·7 · MFN notifications at the bridge</div>
+            <div class="text-sm" style="color:var(--ink-gray-6)">CONDITIONAL — notifications go out only if bridge terms deviate; depends on the C-7 drafting check. <span class="eyebrow">Owner · Counsel · at the bridge</span></div>
+          </div>
+          <div class="rag" aria-label="Status: C.6·7">
+            <button class="r" aria-checked="false">Red</button>
+            <button class="a" aria-checked="true">Amber</button>
+            <button class="g" aria-checked="false">Green</button>
+          </div>
+        </div>
+      </div>
+      <div class="frame p-4" data-item="C.6·10" data-rag="r">
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="flex-1 min-w-[260px]">
+            <div class="font-medium text-sm"><span class="rag-dot" aria-hidden="true"></span>C.6·10 · HMRC SAV valuation</div>
+            <div class="text-sm" style="color:var(--ink-gray-6)">OPEN — valuation agreed before the first grant; the same valuation feeds 409A. <span class="eyebrow">Owner · Ops · before first grant</span></div>
+          </div>
+          <div class="rag" aria-label="Status: C.6·10">
+            <button class="r" aria-checked="true">Red</button>
+            <button class="a" aria-checked="false">Amber</button>
+            <button class="g" aria-checked="false">Green</button>
+          </div>
+        </div>
+      </div>
+      <div class="frame p-4" data-item="C.6·11" data-rag="r">
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="flex-1 min-w-[260px]">
+            <div class="font-medium text-sm"><span class="rag-dot" aria-hidden="true"></span>C.6·11 · Corporate-wallet RTA audit</div>
+            <div class="text-sm" style="color:var(--ink-gray-6)">OPEN — s431 is unavailable if the RTA pays to a corporate wallet; audit before the next token cycle. <span class="eyebrow">Owner · Ops · before next token cycle</span></div>
+          </div>
+          <div class="rag" aria-label="Status: C.6·11">
+            <button class="r" aria-checked="true">Red</button>
+            <button class="a" aria-checked="false">Amber</button>
+            <button class="g" aria-checked="false">Green</button>
+          </div>
+        </div>
+      </div>
+      <div class="frame p-4" data-item="C.6·12" data-rag="r">
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="flex-1 min-w-[260px]">
+            <div class="font-medium text-sm"><span class="rag-dot" aria-hidden="true"></span>C.6·12 · Series-A releases</div>
+            <div class="text-sm" style="color:var(--ink-gray-6)">OPEN — Pantera ss.8–13 and Lightspeed s.6(a) releases, secured at the Series A. <span class="eyebrow">Owner · Counsel · at Series A</span></div>
+          </div>
+          <div class="rag" aria-label="Status: C.6·12">
+            <button class="r" aria-checked="true">Red</button>
+            <button class="a" aria-checked="false">Amber</button>
+            <button class="g" aria-checked="false">Green</button>
+          </div>
+        </div>
+      </div>
+      <div class="section-label reg-sec pt-2">Guardrail exceptions · from the Board</div>
+      <div class="frame p-4" data-item="G-1" data-rag="a">
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="flex-1 min-w-[260px]">
+            <div class="font-medium text-sm"><span class="rag-dot" aria-hidden="true"></span>G-1 · Guardrail exception — Iraj band breach</div>
+            <div class="text-sm" style="color:var(--ink-gray-6)">JUSTIFIED — 1.50% &gt; FAST Expert 1.00% · delta 0.50pp ≈ <span class="tnum" data-money='{"con":"$624K","base":"$2.56M","agg":"$7.14M"}'>$2.56M</span> at the <span data-case-label>Base</span> case. <span class="eyebrow">Owner · Robin · board minute pending</span></div>
+          </div>
+          <span class="eyebrow tnum" data-pop="Owner approvals toward unanimous consent">1 of 2 approved</span>
           <div class="rag" aria-label="Status: G-1">
             <button class="r" aria-checked="false">Red</button>
             <button class="a" aria-checked="true">Amber</button>
@@ -110,40 +257,65 @@
         </div>
         <details class="mt-3">
           <summary class="text-sm cursor-pointer underline" style="color:var(--ink-gray-7)">Evidence · the justification on file</summary>
-          <div class="mt-2 p-3 rounded text-sm" style="background:var(--surface-gray-1)">"Chair-adjacent orchestrator role; ex-JP Morgan Global COO (FIG); anchors the entire roster" — recorded 11 Jun on the Board, delta 0.50pp ≈ $2.56M at base. In-policy rows need no ceremony; exceptions are documented (Compa split).</div>
+          <div class="mt-2 p-3 rounded text-sm" style="background:var(--surface-gray-1)">"Chair-adjacent orchestrator role; ex-JP Morgan Global COO (FIG); anchors the entire roster" — recorded 11 Jun on the Board, delta 0.50pp ≈ <span class="tnum" data-money='{"con":"$624K","base":"$2.56M","agg":"$7.14M"}'>$2.56M</span> · <span data-case-label>Base</span> case. In-policy rows need no ceremony; exceptions are documented.</div>
         </details>
       </div>
-      <p class="eyebrow">… 10 more register items (C-4 → C.6·12) follow the same row grammar: status dot · ID · VERIFY/REQUIRED/OPEN description · owner · timing · n-of-m · RAG setter · embedded evidence.</p>
+      <p class="eyebrow hidden py-4 text-center" id="register-empty">No items at this status right now.</p>
     </div>
 
-    <div class="section-label mb-3">Audit log · append-only <span class="eyebrow">(promoted: filters + artifact links)</span></div>
+    <div class="section-label mb-3">Audit log · append-only</div>
     <div class="frame p-4">
       <div class="flex flex-wrap gap-1.5 mb-4" role="group" aria-label="Filter by kind">
-        <button class="preset-chip on" onclick="logFilter(this,'all')">All · 6</button><button class="preset-chip" onclick="logFilter(this,'some')">consent · 2</button><button class="preset-chip" onclick="logFilter(this,'some')">grant · 1</button><button class="preset-chip" onclick="logFilter(this,'some')">proposition · 2</button><button class="preset-chip" onclick="logFilter(this,'some')">decision · 1</button><button class="preset-chip" onclick="logFilter(this,'empty')">review · 0</button>
+        <button class="preset-chip on" onclick="logFilter(this,'all')">All · 2</button><button class="preset-chip" onclick="logFilter(this,'some')">proposition · 1</button><button class="preset-chip" onclick="logFilter(this,'some')">decision · 1</button><button class="preset-chip" onclick="logFilter(this,'empty')">review · 0</button>
       </div>
       <div id="log-empty" class="hidden py-8 text-center text-sm" style="color:var(--ink-gray-6)">
         No review events yet — the cadence projects the first checkpoint for Dec 2026.<br/>
         <span class="eyebrow">Reviews record engagement, objectives earned and the board view; outcomes append here automatically.</span>
       </div>
-      <div class="divide-y text-sm" style="border-color:var(--outline-gray-1)">
-        <div class="py-2.5 flex flex-wrap gap-x-3"><span class="eyebrow tnum w-32">Jun 11, 12:55</span><span class="text-xs px-1.5 rounded" style="background:var(--surface-gray-2)">consent</span><span>A-1 Bell Rock: amber → green</span><span class="eyebrow">why: "Charlie confirmed by email"</span><a href="#" class="underline text-xs ml-auto">artifact ↗</a></div>
+      <div class="divide-y text-sm" id="audit-rows" style="border-color:var(--outline-gray-1)">
         <div class="py-2.5 flex flex-wrap gap-x-3"><span class="eyebrow tnum w-32">Jun 11, 12:41</span><span class="text-xs px-1.5 rounded" style="background:var(--surface-gray-2)">proposition</span><span>Iraj letter v1 sealed</span><a href="proposition.html" class="underline text-xs ml-auto">sealed render ↗</a></div>
-        <div class="py-2.5 flex flex-wrap gap-x-3"><span class="eyebrow tnum w-32">Jun 11, 11:18</span><span class="text-xs px-1.5 rounded" style="background:var(--surface-gray-2)">decision</span><span>Grant decision "Iraj chair package v2" recorded (9 steps)</span><a href="#" class="underline text-xs ml-auto">artifact ↗</a></div>
+        <div class="py-2.5 flex flex-wrap gap-x-3"><span class="eyebrow tnum w-32">Jun 11, 11:18</span><span class="text-xs px-1.5 rounded" style="background:var(--surface-gray-2)">decision</span><span>Grant decision "Iraj chair package v2" recorded (9 steps)</span></div>
       </div>
-      <p class="eyebrow mt-3">No edit or delete by design. Newest 1000 events kept locally; server-side integrity arrives with M6. Every event links the artifact that justifies it (Ledgy pattern).</p>
+      <p class="eyebrow mt-3">No edit or delete by design. Newest 1000 events kept locally. Events link their artifact where one exists.</p>
     </div>
   </div>
 </div>
 <script src="assets/proto.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded',()=>wireRag(document.getElementById('register')));
+let ragMode = 'all';
+document.addEventListener('DOMContentLoaded',()=>{
+  wireRag(document.getElementById('register'));
+  window.onRagFlip = recount;
+  recount(); applyRagFilter();
+});
+function recount(){
+  const rows = [...document.querySelectorAll('#register [data-item]')];
+  const n = k => rows.filter(r => r.dataset.rag === k).length;
+  const counts = { all: rows.length, r: n('r'), a: n('a'), g: n('g') };
+  document.querySelectorAll('[data-cnt]').forEach(el => { el.textContent = counts[el.dataset.cnt]; });
+}
 function ragFilter(btn, mode){
   document.querySelectorAll('[aria-label="Filter register by status"] .preset-chip').forEach(c=>c.classList.remove('on'));
   btn.classList.add('on');
-  document.querySelectorAll('#register [data-rag]').forEach(el=>{
-    el.style.display = (mode==='all' || el.dataset.rag===mode) ? '' : 'none';
+  ragMode = mode;
+  applyRagFilter();
+}
+function applyRagFilter(){
+  let visible = 0;
+  document.querySelectorAll('#register [data-item]').forEach(el=>{
+    const show = ragMode==='all' || el.dataset.rag===ragMode;
+    el.style.display = show ? '' : 'none';
+    if (show) visible++;
   });
-  if(mode==='g') toast('0 green items — the register opens fully red/amber by design; flips land on the audit log.');
+  document.querySelectorAll('#register .reg-sec').forEach(label=>{
+    let any = false, el = label.nextElementSibling;
+    while (el && !el.classList.contains('reg-sec')) {
+      if (el.dataset && el.dataset.item && el.style.display !== 'none') any = true;
+      el = el.nextElementSibling;
+    }
+    label.style.display = any ? '' : 'none';
+  });
+  document.getElementById('register-empty').classList.toggle('hidden', visible > 0);
 }
 function logFilter(btn, mode){
   document.querySelectorAll('[aria-label="Filter by kind"] .preset-chip').forEach(c=>c.classList.remove('on'));

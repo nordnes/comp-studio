@@ -12,7 +12,7 @@ body{font-family:Inter,system-ui,sans-serif}
 .pin[aria-pressed=true]{color:var(--ink-amber-strong)}
 .pin:hover{background:var(--surface-gray-2)}
 </style>
-<script>window.PAGE_ACTIONS=[["Pin set",false]];</script>
+<script>window.PAGE_ACTIONS=[["Download (CSV)",false,"exportMatrix()"]];</script>
 </head>
 <body>
 <div id="page" data-patterns="3.3 scenario deltas live ONCE in the column headers · 3.1 case-bound labels (no stale 'Base case') · 3.6 A/B named columns + Δ column (Runway variance grammar) · 3.4 tier words, no unexplained colors · Runway lock/compare lifecycle on the scenario set switcher · CLAUDE_DESIGN_PROMPT §5.3 full column set (Earned/Ceiling/Spread/Cash/Pin) + grouped-bar 'Net value across scenarios' + designed fork chip/warning/undo · pinned rows float to the top.">
@@ -22,11 +22,12 @@ body{font-family:Inter,system-ui,sans-serif}
 
     <div class="flex flex-wrap items-center gap-2 mb-3">
       <span class="eyebrow">Scenario set</span>
-      <button class="preset-chip on">Main · locked 🔒</button>
+      <button class="preset-chip on">Main · locked</button>
       <button class="preset-chip" id="fork-chip" onclick="forkSet()">+ fork a draft set</button>
-      <span class="eyebrow ml-3">Locked sets are the governed record — edits happen on forks (Runway pattern).</span>
+      <span class="eyebrow ml-3">Locked sets are the governed record — edits happen on forks.</span>
     </div>
-    <!-- designed fork treatment: chip + warning + undo (§5.3) -->
+    <p class="eyebrow mb-3 tnum">Stage: <span data-stage-label>Bridge close</span> — new grants price at <span data-stage-text='{"bridge":"$1,572.95","seriesA":"$1,677.83","seriesB":"$3,145.90","seriesC":"$4,212.05"}'>$1,572.95</span>/share.</p>
+    <!-- designed fork treatment: chip + warning + undo -->
     <div class="frame p-3 mb-5 hidden text-sm flex-wrap items-center gap-3" id="fork-banner" style="background:var(--surface-amber-1);border-color:#ecd9b8">
       <span style="color:var(--ink-amber-strong)"><strong>Comparing fork "B · $90m floor"</strong> against the working draft — fork figures are unfunded modeling, not the governed record.</span>
       <button class="btn ml-auto" onclick="unfork()">Discard fork (undo)</button>
@@ -39,66 +40,74 @@ body{font-family:Inter,system-ui,sans-serif}
           <th aria-label="Pin"></th>
           <th>Advisor</th><th>Tier</th><th class="num">Base eq</th>
           <th class="num">Earned</th><th class="num">Ceiling</th><th class="num">Spread</th>
-          <th class="num">Net · Conservative<br><span class="text-xs font-normal delta-down tnum">scenario −76% vs base</span></th>
-          <th class="num">Net · Base</th>
-          <th class="num">Net · Aggressive<br><span class="text-xs font-normal delta-up tnum">scenario +180% vs base</span></th>
+          <th class="num" data-case-active="con">Net · Conservative <span class="case-active-flag">active</span><br><span class="text-xs font-normal delta-down tnum">scenario −76% vs base</span></th>
+          <th class="num" data-case-active="base">Net · Base <span class="case-active-flag">active</span></th>
+          <th class="num" data-case-active="agg">Net · Aggressive <span class="case-active-flag">active</span><br><span class="text-xs font-normal delta-up tnum">scenario +180% vs base</span></th>
           <th class="num">Cash/yr</th>
         </tr>
       </thead>
       <tbody>
-        <tr><td><button class="pin" aria-pressed="false" aria-label="Pin Iraj Ispahani" onclick="pinRow(this)">☆</button></td><td><a class="underline" href="advisor.html">Iraj Ispahani</a></td><td>Anchor</td><td class="num">1.50%</td><td class="num">+0%</td><td class="num">+70%</td><td class="num tnum">$5.33M</td><td class="num">$1.87M</td><td class="num font-medium">$7.67M</td><td class="num">$21.4M</td><td class="num">$0</td></tr>
-        <tr><td><button class="pin" aria-pressed="false" aria-label="Pin Robert Reoch" onclick="pinRow(this)">☆</button></td><td>Robert Reoch</td><td>Strategic</td><td class="num">1.00%</td><td class="num">+0%</td><td class="num">+30%</td><td class="num tnum">$1.53M</td><td class="num">$1.25M</td><td class="num font-medium">$5.11M</td><td class="num">$14.3M</td><td class="num">$0</td></tr>
-        <tr><td><button class="pin" aria-pressed="false" aria-label="Pin Martin Keller" onclick="pinRow(this)">☆</button></td><td>Martin Keller</td><td>Strategic</td><td class="num">1.00%</td><td class="num">+0%</td><td class="num">+40%</td><td class="num tnum">$2.04M</td><td class="num">$1.25M</td><td class="num font-medium">$5.11M</td><td class="num">$14.3M</td><td class="num">$0</td></tr>
-        <tr><td><button class="pin" aria-pressed="false" aria-label="Pin Kerim Derhalli" onclick="pinRow(this)">☆</button></td><td>Kerim Derhalli</td><td>Strategic</td><td class="num">1.00%</td><td class="num">+0%</td><td class="num">+80%</td><td class="num tnum">$4.09M</td><td class="num">$1.25M</td><td class="num font-medium">$5.11M</td><td class="num">$14.3M</td><td class="num">$0</td></tr>
-        <tr><td><button class="pin" aria-pressed="false" aria-label="Pin Carl Bang" onclick="pinRow(this)">☆</button></td><td>Carl Bang</td><td>Base</td><td class="num">0.50%</td><td class="num">+0%</td><td class="num">+20%</td><td class="num tnum">$512K</td><td class="num">$624K</td><td class="num font-medium">$2.56M</td><td class="num">$7.14M</td><td class="num">$0</td></tr>
-        <tr><td><button class="pin" aria-pressed="false" aria-label="Pin Rajesh Mehta" onclick="pinRow(this)">☆</button></td><td>Rajesh Mehta</td><td>Base</td><td class="num">0.50%</td><td class="num">+0%</td><td class="num">+20%</td><td class="num tnum">$512K</td><td class="num">$624K</td><td class="num font-medium">$2.56M</td><td class="num">$7.14M</td><td class="num">$0</td></tr>
-        <tr class="font-medium" id="totals-row" style="background:var(--surface-gray-1)"><td></td><td>Board · 6</td><td></td><td class="num">5.50%</td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num">$6.87M</td><td class="num">$28.1M</td><td class="num">$78.6M</td><td class="num">$0</td></tr>
+        <tr><td><button class="pin" aria-pressed="false" aria-label="Pin Iraj Ispahani" onclick="pinRow(this)">☆</button></td><td><a class="underline" href="advisor.html">Iraj Ispahani</a></td><td>Anchor</td><td class="num">1.50%</td><td class="num">+0%</td><td class="num">+70%</td><td class="num tnum" data-money='{"con":"$1.31M","base":"$5.33M","agg":"$15.0M"}'>$5.33M</td><td class="num" data-case-active="con">$1.87M</td><td class="num" data-case-active="base">$7.67M</td><td class="num" data-case-active="agg">$21.4M</td><td class="num">$0</td></tr>
+        <tr><td><button class="pin" aria-pressed="false" aria-label="Pin Robert Reoch" onclick="pinRow(this)">☆</button></td><td>Robert Reoch</td><td>Strategic</td><td class="num">1.00%</td><td class="num">+0%</td><td class="num">+30%</td><td class="num tnum" data-money='{"con":"$375K","base":"$1.53M","agg":"$4.29M"}'>$1.53M</td><td class="num" data-case-active="con">$1.25M</td><td class="num" data-case-active="base">$5.11M</td><td class="num" data-case-active="agg">$14.3M</td><td class="num">$0</td></tr>
+        <tr><td><button class="pin" aria-pressed="false" aria-label="Pin Martin Keller" onclick="pinRow(this)">☆</button></td><td>Martin Keller</td><td>Strategic</td><td class="num">1.00%</td><td class="num">+0%</td><td class="num">+40%</td><td class="num tnum" data-money='{"con":"$500K","base":"$2.04M","agg":"$5.72M"}'>$2.04M</td><td class="num" data-case-active="con">$1.25M</td><td class="num" data-case-active="base">$5.11M</td><td class="num" data-case-active="agg">$14.3M</td><td class="num">$0</td></tr>
+        <tr><td><button class="pin" aria-pressed="false" aria-label="Pin Kerim Derhalli" onclick="pinRow(this)">☆</button></td><td>Kerim Derhalli</td><td>Strategic</td><td class="num">1.00%</td><td class="num">+0%</td><td class="num">+80%</td><td class="num tnum" data-money='{"con":"$1.00M","base":"$4.09M","agg":"$11.4M"}'>$4.09M</td><td class="num" data-case-active="con">$1.25M</td><td class="num" data-case-active="base">$5.11M</td><td class="num" data-case-active="agg">$14.3M</td><td class="num">$0</td></tr>
+        <tr><td><button class="pin" aria-pressed="false" aria-label="Pin Carl Bang" onclick="pinRow(this)">☆</button></td><td>Carl Bang</td><td>Base</td><td class="num">0.50%</td><td class="num">+0%</td><td class="num">+20%</td><td class="num tnum" data-money='{"con":"$125K","base":"$512K","agg":"$1.43M"}'>$512K</td><td class="num" data-case-active="con">$624K</td><td class="num" data-case-active="base">$2.56M</td><td class="num" data-case-active="agg">$7.14M</td><td class="num">$0</td></tr>
+        <tr><td><button class="pin" aria-pressed="false" aria-label="Pin Rajesh Mehta" onclick="pinRow(this)">☆</button></td><td>Rajesh Mehta</td><td>Base</td><td class="num">0.50%</td><td class="num">+0%</td><td class="num">+20%</td><td class="num tnum" data-money='{"con":"$125K","base":"$512K","agg":"$1.43M"}'>$512K</td><td class="num" data-case-active="con">$624K</td><td class="num" data-case-active="base">$2.56M</td><td class="num" data-case-active="agg">$7.14M</td><td class="num">$0</td></tr>
+        <tr class="font-medium" id="totals-row" style="background:var(--surface-gray-1)"><td></td><td>Board · 6</td><td></td><td class="num">5.50%</td><td class="num"></td><td class="num"></td><td class="num tnum" data-money='{"con":"$3.44M","base":"$14.0M","agg":"$39.3M"}'>$14.0M</td><td class="num" data-case-active="con">$6.87M</td><td class="num" data-case-active="base">$28.1M</td><td class="num" data-case-active="agg">$78.6M</td><td class="num">$0</td></tr>
       </tbody>
     </table>
     </div>
 
-    <div class="section-label mb-2">Net value across scenarios · $M <span class="eyebrow">· grouped bars per advisor — position is the non-color channel (Conservative always left)</span></div>
+    <div class="section-label mb-2">Net value across scenarios · $M <span class="eyebrow">· hover or click a bar for its value</span></div>
     <div class="frame p-5 mb-10 overflow-x-auto">
-      <svg viewBox="0 0 760 230" class="w-full" style="min-width:600px" role="img" aria-label="Grouped bar chart: net value per advisor for Conservative, Base, Aggressive scenarios in millions of dollars">
+      <svg viewBox="0 0 760 234" class="w-full" style="min-width:600px" role="img" aria-label="Grouped bar chart: net value per advisor for Conservative, Base and Aggressive scenarios in millions of dollars. Within each group, Conservative is the left bar, Base the middle, Aggressive the right.">
+        <g stroke="var(--outline-gray-1)">
+          <line x1="46" y1="149" x2="744" y2="149"/>
+          <line x1="46" y1="108" x2="744" y2="108"/>
+          <line x1="46" y1="67" x2="744" y2="67"/>
+          <line x1="46" y1="26" x2="744" y2="26"/>
+        </g>
         <line x1="46" y1="14" x2="46" y2="190" stroke="var(--outline-gray-2)"/>
         <line x1="46" y1="190" x2="744" y2="190" stroke="var(--outline-gray-2)"/>
-        <g font-size="11" fill="var(--ink-gray-5)" text-anchor="end">
-          <text x="40" y="26">$21M</text><text x="40" y="108">$10M</text><text x="40" y="192">$0</text>
+        <g font-size="11" fill="var(--ink-gray-5)" text-anchor="end" class="tnum">
+          <text x="40" y="30">$20M</text><text x="40" y="71">$15M</text><text x="40" y="112">$10M</text><text x="40" y="153">$5M</text><text x="40" y="193">$0</text>
         </g>
-        <!-- Iraj 1.87/7.67/21.4 → h = v*8.2 -->
-        <g><rect x="66" y="174.7" width="16" height="15.3" fill="var(--chart-tint)"/><rect x="84" y="127.1" width="16" height="62.9" fill="var(--chart-customer)"/><rect x="102" y="14.5" width="16" height="175.5" fill="var(--chart-capital)"/><text x="92" y="206" font-size="11" fill="var(--ink-gray-7)" text-anchor="middle">Iraj</text></g>
-        <g><rect x="178" y="179.8" width="16" height="10.2" fill="var(--chart-tint)"/><rect x="196" y="148.1" width="16" height="41.9" fill="var(--chart-customer)"/><rect x="214" y="72.7" width="16" height="117.3" fill="var(--chart-capital)"/><text x="204" y="206" font-size="11" fill="var(--ink-gray-7)" text-anchor="middle">Robert</text></g>
-        <g><rect x="290" y="179.8" width="16" height="10.2" fill="var(--chart-tint)"/><rect x="308" y="148.1" width="16" height="41.9" fill="var(--chart-customer)"/><rect x="326" y="72.7" width="16" height="117.3" fill="var(--chart-capital)"/><text x="316" y="206" font-size="11" fill="var(--ink-gray-7)" text-anchor="middle">Martin</text></g>
-        <g><rect x="402" y="179.8" width="16" height="10.2" fill="var(--chart-tint)"/><rect x="420" y="148.1" width="16" height="41.9" fill="var(--chart-customer)"/><rect x="438" y="72.7" width="16" height="117.3" fill="var(--chart-capital)"/><text x="428" y="206" font-size="11" fill="var(--ink-gray-7)" text-anchor="middle">Kerim</text></g>
-        <g><rect x="514" y="184.9" width="16" height="5.1" fill="var(--chart-tint)"/><rect x="532" y="169" width="16" height="21" fill="var(--chart-customer)"/><rect x="550" y="131.5" width="16" height="58.5" fill="var(--chart-capital)"/><text x="540" y="206" font-size="11" fill="var(--ink-gray-7)" text-anchor="middle">Carl</text></g>
-        <g><rect x="626" y="184.9" width="16" height="5.1" fill="var(--chart-tint)"/><rect x="644" y="169" width="16" height="21" fill="var(--chart-customer)"/><rect x="662" y="131.5" width="16" height="58.5" fill="var(--chart-capital)"/><text x="654" y="206" font-size="11" fill="var(--ink-gray-7)" text-anchor="middle">Rajesh</text></g>
+        <!-- h = net($M) × 8.2 -->
+        <g><rect x="66" y="174.7" width="16" height="15.3" fill="var(--chart-tint)" data-pop="Iraj · Conservative · $1.87M net" aria-label="Iraj, Conservative, $1.87M net"/><rect x="84" y="127.1" width="16" height="62.9" fill="var(--chart-customer)" data-pop="Iraj · Base · $7.67M net" aria-label="Iraj, Base, $7.67M net"/><rect x="102" y="14.5" width="16" height="175.5" fill="var(--chart-capital)" data-pop="Iraj · Aggressive · $21.4M net" aria-label="Iraj, Aggressive, $21.4M net"/><text x="92" y="206" font-size="11" fill="var(--ink-gray-7)" text-anchor="middle">Iraj</text></g>
+        <g><rect x="178" y="179.8" width="16" height="10.2" fill="var(--chart-tint)" data-pop="Robert · Conservative · $1.25M net" aria-label="Robert, Conservative, $1.25M net"/><rect x="196" y="148.1" width="16" height="41.9" fill="var(--chart-customer)" data-pop="Robert · Base · $5.11M net" aria-label="Robert, Base, $5.11M net"/><rect x="214" y="72.7" width="16" height="117.3" fill="var(--chart-capital)" data-pop="Robert · Aggressive · $14.3M net" aria-label="Robert, Aggressive, $14.3M net"/><text x="204" y="206" font-size="11" fill="var(--ink-gray-7)" text-anchor="middle">Robert</text></g>
+        <g><rect x="290" y="179.8" width="16" height="10.2" fill="var(--chart-tint)" data-pop="Martin · Conservative · $1.25M net" aria-label="Martin, Conservative, $1.25M net"/><rect x="308" y="148.1" width="16" height="41.9" fill="var(--chart-customer)" data-pop="Martin · Base · $5.11M net" aria-label="Martin, Base, $5.11M net"/><rect x="326" y="72.7" width="16" height="117.3" fill="var(--chart-capital)" data-pop="Martin · Aggressive · $14.3M net" aria-label="Martin, Aggressive, $14.3M net"/><text x="316" y="206" font-size="11" fill="var(--ink-gray-7)" text-anchor="middle">Martin</text></g>
+        <g><rect x="402" y="179.8" width="16" height="10.2" fill="var(--chart-tint)" data-pop="Kerim · Conservative · $1.25M net" aria-label="Kerim, Conservative, $1.25M net"/><rect x="420" y="148.1" width="16" height="41.9" fill="var(--chart-customer)" data-pop="Kerim · Base · $5.11M net" aria-label="Kerim, Base, $5.11M net"/><rect x="438" y="72.7" width="16" height="117.3" fill="var(--chart-capital)" data-pop="Kerim · Aggressive · $14.3M net" aria-label="Kerim, Aggressive, $14.3M net"/><text x="428" y="206" font-size="11" fill="var(--ink-gray-7)" text-anchor="middle">Kerim</text></g>
+        <g><rect x="514" y="184.9" width="16" height="5.1" fill="var(--chart-tint)" data-pop="Carl · Conservative · $624K net" aria-label="Carl, Conservative, $624K net"/><rect x="532" y="169" width="16" height="21" fill="var(--chart-customer)" data-pop="Carl · Base · $2.56M net" aria-label="Carl, Base, $2.56M net"/><rect x="550" y="131.5" width="16" height="58.5" fill="var(--chart-capital)" data-pop="Carl · Aggressive · $7.14M net" aria-label="Carl, Aggressive, $7.14M net"/><text x="540" y="206" font-size="11" fill="var(--ink-gray-7)" text-anchor="middle">Carl</text></g>
+        <g><rect x="626" y="184.9" width="16" height="5.1" fill="var(--chart-tint)" data-pop="Rajesh · Conservative · $624K net" aria-label="Rajesh, Conservative, $624K net"/><rect x="644" y="169" width="16" height="21" fill="var(--chart-customer)" data-pop="Rajesh · Base · $2.56M net" aria-label="Rajesh, Base, $2.56M net"/><rect x="662" y="131.5" width="16" height="58.5" fill="var(--chart-capital)" data-pop="Rajesh · Aggressive · $7.14M net" aria-label="Rajesh, Aggressive, $7.14M net"/><text x="654" y="206" font-size="11" fill="var(--ink-gray-7)" text-anchor="middle">Rajesh</text></g>
         <g font-size="11" fill="var(--ink-gray-6)">
-          <text x="66" y="226">■ Conservative (left)</text><text x="240" y="226">■ Base (middle)</text><text x="380" y="226">■ Aggressive (right)</text>
+          <rect x="66" y="218" width="10" height="10" fill="var(--chart-tint)"/><text x="82" y="227">Conservative</text>
+          <rect x="166" y="218" width="10" height="10" fill="var(--chart-customer)"/><text x="182" y="227">Base</text>
+          <rect x="226" y="218" width="10" height="10" fill="var(--chart-capital)"/><text x="242" y="227">Aggressive</text>
         </g>
       </svg>
     </div>
 
-    <div class="section-label mb-2">A/B · two packages <span class="eyebrow">— named columns, Δ column, labels bound to the ACTIVE case</span></div>
+    <div class="section-label mb-2">A/B · two packages</div>
     <div class="frame p-5" style="max-width:760px">
       <div class="flex flex-wrap items-center gap-2 mb-4 text-sm">
         <select class="border rounded px-2 py-1" style="border-color:var(--outline-gray-2)" aria-label="Package A"><option>Iraj Ispahani</option></select>
         <span class="eyebrow">vs</span>
         <select class="border rounded px-2 py-1" style="border-color:var(--outline-gray-2)" aria-label="Package B"><option>Robert Reoch</option></select>
-        <button class="btn ml-auto" onclick="toast('Forked Robert → “Robert v2” for same-person A/B','Undo')">Fork B</button>
+        <button class="btn ml-auto" id="fork-b-btn" onclick="forkB(this)">Fork B</button>
       </div>
       <div class="overflow-x-auto">
       <table class="data" style="min-width:520px">
         <thead><tr><th></th><th class="num">Iraj Ispahani</th><th class="num">Robert Reoch</th><th class="num">Δ (A − B)</th></tr></thead>
         <tbody>
-          <tr><td>Net · <strong>active case: Base</strong></td><td class="num">$7.67M</td><td class="num">$5.11M</td><td class="num delta-up">+$2.56M</td></tr>
-          <tr><td>Ceiling (net)</td><td class="num">$13.0M</td><td class="num">$6.64M</td><td class="num delta-up">+$6.36M</td></tr>
+          <tr><td>Net · <strong>active case: <span data-case-label>Base</span></strong></td><td class="num" data-money='{"con":"$1.87M","base":"$7.67M","agg":"$21.4M"}'>$7.67M</td><td class="num" data-money='{"con":"$1.25M","base":"$5.11M","agg":"$14.3M"}'>$5.11M</td><td class="num delta-up" data-money='{"con":"+$624K","base":"+$2.56M","agg":"+$7.14M"}'>+$2.56M</td></tr>
+          <tr><td>Ceiling (net)</td><td class="num" data-money='{"con":"$3.18M","base":"$13.0M","agg":"$36.4M"}'>$13.0M</td><td class="num" data-money='{"con":"$1.63M","base":"$6.64M","agg":"$18.6M"}'>$6.64M</td><td class="num delta-up" data-money='{"con":"+$1.55M","base":"+$6.36M","agg":"+$17.8M"}'>+$6.36M</td></tr>
           <tr><td>Equity % · options</td><td class="num">1.500% · 858</td><td class="num">1.000% · 572</td><td class="num delta-up">+0.500pp</td></tr>
           <tr><td>Token %</td><td class="num">0.900%</td><td class="num">0.600%</td><td class="num delta-up">+0.300pp</td></tr>
           <tr><td>Cash (engagement)</td><td class="num">$0</td><td class="num">$0</td><td class="num">—</td></tr>
         </tbody>
       </table>
       </div>
-      <p class="eyebrow mt-3">Row labels follow the global case selector — switching to Aggressive relabels the row, never silently swaps the number under a stale label.</p>
+      <p class="eyebrow mt-3">Row labels and figures follow the global case selector.</p>
     </div>
   </div>
 </div>
@@ -108,7 +117,14 @@ function pinRow(btn){
   const on = btn.getAttribute('aria-pressed') !== 'true';
   btn.setAttribute('aria-pressed', on); btn.textContent = on ? '★' : '☆';
   const tr = btn.closest('tr'), tbody = tr.parentElement;
-  if (on) { tbody.insertBefore(tr, tbody.firstElementChild); toast('Pinned — stays on top across case switches','Undo'); }
+  if (on) {
+    const prevNext = tr.nextElementSibling;
+    tbody.insertBefore(tr, tbody.firstElementChild);
+    toast('Pinned — stays on top across case switches', ()=>{
+      btn.setAttribute('aria-pressed','false'); btn.textContent='☆';
+      tbody.insertBefore(tr, prevNext);
+    });
+  }
   else { tbody.insertBefore(tr, document.getElementById('totals-row')); }
 }
 function forkSet(){
@@ -116,14 +132,28 @@ function forkSet(){
   document.getElementById('fork-banner').classList.add('flex');
   document.getElementById('fork-chip').textContent = 'B · $90m floor · draft';
   document.getElementById('fork-chip').classList.add('on');
-  toast('Forked Main → draft set "B · $90m floor". Compare & merge when ready.','Undo');
+  toast('Forked Main → draft set “B · $90m floor”', unfork);
 }
 function unfork(){
   document.getElementById('fork-banner').classList.add('hidden');
   document.getElementById('fork-banner').classList.remove('flex');
   const c = document.getElementById('fork-chip');
   c.textContent = '+ fork a draft set'; c.classList.remove('on');
-  toast('Fork discarded — back on the working draft.');
+}
+function exportMatrix(){
+  exportTableCsv('cmp-table', 'compare-matrix.csv');
+  toast('Downloaded compare-matrix.csv — the matrix as shown, at the active case');
+}
+function forkB(btn){
+  const sel = document.querySelector('[aria-label="Package B"]');
+  const prev = sel.selectedIndex;
+  const opt = document.createElement('option');
+  opt.textContent = 'Robert Reoch · v2 (draft)';
+  sel.appendChild(opt); sel.value = opt.textContent;
+  btn.disabled = true;
+  toast('Forked Robert → “Robert Reoch · v2 (draft)” in column B', ()=>{
+    opt.remove(); sel.selectedIndex = prev; btn.disabled = false;
+  });
 }
 </script>
 </body>

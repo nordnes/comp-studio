@@ -7,18 +7,17 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,350;9..144,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/tokens.css">
 <style>body{font-family:Inter,system-ui,sans-serif}</style>
-<script>window.PAGE_ACTIONS=[["Edit package",true,"openDialog('edit-pkg-dlg')"],["Schedule review",false,"openDialog('review-dlg')"],["Print",false]];</script>
+<script>window.PAGE_ACTIONS=[["Edit package",true,"openEditPkg()"],["Schedule review",false,"openDialog('review-dlg')"],["Copy link",false,"copyCaseLink()"],["Print",false,"window.print()"]];</script>
 </head>
 <body>
 <div id="page" data-patterns="1.1 deep link · 9e Today-marker trajectory (Liquifi) + vested≠unlocked layering · 1.8 annotation lanes · 1.7 exit slider v2 (Carta/Secfi) · 7.1 persistent inline signed-refusal (COM-174) · 1.2 Edit package inside AppDialog w/ sticky chrome · 7.3-dup departure danger confirm + undo · Complete merit staging on Schedule review · Magna grant anatomy · 3.1 figures re-bound on case switch (mock engine) · IMPROVEMENT_PLAN A1 full-width band placement w/ compa tick · A2 before/after twin markers live in the package editor (Comprehensive) · CLAUDE_DESIGN_PROMPT §5.5 across-scenarios table + football field + review panel · capital-introduction register.">
   <div class="mx-auto w-full px-5 py-8" style="max-width:60rem">
-    <p class="eyebrow mb-2 tnum">/advisors/<strong>iraj-ispahani</strong>?case=<span data-case-label>Base</span>&amp;stage=bridge — shareable, restores on refresh</p>
     <h1 class="font-display text-3xl mb-1">Base, then performance.</h1>
     <p class="text-sm mb-6" style="color:var(--ink-gray-6)">Internal &amp; confidential · net of strike, pre-tax · discussion draft, not a binding offer.</p>
 
-    <div class="frame p-5 mb-8">
+    <div class="frame p-5 mb-8" id="pkg-frame">
       <div class="flex flex-wrap justify-between gap-4 mb-4">
-        <div><div class="eyebrow">Package</div><div class="font-medium">Iraj Ispahani · Anchor 3×</div></div>
+        <div><div class="eyebrow">Package</div><div class="font-medium"><span id="pkg-name">Iraj Ispahani · Anchor 3×</span><span id="pkg-flags"></span></div></div>
         <div><div class="eyebrow">Options / tokens</div><div class="tnum">65% / 35%</div></div>
         <div><div class="eyebrow">Engagement</div><div class="tnum">4 yrs · from 2026-06-01</div></div>
         <div><div class="eyebrow">Tax residency</div><div class="tnum">UK · s431 applies</div></div>
@@ -30,28 +29,28 @@
         <select id="stage" class="text-sm border rounded px-2 py-1" style="border-color:var(--outline-gray-2)" aria-label="Pipeline stage">
           <option selected>iterating</option><option>referenced</option><option>offer-issued</option><option value="signed">signed</option>
         </select>
-        <span class="eyebrow">no transitions recorded</span>
+        <span class="eyebrow" id="stage-transitions">no transitions recorded</span>
         <button class="btn ml-auto" onclick="openDialog('departure-dlg')">Model departure</button>
       </div>
       <div id="bind-row" class="hidden mt-3 p-3 rounded text-sm flex flex-wrap items-center gap-3" style="background:var(--surface-red-1);color:var(--ink-red-3)" role="alert">
         <span><strong>Can't mark signed:</strong> no proposition version is bound to this stage flip.</span>
-        <button class="btn" onclick="toast('Letter v1 bound · stage → signed','Undo');document.getElementById('bind-row').classList.add('hidden')">Bind letter v1 (sealed 11 Jun)</button>
+        <button class="btn" onclick="bindLetter()">Bind letter v1 (sealed 11 Jun)</button>
         <button class="text-xs underline" onclick="document.getElementById('bind-row').classList.add('hidden');document.getElementById('stage').value='iterating'">cancel</button>
       </div>
     </div>
 
     <div class="grid sm:grid-cols-3 gap-px rounded-lg overflow-hidden border mb-10" style="border-color:var(--outline-gray-1);background:var(--outline-gray-1)">
-      <div class="p-4" style="background:var(--surface-white)"><div class="eyebrow">Floor</div><div class="font-display text-2xl tnum" data-money='{"con":"$1.87M","base":"$7.67M","agg":"$21.4M"}'>$7.67M</div><div class="text-xs" style="color:var(--ink-gray-6)">guaranteed base · <span data-case-label>Base</span> case</div></div>
+      <div class="p-4" style="background:var(--surface-white)"><div class="eyebrow">Floor</div><div class="font-display text-2xl tnum">$7.67M</div><div class="text-xs" style="color:var(--ink-gray-6)">guaranteed base — fixed, whatever the case</div></div>
       <div class="p-4" style="background:var(--surface-amber-1)"><div class="eyebrow" style="color:var(--ink-amber-strong)">Current</div><div class="font-display text-2xl tnum formula-link" tabindex="0" data-money='{"con":"$1.87M","base":"$7.67M","agg":"$21.4M"}' data-formula="net = 858 options × (exit PPS − $1,572.95) × % kept + 0.90% × TGE FDV
 base: $2.27M equity + $5.40M tokens = $7.67M">$7.67M</div><div class="text-xs" style="color:var(--ink-gray-6)">no uplift yet</div></div>
       <div class="p-4" style="background:var(--surface-white)"><div class="eyebrow">Ceiling</div><div class="font-display text-2xl tnum" data-money='{"con":"$3.18M","base":"$13.0M","agg":"$36.4M"}'>$13.0M</div><div class="text-xs" style="color:var(--ink-gray-6)">+70% if targets hit</div></div>
     </div>
 
-    <!-- §5.5 across-scenarios table: Net/Equity/Tokens × the three cases -->
-    <div class="section-label mb-2">Across scenarios <span class="eyebrow">· dollar value primary, counts secondary</span></div>
+    <!-- across-scenarios table: Net/Equity/Tokens × the three cases -->
+    <div class="section-label mb-2">Across scenarios <span class="eyebrow">· dollar value primary, counts secondary · top-ups price at the <span data-stage-label>Bridge close</span> round (<span data-stage-text='{"bridge":"$1,572.95","seriesA":"$1,677.83","seriesB":"$3,145.90","seriesC":"$4,212.05"}'>$1,572.95</span>/share)</span></div>
     <div class="overflow-x-auto mb-8">
     <table class="data" style="min-width:540px">
-      <thead><tr><th></th><th class="num">Conservative</th><th class="num">Base <span class="text-xs font-normal px-1.5 py-0.5 rounded" style="background:var(--surface-amber-1);color:var(--ink-amber-strong)">active</span></th><th class="num">Aggressive</th></tr></thead>
+      <thead><tr><th></th><th class="num" data-case-active="con">Conservative <span class="case-active-flag">active</span></th><th class="num" data-case-active="base">Base <span class="case-active-flag">active</span></th><th class="num" data-case-active="agg">Aggressive <span class="case-active-flag">active</span></th></tr></thead>
       <tbody>
         <tr class="font-medium"><td>Net package</td><td class="num">$1.87M</td><td class="num">$7.67M</td><td class="num">$21.4M</td></tr>
         <tr><td>Equity · net of strike <span class="eyebrow">(858 opts)</span></td><td class="num">$73K</td><td class="num">$2.27M</td><td class="num">$5.23M</td></tr>
@@ -61,16 +60,28 @@ base: $2.27M equity + $5.40M tokens = $7.67M">$7.67M</div><div class="text-xs" s
     </table>
     </div>
 
-    <!-- A1/A2 · full-width band placement with compa tick -->
-    <div class="section-label mb-2">Band placement · Anchor tier <span class="eyebrow">· compa 1.12× vs band mid · tick shape = non-color channel</span></div>
+    <!-- mix across cases: visualises the table above -->
+    <div class="section-label mb-2">Mix across cases <span class="eyebrow">· equity (net of strike) vs tokens · equity always left, labeled</span></div>
+    <div class="mb-10 space-y-4 text-sm tnum">
+      <div><div class="flex justify-between text-xs mb-1"><span>Conservative · $1.87M</span><span>eq $73K · tok $1.80M</span></div>
+        <div class="h-4 rounded flex overflow-hidden"><div style="width:4%;background:var(--chart-capital)"></div><div style="width:96%;background:var(--chart-uplift)"></div></div></div>
+      <div><div class="flex justify-between text-xs mb-1"><span>Base · $7.67M</span><span>eq $2.27M · tok $5.40M</span></div>
+        <div class="h-4 rounded flex overflow-hidden"><div style="width:30%;background:var(--chart-capital)"></div><div style="width:70%;background:var(--chart-uplift)"></div></div></div>
+      <div><div class="flex justify-between text-xs mb-1"><span>Aggressive · $21.4M</span><span>eq $5.23M · tok $16.2M</span></div>
+        <div class="h-4 rounded flex overflow-hidden"><div style="width:24%;background:var(--chart-capital)"></div><div style="width:76%;background:var(--chart-uplift)"></div></div></div>
+      <p class="eyebrow">Equity is the leveraged leg (underwater below $186.7M); tokens carry value in every case.</p>
+    </div>
+
+    <!-- full-width band placement with compa tick -->
+    <div class="section-label mb-2">Band placement · <span id="band-tier">Anchor</span> tier <span class="eyebrow">· compa <span id="band-compa">1.12</span>× vs band mid · tick shape = non-color channel</span></div>
     <div class="mb-10" style="padding-bottom:18px">
       <div class="band-strip">
+        <div class="band-marketline" style="left:42%" data-pop="Market median $6.9M" aria-label="Market median"></div>
         <div class="band-mid" style="left:30%;width:38%"></div>
-        <div class="band-marketline" style="left:42%" title="Market median $6.9M"></div>
-        <div class="band-avatar" style="left:58%" title="Current · $7.67M · compa 1.12" tabindex="0">II</div>
+        <div class="band-avatar" id="band-avatar-main" style="left:58%" data-pop='{"con":"Current · net $1.87M · compa 1.12 vs band mid","base":"Current · net $7.67M · compa 1.12 vs band mid","agg":"Current · net $21.4M · compa 1.12 vs band mid"}' tabindex="0" role="button" aria-label="Current package — band detail">II</div>
         <span class="band-tick" style="left:0%">$5.1M floor</span><span class="band-tick" style="left:50%">mid $7.05M</span><span class="band-tick" style="left:100%">$9.0M ceiling</span>
       </div>
-      <p class="eyebrow mt-7">Inside the FAST Anchor band — in-policy, no ceremony needed (Compa split). Editing the package shows a second, gray "before" marker live (open Edit package).</p>
+      <p class="eyebrow mt-7" id="band-note">Inside the FAST Anchor band — in-policy, no ceremony needed. Editing the package shows a second, gray "before" marker (open Edit package).</p>
     </div>
 
     <div class="section-label mb-2">Explore the exit <span class="eyebrow">· net of strike &amp; dilution · not a forecast</span></div>
@@ -90,9 +101,7 @@ base: $2.27M equity + $5.40M tokens = $7.67M">$7.67M</div><div class="text-xs" s
     <div id="adv-tabs" role="tablist" class="mb-5" aria-label="Package analysis">
       <button role="tab" data-tab="traj" aria-selected="true" style="border-color:var(--ink-gray-9);color:var(--ink-gray-9)">Trajectory</button>
       <button role="tab" data-tab="vest" aria-selected="false">Vesting</button>
-      <button role="tab" data-tab="mix" aria-selected="false">Mix</button>
-      <button role="tab" data-tab="dil" aria-selected="false">Dilution</button>
-      <button role="tab" data-tab="field" aria-selected="false">Football field</button>
+      <button role="tab" data-tab="value" aria-selected="false">Value context</button>
       <button role="tab" data-tab="inst" aria-selected="false">Instruments</button>
       <button role="tab" data-tab="reviews" aria-selected="false">Reviews</button>
     </div>
@@ -127,37 +136,38 @@ base: $2.27M equity + $5.40M tokens = $7.67M">$7.67M</div><div class="text-xs" s
 
     <div data-tabpanel="vest" hidden>
       <div class="frame p-5 mb-8">
-        <div class="section-label mb-4">Equity · annual tranches <span class="eyebrow">(stepped schedule, Levels.fyi idiom)</span></div>
+        <div class="section-label mb-4">Equity · annual tranches <span class="eyebrow">· four equal 25% tranches</span></div>
         <div class="flex items-end gap-3 h-32 mb-2" aria-hidden="true">
-          <div class="flex-1 rounded-t" style="height:25%;background:var(--chart-tint)"></div>
-          <div class="flex-1 rounded-t" style="height:50%;background:var(--chart-customer)"></div>
-          <div class="flex-1 rounded-t" style="height:75%;background:var(--chart-capital)"></div>
-          <div class="flex-1 rounded-t" style="height:100%;background:var(--chart-capital)"></div>
+          <div class="flex-1 rounded-t" style="height:64%;background:var(--chart-capital)"></div>
+          <div class="flex-1 rounded-t" style="height:64%;background:var(--chart-capital)"></div>
+          <div class="flex-1 rounded-t" style="height:64%;background:var(--chart-capital)"></div>
+          <div class="flex-1 rounded-t" style="height:64%;background:var(--chart-capital)"></div>
         </div>
         <div class="flex gap-3 text-xs tnum" style="color:var(--ink-gray-6)">
           <span class="flex-1">Y1 · 25% (cliff)</span><span class="flex-1">Y2 · 25%</span><span class="flex-1">Y3 · 25%</span><span class="flex-1">Y4 · 25%</span>
         </div>
-        <div class="section-label mt-7 mb-2">Tokens · vested ≠ unlocked <span class="eyebrow">(two layers, co-plotted — Liquifi/Magna model)</span></div>
-        <p class="text-sm" style="color:var(--ink-gray-7)">Tokens vest 25% at the cliff then monthly — but stay <strong>locked</strong> until TGE + lockup. Nothing distributable before 24 months of service. The timeline plots both layers; the gap between them is the lockup.</p>
+        <div class="section-label mt-7 mb-2">Tokens · vested ≠ unlocked <span class="eyebrow">(two layers, co-plotted — the gap is the lockup)</span></div>
+        <svg viewBox="0 0 720 170" class="w-full" style="min-width:560px" role="img" aria-label="Token vesting versus unlock: vested ramps from month 12, unlocked only from month 24 at TGE plus lockup; the gap between the two lines is the lockup">
+          <line x1="60" y1="20" x2="60" y2="130" stroke="var(--outline-gray-2)"/>
+          <line x1="60" y1="130" x2="700" y2="130" stroke="var(--outline-gray-2)"/>
+          <text x="50" y="34" font-size="11" fill="var(--ink-gray-5)" text-anchor="end">100%</text>
+          <text x="50" y="130" font-size="11" fill="var(--ink-gray-5)" text-anchor="end">0%</text>
+          <polyline points="60,130 220,130 220,105 700,30" fill="none" stroke="var(--chart-capital)" stroke-width="2"/>
+          <polyline points="60,130 380,130 700,30" fill="none" stroke="var(--chart-uplift)" stroke-width="2" stroke-dasharray="6,4"/>
+          <text x="412" y="62" font-size="11" fill="var(--chart-capital)" font-weight="600">vested (service)</text>
+          <text x="488" y="118" font-size="11" fill="var(--chart-uplift)" font-weight="600">unlocked (TGE + lockup)</text>
+          <g font-size="11" fill="var(--ink-gray-6)">
+            <text x="64" y="148">M0</text>
+            <text x="220" y="148" text-anchor="middle">M12 · cliff 25%</text>
+            <text x="380" y="148" text-anchor="middle">M24 · TGE + lockup ends</text>
+            <text x="640" y="148" text-anchor="middle">M48 · fully vested</text>
+          </g>
+          <text x="60" y="166" font-size="10.5" fill="var(--ink-gray-6)">Solid = vested by service · dashed = distributable. Nothing distributable before 24 months — the vertical gap between the lines is value vested but still locked.</text>
+        </svg>
       </div>
     </div>
 
-    <div data-tabpanel="mix" hidden>
-      <div class="frame p-5 mb-8">
-        <div class="section-label mb-4">Package mix across cases <span class="eyebrow">· equity (net of strike) vs tokens</span></div>
-        <div class="space-y-4 text-sm tnum">
-          <div><div class="flex justify-between text-xs mb-1"><span>Conservative · $1.87M</span><span>eq $73K · tok $1.80M</span></div>
-            <div class="h-4 rounded flex overflow-hidden"><div style="width:4%;background:var(--chart-capital)"></div><div style="width:96%;background:var(--chart-uplift)"></div></div></div>
-          <div><div class="flex justify-between text-xs mb-1"><span>Base · $7.67M</span><span>eq $2.27M · tok $5.40M</span></div>
-            <div class="h-4 rounded flex overflow-hidden"><div style="width:30%;background:var(--chart-capital)"></div><div style="width:70%;background:var(--chart-uplift)"></div></div></div>
-          <div><div class="flex justify-between text-xs mb-1"><span>Aggressive · $21.4M</span><span>eq $5.23M · tok $16.2M</span></div>
-            <div class="h-4 rounded flex overflow-hidden"><div style="width:24%;background:var(--chart-capital)"></div><div style="width:76%;background:var(--chart-uplift)"></div></div></div>
-        </div>
-        <p class="eyebrow mt-4">Equity is the leveraged leg (underwater below $186.7M); tokens carry value in every case. Non-color channel: equity always left, labeled.</p>
-      </div>
-    </div>
-
-    <div data-tabpanel="dil" hidden>
+    <div data-tabpanel="value" hidden>
       <div class="frame p-5 mb-8 overflow-x-auto">
         <div class="section-label mb-3">Dilution path · % kept through the rounds</div>
         <svg viewBox="0 0 720 200" class="w-full" style="min-width:560px" role="img" aria-label="Dilution staircase">
@@ -178,9 +188,6 @@ base: $2.27M equity + $5.40M tokens = $7.67M">$7.67M</div><div class="text-xs" s
           <text x="55" y="20" font-size="11" fill="var(--ink-gray-6)">ESOP creation at the bridge (10%) is the largest single driver — larger than new money (5.6%). Dashed slate = founder line (non-color channel: dash).</text>
         </svg>
       </div>
-    </div>
-
-    <div data-tabpanel="field" hidden>
       <div class="frame p-5 mb-8 overflow-x-auto">
         <div class="section-label mb-3">Football field · value triangulation <span class="eyebrow">(floating bars per method · amber marker = proposed $7.67M · overlap = confidence)</span></div>
         <svg viewBox="0 0 720 210" class="w-full" style="min-width:560px" role="img" aria-label="Football field: valuation ranges per method with a marker at the proposed 7.67 million dollars">
@@ -209,14 +216,32 @@ base: $2.27M equity + $5.40M tokens = $7.67M">$7.67M</div><div class="text-xs" s
 
     <div data-tabpanel="inst" hidden>
       <div class="frame p-5 mb-8">
-        <div class="flex flex-wrap gap-x-8 gap-y-2 text-sm mb-3">
+        <div class="flex flex-wrap items-center gap-x-8 gap-y-2 text-sm mb-4">
           <span><span class="eyebrow">Granted</span> <span class="tnum">Jun 2026 · Bridge</span></span>
-          <span><span class="eyebrow">Strike</span> <span class="tnum">$1,572.95</span></span>
-          <span><span class="eyebrow">Count</span> <span class="tnum">858</span></span>
-          <span><span class="eyebrow">Status</span> <span class="text-xs px-2 py-0.5 rounded-full" style="background:var(--surface-gray-2)">granted · up to date</span></span>
+          <span><span class="eyebrow">Package value</span> <span class="tnum" data-money='{"con":"$1.87M","base":"$7.67M","agg":"$21.4M"}'>$7.67M</span> <span class="eyebrow">net · <span data-case-label>Base</span> case</span></span>
           <button class="btn ml-auto" onclick="openDialog('runbook-dlg')">Runbook</button>
         </div>
+        <div class="overflow-x-auto mb-4">
+          <table class="data" style="min-width:520px">
+            <thead><tr><th>Instrument</th><th class="num">Count</th><th class="num">Strike / price</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>Options · net of strike</td>
+                <td class="num">858</td>
+                <td class="num">$1,572.95</td>
+                <td><span class="text-xs px-2 py-0.5 rounded-full" style="background:var(--surface-gray-2)">granted · up to date</span></td>
+              </tr>
+              <tr>
+                <td>Token RTA · RKU</td>
+                <td class="num">9.0M RKU</td>
+                <td class="num">—</td>
+                <td><span class="text-xs px-2 py-0.5 rounded-full" style="background:var(--surface-amber-1);color:var(--ink-amber-strong)">granted · locked until TGE + lockup</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
         <p class="text-sm" style="color:var(--ink-gray-7)">Vesting: 215 options (25%) at each of the four anniversaries; tokens vest 25% at the cliff then monthly. Strike = FMV at the bridge — the two coincide at grant by design.</p>
+        <p class="eyebrow mt-2 tnum">This grant keeps its Bridge strike. Top-ups from reviews price at the <span data-stage-label>Bridge close</span> round — <span data-stage-text='{"bridge":"$1,572.95","seriesA":"$1,677.83","seriesB":"$3,145.90","seriesC":"$4,212.05"}'>$1,572.95</span>/share.</p>
       </div>
     </div>
 
@@ -225,7 +250,7 @@ base: $2.27M equity + $5.40M tokens = $7.67M">$7.67M</div><div class="text-xs" s
         <div class="section-label mb-3">Review panel · trajectory checkpoints <span class="eyebrow">· semi-annual cadence (proposed) — outcomes append new grants, never re-price</span></div>
         <div class="divide-y text-sm" style="border-color:var(--outline-gray-1)">
           <div class="py-3 flex flex-wrap items-center gap-3">
-            <span class="tnum w-28" style="color:var(--ink-gray-6)">1 Dec 2026</span>
+            <span class="tnum w-28" id="review-row-date" style="color:var(--ink-gray-6)">1 Dec 2026</span>
             <span class="flex-1 min-w-[220px]">First checkpoint — engagement, objectives earned, board view</span>
             <span class="text-xs px-2 py-0.5 rounded-full" style="background:var(--surface-amber-1);color:var(--ink-amber-strong)">scheduled</span>
             <button class="btn" onclick="openDialog('review-dlg')">Reschedule</button>
@@ -247,7 +272,7 @@ base: $2.27M equity + $5.40M tokens = $7.67M">$7.67M</div><div class="text-xs" s
     <div class="flex justify-end gap-2"><a class="btn" href="portal.html">Preview Iraj's portal</a><a class="btn btn-solid" href="proposition.html">View Iraj's proposition →</a></div>
   </div>
 
-  <!-- Edit package (the fixed 1.2 dialog) -->
+  <!-- Edit package -->
   <div class="dlg-backdrop" id="edit-pkg-dlg" role="dialog" aria-modal="true" aria-label="Edit package">
     <div class="dlg" style="max-width:680px">
       <div class="dlg-head"><span class="font-medium">Edit package · Iraj Ispahani</span><button class="btn" onclick="closeDialog('edit-pkg-dlg')" aria-label="Close">&#10005;</button></div>
@@ -260,30 +285,31 @@ base: $2.27M equity + $5.40M tokens = $7.67M">$7.67M</div><div class="text-xs" s
         </div>
         <fieldset>
           <legend class="section-label mb-2">Base grant · uniform base × tier</legend>
-          <div class="grid grid-cols-3 gap-2" role="radiogroup" aria-label="Tier">
-            <button class="frame p-3 text-left" aria-checked="false" role="radio"><div class="font-medium">Base 1×</div><div class="text-xs tnum" style="color:var(--ink-gray-6)">0.5% eq · 0.3% tok</div></button>
-            <button class="frame p-3 text-left" aria-checked="false" role="radio"><div class="font-medium">Strategic 2×</div><div class="text-xs tnum" style="color:var(--ink-gray-6)">1.0% eq · 0.6% tok</div></button>
-            <button class="frame p-3 text-left" aria-checked="true" role="radio" style="border-color:var(--ink-amber-3);background:var(--surface-amber-1)"><div class="font-medium">Anchor 3×</div><div class="text-xs tnum" style="color:var(--ink-gray-6)">1.5% eq · 0.9% tok</div></button>
+          <div class="grid grid-cols-3 gap-2" role="radiogroup" aria-label="Tier" id="tier-group">
+            <button class="frame p-3 text-left" aria-checked="false" role="radio" data-tier="base1"><div class="font-medium">Base 1×</div><div class="text-xs tnum" style="color:var(--ink-gray-6)">0.5% eq · 0.3% tok</div></button>
+            <button class="frame p-3 text-left" aria-checked="false" role="radio" data-tier="strategic"><div class="font-medium">Strategic 2×</div><div class="text-xs tnum" style="color:var(--ink-gray-6)">1.0% eq · 0.6% tok</div></button>
+            <button class="frame p-3 text-left" aria-checked="true" role="radio" data-tier="anchor" style="border-color:var(--ink-amber-3);background:var(--surface-amber-1)"><div class="font-medium">Anchor 3×</div><div class="text-xs tnum" style="color:var(--ink-gray-6)">1.5% eq · 0.9% tok</div></button>
           </div>
-          <p class="text-xs mt-2" style="color:var(--ink-gray-5)">Your $-value inputs are preserved when you switch. FAST 0.60–1.00% per head · pool ~5% <span class="prov-chip" style="vertical-align:middle"><span class="prov-dot prov-mid"></span>as of Jun 2025</span></p>
+          <p class="text-xs mt-2 tnum" id="pkg-eqtok" style="color:var(--ink-gray-6)">Anchor 3× · 1.5% eq · 0.9% tok · net $7.67M at base case</p>
+          <p class="text-xs mt-1" style="color:var(--ink-gray-5)">Your $-value inputs are preserved when you switch. FAST 0.60–1.00% per head · pool ~5% <span class="prov-chip" style="vertical-align:middle"><span class="prov-dot prov-mid"></span>as of Jun 2025</span></p>
         </fieldset>
         <fieldset>
-          <legend class="section-label mb-2">Guardrail · before / after <span class="eyebrow">(recomputes live as you edit — Comprehensive twin markers)</span></legend>
+          <legend class="section-label mb-2">Guardrail · before / after <span class="eyebrow">· recomputes as you pick a tier</span></legend>
           <div style="padding-bottom:16px">
             <div class="band-strip" style="height:36px">
               <div class="band-mid" style="left:30%;width:38%"></div>
-              <div class="band-avatar" style="left:58%;background:var(--ink-gray-4)" title="Before · $7.67M · compa 1.12">○</div>
-              <div class="band-avatar" style="left:58%;margin-top:-12px" title="Proposed · $7.67M · compa 1.12 (unchanged)">●</div>
+              <div class="band-avatar" style="left:58%;background:var(--ink-gray-4)" data-pop="Before · Anchor 3× · $7.67M · compa 1.12" tabindex="0" role="button" aria-label="Before marker">○</div>
+              <div class="band-avatar" id="pkg-after" style="left:58%;margin-top:-12px" data-pop="Proposed · Anchor 3× · $7.67M · compa 1.12 (unchanged)" tabindex="0" role="button" aria-label="Proposed marker">●</div>
               <span class="band-tick" style="left:0%">$5.1M</span><span class="band-tick" style="left:100%">$9.0M</span>
             </div>
-            <p class="text-xs mt-6 tnum" style="color:var(--ink-gray-6)">compa before <strong>1.12</strong> → after <strong>1.12</strong> · in band ✓. Moving above $9.0M flags the row red and requires a justification that travels to Governance.</p>
+            <p class="text-xs mt-6 tnum" id="pkg-compa" style="color:var(--ink-gray-6)">compa before <strong>1.12</strong> → after <strong>1.12</strong> · in band ✓. Moving outside the band flags the row and requires a justification that travels to Governance.</p>
           </div>
         </fieldset>
-        <label class="block"><span class="eyebrow block mb-1">Notes</span><textarea class="w-full border rounded px-3 py-2" rows="3" style="border-color:var(--outline-gray-2)">Chair-adjacent orchestrator · CEO Ispahani Advisory; ex-JP Morgan (Global COO, FIG) &amp; Korn/Ferry.</textarea><span class="text-xs" style="color:var(--ink-gray-5)">Auto-grows — never clips (1.11)</span></label>
+        <label class="block"><span class="eyebrow block mb-1">Notes</span><textarea class="w-full border rounded px-3 py-2" rows="3" style="border-color:var(--outline-gray-2)">Chair-adjacent orchestrator · CEO Ispahani Advisory; ex-JP Morgan (Global COO, FIG) &amp; Korn/Ferry.</textarea><span class="text-xs" style="color:var(--ink-gray-5)">Auto-grows — never clips</span></label>
       </div>
       <div class="dlg-foot">
         <button class="btn" onclick="closeDialog('edit-pkg-dlg')">Cancel</button>
-        <button class="btn btn-solid" onclick="closeDialog('edit-pkg-dlg');toast('Package saved · Iraj Ispahani','Undo')">Save</button>
+        <button class="btn btn-solid" onclick="savePackage()">Save</button>
       </div>
     </div>
   </div>
@@ -295,14 +321,14 @@ base: $2.27M equity + $5.40M tokens = $7.67M">$7.67M</div><div class="text-xs" s
       <div class="dlg-body text-sm space-y-4">
         <label class="block"><span class="eyebrow block mb-1">Cadence</span>
           <select class="w-full border rounded px-3 py-2" style="border-color:var(--outline-gray-2)"><option>Semi-annual (recommended)</option><option>Annual</option><option>At each round close</option></select></label>
-        <label class="block"><span class="eyebrow block mb-1">Next checkpoint</span><input class="w-full border rounded px-3 py-2 tnum" style="border-color:var(--outline-gray-2)" value="2026-12-01"></label>
+        <label class="block"><span class="eyebrow block mb-1">Next checkpoint</span><input id="review-date" class="w-full border rounded px-3 py-2 tnum" style="border-color:var(--outline-gray-2)" value="2026-12-01"></label>
         <div class="p-3 rounded text-xs" style="background:var(--surface-gray-1);color:var(--ink-gray-7)">
-          Reviews record engagement, objectives earned, and the board view. A <strong>top-up outcome appends a new grant priced at the then-current round</strong> — existing grants never re-price. Staging: refresh anchors → review → record outcome (Complete merit-cycle pattern).
+          Reviews record engagement, objectives earned, and the board view. A <strong>top-up outcome appends a new grant priced at the then-current round</strong> — existing grants never re-price. Staging: refresh anchors → review → record outcome.
         </div>
       </div>
       <div class="dlg-foot">
         <button class="btn" onclick="closeDialog('review-dlg')">Cancel</button>
-        <button class="btn btn-solid" onclick="closeDialog('review-dlg');toast('Review scheduled · Dec 2026 (semi-annual)','Undo')">Schedule</button>
+        <button class="btn btn-solid" onclick="scheduleReview(this)">Schedule</button>
       </div>
     </div>
   </div>
@@ -328,21 +354,42 @@ base: $2.27M equity + $5.40M tokens = $7.67M">$7.67M</div><div class="text-xs" s
       </div>
       <div class="dlg-foot">
         <button class="btn" onclick="closeDialog('departure-dlg')">Cancel</button>
-        <button class="btn" style="background:var(--ink-red-3);border-color:var(--ink-red-3);color:#fff" onclick="closeDialog('departure-dlg');toast('Departure recorded (roll-off) · numbers committed','Undo')">Record departure (roll off)</button>
+        <button class="btn" style="background:var(--ink-red-3);border-color:var(--ink-red-3);color:#fff" onclick="recordDeparture()">Record departure (roll off)</button>
       </div>
     </div>
   </div>
 
   <!-- Runbook -->
   <div class="dlg-backdrop" id="runbook-dlg" role="dialog" aria-modal="true" aria-label="Exercise runbook">
-    <div class="dlg">
+    <div class="dlg" style="max-width:640px">
       <div class="dlg-head"><span class="font-medium">Exercise runbook · Iraj Ispahani</span><button class="btn" onclick="closeDialog('runbook-dlg')" aria-label="Close">&#10005;</button></div>
       <div class="dlg-body text-sm space-y-3">
         <p class="eyebrow">Window, election and checklist — display truth, no Board discretion simulated.</p>
-        <div class="p-3 rounded" style="background:var(--surface-red-1);color:var(--ink-red-3)"><strong>blocked</strong> — no open exercise window at 2026-06-11; next backstop 2035-06-01.</div>
-        <div class="p-3 rounded" style="background:var(--surface-amber-1);color:var(--ink-amber-strong)"><strong>action</strong> — UK grantee: s431 election within 14 days of exercise.</div>
-        <div class="p-3 rounded" style="background:var(--surface-amber-1);color:var(--ink-amber-strong)"><strong>action</strong> — deed of adherence before first exercise (sole contractual layer; no SHA).</div>
-        <div class="p-3 rounded" style="background:var(--surface-green-1);color:var(--ink-green-3)"><strong>ok</strong> — cash-free routes: net exercise (Rule 4.5) · sell-to-cover (Rule 7.4(a)).</div>
+        <div class="p-3 rounded flex gap-3" style="background:var(--surface-red-1);color:var(--ink-red-3)">
+          <span class="text-xs font-semibold shrink-0 mt-0.5" style="min-width:52px">blocked</span>
+          <span>No open exercise window at 2026-06-11 — exercise restricted to Board-determined liquidity windows (next backstop 2035-06-01)</span>
+        </div>
+        <div class="p-3 rounded flex gap-3" style="background:var(--surface-amber-1);color:var(--ink-amber-strong)">
+          <span class="text-xs font-semibold shrink-0 mt-0.5" style="min-width:52px">action</span>
+          <span>UK grantee: file the s431 election within 14 days of exercise (restricted securities)</span>
+        </div>
+        <div class="p-3 rounded flex gap-3" style="background:var(--surface-amber-1);color:var(--ink-amber-strong)">
+          <span class="text-xs font-semibold shrink-0 mt-0.5" style="min-width:52px">action</span>
+          <span>Deed of adherence executed before first exercise (drag-along, transfer restrictions, power of attorney — the sole contractual layer; no SHA exists)</span>
+        </div>
+        <div class="p-3 rounded flex gap-3" style="background:var(--surface-green-1);color:var(--ink-green-3)">
+          <span class="text-xs font-semibold shrink-0 mt-0.5" style="min-width:52px">ok</span>
+          <span>Cash-free routes: net exercise at Board discretion on written request (Rule 4.5); sell-to-cover holder-elected with surplus accounted (Rule 7.4(a))</span>
+        </div>
+        <div class="pt-2 border-t" style="border-color:var(--outline-gray-1)">
+          <label class="flex flex-wrap items-center gap-3">
+            <span class="eyebrow">Shares to exercise</span>
+            <input type="number" id="rb-qty" class="border rounded px-3 py-1.5 tnum w-28" style="border-color:var(--outline-gray-2)" min="0" max="858" step="1" value="858" aria-describedby="rb-cost">
+            <span class="eyebrow">of 858 granted</span>
+          </label>
+          <p class="mt-2 tnum" id="rb-cost" aria-live="polite">Exercise cost · 858 × $1,572.95 = <strong>$1,349,591</strong></p>
+          <p class="eyebrow mt-1">Cash required at exercise before any cash-free route is approved.</p>
+        </div>
       </div>
       <div class="dlg-foot"><button class="btn" onclick="closeDialog('runbook-dlg')">Close</button></div>
     </div>
@@ -350,6 +397,14 @@ base: $2.27M equity + $5.40M tokens = $7.67M">$7.67M</div><div class="text-xs" s
 </div>
 <script src="assets/proto.js"></script>
 <script>
+  // Tier lookup — the edit-package dialog's single source for markers, compa and eq/tok
+  const TIERS = {
+    base1:     { label: 'Base 1×',      eq: '0.5% eq · 0.3% tok', compa: '0.52', pos: 26, inBand: false, net: '$2.56M', nets: { con: '$0.62M', base: '$2.56M', agg: '$7.13M' } },
+    strategic: { label: 'Strategic 2×', eq: '1.0% eq · 0.6% tok', compa: '1.04', pos: 52, inBand: true,  net: '$5.11M', nets: { con: '$1.25M', base: '$5.11M', agg: '$14.3M' } },
+    anchor:    { label: 'Anchor 3×',    eq: '1.5% eq · 0.9% tok', compa: '1.12', pos: 58, inBand: true,  net: '$7.67M', nets: { con: '$1.87M', base: '$7.67M', agg: '$21.4M' } },
+  };
+  let savedTier = 'anchor';
+
   document.addEventListener('DOMContentLoaded', () => {
     wireSlider('exit', 'exit-out', v => {
       const net = Math.max(0, (v - 186.7)) * 0.00723 + 5.4;
@@ -361,7 +416,145 @@ base: $2.27M equity + $5.40M tokens = $7.67M">$7.67M</div><div class="text-xs" s
       if (e.target.value === 'signed') document.getElementById('bind-row').classList.remove('hidden');
     });
     wireTabs('adv-tabs');
+
+    // Deep link: ?case=con|base|agg & stage=bridge|seriesA|seriesB|seriesC restore on load;
+    // case/stage changes on this page write back to the address bar.
+    const q = new URLSearchParams(location.search);
+    if (q.get('case')) setCase(q.get('case'), { silent: true });
+    if (q.get('stage')) setStage(q.get('stage'), { silent: true });
+    const baseSetCase = window.setCase, baseSetStage = window.setStage;
+    window.setCase = (k, o) => { baseSetCase(k, o); syncCaseUrl(); };
+    window.setStage = (k, o) => { baseSetStage(k, o); syncCaseUrl(); };
+    if (q.get('case') || q.get('stage')) syncCaseUrl();
   });
+  function syncCaseUrl(){
+    history.replaceState(null, '', location.pathname + '?case=' + PROTO_STATE.caseKey + '&stage=' + PROTO_STATE.stageKey);
+  }
+  function copyCaseLink(){
+    const url = location.origin + location.pathname + '?case=' + PROTO_STATE.caseKey + '&stage=' + PROTO_STATE.stageKey;
+    const ok = () => toast('Link copied · ?case=' + PROTO_STATE.caseKey + '&stage=' + PROTO_STATE.stageKey + ' — restores on open');
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(ok, () => fallbackCopy(url, ok));
+    else fallbackCopy(url, ok);
+  }
+  function fallbackCopy(text, ok){
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); ok(); } catch (e) { toast('Copy failed — ' + text); }
+    ta.remove();
+  }
+
+  // Live tier preview inside the dialog (proto.js handles the radio visuals; this moves the markers)
+  document.addEventListener('click', e => {
+    const r = e.target.closest ? e.target.closest('#tier-group [role=radio]') : null;
+    if (r) renderTierPreview(r.dataset.tier);
+  });
+  function renderTierPreview(key){
+    const t = TIERS[key], before = TIERS[savedTier];
+    const after = document.getElementById('pkg-after');
+    after.style.left = t.pos + '%';
+    after.classList.toggle('out', !t.inBand);
+    after.dataset.pop = 'Proposed · ' + t.label + ' · ' + t.net + ' · compa ' + t.compa + (key === savedTier ? ' (unchanged)' : '');
+    document.getElementById('pkg-eqtok').textContent = t.label + ' · ' + t.eq + ' · net ' + t.net + ' at base case';
+    document.getElementById('pkg-compa').innerHTML = 'compa before <strong>' + before.compa + '</strong> → after <strong>' + t.compa + '</strong> · '
+      + (t.inBand ? 'in band ✓ — no ceremony needed.'
+                  : '<span style="color:var(--ink-red-3)">below the band — requires a justification that travels to Governance.</span>');
+  }
+  function syncEditDialog(){
+    const t = TIERS[savedTier];
+    document.querySelectorAll('#tier-group [role=radio]').forEach(r => {
+      const on = r.dataset.tier === savedTier;
+      r.setAttribute('aria-checked', on);
+      r.style.borderColor = on ? 'var(--ink-amber-3)' : '';
+      r.style.background = on ? 'var(--surface-amber-1)' : '';
+    });
+    const beforeEl = document.querySelector('#edit-pkg-dlg [aria-label="Before marker"]');
+    beforeEl.style.left = t.pos + '%';
+    beforeEl.dataset.pop = 'Before · ' + t.label + ' · ' + t.net + ' · compa ' + t.compa;
+    renderTierPreview(savedTier);
+  }
+  function openEditPkg(){ syncEditDialog(); openDialog('edit-pkg-dlg'); }
+
+  function applyTier(key){
+    savedTier = key;
+    const t = TIERS[key];
+    document.getElementById('pkg-name').textContent = 'Iraj Ispahani · ' + t.label;
+    document.getElementById('band-tier').textContent = t.label.split(' ')[0];
+    document.getElementById('band-compa').textContent = t.compa;
+    const av = document.getElementById('band-avatar-main');
+    av.style.left = t.pos + '%';
+    av.classList.toggle('out', !t.inBand);
+    av.dataset.pop = JSON.stringify({
+      con: 'Current · net ' + t.nets.con + ' · compa ' + t.compa + ' vs band mid',
+      base: 'Current · net ' + t.nets.base + ' · compa ' + t.compa + ' vs band mid',
+      agg: 'Current · net ' + t.nets.agg + ' · compa ' + t.compa + ' vs band mid',
+    });
+    document.getElementById('band-note').textContent = t.inBand
+      ? 'Inside the FAST band — in-policy, no ceremony needed. Editing the package shows a second, gray "before" marker (open Edit package).'
+      : 'Below the FAST band — out of policy; this placement requires a justification on Governance.';
+  }
+  function savePackage(){
+    const sel = document.querySelector('#tier-group [role=radio][aria-checked=true]');
+    const key = sel && sel.dataset.tier ? sel.dataset.tier : savedTier;
+    closeDialog('edit-pkg-dlg');
+    if (key === savedTier) { toast('No changes — package unchanged'); return; }
+    const prevKey = savedTier;
+    applyTier(key);
+    toast('Package saved · ' + TIERS[key].label + ' — summary & band placement updated', () => { applyTier(prevKey); });
+  }
+
+  // Runbook: shares-to-exercise recomputes the cost line live (clamps 0–858)
+  document.addEventListener('input', e => {
+    if (e.target.id !== 'rb-qty') return;
+    let qty = parseInt(e.target.value, 10);
+    if (isNaN(qty)) qty = 0;
+    qty = Math.max(0, Math.min(858, qty));
+    if (e.target.value !== '' && e.target.value !== String(qty)) e.target.value = qty;
+    document.getElementById('rb-cost').innerHTML =
+      'Exercise cost · ' + qty + ' × $1,572.95 = <strong>$' + Math.round(qty * 1572.95).toLocaleString('en-US') + '</strong>';
+  });
+  function bindLetter(){
+    const sel = document.getElementById('stage');
+    const note = document.getElementById('stage-transitions');
+    const prevNote = note.textContent;
+    document.getElementById('bind-row').classList.add('hidden');
+    sel.value = 'signed';
+    note.textContent = 'iterating → signed · today · letter v1 bound';
+    toast('Stage → signed · letter v1 bound', () => {
+      sel.value = 'iterating';
+      note.textContent = prevNote;
+    });
+  }
+  function scheduleReview(){
+    const raw = document.getElementById('review-date').value.trim();
+    const row = document.getElementById('review-row-date');
+    const prev = row.textContent;
+    const d = new Date(raw);
+    const next = isNaN(d) ? raw : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    closeDialog('review-dlg');
+    if (next === prev) { toast('First checkpoint unchanged · ' + prev); return; }
+    row.textContent = next;
+    toast('First checkpoint → ' + next + ' (see Reviews tab)', () => { row.textContent = prev; });
+  }
+  function recordDeparture(){
+    if (document.getElementById('departing-chip')) { closeDialog('departure-dlg'); return; }
+    const frame = document.getElementById('pkg-frame');
+    const name = document.getElementById('pkg-name');
+    const chip = document.createElement('span');
+    chip.id = 'departing-chip';
+    chip.className = 'text-xs px-2 py-0.5 rounded-full ml-2 align-middle inline-block';
+    chip.style.cssText = 'background:var(--surface-red-1);color:var(--ink-red-3)';
+    chip.textContent = 'departure modeled · roll-off';
+    document.getElementById('pkg-flags').appendChild(chip);
+    frame.classList.add('pkg-departed');
+    name.classList.add('pkg-strike');
+    closeDialog('departure-dlg');
+    toast('Departure modeled (roll-off) — package dimmed for this session', () => {
+      chip.remove();
+      frame.classList.remove('pkg-departed');
+      name.classList.remove('pkg-strike');
+    });
+  }
 </script>
 </body>
 </html>

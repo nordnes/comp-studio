@@ -13,13 +13,20 @@
 <div id="page" data-patterns="WS-B AppDialog grammar: max-h 85vh · sticky header w/ always-visible close · scrollable body · sticky footer · bg-black/40 dim · Escape + backdrop close · state-driven teardown (WS-A: no transition-gated visibility) · 2.4 inline FormControl validation, primary action never silently fails · 2.6 wizard grouped into fieldsets, no dangling 'Live:' · 9d show-the-formula popover.">
   <div class="mx-auto w-full px-5 py-8" style="max-width:60rem">
     <h1 class="font-display text-3xl mb-1">One dialog grammar, everywhere.</h1>
-    <p class="text-sm mb-8" style="color:var(--ink-gray-6)">The shared AppDialog fixes the entire 1.2/2.3/2.5 class: tall content scrolls inside; the title and Close never leave the screen; the backdrop actually dims; teardown is state-driven so an interrupted animation can never wedge the page (the WS-A P0).</p>
+    <p class="text-sm mb-8" style="color:var(--ink-gray-6)">The shared AppDialog: tall content scrolls inside; the title and Close never leave the screen; the backdrop actually dims; teardown is state-driven so an interrupted animation can never wedge the page.</p>
 
     <div class="flex flex-wrap gap-3 mb-10">
       <button class="btn btn-solid" onclick="openDialog('tall-dlg')">Open the tall dialog (9-step wizard)</button>
       <button class="btn" onclick="openDialog('confirm-dlg')">Open a danger confirm</button>
       <span class="text-sm self-center formula-link tnum" tabindex="0" data-formula="board median $5.11M/yr
-Iraj $1.92M/yr ÷ $50K US advisory median = 38.3× (▲ above 1.2 grammar)">Try the formula popover on this figure: 38.3×</span>
+Iraj $1.92M/yr ÷ $50K US advisory median = 38.3×">Try the formula popover on this figure: 38.3×</span>
+    </div>
+
+    <div class="mb-10">
+      <div class="section-label mb-2">Session log <span class="eyebrow">· what the demo dialogs actually committed this session</span></div>
+      <div class="divide-y text-sm" id="session-log" style="border-color:var(--outline-gray-1)">
+        <div class="py-2 eyebrow" id="session-log-empty">Nothing committed yet — both demos append here.</div>
+      </div>
     </div>
 
     <div class="section-label mb-2">The rules</div>
@@ -69,14 +76,14 @@ Iraj $1.92M/yr ÷ $50K US advisory median = 38.3× (▲ above 1.2 grammar)">Try 
             <textarea class="w-full border rounded px-3 py-2" rows="2" style="border-color:var(--outline-gray-2)" placeholder="9. Iterate for sustainability"></textarea>
           </div>
         </fieldset>
-        <p class="eyebrow">The verbatim Ispahani sequence (B.3). Recording leaves an artefact per decision.</p>
+        <p class="eyebrow">The verbatim Ispahani sequence. Recording leaves an artefact per decision.</p>
       </div>
       <div class="dlg-foot">
         <button class="btn" onclick="closeDialog('tall-dlg')">Cancel</button>
         <button class="btn btn-solid" onclick="
           const s=document.getElementById('subj');
-          if(!s.value.trim()){document.getElementById('subj-err').classList.remove('hidden');s.focus();this.closest('.dlg-body, .dlg').querySelector('.dlg-body')?.scrollTo({top:0,behavior:'smooth'});}
-          else{closeDialog('tall-dlg');toast('Decision &quot;'+s.value+'&quot; recorded on the audit trail','Undo');}
+          if(!s.value.trim()){document.getElementById('subj-err').classList.remove('hidden');s.focus();this.closest('.dlg').querySelector('.dlg-body')?.scrollTo({top:0,behavior:'smooth'});}
+          else{closeDialog('tall-dlg');logSession('decision','Decision &quot;'+s.value+'&quot; recorded');}
         ">Record decision</button>
       </div>
     </div>
@@ -89,11 +96,22 @@ Iraj $1.92M/yr ÷ $50K US advisory median = 38.3× (▲ above 1.2 grammar)">Try 
       <div class="dlg-body text-sm"><p>This removes the scenario from the set. Saved propositions that reference it keep their sealed renders. You can undo for 6 seconds.</p></div>
       <div class="dlg-foot">
         <button class="btn" onclick="closeDialog('confirm-dlg')">Cancel</button>
-        <button class="btn" style="background:var(--ink-red-3);border-color:var(--ink-red-3);color:#fff" onclick="closeDialog('confirm-dlg');toast('Scenario &quot;Conservative&quot; deleted','Undo')">Delete</button>
+        <button class="btn" style="background:var(--ink-red-3);border-color:var(--ink-red-3);color:#fff" onclick="closeDialog('confirm-dlg');logSession('delete','Scenario &quot;Conservative&quot; deleted')">Delete</button>
       </div>
     </div>
   </div>
 </div>
 <script src="assets/proto.js"></script>
+<script>
+function logSession(kind, text){
+  document.getElementById('session-log-empty')?.remove();
+  const row = document.createElement('div');
+  row.className = 'py-2 flex flex-wrap gap-x-3';
+  const stamp = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  row.innerHTML = `<span class="eyebrow tnum w-14">${stamp}</span><span class="text-xs px-1.5 rounded self-center" style="background:var(--surface-gray-2)">${kind}</span><span>${text}</span>`;
+  document.getElementById('session-log').prepend(row);
+  toast(text + ' — see the session log', () => row.remove());
+}
+</script>
 </body>
 </html>

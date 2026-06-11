@@ -10,7 +10,7 @@
 <script>window.PAGE_ACTIONS=[["Configure",false]];</script>
 </head>
 <body>
-<div id="page" data-patterns="1.4 banner→status chip (OpenComp health strip) · 1.1 deep-linkable advisor cards · 9.1 skip link · 9a provenance chips on the benchmark (Carta TC) · 9d formula popover on the hero figure · WS-G health strip on pool allocation · IMPROVEMENT_PLAN E4 next-blocking-item card (FORGD_DEEP_DIVE 'Next recommended task', derived not manual) · F3 percentile ramp on the hero range (Levels.fyi) · F2 benchmark provenance · CLAUDE_DESIGN_PROMPT §5.1 key dates 90/180d + to-confirm list + shared 'About these figures' disclosure (§8.8).">
+<div id="page">
   <div class="mx-auto w-full px-5 py-8" style="max-width:60rem">
     <h1 class="font-display text-3xl mb-1">The advisory board, at a glance.</h1>
     <p class="text-sm mb-6" style="color:var(--ink-gray-6)">A live snapshot against the company plan. Open an advisor to model their package.</p>
@@ -22,12 +22,7 @@
 = Σ [options × (exit PPS − strike $1,572.95), floor 0] × % kept
 + Σ [token % × TGE FDV]
 base: $28.1M">$28.1M</div>
-        <!-- F3 · percentile-style sequential ramp (Levels.fyi), single hue, position-labeled -->
-        <div class="mt-2 space-y-1" style="max-width:300px" role="img" aria-label="Scenario range: Conservative 6.87, Base 28.1, Aggressive 78.6 million dollars">
-          <div class="flex items-center gap-2 text-xs tnum"><div class="h-2 rounded-full" style="width:9%;background:var(--chart-tint)"></div><span style="color:var(--ink-gray-6)">Conservative · $6.87M</span></div>
-          <div class="flex items-center gap-2 text-xs tnum"><div class="h-2 rounded-full" style="width:36%;background:var(--chart-customer)"></div><span class="font-medium">Base · $28.1M</span></div>
-          <div class="flex items-center gap-2 text-xs tnum"><div class="h-2 rounded-full" style="width:100%;background:var(--chart-capital)"></div><span style="color:var(--ink-gray-6)">Aggressive · $78.6M</span></div>
-        </div>
+        <div class="mt-2 text-xs tnum" style="color:var(--ink-gray-6)">Conservative → Aggressive · $6.87M – $78.6M</div>
       </div>
       <dl class="flex gap-8 text-sm">
         <div><dt class="eyebrow">Equity of company</dt><dd class="tnum font-medium">5.50% <span style="color:var(--ink-gray-5)">base, pre-uplift</span></dd></div>
@@ -42,46 +37,53 @@ base: $28.1M">$28.1M</div>
         <div class="grid sm:grid-cols-2 gap-3">
           <a href="advisor.html" class="frame p-4 hover:shadow-sm block">
             <div class="flex items-center justify-between mb-1"><span class="font-medium">Iraj Ispahani</span><span class="text-xs px-2 py-0.5 rounded-full" style="background:var(--surface-gray-2);color:var(--ink-gray-7)">Anchor</span></div>
-            <div class="eyebrow mb-2">Asset Management · iterating</div>
-            <div class="font-display text-2xl tnum">$7.67M</div>
-            <div class="text-xs tnum" style="color:var(--ink-gray-6)">1.50% eq · 0.90% tok · <span class="delta-up">+70% at ceiling</span></div>
+            <div class="flex flex-wrap gap-1.5 mb-1.5"><span class="mini-chip amber">4 pre-conditions</span><span class="mini-chip">iterating</span></div>
+            <div class="eyebrow mb-2">Asset Management</div>
+            <div class="font-display text-2xl tnum" data-money='{"con":"$1.87M","base":"$7.67M","agg":"$21.4M"}'>$7.67M</div>
+            <div class="text-xs tnum" style="color:var(--ink-gray-6)">1.50% eq · 0.90% tok · <span class="delta-up">+70% at ceiling · <span data-money='{"con":"$3.18M","base":"$13.0M","agg":"$36.4M"}'>$13.0M</span></span></div>
           </a>
           <a href="advisor.html" class="frame p-4 hover:shadow-sm block">
             <div class="flex items-center justify-between mb-1"><span class="font-medium">Robert Reoch</span><span class="text-xs px-2 py-0.5 rounded-full" style="background:var(--surface-gray-2);color:var(--ink-gray-7)">Strategic</span></div>
-            <div class="eyebrow mb-2">Capital Markets · proposed</div>
-            <div class="font-display text-2xl tnum">$5.11M</div>
-            <div class="text-xs tnum" style="color:var(--ink-gray-6)">1.00% eq · 0.60% tok · <span class="delta-up">+30% at ceiling</span></div>
+            <div class="flex flex-wrap gap-1.5 mb-1.5"><span class="mini-chip amber">4 pre-conditions</span><span class="mini-chip">proposed</span></div>
+            <div class="eyebrow mb-2">Capital Markets</div>
+            <div class="font-display text-2xl tnum" data-money='{"con":"$1.25M","base":"$5.11M","agg":"$14.3M"}'>$5.11M</div>
+            <div class="text-xs tnum" style="color:var(--ink-gray-6)">1.00% eq · 0.60% tok · <span class="delta-up">+30% at ceiling · <span data-money='{"con":"$1.63M","base":"$6.64M","agg":"$18.6M"}'>$6.64M</span></span></div>
           </a>
           <a href="advisor.html" class="frame p-4 hover:shadow-sm block">
             <div class="flex items-center justify-between mb-1"><span class="font-medium">Martin Keller</span><span class="text-xs px-2 py-0.5 rounded-full" style="background:var(--surface-gray-2);color:var(--ink-gray-7)">Strategic</span></div>
-            <div class="eyebrow mb-2">Asset Management · proposed</div>
-            <div class="font-display text-2xl tnum">$5.11M</div>
-            <div class="text-xs tnum" style="color:var(--ink-gray-6)">1.00% eq · 0.60% tok · <span class="delta-up">+40% at ceiling</span></div>
+            <div class="flex flex-wrap gap-1.5 mb-1.5"><span class="mini-chip amber">4 pre-conditions</span><span class="mini-chip">proposed</span></div>
+            <div class="eyebrow mb-2">Asset Management</div>
+            <div class="font-display text-2xl tnum" data-money='{"con":"$1.25M","base":"$5.11M","agg":"$14.3M"}'>$5.11M</div>
+            <div class="text-xs tnum" style="color:var(--ink-gray-6)">1.00% eq · 0.60% tok · <span class="delta-up">+40% at ceiling · <span data-money='{"con":"$1.75M","base":"$7.15M","agg":"$20.0M"}'>$7.15M</span></span></div>
           </a>
           <a href="advisor.html" class="frame p-4 hover:shadow-sm block">
             <div class="flex items-center justify-between mb-1"><span class="font-medium">Kerim Derhalli</span><span class="text-xs px-2 py-0.5 rounded-full" style="background:var(--surface-gray-2);color:var(--ink-gray-7)">Strategic</span></div>
-            <div class="eyebrow mb-2">Technology & FinTech · proposed</div>
-            <div class="font-display text-2xl tnum">$5.11M</div>
-            <div class="text-xs tnum" style="color:var(--ink-gray-6)">1.00% eq · 0.60% tok · <span class="delta-up">+80% at ceiling</span></div>
+            <div class="flex flex-wrap gap-1.5 mb-1.5"><span class="mini-chip amber">4 pre-conditions</span><span class="mini-chip">proposed</span></div>
+            <div class="eyebrow mb-2">Technology & FinTech</div>
+            <div class="font-display text-2xl tnum" data-money='{"con":"$1.25M","base":"$5.11M","agg":"$14.3M"}'>$5.11M</div>
+            <div class="text-xs tnum" style="color:var(--ink-gray-6)">1.00% eq · 0.60% tok · <span class="delta-up">+80% at ceiling · <span data-money='{"con":"$2.25M","base":"$9.20M","agg":"$25.7M"}'>$9.20M</span></span></div>
           </a>
           <a href="advisor.html" class="frame p-4 hover:shadow-sm block">
             <div class="flex items-center justify-between mb-1"><span class="font-medium">Carl Bang</span><span class="text-xs px-2 py-0.5 rounded-full" style="background:var(--surface-gray-2);color:var(--ink-gray-7)">Base</span></div>
-            <div class="eyebrow mb-2">Payments & FX · modeled</div>
-            <div class="font-display text-2xl tnum">$2.56M</div>
-            <div class="text-xs tnum" style="color:var(--ink-gray-6)">0.50% eq · 0.30% tok</div>
+            <div class="flex flex-wrap gap-1.5 mb-1.5"><span class="mini-chip amber">4 pre-conditions</span><span class="mini-chip">modeled</span></div>
+            <div class="eyebrow mb-2">Payments & FX</div>
+            <div class="font-display text-2xl tnum" data-money='{"con":"$624K","base":"$2.56M","agg":"$7.14M"}'>$2.56M</div>
+            <div class="text-xs tnum" style="color:var(--ink-gray-6)">0.50% eq · 0.30% tok · <span class="delta-up">+20% at ceiling · <span data-money='{"con":"$749K","base":"$3.07M","agg":"$8.57M"}'>$3.07M</span></span></div>
           </a>
           <a href="advisor.html" class="frame p-4 hover:shadow-sm block">
             <div class="flex items-center justify-between mb-1"><span class="font-medium">Rajesh Mehta</span><span class="text-xs px-2 py-0.5 rounded-full" style="background:var(--surface-gray-2);color:var(--ink-gray-7)">Base</span></div>
-            <div class="eyebrow mb-2">Payments & FX · modeled</div>
-            <div class="font-display text-2xl tnum">$2.56M</div>
-            <div class="text-xs tnum" style="color:var(--ink-gray-6)">0.50% eq · 0.30% tok</div>
+            <div class="flex flex-wrap gap-1.5 mb-1.5"><span class="mini-chip amber">4 pre-conditions</span><span class="mini-chip">modeled</span></div>
+            <div class="eyebrow mb-2">Payments & FX</div>
+            <div class="font-display text-2xl tnum" data-money='{"con":"$624K","base":"$2.56M","agg":"$7.14M"}'>$2.56M</div>
+            <div class="text-xs tnum" style="color:var(--ink-gray-6)">0.50% eq · 0.30% tok · <span class="delta-up">+20% at ceiling · <span data-money='{"con":"$749K","base":"$3.07M","agg":"$8.57M"}'>$3.07M</span></span></div>
           </a>
         </div>
-        <p class="eyebrow mt-4 tnum">Base path: Bridge $90.0M → Series A $120.0M → Series B $300.0M → Series C $500.0M · TGE FDV $600.0M.</p>
+        <p class="eyebrow mt-4 tnum">Base path: Bridge $90.0M → Series A $120.0M → Series B $300.0M → Series C $500.0M · TGE FDV <span data-money='{"con":"$200.0M","base":"$600.0M","agg":"$1.80B"}'>$600.0M</span>.</p>
+        <p class="eyebrow mt-1 tnum">Modeling at <span data-stage-label>Bridge close</span> — new grants price at <span data-stage-text='{"bridge":"$1,572.95","seriesA":"$1,677.83","seriesB":"$3,145.90","seriesC":"$4,212.05"}'>$1,572.95</span>/share.</p>
       </div>
 
       <aside class="space-y-7">
-        <!-- E4 · next blocking item — derived from state, never manually marked (Forgd anti-pattern avoided) -->
+        <!-- next blocking item — derived from state, never manually marked -->
         <div class="frame p-4" style="border-color:var(--outline-gray-2)">
           <div class="section-label mb-1">Next blocking item</div>
           <p class="text-sm mb-2"><strong>A-2 · Pool count / % decision</strong> — red on the register; blocks the resolution, every grant, and watermark lift.</p>
@@ -117,26 +119,35 @@ base: $28.1M">$28.1M</div>
         </div>
         <div>
           <div class="section-label mb-2">Benchmark</div>
-          <p class="text-sm mb-2">Board base equity <strong>5.50%</strong> · FAST per-head 0.30–1.00% · advisory pool ~5%.</p>
+          <p class="text-sm mb-2">Board base equity <strong>5.50%</strong> · FAST per-head 0.30–1.00% · advisory pool <span class="tnum" id="bench-pool-norm">~5%</span>.</p>
           <div class="flex flex-wrap gap-1.5">
-            <span class="prov-chip" title="Founder Institute FAST matrix"><span class="prov-dot prov-good"></span>source · FI FAST</span>
-            <span class="prov-chip" title="As of Jun 2025 — 12 months old"><span class="prov-dot prov-mid"></span>recency · 12mo</span>
-            <span class="prov-chip" title="Stage-matched sample"><span class="prov-dot prov-good"></span>fit · pre-A</span>
+            <span class="prov-chip" data-pop="Founder Institute FAST matrix"><span class="prov-dot prov-good"></span>source · FI FAST</span>
+            <span class="prov-chip" id="bench-recency" data-pop="As of Jun 2025 — 12 months old"><span class="prov-dot prov-mid"></span>recency · 12mo</span>
+            <span class="prov-chip" data-pop="Stage-matched sample"><span class="prov-dot prov-good"></span>fit · pre-A</span>
           </div>
-          <button class="text-xs underline mt-2" style="color:var(--ink-gray-6)" onclick="toast('Benchmark refresh preview: 2026 Carta data moves the pool norm ~5%→4.6%. Accept on Configure.','')">Update available — preview impact</button>
+          <div class="hidden frame mt-2 p-3 text-xs" id="bench-preview" style="background:var(--surface-gray-1)">
+            <div class="eyebrow mb-1">Preview · 2026 Carta dataset</div>
+            <div class="tnum mb-1">Advisory pool norm <span style="color:var(--ink-gray-6)">5.0%</span> → <span class="font-medium">4.6%</span></div>
+            <div class="mb-2" style="color:var(--ink-gray-7)">Affects the pool-norm reference only — no per-head band or roster figure moves.</div>
+            <div class="flex gap-2">
+              <button class="btn" style="padding:3px 10px;font-size:12px" onclick="benchAccept()">Accept v2026-Q2</button>
+              <button class="btn" style="padding:3px 10px;font-size:12px;border-color:transparent" onclick="benchPreview(false)">Keep v2025</button>
+            </div>
+          </div>
+          <button class="text-xs underline mt-2" id="bench-toggle" style="color:var(--ink-gray-6)" onclick="benchPreview()">Update available — preview impact</button>
         </div>
         <div>
           <div class="section-label mb-2">To confirm · alerts</div>
           <ul class="text-sm space-y-2" style="color:var(--ink-gray-7)">
             <li class="flex gap-2"><span aria-hidden="true" style="color:var(--ink-red-3)">●</span>Token bucket breached at ceiling (4.83% / 4.50%) — <a class="underline" href="tokens.html">token schedule</a></li>
             <li class="flex gap-2"><span aria-hidden="true" style="color:var(--ink-amber-3)">●</span>Iraj band breach justification awaiting board minute</li>
-            <li class="flex gap-2"><span aria-hidden="true" style="color:var(--ink-amber-3)">●</span>Review cadence unconfirmed (semi-annual proposed) — Part 17</li>
+            <li class="flex gap-2"><span aria-hidden="true" style="color:var(--ink-amber-3)">●</span>Review cadence unconfirmed (semi-annual proposed)</li>
           </ul>
         </div>
       </aside>
     </div>
 
-    <!-- §8.8 · ONE shared collapsible methodology disclosure, replacing the repeated footer paragraph -->
+    <!-- ONE shared collapsible methodology disclosure -->
     <details class="frame mt-10" style="background:var(--surface-gray-1)">
       <summary class="px-4 py-3 text-sm font-medium cursor-pointer" style="color:var(--ink-gray-7)">About these figures — methodology, shared by every view</summary>
       <div class="px-4 pb-4 text-sm leading-relaxed" style="color:var(--ink-gray-7)">
@@ -164,6 +175,26 @@ function kdWindow(is90){
   document.getElementById('kd-180').classList.toggle('hidden', is90);
   document.getElementById('kd-b90').classList.toggle('on', is90);
   document.getElementById('kd-b180').classList.toggle('on', !is90);
+}
+function benchPreview(show){
+  const panel=document.getElementById('bench-preview');
+  const open = show!==undefined ? show : panel.classList.contains('hidden');
+  panel.classList.toggle('hidden', !open);
+  document.getElementById('bench-toggle').textContent = open ? 'Hide preview' : 'Update available — preview impact';
+}
+function benchAccept(){
+  const chip=document.getElementById('bench-recency');
+  const norm=document.getElementById('bench-pool-norm');
+  const prevHtml=chip.innerHTML, prevPop=chip.dataset.pop, prevNorm=norm.textContent;
+  chip.innerHTML='<span class="prov-dot prov-good"></span>recency · current';
+  chip.dataset.pop='Carta v2026-Q2 — accepted today';
+  norm.textContent='4.6%';
+  benchPreview(false);
+  const tgl=document.getElementById('bench-toggle');
+  tgl.classList.add('hidden');
+  toast('Benchmark v2026-Q2 accepted — pool norm reference now 4.6%', ()=>{
+    chip.innerHTML=prevHtml; chip.dataset.pop=prevPop; norm.textContent=prevNorm; tgl.classList.remove('hidden');
+  });
 }
 </script>
 </body>

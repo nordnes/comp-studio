@@ -11,7 +11,7 @@ body{font-family:Inter,system-ui,sans-serif}
 .wm { position:absolute; inset:0; overflow:hidden; pointer-events:none; }
 .wm span { position:absolute; font-size:42px; letter-spacing:.2em; font-weight:600; color:rgba(180,35,24,.07); transform:rotate(-28deg); white-space:nowrap; }
 </style>
-<script>window.PAGE_ACTIONS=[["Share",false,"openDialog('share-dlg')"],["Print",false],["Copy",false],["Save as sent version",true]];</script>
+<script>window.PAGE_ACTIONS=[["Share",false,"openDialog('share-dlg')"],["Print",false,"window.print()"],["Copy",false,"copyLetter()"],["Save as sent version",true,"saveSentVersion()"]];</script>
 </head>
 <body>
 <div id="page" data-patterns="6.5/9c version chip row + sealed-render model (PandaDoc/Ledgy) · 6.2 'Save as sent version' in user language · 6.3 watermark masked behind the hero · IMPROVEMENT_PLAN D1 education blocks inside the document (Complete) · D2 caveats as per-figure numbered footnotes (Carta schema) · D3 view-as-advisor · D4 Share dialog w/ confidentiality dial + link state chip (Ledgy hide-shares / Carta PPS-only / Forgd Not-Published) · D5 at-signing vs at-milestones twin panel (FORGD_DEEP_DIVE Perceived-vs-Actual, honest version) · B1 labeled detents on the scenario slider (Pave/Ledgy) · CLAUDE_DESIGN_PROMPT §5.6 vesting + key dates + signature block.">
@@ -24,10 +24,10 @@ body{font-family:Inter,system-ui,sans-serif}
     </div>
 
     <!-- version chips (sealed-render model) -->
-    <div class="flex flex-wrap items-center gap-2 mb-6 text-sm no-print internal-only">
+    <div class="flex flex-wrap items-center gap-2 mb-6 text-sm no-print internal-only" id="version-chips">
       <span class="eyebrow">Versions</span>
-      <a class="preset-chip" href="proposition-v1.html" title="Sealed render — immutable">v1 · sealed 11 Jun 🔒</a>
-      <span class="preset-chip on" title="Live draft — regenerates with the model">draft · live</span>
+      <a class="preset-chip" href="proposition-v1.html" title="Sealed render — immutable">v1 · sealed 11 Jun</a>
+      <span class="preset-chip on" id="draft-chip" title="Live draft — regenerates with the model">draft · live</span>
       <span class="eyebrow">Editing after sealing always lands on the draft — sealed renders never change. Binding "signed" requires a sealed version.</span>
     </div>
 
@@ -47,7 +47,7 @@ body{font-family:Inter,system-ui,sans-serif}
           <div class="text-right"><div class="eyebrow">Prepared for</div><div class="font-medium">Iraj Ispahani</div><div class="eyebrow">Asset Management — Hedge Funds &amp; Family Offices</div></div>
         </div>
 
-        <!-- hero on a solid plate so the watermark never collides with the display type (6.3) -->
+        <!-- hero on a solid plate so the watermark never collides with the display type -->
         <div class="relative mb-10" style="background:var(--surface-white)">
           <div class="eyebrow mb-2" style="color:var(--ink-amber-strong)">An invitation to the founding advisory board</div>
           <div class="font-display text-5xl leading-tight">A 4-year engagement,<br><em style="color:var(--ink-amber-3)">a base that grows</em><br>with what you build.</div>
@@ -55,23 +55,23 @@ body{font-family:Inter,system-ui,sans-serif}
 
         <div class="grid sm:grid-cols-[1fr,220px] gap-6 mb-8 items-start">
           <div>
-            <div class="eyebrow mb-1">The package across outcomes · net of strike &amp; dilution<sup class="tnum">1,2</sup> · not a forecast</div>
-            <div class="font-display text-4xl tnum mb-3">$7.67M<sup class="text-base" style="color:var(--ink-gray-5)">1</sup></div>
+            <div class="eyebrow mb-1">The package across outcomes · net of strike &amp; dilution<sup class="tnum">1,2</sup> · not a forecast · <span data-case-label>Base</span> case shown</div>
+            <div class="font-display text-4xl tnum mb-3"><span data-money='{"con":"$1.87M","base":"$7.67M","agg":"$21.4M"}'>$7.67M</span><sup class="text-base" style="color:var(--ink-gray-5)">1</sup></div>
             <table class="data">
               <tbody>
-                <tr><td>Conservative · $300.0M exit · 32% kept</td><td class="num">$1.87M<sup style="color:var(--ink-gray-5)">2</sup></td></tr>
-                <tr style="background:var(--surface-amber-1)"><td><strong>Base · $500.0M exit · 48% kept</strong></td><td class="num font-medium">$7.67M<sup style="color:var(--ink-gray-5)">2</sup></td></tr>
-                <tr><td>Aggressive · $750.0M exit · 58% kept</td><td class="num">$21.4M<sup style="color:var(--ink-gray-5)">2</sup></td></tr>
+                <tr data-case-active="con"><td>Conservative · $300.0M exit · 32% kept <span class="case-active-flag">shown</span></td><td class="num">$1.87M<sup style="color:var(--ink-gray-5)">2</sup></td></tr>
+                <tr data-case-active="base"><td><strong>Base · $500.0M exit · 48% kept</strong> <span class="case-active-flag">shown</span></td><td class="num font-medium">$7.67M<sup style="color:var(--ink-gray-5)">2</sup></td></tr>
+                <tr data-case-active="agg"><td>Aggressive · $750.0M exit · 58% kept <span class="case-active-flag">shown</span></td><td class="num">$21.4M<sup style="color:var(--ink-gray-5)">2</sup></td></tr>
               </tbody>
             </table>
-            <div class="text-sm tnum mt-2" style="color:var(--ink-gray-7)">eq $2.27M<sup style="color:var(--ink-gray-5)">1,4</sup> · tok $5.40M<sup style="color:var(--ink-gray-5)">3</sup> <span class="eyebrow">(9.0M RKU — value first, count second)</span></div>
+            <div class="text-sm tnum mt-2" style="color:var(--ink-gray-7)">eq <span data-money='{"con":"$73K","base":"$2.27M","agg":"$5.23M"}'>$2.27M</span><sup style="color:var(--ink-gray-5)">1,4</sup> · tok <span data-money='{"con":"$1.80M","base":"$5.40M","agg":"$16.2M"}'>$5.40M</span><sup style="color:var(--ink-gray-5)">3</sup> <span class="eyebrow">(9.0M RKU — value first, count second)</span></div>
           </div>
           <aside class="text-xs p-3 rounded" style="background:var(--surface-gray-1);color:var(--ink-gray-7)">
             <strong>What "% kept" means.</strong> Future funding rounds dilute everyone; "kept" is the share of today's percentage you retain on that path. It is applied to every figure on this page — education inline, where the number is.
           </aside>
         </div>
 
-        <!-- B1 · detented slider: named anchors + valuation events -->
+        <!-- detented slider: named anchors + valuation events -->
         <div class="mb-8">
           <div class="eyebrow mb-2">Explore the outcome (drag — it snaps to the named anchors)</div>
           <input type="range" id="exit" class="exit" min="100" max="1000" step="10" value="500" list="exit-detents" aria-label="Exit valuation in millions; snaps to Conservative 300, Base 500, TGE FDV 600, Aggressive 750">
@@ -87,7 +87,7 @@ body{font-family:Inter,system-ui,sans-serif}
           <div class="text-sm tnum font-medium" id="exit-out" style="color:var(--ink-gray-9)">$7.67M net at $500M</div>
         </div>
 
-        <!-- D5 · at signing vs at milestones (the honest Perceived-vs-Actual) -->
+        <!-- at signing vs at milestones -->
         <div class="mb-8">
           <div class="eyebrow mb-2">What this is worth at signing — and at each milestone<sup class="tnum">2,5</sup></div>
           <div class="grid sm:grid-cols-2 gap-px rounded-lg overflow-hidden border" style="border-color:var(--outline-gray-1);background:var(--outline-gray-1)">
@@ -97,12 +97,12 @@ body{font-family:Inter,system-ui,sans-serif}
               <div class="text-xs mt-1" style="color:var(--ink-gray-6)">Everything is earned over 4 years. Nothing accrues before the 12-month cliff.</div>
             </div>
             <div class="p-4" style="background:var(--surface-white)">
-              <div class="eyebrow">At the milestones · base path</div>
+              <div class="eyebrow">At the milestones · <span data-case-label>Base</span> path</div>
               <table class="data text-xs">
                 <tbody>
-                  <tr><td>Cliff · Jun 2027</td><td class="num tnum">$1.92M vested</td></tr>
+                  <tr><td>Cliff · Jun 2027</td><td class="num tnum"><span data-money='{"con":"$468K","base":"$1.92M","agg":"$5.35M"}'>$1.92M</span> vested</td></tr>
                   <tr><td>TGE + lockup · 2029</td><td class="num tnum">tokens unlock monthly</td></tr>
-                  <tr><td>Year 4 · fully earned</td><td class="num tnum">$7.67M · ceiling $13.0M</td></tr>
+                  <tr><td>Year 4 · fully earned</td><td class="num tnum"><span data-money='{"con":"$1.87M","base":"$7.67M","agg":"$21.4M"}'>$7.67M</span> · ceiling <span data-money='{"con":"$3.18M","base":"$13.0M","agg":"$36.4M"}'>$13.0M</span></td></tr>
                 </tbody>
               </table>
             </div>
@@ -110,7 +110,7 @@ body{font-family:Inter,system-ui,sans-serif}
           <p class="eyebrow mt-2">Same engine, two vantages — the floor you sign for and the path it grows on. Nothing here is a promise of price.</p>
         </div>
 
-        <!-- D1 · education blocks, written around the locked corpus -->
+        <!-- education blocks, written around the locked corpus -->
         <div class="mb-8 space-y-2">
           <details class="frame" style="background:var(--surface-gray-1)">
             <summary class="px-4 py-2.5 text-sm font-medium cursor-pointer" style="color:var(--ink-gray-7)">How options net-of-strike work</summary>
@@ -126,7 +126,7 @@ body{font-family:Inter,system-ui,sans-serif}
           </details>
         </div>
 
-        <!-- §5.6 vesting & key dates -->
+        <!-- vesting & key dates -->
         <div class="grid sm:grid-cols-2 gap-6 mb-8">
           <div>
             <div class="eyebrow mb-2">Vesting<sup class="tnum">5</sup></div>
@@ -149,7 +149,7 @@ body{font-family:Inter,system-ui,sans-serif}
           </div>
         </div>
 
-        <!-- D2 · the corpus as numbered, per-figure footnotes (screen AND print) -->
+        <!-- the corpus as numbered, per-figure footnotes (screen AND print) -->
         <div class="mb-8">
           <div class="eyebrow mb-2">Notes — each note is bound to the figures it qualifies</div>
           <ol class="text-xs leading-relaxed space-y-1.5 list-decimal pl-4 legal-fineprint" style="color:var(--ink-gray-6)">
@@ -162,7 +162,7 @@ body{font-family:Inter,system-ui,sans-serif}
           <p class="text-xs mt-2" style="color:var(--ink-gray-5)">Ackermann Systems Engineering Ltd (t/a Raiku), Cayman Islands.</p>
         </div>
 
-        <!-- §5.6 signature / next steps -->
+        <!-- signature / next steps -->
         <div class="pt-5 border-t" style="border-color:var(--outline-gray-1)">
           <div class="eyebrow mb-3">Next steps — nothing here is signed today</div>
           <ol class="text-sm space-y-1 list-decimal pl-4 mb-5" style="color:var(--ink-gray-8)">
@@ -179,30 +179,30 @@ body{font-family:Inter,system-ui,sans-serif}
     </div>
   </div>
 
-  <!-- D4 · Share dialog with confidentiality dial -->
+  <!-- Share dialog with confidentiality dial -->
   <div class="dlg-backdrop" id="share-dlg" role="dialog" aria-modal="true" aria-label="Share this proposition">
     <div class="dlg" style="max-width:560px">
       <div class="dlg-head"><span class="font-medium">Share · Iraj's proposition</span><button class="btn" onclick="closeDialog('share-dlg')" aria-label="Close">&#10005;</button></div>
       <div class="dlg-body text-sm space-y-5">
         <div class="flex items-center gap-2">
           <span class="eyebrow">Link state</span>
-          <span class="text-xs px-2 py-0.5 rounded-full" style="background:var(--surface-gray-2);color:var(--ink-gray-7)">Not published</span>
-          <span class="eyebrow">→ Published → Revoked (explicit publish step — Forgd public-page grammar)</span>
+          <span class="text-xs px-2 py-0.5 rounded-full" id="link-state-chip" style="background:var(--surface-gray-2);color:var(--ink-gray-7)">Not published</span>
+          <span class="eyebrow">→ Published → Revoked (publishing is always an explicit step)</span>
         </div>
-        <label class="block"><span class="eyebrow block mb-1">Recipient</span><input class="w-full border rounded px-3 py-2" style="border-color:var(--outline-gray-2)" value="iraj@ispahani-advisory.com"><span class="text-xs" style="color:var(--ink-gray-5)">Email verification gates the link (Levels.fyi). The watermark carries this recipient fingerprint.</span></label>
+        <label class="block"><span class="eyebrow block mb-1">Recipient</span><input class="w-full border rounded px-3 py-2" style="border-color:var(--outline-gray-2)" value="iraj@ispahani-advisory.com"><span class="text-xs" style="color:var(--ink-gray-5)">Email verification gates the link. The watermark carries this recipient fingerprint.</span></label>
         <fieldset>
           <legend class="section-label mb-2">Display scope — the confidentiality dial</legend>
           <div class="space-y-2" role="radiogroup" aria-label="Display scope">
             <button class="frame p-3 text-left w-full" role="radio" aria-checked="true" style="border-color:var(--ink-amber-3);background:var(--surface-amber-1)"><div class="font-medium">Full detail</div><div class="text-xs" style="color:var(--ink-gray-6)">Scenario table, % kept, FDV math — what you see on this page</div></button>
-            <button class="frame p-3 text-left w-full" role="radio" aria-checked="false"><div class="font-medium">Net values only</div><div class="text-xs" style="color:var(--ink-gray-6)">Hides share counts and FDV math (Ledgy hide-total-shares · Carta PPS-only)</div></button>
+            <button class="frame p-3 text-left w-full" role="radio" aria-checked="false"><div class="font-medium">Net values only</div><div class="text-xs" style="color:var(--ink-gray-6)">Hides share counts and FDV math</div></button>
           </div>
         </fieldset>
-        <p class="eyebrow">Auth itself ships with the Supabase wave (COM-34) — this dialog defines the grammar. Watermark + fingerprint stay on in every scope.</p>
+        <p class="eyebrow">Watermark + fingerprint stay on in every scope.</p>
       </div>
       <div class="dlg-foot">
         <button class="btn" onclick="closeDialog('share-dlg')">Cancel</button>
-        <button class="btn" onclick="toast('Preview as recipient — exactly what Iraj sees (D3)')">Preview</button>
-        <button class="btn btn-solid" onclick="closeDialog('share-dlg');toast('Published to iraj@… · watermarked, net-values scope · revoke anytime','Undo')">Publish link</button>
+        <button class="btn" onclick="previewAsRecipient()">Preview</button>
+        <button class="btn btn-solid" onclick="publishLink()">Publish link</button>
       </div>
     </div>
   </div>
@@ -213,7 +213,7 @@ body{font-family:Inter,system-ui,sans-serif}
 document.addEventListener('DOMContentLoaded',()=>{
   const DETENTS=[300,500,600,750];
   const s=document.getElementById('exit');
-  s.addEventListener('change',()=>{ // snap on release (B1 labeled detents)
+  s.addEventListener('change',()=>{ // snap on release
     const v=parseFloat(s.value); const near=DETENTS.find(d=>Math.abs(d-v)<=30);
     if(near!==undefined && v!==near){ s.value=near; s.dispatchEvent(new Event('input')); }
   });
@@ -223,6 +223,40 @@ document.addEventListener('DOMContentLoaded',()=>{
     toast(e.target.checked?'Viewing as Iraj — internal panels hidden':'Internal view restored');
   });
 });
+function saveSentVersion(){
+  if (document.getElementById('v2-chip')) { toast('v2 is already sealed — edits land on the draft'); return; }
+  const draft = document.getElementById('draft-chip');
+  const prevDraft = draft.textContent;
+  draft.textContent = 'draft'; draft.classList.remove('on');
+  const v2 = document.createElement('a');
+  v2.id = 'v2-chip'; v2.className = 'preset-chip on'; v2.href = 'proposition-v1.html';
+  v2.title = 'Sealed render — immutable'; v2.textContent = 'v2 · sealed today';
+  draft.before(v2);
+  toast('Sealed as v2 — the sent version never changes', ()=>{
+    v2.remove(); draft.textContent = prevDraft; draft.classList.add('on');
+  });
+}
+function publishLink(){
+  const chip = document.getElementById('link-state-chip');
+  const prev = chip.textContent;
+  chip.textContent = 'Published · today';
+  chip.style.background = 'var(--surface-green-1)'; chip.style.color = 'var(--ink-green-3)';
+  closeDialog('share-dlg');
+  toast('Link published to iraj@ispahani-advisory.com — watermarked', ()=>{
+    chip.textContent = prev; chip.style.background = ''; chip.style.color = '';
+  });
+}
+function previewAsRecipient(){
+  closeDialog('share-dlg');
+  const cb = document.getElementById('as-advisor');
+  if (!cb.checked) { cb.checked = true; cb.dispatchEvent(new Event('change')); }
+}
+function copyLetter(){
+  const text = document.querySelector('.print-area').innerText;
+  navigator.clipboard.writeText(text).then(
+    ()=>toast('Letter copied to the clipboard as text'),
+    ()=>toast('Copy blocked by the browser — select and copy manually'));
+}
 </script>
 </body>
 </html>

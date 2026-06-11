@@ -7,15 +7,15 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,350;9..144,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/tokens.css">
 <style>body{font-family:Inter,system-ui,sans-serif}</style>
-<script>window.PAGE_ACTIONS=[["New grant decision",false,"openDialog('grant-history-dlg')"],["Board pack",false,"location.href='board-pack.html'"],["Export XLSX",false,"toast('Export board (XLSX): roster · packages · 3 scenarios · guardrails · governance register · audit log — one file, tabs per section (IMPROVEMENT_PLAN G1)','')"],["Add",true]];</script>
+<script>window.PAGE_ACTIONS=[["New grant decision",false,"openDialog('grant-history-dlg')"],["Board pack",false,"location.href='board-pack.html'"],["Export roster (CSV)",false,"exportRoster()"]];</script>
 </head>
 <body>
-<div id="page" data-patterns="IMPROVEMENT_PLAN A1 band bar + compa tick · A3 distribution chip-bar as roster filter (OpenComp) · A4 in-policy ✓ / exception flag w/ travelling justification (Compa) · A5 pool/budget KPI strip + validation banner (FORGD_DEEP_DIVE) · G1 one-button XLSX export · CLAUDE_DESIGN_PROMPT §5.2 roster table + totals + grant-decision history · Pulley equity+token side-by-side roster (COMPETITIVE_LANDSCAPE Track 1) · 1.5 guardrail aggregation w/ quantified delta · 2.7 scatter geometry fixed.">
+<div id="page">
   <div class="mx-auto w-full px-5 py-8 max-w-7xl">
     <h1 class="font-display text-3xl mb-1">The board, and what it costs us.</h1>
     <p class="text-sm mb-6" style="color:var(--ink-gray-6)">Uniform base × tier, grown by gated performance. Equity net of strike and scenario dilution; tokens at the scenario's TGE FDV. Internal &amp; confidential · discussion draft, not a binding offer.</p>
 
-    <!-- A5 · pool/budget KPI strip with validation line (Forgd 100%-allocated banner grammar) -->
+    <!-- pool/budget KPI strip with validation line -->
     <div class="frame mb-5 overflow-hidden">
       <div class="grid sm:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x" style="border-color:var(--outline-gray-1)">
         <div class="p-4"><div class="eyebrow mb-1">Equity pool · of 10% ESOP</div><div class="text-xl tnum font-medium">5.50% <span class="text-sm font-normal" style="color:var(--ink-gray-5)">→ 8.05% ceiling</span></div></div>
@@ -29,27 +29,27 @@
       </div>
     </div>
 
-    <!-- ONE aggregated guardrail callout (replaces 7 repeated warnings) + A4 travelling justification -->
+    <!-- one aggregated guardrail callout with a travelling justification -->
     <div class="frame p-4 mb-6" style="background:var(--surface-amber-1);border-color:#ecd9b8">
       <div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
         <span class="font-medium" style="color:var(--ink-amber-strong)">Generosity guardrails · 2 checks need justification</span>
-        <span class="tnum" style="color:var(--ink-gray-7)">Band breach: Iraj 1.50% &gt; FAST Expert 1.00% · <strong>delta 0.50pp ≈ $2.56M at base</strong></span>
+        <span class="tnum" style="color:var(--ink-gray-7)">Band breach: Iraj 1.50% &gt; FAST Expert 1.00% · <strong>delta 0.50pp ≈ <span data-money='{"con":"$624K","base":"$2.56M","agg":"$7.14M"}'>$2.56M</span> · <span data-case-label>Base</span> case</strong></span>
         <span class="tnum" style="color:var(--ink-gray-7)">Day-rate: all 6 imply ~$53K/day vs $10K anchor</span>
-        <button class="btn ml-auto" onclick="toast('Justification recorded — travels with the audit record and renders on Governance (A4)','Undo')">justify…</button>
+        <button class="btn ml-auto" id="justify-btn" onclick="justifyGuardrail(this)">justify…</button>
       </div>
     </div>
 
-    <!-- A3 · distribution chip-bar doubling as roster filter (OpenComp) -->
+    <!-- distribution chip-bar doubling as roster filter -->
     <div class="flex flex-wrap items-center gap-2 mb-4" role="group" aria-label="Filter roster by band position">
       <span class="eyebrow">Band position</span>
       <button class="preset-chip on" onclick="bandFilter(this,'all')">All · 6</button>
       <button class="preset-chip" onclick="bandFilter(this,'in')">In band · 5 ✓</button>
       <button class="preset-chip" onclick="bandFilter(this,'above')">Above band · 1 ⚠</button>
       <button class="preset-chip" onclick="bandFilter(this,'below')">Below band · 0</button>
-      <span class="eyebrow ml-2">click a segment to filter the roster (OpenComp distribution filter)</span>
+      <span class="eyebrow ml-2">click a segment to filter the roster</span>
     </div>
 
-    <!-- §5.2 roster table — Pulley spreadsheet-clean, equity + tokens side by side, totals row -->
+    <!-- roster table — equity + tokens side by side, totals row -->
     <div class="section-label mb-2">Roster · equity and tokens, side by side <span class="eyebrow">· net of strike · click a name to open the package</span></div>
     <div class="overflow-x-auto mb-3">
     <table class="data" style="min-width:1080px" id="roster">
@@ -77,8 +77,8 @@
           <td class="num font-medium" data-money='{"con":"$1.87M","base":"$7.67M","agg":"$21.4M"}'>$7.67M</td>
           <td class="num"><span class="delta-up">+0%</span> <span class="text-xs" style="color:var(--ink-gray-5)">ceil +70%</span></td>
           <td class="num">$2.5M <span class="text-xs" style="color:var(--ink-gray-5)">pipeline</span></td>
-          <td><span class="text-xs px-1.5 py-0.5 rounded" style="background:var(--surface-red-1);color:var(--ink-red-3)" title="1.50% > FAST Expert 1.00% — justification on file">⚠ above</span></td>
-          <td><button class="btn" style="padding:2px 8px" aria-label="Row actions for Iraj Ispahani" onclick="toast('Row menu: Edit package · Model departure · View proposition · Runbook')">⋯</button></td>
+          <td><span class="text-xs px-1.5 py-0.5 rounded" style="background:var(--surface-red-1);color:var(--ink-red-3)" data-pop="1.50% > FAST Expert 1.00% — justification on file">⚠ above</span></td>
+          <td><button class="btn" style="padding:2px 8px" aria-label="Row actions for Iraj Ispahani" onclick="rowMenu(event,this)" aria-haspopup="menu">⋯</button></td>
         </tr>
         <tr data-band="in">
           <td><a class="underline" href="advisor.html">Robert Reoch</a><div class="eyebrow">Capital Markets</div></td>
@@ -90,8 +90,8 @@
           <td class="num font-medium" data-money='{"con":"$1.25M","base":"$5.11M","agg":"$14.3M"}'>$5.11M</td>
           <td class="num"><span class="delta-up">+0%</span> <span class="text-xs" style="color:var(--ink-gray-5)">ceil +30%</span></td>
           <td class="num">$1.5M <span class="text-xs" style="color:var(--ink-gray-5)">committed</span></td>
-          <td><span class="text-xs" style="color:var(--ink-green-3)" title="compa 1.09 — in band">✓ in</span></td>
-          <td><button class="btn" style="padding:2px 8px" aria-label="Row actions for Robert Reoch" onclick="toast('Row menu: Edit package · Model departure · View proposition · Runbook')">⋯</button></td>
+          <td><span class="text-xs" style="color:var(--ink-green-3)" data-pop="compa 1.09 — in band">✓ in</span></td>
+          <td><button class="btn" style="padding:2px 8px" aria-label="Row actions for Robert Reoch" onclick="rowMenu(event,this)" aria-haspopup="menu">⋯</button></td>
         </tr>
         <tr data-band="in">
           <td><a class="underline" href="advisor.html">Martin Keller</a><div class="eyebrow">Asset Management</div></td>
@@ -103,8 +103,8 @@
           <td class="num font-medium" data-money='{"con":"$1.25M","base":"$5.11M","agg":"$14.3M"}'>$5.11M</td>
           <td class="num"><span class="delta-up">+0%</span> <span class="text-xs" style="color:var(--ink-gray-5)">ceil +40%</span></td>
           <td class="num">$800K <span class="text-xs" style="color:var(--ink-gray-5)">committed</span></td>
-          <td><span class="text-xs" style="color:var(--ink-green-3)" title="compa 1.09 — in band">✓ in</span></td>
-          <td><button class="btn" style="padding:2px 8px" aria-label="Row actions for Martin Keller" onclick="toast('Row menu: Edit package · Model departure · View proposition · Runbook')">⋯</button></td>
+          <td><span class="text-xs" style="color:var(--ink-green-3)" data-pop="compa 1.09 — in band">✓ in</span></td>
+          <td><button class="btn" style="padding:2px 8px" aria-label="Row actions for Martin Keller" onclick="rowMenu(event,this)" aria-haspopup="menu">⋯</button></td>
         </tr>
         <tr data-band="in">
           <td><a class="underline" href="advisor.html">Kerim Derhalli</a><div class="eyebrow">Technology &amp; FinTech</div></td>
@@ -116,8 +116,8 @@
           <td class="num font-medium" data-money='{"con":"$1.25M","base":"$5.11M","agg":"$14.3M"}'>$5.11M</td>
           <td class="num"><span class="delta-up">+0%</span> <span class="text-xs" style="color:var(--ink-gray-5)">ceil +80%</span></td>
           <td class="num">$1.2M <span class="text-xs" style="color:var(--ink-gray-5)">pipeline</span></td>
-          <td><span class="text-xs" style="color:var(--ink-green-3)" title="compa 1.09 — in band">✓ in</span></td>
-          <td><button class="btn" style="padding:2px 8px" aria-label="Row actions for Kerim Derhalli" onclick="toast('Row menu: Edit package · Model departure · View proposition · Runbook')">⋯</button></td>
+          <td><span class="text-xs" style="color:var(--ink-green-3)" data-pop="compa 1.09 — in band">✓ in</span></td>
+          <td><button class="btn" style="padding:2px 8px" aria-label="Row actions for Kerim Derhalli" onclick="rowMenu(event,this)" aria-haspopup="menu">⋯</button></td>
         </tr>
         <tr data-band="in">
           <td><a class="underline" href="advisor.html">Carl Bang</a><div class="eyebrow">Payments &amp; FX</div></td>
@@ -129,8 +129,8 @@
           <td class="num font-medium" data-money='{"con":"$624K","base":"$2.56M","agg":"$7.14M"}'>$2.56M</td>
           <td class="num"><span class="delta-up">+0%</span> <span class="text-xs" style="color:var(--ink-gray-5)">ceil +20%</span></td>
           <td class="num">$400K <span class="text-xs" style="color:var(--ink-gray-5)">pipeline</span></td>
-          <td><span class="text-xs" style="color:var(--ink-green-3)" title="compa 1.04 — in band">✓ in</span></td>
-          <td><button class="btn" style="padding:2px 8px" aria-label="Row actions for Carl Bang" onclick="toast('Row menu: Edit package · Model departure · View proposition · Runbook')">⋯</button></td>
+          <td><span class="text-xs" style="color:var(--ink-green-3)" data-pop="compa 1.04 — in band">✓ in</span></td>
+          <td><button class="btn" style="padding:2px 8px" aria-label="Row actions for Carl Bang" onclick="rowMenu(event,this)" aria-haspopup="menu">⋯</button></td>
         </tr>
         <tr data-band="in">
           <td><a class="underline" href="advisor.html">Rajesh Mehta</a><div class="eyebrow">Payments &amp; FX</div></td>
@@ -142,8 +142,8 @@
           <td class="num font-medium" data-money='{"con":"$624K","base":"$2.56M","agg":"$7.14M"}'>$2.56M</td>
           <td class="num"><span class="delta-up">+0%</span> <span class="text-xs" style="color:var(--ink-gray-5)">ceil +20%</span></td>
           <td class="num">$300K <span class="text-xs" style="color:var(--ink-gray-5)">pipeline</span></td>
-          <td><span class="text-xs" style="color:var(--ink-green-3)" title="compa 1.04 — in band">✓ in</span></td>
-          <td><button class="btn" style="padding:2px 8px" aria-label="Row actions for Rajesh Mehta" onclick="toast('Row menu: Edit package · Model departure · View proposition · Runbook')">⋯</button></td>
+          <td><span class="text-xs" style="color:var(--ink-green-3)" data-pop="compa 1.04 — in band">✓ in</span></td>
+          <td><button class="btn" style="padding:2px 8px" aria-label="Row actions for Rajesh Mehta" onclick="rowMenu(event,this)" aria-haspopup="menu">⋯</button></td>
         </tr>
         <tr class="font-medium" style="background:var(--surface-gray-1)" data-band="all">
           <td>Board · 6</td><td></td><td></td>
@@ -160,7 +160,42 @@ tok = % supply × TGE FDV $600M">$28.1M</td>
       </tbody>
     </table>
     </div>
-    <p class="eyebrow mb-10 tnum">Dollar value primary, unit counts secondary (fiat-first framing — IMPROVEMENT_PLAN C2). Capital introduction is tracked per advisor, never netted against comp. Switching the case recomputes every column in real time (Pulley recalc bar).</p>
+    <p class="eyebrow mb-3 tnum">Dollar value primary, unit counts secondary. Capital introduction is tracked per advisor, never netted against comp.</p>
+    <p class="eyebrow mb-10 tnum">New grants price at the <span data-stage-label>Bridge close</span> round — <span data-stage-text='{"bridge":"$1,572.95","seriesA":"$1,677.83","seriesB":"$3,145.90","seriesC":"$4,212.05"}'>$1,572.95</span>/share. Existing grants keep their strike.</p>
+
+    <div class="section-label mb-3">Scenario range by advisor · net value <span class="eyebrow">(marker = <span data-case-label>Base</span> case)</span></div>
+    <div class="space-y-3 mb-10" style="max-width:760px">
+      <div class="grid items-center gap-3 text-sm" style="grid-template-columns:64px 1fr auto">
+        <span>Iraj</span>
+        <div class="range-track" data-pop='{"con":"Iraj Ispahani · net $1.87M · Conservative","base":"Iraj Ispahani · net $7.67M · Base","agg":"Iraj Ispahani · net $21.4M · Aggressive"}' role="img" aria-label="Iraj: 1.87 to 21.4 million dollar range"><div class="range-marker" data-pos='{"con":"2%","base":"29.7%","agg":"98%"}' style="left:29.7%"></div></div>
+        <span class="text-xs tnum"><span class="font-medium" data-money='{"con":"$1.87M","base":"$7.67M","agg":"$21.4M"}'>$7.67M</span> <span class="eyebrow">of $1.87M – $21.4M</span></span>
+      </div>
+      <div class="grid items-center gap-3 text-sm" style="grid-template-columns:64px 1fr auto">
+        <span>Robert</span>
+        <div class="range-track" data-pop='{"con":"Robert Reoch · net $1.25M · Conservative","base":"Robert Reoch · net $5.11M · Base","agg":"Robert Reoch · net $14.3M · Aggressive"}' role="img" aria-label="Robert: 1.25 to 14.3 million dollar range"><div class="range-marker" data-pos='{"con":"2%","base":"29.6%","agg":"98%"}' style="left:29.6%"></div></div>
+        <span class="text-xs tnum"><span class="font-medium" data-money='{"con":"$1.25M","base":"$5.11M","agg":"$14.3M"}'>$5.11M</span> <span class="eyebrow">of $1.25M – $14.3M</span></span>
+      </div>
+      <div class="grid items-center gap-3 text-sm" style="grid-template-columns:64px 1fr auto">
+        <span>Martin</span>
+        <div class="range-track" data-pop='{"con":"Martin Keller · net $1.25M · Conservative","base":"Martin Keller · net $5.11M · Base","agg":"Martin Keller · net $14.3M · Aggressive"}' role="img" aria-label="Martin: 1.25 to 14.3 million dollar range"><div class="range-marker" data-pos='{"con":"2%","base":"29.6%","agg":"98%"}' style="left:29.6%"></div></div>
+        <span class="text-xs tnum"><span class="font-medium" data-money='{"con":"$1.25M","base":"$5.11M","agg":"$14.3M"}'>$5.11M</span> <span class="eyebrow">of $1.25M – $14.3M</span></span>
+      </div>
+      <div class="grid items-center gap-3 text-sm" style="grid-template-columns:64px 1fr auto">
+        <span>Kerim</span>
+        <div class="range-track" data-pop='{"con":"Kerim Derhalli · net $1.25M · Conservative","base":"Kerim Derhalli · net $5.11M · Base","agg":"Kerim Derhalli · net $14.3M · Aggressive"}' role="img" aria-label="Kerim: 1.25 to 14.3 million dollar range"><div class="range-marker" data-pos='{"con":"2%","base":"29.6%","agg":"98%"}' style="left:29.6%"></div></div>
+        <span class="text-xs tnum"><span class="font-medium" data-money='{"con":"$1.25M","base":"$5.11M","agg":"$14.3M"}'>$5.11M</span> <span class="eyebrow">of $1.25M – $14.3M</span></span>
+      </div>
+      <div class="grid items-center gap-3 text-sm" style="grid-template-columns:64px 1fr auto">
+        <span>Carl</span>
+        <div class="range-track" data-pop='{"con":"Carl Bang · net $624K · Conservative","base":"Carl Bang · net $2.56M · Base","agg":"Carl Bang · net $7.14M · Aggressive"}' role="img" aria-label="Carl: 624 thousand to 7.14 million dollar range"><div class="range-marker" data-pos='{"con":"2%","base":"29.7%","agg":"98%"}' style="left:29.7%"></div></div>
+        <span class="text-xs tnum"><span class="font-medium" data-money='{"con":"$624K","base":"$2.56M","agg":"$7.14M"}'>$2.56M</span> <span class="eyebrow">of $624K – $7.14M</span></span>
+      </div>
+      <div class="grid items-center gap-3 text-sm" style="grid-template-columns:64px 1fr auto">
+        <span>Rajesh</span>
+        <div class="range-track" data-pop='{"con":"Rajesh Mehta · net $624K · Conservative","base":"Rajesh Mehta · net $2.56M · Base","agg":"Rajesh Mehta · net $7.14M · Aggressive"}' role="img" aria-label="Rajesh: 624 thousand to 7.14 million dollar range"><div class="range-marker" data-pos='{"con":"2%","base":"29.7%","agg":"98%"}' style="left:29.7%"></div></div>
+        <span class="text-xs tnum"><span class="font-medium" data-money='{"con":"$624K","base":"$2.56M","agg":"$7.14M"}'>$2.56M</span> <span class="eyebrow">of $624K – $7.14M</span></span>
+      </div>
+    </div>
 
     <div class="grid lg:grid-cols-[1fr,300px] gap-8 mb-10">
       <div>
@@ -171,8 +206,8 @@ tok = % supply × TGE FDV $600M">$28.1M</td>
             <div class="flex justify-between text-sm mb-2"><span class="font-medium">Anchor · 3×</span><span class="eyebrow tnum">band $5.1M – $9.0M · 1 advisor</span></div>
             <div class="band-strip">
               <div class="band-mid" style="left:30%;width:38%"></div>
-              <div class="band-marketline" style="left:42%" title="Market median $6.9M"></div>
-              <div class="band-avatar" style="left:58%" title="Iraj Ispahani · $7.67M · compa 1.12 · reviewed 2mo ago" tabindex="0">II</div>
+              <div class="band-marketline" style="left:42%" data-pop="Market median $6.9M" aria-label="Market median"></div>
+              <div class="band-avatar" style="left:58%" data-pop='{"con":"Iraj Ispahani · net $1.87M · compa 1.12 vs band mid · reviewed 2mo ago","base":"Iraj Ispahani · net $7.67M · compa 1.12 vs band mid · reviewed 2mo ago","agg":"Iraj Ispahani · net $21.4M · compa 1.12 vs band mid · reviewed 2mo ago"}' tabindex="0" role="button" aria-label="Iraj Ispahani — band detail">II</div>
               <span class="band-tick" style="left:0%">$5.1M</span><span class="band-tick" style="left:50%">mid</span><span class="band-tick" style="left:100%">$9.0M</span>
             </div>
           </div>
@@ -180,10 +215,10 @@ tok = % supply × TGE FDV $600M">$28.1M</td>
             <div class="flex justify-between text-sm mb-2"><span class="font-medium">Strategic · 2×</span><span class="eyebrow tnum">band $3.4M – $6.0M · 3 advisors</span></div>
             <div class="band-strip">
               <div class="band-mid" style="left:28%;width:40%"></div>
-              <div class="band-marketline" style="left:38%" title="Market median $4.4M"></div>
-              <div class="band-avatar" style="left:64%" title="Robert Reoch · $5.11M · compa 1.09" tabindex="0">RR</div>
-              <div class="band-avatar" style="left:67%;margin-top:-14px" title="Martin Keller · $5.11M · compa 1.09" tabindex="0">MK</div>
-              <div class="band-avatar" style="left:70%" title="Kerim Derhalli · $5.11M · compa 1.09" tabindex="0">KD</div>
+              <div class="band-marketline" style="left:38%" data-pop="Market median $4.4M" aria-label="Market median"></div>
+              <div class="band-avatar" style="left:64%" data-pop='{"con":"Robert Reoch · net $1.25M · compa 1.09 vs band mid","base":"Robert Reoch · net $5.11M · compa 1.09 vs band mid","agg":"Robert Reoch · net $14.3M · compa 1.09 vs band mid"}' tabindex="0" role="button" aria-label="Robert Reoch — band detail">RR</div>
+              <div class="band-avatar" style="left:67%;margin-top:-14px" data-pop='{"con":"Martin Keller · net $1.25M · compa 1.09 vs band mid","base":"Martin Keller · net $5.11M · compa 1.09 vs band mid","agg":"Martin Keller · net $14.3M · compa 1.09 vs band mid"}' tabindex="0" role="button" aria-label="Martin Keller — band detail">MK</div>
+              <div class="band-avatar" style="left:70%" data-pop='{"con":"Kerim Derhalli · net $1.25M · compa 1.09 vs band mid","base":"Kerim Derhalli · net $5.11M · compa 1.09 vs band mid","agg":"Kerim Derhalli · net $14.3M · compa 1.09 vs band mid"}' tabindex="0" role="button" aria-label="Kerim Derhalli — band detail">KD</div>
               <span class="band-tick" style="left:0%">$3.4M</span><span class="band-tick" style="left:50%">mid</span><span class="band-tick" style="left:100%">$6.0M</span>
             </div>
           </div>
@@ -191,23 +226,23 @@ tok = % supply × TGE FDV $600M">$28.1M</td>
             <div class="flex justify-between text-sm mb-2"><span class="font-medium">Base · 1×</span><span class="eyebrow tnum">band $1.7M – $3.0M · 2 advisors</span></div>
             <div class="band-strip">
               <div class="band-mid" style="left:26%;width:42%"></div>
-              <div class="band-marketline" style="left:35%" title="Market median $2.1M"></div>
-              <div class="band-avatar" style="left:49%" title="Carl Bang · $2.56M · compa 1.04" tabindex="0">CB</div>
-              <div class="band-avatar" style="left:53%;margin-top:-14px" title="Rajesh Mehta · $2.56M · compa 1.04" tabindex="0">RM</div>
+              <div class="band-marketline" style="left:35%" data-pop="Market median $2.1M" aria-label="Market median"></div>
+              <div class="band-avatar" style="left:49%" data-pop='{"con":"Carl Bang · net $624K · compa 1.04 vs band mid","base":"Carl Bang · net $2.56M · compa 1.04 vs band mid","agg":"Carl Bang · net $7.14M · compa 1.04 vs band mid"}' tabindex="0" role="button" aria-label="Carl Bang — band detail">CB</div>
+              <div class="band-avatar" style="left:53%;margin-top:-14px" data-pop='{"con":"Rajesh Mehta · net $624K · compa 1.04 vs band mid","base":"Rajesh Mehta · net $2.56M · compa 1.04 vs band mid","agg":"Rajesh Mehta · net $7.14M · compa 1.04 vs band mid"}' tabindex="0" role="button" aria-label="Rajesh Mehta — band detail">RM</div>
               <span class="band-tick" style="left:0%">$1.7M</span><span class="band-tick" style="left:50%">mid</span><span class="band-tick" style="left:100%">$3.0M</span>
             </div>
           </div>
         </div>
-        <p class="eyebrow mt-8">Hover an avatar for value · compa-ratio (× vs band mid) · last review. Out-of-band renders red with a quantified fix cost. Tick shape is the non-color channel.</p>
+        <p class="eyebrow mt-8">Click or focus an avatar for value · compa-ratio (× vs band mid) · last review. Out-of-band renders red with a quantified fix cost.</p>
       </div>
 
       <aside>
         <div class="section-label mb-3">Ladder · headcount &amp; spend</div>
         <div class="divide-y" style="border-color:var(--outline-gray-1)">
-          <div class="flex items-center justify-between py-2.5 text-sm"><span>Anchor</span><span class="eyebrow">1 ·</span><span class="tnum font-medium">$7.67M</span></div>
-          <div class="flex items-center justify-between py-2.5 text-sm"><span>Strategic</span><span class="eyebrow">3 ·</span><span class="tnum font-medium">$15.3M</span></div>
-          <div class="flex items-center justify-between py-2.5 text-sm"><span>Base</span><span class="eyebrow">2 ·</span><span class="tnum font-medium">$5.11M</span></div>
-          <div class="flex items-center justify-between py-2.5 text-sm font-medium"><span>Board · 6</span><span></span><span class="tnum formula-link" tabindex="0" data-formula="Σ tier spend = 7.67 + 15.33 + 5.11 = $28.1M (base case, net of strike)">$28.1M</span></div>
+          <div class="flex items-center justify-between py-2.5 text-sm"><span>Anchor</span><span class="eyebrow">1 ·</span><span class="tnum font-medium" data-money='{"con":"$1.87M","base":"$7.67M","agg":"$21.4M"}'>$7.67M</span></div>
+          <div class="flex items-center justify-between py-2.5 text-sm"><span>Strategic</span><span class="eyebrow">3 ·</span><span class="tnum font-medium" data-money='{"con":"$3.75M","base":"$15.3M","agg":"$42.9M"}'>$15.3M</span></div>
+          <div class="flex items-center justify-between py-2.5 text-sm"><span>Base</span><span class="eyebrow">2 ·</span><span class="tnum font-medium" data-money='{"con":"$1.25M","base":"$5.11M","agg":"$14.3M"}'>$5.11M</span></div>
+          <div class="flex items-center justify-between py-2.5 text-sm font-medium"><span>Board · 6</span><span></span><span class="tnum formula-link" tabindex="0" data-money='{"con":"$6.87M","base":"$28.1M","agg":"$78.6M"}' data-formula="Σ tier spend = Anchor + Strategic + Base (active case, net of strike)">$28.1M</span></div>
         </div>
 
         <div class="frame p-4 mt-6" style="background:var(--surface-amber-1);border-color:#ecd9b8">
@@ -217,7 +252,7 @@ tok = % supply × TGE FDV $600M">$28.1M</td>
         </div>
 
         <div class="section-label mt-7 mb-2">Grant decisions · history</div>
-        <div class="divide-y text-sm" style="border-color:var(--outline-gray-1)">
+        <div class="divide-y text-sm" id="grant-history" style="border-color:var(--outline-gray-1)">
           <div class="py-2.5"><div class="flex justify-between"><span>"Iraj chair package v2"</span><span class="eyebrow tnum">11 Jun</span></div><div class="eyebrow">9 steps recorded · <a href="governance.html" class="underline">artifact ↗</a></div></div>
           <div class="py-2.5"><div class="flex justify-between"><span>"Founding board uniform base"</span><span class="eyebrow tnum">2 Jun</span></div><div class="eyebrow">9 steps recorded · sets the 0.5/1.0/1.5% tiers</div></div>
         </div>
@@ -226,47 +261,90 @@ tok = % supply × TGE FDV $600M">$28.1M</td>
       </aside>
     </div>
 
-    <div class="section-label mb-3">Untapped potential · headroom vs current <span class="eyebrow">(bubbles clamped to plot · coincident points fanned · bubble size = capital introduced)</span></div>
+    <div class="section-label mb-3">Untapped potential · headroom vs current <span class="eyebrow">(bubble size = capital introduced · click a bubble for values)</span></div>
     <div class="frame p-5 mb-4 overflow-x-auto">
-      <svg viewBox="0 0 720 240" class="w-full" style="min-width:560px" role="img" aria-label="Scatter: current net value by headroom to ceiling; bubble size is capital introduced">
-        <text x="10" y="14" font-size="11" fill="var(--ink-gray-6)">Headroom to ceiling ($M)</text>
+      <svg viewBox="0 0 720 252" class="w-full" style="min-width:560px" role="img" aria-label="Scatter: current net value by headroom to ceiling; bubble size is capital introduced; color is tier">
+        <text x="10" y="14" font-size="11" fill="var(--ink-gray-6)">Headroom to ceiling · $M</text>
+        <line x1="50" y1="60" x2="700" y2="60" stroke="var(--outline-gray-1)"/>
+        <line x1="50" y1="95" x2="700" y2="95" stroke="var(--outline-gray-1)"/>
+        <line x1="50" y1="130" x2="700" y2="130" stroke="var(--outline-gray-1)"/>
+        <line x1="50" y1="165" x2="700" y2="165" stroke="var(--outline-gray-1)"/>
+        <line x1="180" y1="20" x2="180" y2="200" stroke="var(--outline-gray-1)"/>
+        <line x1="310" y1="20" x2="310" y2="200" stroke="var(--outline-gray-1)"/>
+        <line x1="440" y1="20" x2="440" y2="200" stroke="var(--outline-gray-1)"/>
+        <line x1="570" y1="20" x2="570" y2="200" stroke="var(--outline-gray-1)"/>
         <line x1="50" y1="20" x2="50" y2="200" stroke="var(--outline-gray-2)"/>
         <line x1="50" y1="200" x2="700" y2="200" stroke="var(--outline-gray-2)"/>
-        <text x="38" y="60" font-size="11" fill="var(--ink-gray-5)" text-anchor="end">$5.3M</text>
-        <text x="38" y="130" font-size="11" fill="var(--ink-gray-5)" text-anchor="end">$2.6M</text>
+        <text x="38" y="60" font-size="11" fill="var(--ink-gray-5)" text-anchor="end" data-money='{"con":"$1.3M","base":"$5.3M","agg":"$15.0M"}'>$5.3M</text>
+        <text x="38" y="130" font-size="11" fill="var(--ink-gray-5)" text-anchor="end" data-money='{"con":"$655K","base":"$2.6M","agg":"$7.5M"}'>$2.6M</text>
         <text x="38" y="200" font-size="11" fill="var(--ink-gray-5)" text-anchor="end">$0</text>
-        <text x="690" y="218" font-size="11" fill="var(--ink-gray-5)" text-anchor="end">Current net $7.67M</text>
+        <text x="690" y="218" font-size="11" fill="var(--ink-gray-5)" text-anchor="end" data-money='{"con":"$1.87M","base":"$7.67M","agg":"$21.4M"}'>$7.67M</text>
         <text x="55" y="218" font-size="11" fill="var(--ink-gray-5)">$0</text>
-        <circle cx="612" cy="56" r="22" fill="var(--chart-capital)" opacity="0.8"/><text x="612" y="60" font-size="11" fill="#fff" text-anchor="middle">II</text>
-        <text x="612" y="26" font-size="11" fill="var(--ink-gray-7)" text-anchor="middle">Iraj · most headroom</text>
-        <circle cx="438" cy="96" r="14" fill="var(--chart-customer)" opacity="0.8"/><text x="438" y="100" font-size="10" fill="#fff" text-anchor="middle">RR</text>
-        <circle cx="470" cy="110" r="14" fill="var(--chart-customer)" opacity="0.8"/><text x="470" y="114" font-size="10" fill="#fff" text-anchor="middle">MK</text>
-        <circle cx="452" cy="128" r="14" fill="var(--chart-customer)" opacity="0.8"/><text x="452" y="132" font-size="10" fill="#fff" text-anchor="middle">KD</text>
-        <text x="452" y="80" font-size="11" fill="var(--ink-gray-7)" text-anchor="middle">Strategic ×3 (fanned)</text>
-        <circle cx="248" cy="176" r="11" fill="var(--chart-alt)" opacity="0.8"/><text x="248" y="180" font-size="10" fill="#fff" text-anchor="middle">CB</text>
-        <circle cx="278" cy="176" r="11" fill="var(--chart-alt)" opacity="0.8"/><text x="278" y="180" font-size="10" fill="#fff" text-anchor="middle">RM</text>
+        <text x="375" y="244" font-size="11" fill="var(--ink-gray-6)" text-anchor="middle">Current net · $M</text>
+        <g data-pop='{"con":"Iraj Ispahani · current $1.87M · +$1.3M to ceiling · $2.5M capital intro","base":"Iraj Ispahani · current $7.67M · +$5.3M to ceiling · $2.5M capital intro","agg":"Iraj Ispahani · current $21.4M · +$15.0M to ceiling · $2.5M capital intro"}' role="button" aria-label="Iraj Ispahani — scatter values"><circle cx="612" cy="56" r="22" fill="var(--chart-capital)" opacity="0.8"/><text x="612" y="60" font-size="11" fill="#fff" text-anchor="middle">II</text></g>
+        <g data-pop='{"con":"Robert Reoch · current $1.25M · +$380K to ceiling · $1.5M capital intro","base":"Robert Reoch · current $5.11M · +$1.5M to ceiling · $1.5M capital intro","agg":"Robert Reoch · current $14.3M · +$4.3M to ceiling · $1.5M capital intro"}' role="button" aria-label="Robert Reoch — scatter values"><circle cx="438" cy="96" r="14" fill="var(--chart-customer)" opacity="0.8"/><text x="438" y="100" font-size="10" fill="#fff" text-anchor="middle">RR</text></g>
+        <g data-pop='{"con":"Martin Keller · current $1.25M · +$500K to ceiling · $800K capital intro","base":"Martin Keller · current $5.11M · +$2.0M to ceiling · $800K capital intro","agg":"Martin Keller · current $14.3M · +$5.7M to ceiling · $800K capital intro"}' role="button" aria-label="Martin Keller — scatter values"><circle cx="470" cy="110" r="14" fill="var(--chart-customer)" opacity="0.8"/><text x="470" y="114" font-size="10" fill="#fff" text-anchor="middle">MK</text></g>
+        <g data-pop='{"con":"Kerim Derhalli · current $1.25M · +$1.0M to ceiling · $1.2M capital intro","base":"Kerim Derhalli · current $5.11M · +$4.1M to ceiling · $1.2M capital intro","agg":"Kerim Derhalli · current $14.3M · +$11.4M to ceiling · $1.2M capital intro"}' role="button" aria-label="Kerim Derhalli — scatter values"><circle cx="452" cy="128" r="14" fill="var(--chart-customer)" opacity="0.8"/><text x="452" y="132" font-size="10" fill="#fff" text-anchor="middle">KD</text></g>
+        <g data-pop='{"con":"Carl Bang · current $624K · +$125K to ceiling · $400K capital intro","base":"Carl Bang · current $2.56M · +$510K to ceiling · $400K capital intro","agg":"Carl Bang · current $7.14M · +$1.4M to ceiling · $400K capital intro"}' role="button" aria-label="Carl Bang — scatter values"><circle cx="248" cy="176" r="11" fill="var(--chart-alt)" opacity="0.8"/><text x="248" y="180" font-size="10" fill="#fff" text-anchor="middle">CB</text></g>
+        <g data-pop='{"con":"Rajesh Mehta · current $624K · +$125K to ceiling · $300K capital intro","base":"Rajesh Mehta · current $2.56M · +$510K to ceiling · $300K capital intro","agg":"Rajesh Mehta · current $7.14M · +$1.4M to ceiling · $300K capital intro"}' role="button" aria-label="Rajesh Mehta — scatter values"><circle cx="278" cy="176" r="11" fill="var(--chart-alt)" opacity="0.8"/><text x="278" y="180" font-size="10" fill="#fff" text-anchor="middle">RM</text></g>
       </svg>
+      <div class="flex items-center gap-5 mt-3 text-xs" style="color:var(--ink-gray-7)" aria-hidden="true">
+        <span class="inline-flex items-center gap-1.5"><span class="legend-swatch" style="background:var(--chart-capital)"></span>Anchor</span>
+        <span class="inline-flex items-center gap-1.5"><span class="legend-swatch" style="background:var(--chart-customer)"></span>Strategic</span>
+        <span class="inline-flex items-center gap-1.5"><span class="legend-swatch" style="background:var(--chart-alt)"></span>Base</span>
+      </div>
     </div>
-    <!-- F1 · "About this figure" card slot (Forgd explainer grammar) -->
+    <!-- "About this figure" card slot -->
     <details class="frame mb-6" style="background:var(--surface-gray-1)">
       <summary class="px-4 py-3 text-sm font-medium cursor-pointer" style="color:var(--ink-gray-7)">About this figure — how to read it · what feeds it · adjust inputs</summary>
       <div class="px-4 pb-4 text-sm grid sm:grid-cols-3 gap-4" style="color:var(--ink-gray-7)">
         <div><div class="eyebrow mb-1">How to read this</div>Right and high = valuable today with more to earn. Bubble area is capital introduced — an input we track, never net against comp.</div>
         <div><div class="eyebrow mb-1">What data feeds it</div>Per-advisor net (engine, net of strike) · performance ceilings · the capital-introduction register.</div>
-        <div><div class="eyebrow mb-1">Adjust inputs</div><a class="underline" href="configure.html">Performance tiers &amp; ceilings → Configure</a> (the Forgd "Quick Adjust" deep-link).</div>
+        <div><div class="eyebrow mb-1">Adjust inputs</div><a class="underline" href="configure.html">Performance tiers &amp; ceilings → Configure</a>.</div>
       </div>
     </details>
   </div>
 
-  <!-- grant decision wizard reference (shared grammar lives on dialogs.html) -->
+  <!-- grant decision wizard — the Ispahani 9 steps; recording appends to the history rail -->
   <div class="dlg-backdrop" id="grant-history-dlg" role="dialog" aria-modal="true" aria-label="New grant decision">
-    <div class="dlg" style="max-width:480px">
-      <div class="dlg-head"><span class="font-medium">New grant decision</span><button class="btn" onclick="closeDialog('grant-history-dlg')" aria-label="Close">&#10005;</button></div>
-      <div class="dlg-body text-sm space-y-3">
-        <p>The Ispahani 9-step wizard records a named decision artefact on the audit trail. The full grouped-fieldset wizard is demonstrated on the <a class="underline" href="dialogs.html">Dialog system</a> page.</p>
-        <p class="eyebrow">Frame it (1–3) → Size it (4–7, with the live computed-context row) → Sustain it (8–9).</p>
+    <div class="dlg">
+      <div class="dlg-head"><span class="font-medium">New grant decision · the Ispahani 9 steps</span><button class="btn" onclick="closeDialog('grant-history-dlg')" aria-label="Close">&#10005;</button></div>
+      <div class="dlg-body space-y-6 text-sm">
+        <div>
+          <label class="eyebrow block mb-1" for="subj">Decision subject *</label>
+          <input id="subj" class="w-full border rounded px-3 py-2" style="border-color:var(--outline-gray-2)" placeholder="e.g. Iraj chair package v2">
+          <p id="subj-err" class="hidden text-xs mt-1" style="color:var(--ink-red-3)" role="alert">Subject is required — the decision needs a name on the audit trail.</p>
+        </div>
+        <fieldset>
+          <legend class="section-label mb-2">Frame it (steps 1–3)</legend>
+          <div class="space-y-3">
+            <textarea class="w-full border rounded px-3 py-2" rows="2" style="border-color:var(--outline-gray-2)" placeholder="1. What performance/returns make each level of dilution acceptable"></textarea>
+            <textarea class="w-full border rounded px-3 py-2" rows="2" style="border-color:var(--outline-gray-2)" placeholder="2. Total dilution + cost acceptable per year, with approvals"></textarea>
+            <textarea class="w-full border rounded px-3 py-2" rows="2" style="border-color:var(--outline-gray-2)" placeholder="3. Eligibility criteria"></textarea>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend class="section-label mb-2">Size it (steps 4–7) <span class="eyebrow tnum">· board median <span data-money='{"con":"$1.25M","base":"$5.11M","agg":"$14.3M"}'>$5.11M</span>; Iraj $1.92M/yr</span></legend>
+          <div class="space-y-3">
+            <textarea class="w-full border rounded px-3 py-2" rows="2" style="border-color:var(--outline-gray-2)" placeholder="4. The franchise situation — how critical, how replaceable"></textarea>
+            <textarea class="w-full border rounded px-3 py-2" rows="2" style="border-color:var(--outline-gray-2)" placeholder="5. Total compensation picture per participant"></textarea>
+            <textarea class="w-full border rounded px-3 py-2" rows="2" style="border-color:var(--outline-gray-2)" placeholder="6. Compare each total to market"></textarea>
+            <textarea class="w-full border rounded px-3 py-2" rows="2" style="border-color:var(--outline-gray-2)" placeholder="7. Compare to internal comparators"></textarea>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend class="section-label mb-2">Sustain it (steps 8–9)</legend>
+          <div class="space-y-3">
+            <textarea class="w-full border rounded px-3 py-2" rows="2" style="border-color:var(--outline-gray-2)" placeholder="8. Allocate the year's share, keep reserve for future hires"></textarea>
+            <textarea class="w-full border rounded px-3 py-2" rows="2" style="border-color:var(--outline-gray-2)" placeholder="9. Iterate for sustainability"></textarea>
+          </div>
+        </fieldset>
+        <p class="eyebrow">The verbatim Ispahani sequence. Recording leaves an artefact per decision.</p>
       </div>
-      <div class="dlg-foot"><button class="btn" onclick="closeDialog('grant-history-dlg')">Close</button><a class="btn btn-solid" href="dialogs.html">Open the wizard</a></div>
+      <div class="dlg-foot">
+        <button class="btn" onclick="closeDialog('grant-history-dlg')">Cancel</button>
+        <button class="btn btn-solid" onclick="recordGrantDecision()">Record decision</button>
+      </div>
     </div>
   </div>
 </div>
@@ -278,6 +356,52 @@ function bandFilter(btn, mode){
   document.querySelectorAll('#roster tbody tr').forEach(tr=>{
     tr.style.display = (mode==='all' || tr.dataset.band===mode || tr.dataset.band==='all') ? '' : 'none';
   });
+}
+function rowMenu(ev, btn){
+  ev.stopPropagation();
+  const links = [['advisor.html','Edit package'],['advisor.html','Model departure'],['proposition.html','View proposition'],['advisor.html','Runbook']];
+  openPopover(btn, links.map(([href,label])=>`<a role="menuitem" href="${href}" class="block rounded px-3 py-1.5 text-sm" style="color:var(--ink-gray-8)">${label}</a>`).join(''), {menu:true});
+}
+function justifyGuardrail(btn){
+  if(document.getElementById('justify-note')) return;
+  const note=document.createElement('div');
+  note.id='justify-note'; note.className='w-full flex items-center gap-2 mt-2';
+  note.innerHTML=`<input placeholder="Why is this exception right? (lands on the audit trail)" class="text-sm border rounded px-2 py-1 flex-1" style="border-color:var(--outline-gray-2)"> <button class="btn">Record</button>`;
+  note.querySelector('.btn').onclick=()=>{
+    const txt=note.querySelector('input').value.trim()||'no reason given';
+    const line=document.createElement('div');
+    line.className='w-full text-sm tnum'; line.style.color='var(--ink-gray-7)';
+    line.textContent=`Justified — “${txt}” · recorded today · travels to Governance`;
+    note.replaceWith(line);
+    btn.disabled=true;
+    toast('Band-breach justification recorded', ()=>{ line.remove(); btn.disabled=false; });
+  };
+  btn.parentElement.appendChild(note);
+  note.querySelector('input').focus();
+}
+function exportRoster(){
+  exportTableCsv('roster','board-roster.csv');
+  toast('Downloaded board-roster.csv — the roster at the active case');
+}
+function recordGrantDecision(){
+  const s=document.getElementById('subj');
+  const err=document.getElementById('subj-err');
+  if(!s.value.trim()){
+    err.classList.remove('hidden'); s.focus();
+    document.querySelector('#grant-history-dlg .dlg-body')?.scrollTo({top:0,behavior:'smooth'});
+    return;
+  }
+  err.classList.add('hidden');
+  const name=s.value.trim();
+  const stamp=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+  const row=document.createElement('div');
+  row.className='py-2.5';
+  row.innerHTML=`<div class="flex justify-between"><span>“${name}”</span><span class="eyebrow tnum">${stamp}</span></div><div class="eyebrow">9 steps recorded · <a href="governance.html" class="underline">artifact ↗</a></div>`;
+  document.getElementById('grant-history').prepend(row);
+  s.value='';
+  document.querySelectorAll('#grant-history-dlg textarea').forEach(t=>t.value='');
+  closeDialog('grant-history-dlg');
+  toast(`Decision “${name}” recorded — on the history rail`, ()=>row.remove());
 }
 </script>
 </body>

@@ -9,52 +9,42 @@
 <style>body{font-family:Inter,system-ui,sans-serif}</style>
 </head>
 <body>
-<div id="page" data-patterns="This page is the map — each linked page footer lists its own applied patterns with finding numbers (UX_IMPROVEMENT_PLAN.md) and research sources (research/COMPETITIVE_LANDSCAPE.md · research/competitors/INDEX.md).">
+<div id="page" data-patterns="The map page. Card grouping mirrors the sidebar nav; each card names the one interaction worth testing.">
   <div class="mx-auto w-full px-5 py-10" style="max-width:60rem">
     <h1 class="font-display text-3xl mb-2">The planned design, end to end.</h1>
-    <p class="text-sm mb-8" style="color:var(--ink-gray-6)">High-fidelity prototype of Advisor Comp Studio after the M14 UX overhaul — every screen applies the
-    10-pass review fixes and the research-backed patterns from the 12-service survey. Static HTML; numbers are the real engine anchors. Internal &amp; confidential · discussion draft.</p>
+    <p class="text-sm mb-4" style="color:var(--ink-gray-6)">High-fidelity prototype of Advisor Comp Studio. Static HTML; the figures are the real engine anchors. Internal &amp; confidential · discussion draft.</p>
+    <p class="text-sm mb-10" style="color:var(--ink-gray-6)">What works everywhere: the sidebar <strong>Case</strong> and <strong>Stage</strong> selectors re-render every bound figure and label on every page (and persist across pages); commits toast with an Undo that actually restores; <strong>⌘K</strong> opens the palette; dialogs close on Escape or backdrop.</p>
 
-    <div class="section-label mb-3">Screens</div>
+    <div class="section-label mb-3">Board</div>
     <div class="grid sm:grid-cols-2 gap-4 mb-10">
-      <a href="overview.html" class="frame p-4 hover:shadow-sm"><div class="font-medium mb-1">Overview</div><div class="text-sm" style="color:var(--ink-gray-6)">Shell v2: status chip replaces the banner · skip link · stable header</div></a>
-      <a href="board.html" class="frame p-4 hover:shadow-sm"><div class="font-medium mb-1">Board</div><div class="text-sm" style="color:var(--ink-gray-6)">People-on-band tier strips · aggregated guardrail callout with quantified delta · health strip</div></a>
-      <a href="advisor.html" class="frame p-4 hover:shadow-sm"><div class="font-medium mb-1">Advisor detail</div><div class="text-sm" style="color:var(--ink-gray-6)">Today-marker trajectory · annotation lanes · exit slider v2 with preset chips</div></a>
-      <a href="compare.html" class="frame p-4 hover:shadow-sm"><div class="font-medium mb-1">Compare</div><div class="text-sm" style="color:var(--ink-gray-6)">A/B with named columns + Δ column · case-bound labels · header-level deltas</div></a>
-      <a href="governance.html" class="frame p-4 hover:shadow-sm"><div class="font-medium mb-1">Governance</div><div class="text-sm" style="color:var(--ink-gray-6)">RAG radiogroups with inline why-note · filterable audit log with artifact links</div></a>
-      <a href="proposition.html" class="frame p-4 hover:shadow-sm"><div class="font-medium mb-1">Proposition</div><div class="text-sm" style="color:var(--ink-gray-6)">Version chips + sealed-render model · watermark/hero fix · view-as-advisor</div></a>
-      <a href="configure.html" class="frame p-4 hover:shadow-sm"><div class="font-medium mb-1">Configure</div><div class="text-sm" style="color:var(--ink-gray-6)">Denominated money entry · commit toast with Undo · 3-axis benchmark provenance + accept-with-preview</div></a>
-      <a href="dialogs.html" class="frame p-4 hover:shadow-sm"><div class="font-medium mb-1">Dialog system</div><div class="text-sm" style="color:var(--ink-gray-6)">AppDialog grammar: max-height, sticky chrome, dim, inline validation · “show the formula” popover</div></a>
-      <a href="board-pack.html" class="frame p-4 hover:shadow-sm"><div class="font-medium mb-1">Board pack</div><div class="text-sm" style="color:var(--ink-gray-6)">Print-ready pack: cost conclusion, roster, guardrails, decisions requested · confidential footer</div></a>
-      <a href="proposition-v1.html" class="frame p-4 hover:shadow-sm"><div class="font-medium mb-1">Sealed proposition v1</div><div class="text-sm" style="color:var(--ink-gray-6)">The immutable issued render with a verifiable fingerprint — edits demote to draft</div></a>
-      <a href="tokens.html" class="frame p-4 hover:shadow-sm"><div class="font-medium mb-1">Tokens <span class="text-xs px-1.5 py-0.5 rounded-full align-middle" style="background:var(--surface-amber-1);color:var(--ink-amber-strong)">new</span></div><div class="text-sm" style="color:var(--ink-gray-6)">Vested ≠ unlocked twin tracks · Forgd-style unlock grid + validation banner · unlock calendar</div></a>
-      <a href="portal.html" class="frame p-4 hover:shadow-sm"><div class="font-medium mb-1">Advisor portal <span class="text-xs px-1.5 py-0.5 rounded-full align-middle" style="background:var(--surface-amber-1);color:var(--ink-amber-strong)">new</span></div><div class="text-sm" style="color:var(--ink-gray-6)">The recipient view: persona fork, twin progress tracks, next date that matters, bounded scenarios</div></a>
-      <a href="auth.html" class="frame p-4 hover:shadow-sm"><div class="font-medium mb-1">Auth &amp; states <span class="text-xs px-1.5 py-0.5 rounded-full align-middle" style="background:var(--surface-amber-1);color:var(--ink-amber-strong)">new</span></div><div class="text-sm" style="color:var(--ink-gray-6)">Sign-in, signed-out deep links, session expiry, 404, engine mismatch, loading skeletons</div></a>
+      <a href="overview.html" class="frame p-4 hover:shadow-sm"><div class="font-medium mb-1">Overview</div><div class="text-sm" style="color:var(--ink-gray-6)">The board at a glance — roster cards, pool health, next blocking item.</div><div class="eyebrow mt-2">Test: switch the case — hero, all six cards and their ceilings move together.</div></a>
+      <a href="board.html" class="frame p-4 hover:shadow-sm"><div class="font-medium mb-1">Board</div><div class="text-sm" style="color:var(--ink-gray-6)">Roster with equity + tokens side by side, tier bands, guardrails, scatter.</div><div class="eyebrow mt-2">Test: click a band avatar (keyboard works too) · justify the band breach · export the roster CSV.</div></a>
+      <a href="compare.html" class="frame p-4 hover:shadow-sm"><div class="font-medium mb-1">Compare</div><div class="text-sm" style="color:var(--ink-gray-6)">The matrix, grouped bars, and a named A/B with a Δ column.</div><div class="eyebrow mt-2">Test: switch the case — the A/B rows, spreads and "active" flags follow; pin a row and undo it.</div></a>
+      <a href="tokens.html" class="frame p-4 hover:shadow-sm"><div class="font-medium mb-1">Tokens</div><div class="text-sm" style="color:var(--ink-gray-6)">Vested ≠ unlocked twin tracks, per-advisor unlock grid, unlock calendar.</div><div class="eyebrow mt-2">Test: switch the case — TGE price, values and the calendar re-anchor; export the schedule CSV.</div></a>
+      <a href="governance.html" class="frame p-4 hover:shadow-sm"><div class="font-medium mb-1">Governance</div><div class="text-sm" style="color:var(--ink-gray-6)">The consent register as a live checklist + an append-only audit log.</div><div class="eyebrow mt-2">Test: flip a RAG status, record a why-note — a real row lands on the log; undo removes it.</div></a>
     </div>
-    <p class="text-sm mb-10" style="color:var(--ink-gray-6)">Try it live: <strong>⌘K</strong> opens the palette anywhere · the sidebar <strong>Case</strong> selector recomputes every figure on every page · all dialogs close on Escape/backdrop · advisor tabs, Edit package, Schedule review and Model departure are on the Advisor page.</p>
 
-    <div class="section-label mb-3">What changed vs production (the spine)</div>
-    <div class="overflow-x-auto mb-10">
-    <table class="data" style="min-width:560px">
-      <thead><tr><th>Change</th><th>Replaces (finding)</th><th>Pattern source</th></tr></thead>
-      <tbody>
-        <tr><td>Compact status chip + popover dialog</td><td>~70px permanent banner (1.4)</td><td>OpenComp health strip</td></tr>
-        <tr><td>AppDialog: max-h 85vh · sticky head/foot · dim</td><td>off-screen dialog headers (1.2/2.3/2.5)</td><td>frappe-ui `bare` spec + Tailwind Plus</td></tr>
-        <tr><td>Toast + Undo on every consequential commit</td><td>silent mutations (4.2/5.1)</td><td>UXS-D timeline extended · Pave soft-stops</td></tr>
-        <tr><td>People-on-band tier strips + ladder rail</td><td>repeated amber warning wall (1.5)</td><td>Complete leveling · Ravio market line · Barley fix-cost</td></tr>
-        <tr><td>Today-marker vesting + annotation lanes</td><td>colliding chart labels (1.8)</td><td>Liquifi/Coinbase TM</td></tr>
-        <tr><td>Exit slider: two-tone track + preset chips</td><td>readonly all-black slider (1.7)</td><td>Carta simulator · Secfi</td></tr>
-        <tr><td>3-axis provenance chips + accept-with-preview</td><td>“12mo old — re-verify” text flag (COM-182)</td><td>Carta Total Comp · Pave consistency labels</td></tr>
-        <tr><td>“Show the formula” popover on computed figures</td><td>opaque numbers</td><td>The field-wide gap (Carta’s #1 complaint) — our differentiator</td></tr>
-        <tr><td>Sealed version chips on the letter</td><td>cryptic “Save v1” (6.2/6.5)</td><td>PandaDoc sealed renders · Ledgy locked reports</td></tr>
-        <tr><td>Tokens view: vested ≠ unlocked + unlock calendar</td><td>token state collapsed into one curve</td><td>Coinbase TM twin tracks · Forgd emission grid + validation banner (FORGD_DEEP_DIVE)</td></tr>
-        <tr><td>Advisor portal (recipient persona fork)</td><td>no per-recipient surface</td><td>Hedgey recipient fork · Pulley per-holder portal · Magna grant anatomy</td></tr>
-        <tr><td>Auth + error/empty/loading states</td><td>public prod (COM-33) · blank cold loads</td><td>CLAUDE_DESIGN_PROMPT §9 new surfaces</td></tr>
-        <tr><td>Per-figure numbered footnotes + education blocks in the letter</td><td>one legal blob at the foot</td><td>Carta caveats-as-schema · Complete education blocks (IMPROVEMENT_PLAN D1/D2)</td></tr>
-      </tbody>
-    </table>
+    <div class="section-label mb-3">Advisor</div>
+    <div class="grid sm:grid-cols-2 gap-4 mb-10">
+      <a href="advisor.html" class="frame p-4 hover:shadow-sm"><div class="font-medium mb-1">Advisor detail</div><div class="text-sm" style="color:var(--ink-gray-6)">One package: floor/current/ceiling, band placement, exit slider, seven analysis tabs.</div><div class="eyebrow mt-2">Test: switch the case — the "active" column flag moves; model a departure and undo it.</div></a>
+      <a href="proposition.html" class="frame p-4 hover:shadow-sm"><div class="font-medium mb-1">Proposition</div><div class="text-sm" style="color:var(--ink-gray-6)">The letter: outcomes, education blocks, footnotes, share dialog, print path.</div><div class="eyebrow mt-2">Test: "Save as sent version" seals a v2 chip · Publish flips the link state · view as advisor.</div></a>
+      <a href="proposition-v1.html" class="frame p-4 hover:shadow-sm"><div class="font-medium mb-1">Sealed proposition v1</div><div class="text-sm" style="color:var(--ink-gray-6)">The immutable issued render with a verifiable fingerprint.</div><div class="eyebrow mt-2">Test: switch the case — sealed figures never move; edits land on the live draft.</div></a>
+      <a href="portal.html" class="frame p-4 hover:shadow-sm"><div class="font-medium mb-1">Advisor portal</div><div class="text-sm" style="color:var(--ink-gray-6)">The recipient view: fiat-first hero, twin progress, the next date that matters.</div><div class="eyebrow mt-2">Test: the bounded scenario chips drive the same engine as the sidebar selector.</div></a>
     </div>
-    <p class="eyebrow">Sources: UX_IMPROVEMENT_PLAN.md · research/COMPETITIVE_LANDSCAPE.md · research/UI_LIBRARY_LANDSCAPE.md · research/competitors/INDEX.md</p>
+
+    <div class="section-label mb-3">Plan</div>
+    <div class="grid sm:grid-cols-2 gap-4 mb-10">
+      <a href="configure.html" class="frame p-4 hover:shadow-sm"><div class="font-medium mb-1">Configure</div><div class="text-sm" style="color:var(--ink-gray-6)">Cap table, rounds, scenario paths, assumptions with provenance, benchmarks.</div><div class="eyebrow mt-2">Test: edit the bridge post-money (Enter commits, Undo restores) · mark a round closed · accept the benchmark refresh.</div></a>
+      <a href="board-pack.html" class="frame p-4 hover:shadow-sm"><div class="font-medium mb-1">Board pack</div><div class="text-sm" style="color:var(--ink-gray-6)">Print-ready: cost conclusion, roster, guardrails, decisions requested.</div><div class="eyebrow mt-2">Test: switch case and stage — the pack header and figures follow; then print.</div></a>
+    </div>
+
+    <div class="section-label mb-3">Spec</div>
+    <div class="grid sm:grid-cols-2 gap-4 mb-10">
+      <a href="dialogs.html" class="frame p-4 hover:shadow-sm"><div class="font-medium mb-1">Dialog system</div><div class="text-sm" style="color:var(--ink-gray-6)">The shared AppDialog grammar: sizing, scrim, validation, teardown.</div><div class="eyebrow mt-2">Test: submit the wizard empty (inline error + focus) — then record; it lands on the session log.</div></a>
+      <a href="auth.html" class="frame p-4 hover:shadow-sm"><div class="font-medium mb-1">Auth &amp; states</div><div class="text-sm" style="color:var(--ink-gray-6)">Sign-in posture, signed-out deep links, expiry, 404, engine mismatch, skeletons.</div><div class="eyebrow mt-2">Test: each card's button switches it to the state it names — nothing pretends to send email.</div></a>
+    </div>
+
+    <p class="eyebrow">Not in this wave: page-level redesigns (full 14-row register, advisor tab depth, chart fidelity) — the foundation here is the engine, honest feedback and the popover layer.</p>
   </div>
 </div>
 <script src="assets/proto.js"></script>

@@ -3105,3 +3105,150 @@ list); per-viewer access analytics (needs COM-34 auth). Next: feed v3 surfaces i
   failure slipped through; always check push output, not pipe status). Robin's gitconfig forces
   annotated tags (bare `git tag name sha` dies "no tag message?" — use -m).
 - STILL PENDING: the R5.3 waiver (Robin) — panel 011 holds; Wave 6 invoices.
+
+## 2026-06-11 (design tooling + QA pass) — repo skills installed, COM-225…236 design-QA'd
+- Installed PROJECT-LEVEL skills into `.claude/skills/` (Claude Code agents in this repo):
+  ibelick/ui-skills (baseline-ui · fixing-accessibility · fixing-motion-performance — skipped
+  fixing-metadata: social cards are anti-relevant for a confidential internal tool) ·
+  vercel-labs find-skills · antfu/skills@vue · hyf0/vue-skills@vue-best-practices ·
+  addyosmani/web-quality-skills@accessibility · **impeccable v3.5.0 full build**
+  (`npx impeccable skills install`, `skills check` = up to date).
+- **PRODUCT.md created at root** (impeccable's required config — register: product; grounded in
+  CLAUDE.md/SPEC_v2/DESIGN_SYSTEM; context.mjs now resolves). DESIGN.md (Stitch format) NOT
+  generated — run `/impeccable document` if wanted; DESIGN_SYSTEM.md stays the design source of truth.
+- cssstudio.ai: paid visual editor (license + live dev server + user's own agent) — nothing
+  installable headless; its motion ground is covered by fixing-motion-performance.
+- Design-QA pass over COM-225…236 with the new lenses: comments posted on COM-225/226/227/228/
+  229/230/231/232/235 (print counters + Chromium/Safari footer mechanics, alertdialog focus
+  semantics, radiogroup FAST matrix, lazy-rendered consent evidence, SR severity mapping,
+  screen-share guard on the precedent panel, etc.). COM-233/234 covered by their design notes;
+  COM-236 has no UI.
+
+## 2026-06-11 (late) — Prototype fix Wave 0: foundation (mock engine v2 · honest feedback · meta-strip · groundwork)
+
+Wave 0 of the CRITIQUE.md fix plan on `prototype/` (15→14 static pages). What shipped:
+
+- **Mock engine v2 (`assets/proto.js` rewritten).** One state (case × stage), persisted in
+  localStorage; render pass drives `data-money` (per-case JSON), `data-stage-text` (per-stage JSON:
+  strike basis $1,572.95 / $1,677.83 / $3,145.90 / $4,212.05), `data-case-label`/`data-stage-label`,
+  and `data-case-active` (the "active" flag chips on Compare/advisor/configure/portal/proposition
+  tables). Both sidebar+drawer selectors re-render everything; changed figures pulse
+  (`.value-pulse`, 600ms amber fade, reduced-motion safe). Case/stage switch toasts carry a REAL
+  undo (restores the previous key). Coverage swept: Compare A/B + spreads, Overview's six cards +
+  ceiling $ lines, Board ladder rail + scatter labels + guardrail delta, Governance G-1 delta,
+  Configure board-net line, board-pack, proposition hero/milestones. Verified by innerText diff
+  (changed-line counts, case/stage): overview 15/1 · board 20/1 · compare 9/1 · tokens 19/0 ·
+  governance 1/1 · advisor 3/1 · proposition 8/0 · portal 6/0 · configure 2/1 · board-pack 11/1 ·
+  sealed-v1 0 (by design) · index/dialogs/auth 0 (no figures).
+- **Honest feedback.** `toast(msg, undoFn)` — second arg is a closure; no closure, no Undo button;
+  "Reverted." prints only after the closure ran. Every caller swept: board justify… now opens a real
+  why-note input and renders the justification; row-⋯ opens a real 4-link menu; exports download
+  real CSVs built from the visible tables (board roster, token schedule, scenario paths);
+  governance RAG flips append a REAL audit-log row (canned "A-1 amber→green" event deleted, counts
+  fixed); configure NumIn fixed ($ outside the editable, Enter commits, Undo truly restores), Mark
+  closed/Add round/Delete round/draft sets/re-verify/cadence/benchmark-accept all mutate visible
+  state with working undo; proposition "Save as sent version" seals a v2 chip, Publish flips the
+  link-state chip, Preview really enters view-as-advisor, Copy uses the clipboard; advisor
+  bind-letter records a visible transition, departure marks the package, edit-pkg tier radios now
+  select and Save renames the package (with undo); auth gallery buttons switch cards to the state
+  they name (no fictional emails); dialogs page demos append to a visible session log.
+- **Meta-layer stripped.** "Patterns applied" footer deleted (data-patterns attrs kept, never
+  rendered; footer now the confidentiality line). ~89 spec/research citations removed from visible
+  copy, toasts and comments (IMPROVEMENT_PLAN/CLAUDE_DESIGN_PROMPT/OpenComp/Pulley/Ledgy/Runway/
+  Levels.fyi/Forgd/Liquifi/… and finding numbers); benchmark prov-chips neutralized to
+  "template norm / category benchmark / market canon". "Simulate a commit" button and the fake
+  advisor URL chip deleted; sweep.html deleted; nav regrouped (Board / Advisor / Plan + quiet
+  ink-gray-5 "Spec" group at the nav foot); index.html rewritten — honest claims, cards grouped by
+  nav group, one-line "what to test here" each.
+- **Groundwork.** tokens.css: scroll-margin-top 64px on .frame/[data-item]/[tabindex=0];
+  `.case-active-flag` + active-row tint; generic `data-pop` popover on click AND focus (Enter/Space,
+  Escape closes, auto-tabindex, per-case JSON values supported) — all of Board's 16 title= tooltips
+  converted (avatars, market medians, band chips) + advisor's; one popover primitive now serves
+  formulas, tooltips and menus. Overflow sweep (iframe harness, 14 pages × 1440/1024/768/375):
+  zero horizontal overflow.
+- **Deferred to Wave 1:** full 14-row governance register; advisor tab depth + runbook port +
+  edit-pkg live recompute (markers/compa); chart fidelity (gridlines, frappe-charts); wizard
+  relocation to Board + "Add" create-mode; ?case= URL deep-link reading; proposition slider
+  no-print + footnote-density; portal operator-chrome drop; aria-readonly on range/checkbox (AX
+  still reports readonly); compare fork cloning a real column.
+- Next step: Wave 1 page redesigns on top of this foundation. Server: `cd prototype && python3 -m
+  http.server 5174 --bind 127.0.0.1`.
+
+## 2026-06-11 (later) — Prototype Wave 1A: Board + Overview (CRITIQUE.md fixes)
+
+Wave 1A of the fix plan (files owned: `prototype/board.html`, `prototype/overview.html`, additive
+`tokens.css`/`proto.js` only). Built on the Wave-0 case×stage engine; verified live in the Cursor
+browser against :5174.
+
+- **Board.** (1) The 9-step grant-decision wizard now lives ON the Board behind "New grant decision"
+  (dialogs.html left untouched for Wave 1B): subject validation + focus/scroll-to-error, recording
+  prepends a dated row to the "Grant decisions · history" rail, toast Undo really removes it.
+  (2) Ported prod's "Scenario range by advisor": 6 rows, name + min→max range track (surface-gray-3)
+  with a 3px chart-capital marker at the active case value — marker repositions via a new generic
+  `data-pos` per-case render hook in proto.js; active value bound via data-money; per-case data-pop
+  on each track. (3) Scatter upgraded: 4+4 gridlines (outline-gray-1), "Headroom to ceiling · $M"
+  y-title above, "Current net · $M" x-title, tier-colored bubbles with a swatch legend row, per-case
+  data-pop values on every bubble (current/headroom/capital intro); self-narrating annotations
+  ("Iraj · most headroom", "Strategic ×3") deleted. (4) Keep-list intact: KPI strip, aggregated
+  guardrail callout + justify input, band strips ×3, band filter (above→1 advisor row), stage switch
+  reprices the strike line.
+- **Overview.** (5) Prod's status grammar restored on all six roster cards: amber "4 pre-conditions"
+  mini-chip + neutral pipeline chip (iterating/proposed/modeled); discipline eyebrow quieted.
+  (6) Hero mini progress bars replaced by the single quiet line "Conservative → Aggressive ·
+  $6.87M – $78.6M". (7) "Update available — preview impact" now opens a real inline diff panel
+  (pool norm 5.0% → 4.6% + affected-scope line) with Accept v2026-Q2 / Keep v2025; Accept flips the
+  recency prov-chip to "current", updates the visible pool-norm figure to 4.6%, hides the toggle;
+  Undo restores all three. Benchmark prov-chips converted title= → data-pop. (8) data-money audit:
+  all six card values + six ceiling values + hero bound.
+- **Shared (additive only).** tokens.css: `.range-track/.range-marker` (reduced-motion safe),
+  `.mini-chip`(+`.amber`), `.legend-swatch`. proto.js: `[data-pos]` per-case left-position hook
+  inside renderState. `data-patterns` spec-citation attrs removed from both pages.
+- **Verification (live DOM probes).** Case switch: Board 38/38 data-money figures change + 6/6 range
+  markers move + case labels flip; Overview 14/14 change. Stage switch: 1/1 strike line. Wizard:
+  empty-submit error shown, record appends, undo removes. Bench accept/undo round-trips. Zero
+  horizontal overflow on both pages at 1440/1024/768/375 (iframe harness).
+- **Deferred:** row-⋯ menu links still point at unparameterized advisor.html (page ownership of
+  advisor.html is Wave 1B's); scatter bubble positions are static per case (only values/pops are
+  case-bound).
+
+## 2026-06-11 (later) — Prototype Wave 1B: Advisor + Dialogs (CRITIQUE.md fixes)
+
+Wave 1B of the fix plan (files owned: `prototype/advisor.html`, `prototype/dialogs.html`, additive
+`tokens.css` only — proto.js untouched). Built on the Wave-0 engine; everything verified live in the
+Cursor browser against :5174.
+
+- **Edit-package dialog is now real.** Tier radios (Base 1×/Strategic 2×/Anchor 3×) carry `data-tier`;
+  a 3-entry `TIERS` lookup (compa 0.52/1.04/1.12 · eq/tok 0.5·0.3 / 1.0·0.6 / 1.5·0.9 · pos 26/52/58%)
+  drives the proposed marker on the in-dialog band strip (goes red `.out` below the band), the
+  "compa before X → after Y" line, and a live eq/tok·net line. Save commits tier to the page (package
+  summary line + Band-placement section label/compa/avatar pos/per-case pop/note) with a real undo
+  (`applyTier(prevKey)`); `openEditPkg()` resyncs dialog state on open so Cancel never desyncs.
+- **Case coherence.** Floor card stays $7.67M "guaranteed base — fixed, whatever the case" (case-
+  invariant); Current/Ceiling case-bound; across-scenarios `active` badge follows the case; band-avatar
+  popover shows per-case net. innerText diff on case switch: exactly 3 changes (Current, Ceiling,
+  active badge), zero stale figures; stage switch: 1 change (top-up pricing line).
+- **Tabs 7 → 5, all deep.** Mix tab dissolved — its eq/tok bars now sit directly under the
+  across-scenarios table they visualize; Dilution + Football field merged into "Value context".
+  Vesting adds the tokens vested≠unlocked co-plot (solid service line vs dashed unlock line, M12 cliff
+  / M24 TGE+lockup labels). Instruments got a real 4-column table (Options 858 · $1,572.95 · granted;
+  Token RTA 9.0M RKU · locked until TGE+lockup) + case-bound package value + Runbook button.
+- **Exercise runbook ported verbatim** as a full AppDialog: red blocked row (no window at 2026-06-11,
+  backstop 2035-06-01), two amber action rows (s431 within 14 days; deed of adherence — sole
+  contractual layer, no SHA), green ok row (net exercise Rule 4.5; sell-to-cover Rule 7.4(a)), plus a
+  shares-to-exercise input that clamps 0–858 (2000→858 verified) and recomputes "qty × $1,572.95" live.
+- **Deep links are honest.** `?case=&stage=` read on load (verified con+seriesC restores), case/stage
+  changes on this page `history.replaceState` the URL (wrap of setCase/setStage, page-local), and a
+  "Copy link" header action copies the canonical URL with a truthful toast.
+- **A11y/readonly finding closed as snapshot artifact:** DOM has zero readonly/aria-readonly anywhere
+  in prototype/; Chrome's real AX tree reports the exit slider `settable:true` with proper
+  valuemin/max. The "readonly" in critique came from the snapshot tool's slider rendering, not the page.
+- **Departure** now dims the package frame + strikes the name (`.pkg-departed`/`.pkg-strike`, additive
+  CSS) alongside the chip; toast undo restores all three (round-trip verified).
+- **dialogs.html** regression-checked after Wave 1A copied the wizard to the Board: empty submit →
+  inline error + focus on subject; record → session-log row + undo toast. Untouched otherwise.
+- **Verification:** every flow exercised by real clicks/fills in the browser; zero horizontal overflow
+  on advisor.html and dialogs.html at 1440/1024/768/375 (iframe harness, document scrollWidth ==
+  clientWidth at all widths).
+- **Deferred:** across-scenarios table values don't re-scale when a non-Anchor tier is saved (only the
+  summary line + band section commit, per task scope); ⌘K advisor entries still unparameterized
+  (cross-page, Wave 1A noted the same).

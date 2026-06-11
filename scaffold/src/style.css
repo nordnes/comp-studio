@@ -143,6 +143,15 @@ svg g[tabindex]:focus-visible {
 svg g[tabindex]:focus {
   outline: none;
 }
+/* panel 008 (R4.4): frappe-ui's Select trigger (the reka combobox BUTTON) renders no visible
+   focus ring under keyboard focus on the pinned 0.1.278 — its data-state ring classes only fire
+   when open. Give every combobox trigger the same focus-visible ring our own controls use. */
+button[role="combobox"]:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 1px var(--surface-white),
+    0 0 0 3px var(--ink-gray-6);
+}
 /* COM-59: per-recipient confidentiality running mark — hidden on screen; shown as a fixed footer band
    that repeats on every printed page (position:fixed prints per page). Legal corpus stays verbatim. */
 .print-running {

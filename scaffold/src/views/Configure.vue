@@ -16,6 +16,7 @@ import {
   roundList,
   roundLabel,
   fUSD,
+  fPps,
   fPct,
   fNum,
   fMult,
@@ -789,7 +790,7 @@ function recordValuation(ppsUSD: number) {
                   <div class="text-xs text-ink-gray-6 mb-1">Agreed $/share</div>
                   <NumIn
                     :model-value="0"
-                    fmt="usd"
+                    fmt="pps"
                     :min="0"
                     aria-label="Agreed valuation per share"
                     @update:model-value="(v) => v > 0 && recordValuation(v)"
@@ -805,7 +806,7 @@ function recordValuation(ppsUSD: number) {
                   <div class="text-xs text-ink-gray-6 mb-1">Agreed $/share</div>
                   <NumIn
                     :model-value="S.S.plan.valuation.ppsUSD"
-                    fmt="usd"
+                    fmt="pps"
                     :min="0"
                     aria-label="Agreed valuation per share"
                     @update:model-value="(v) => setPath(['plan', 'valuation', 'ppsUSD'], v)"
@@ -837,7 +838,7 @@ function recordValuation(ppsUSD: number) {
                 />
                 <p class="text-p-xs text-ink-gray-6 pb-1.5">
                   Un-overridden strikes and every FMV display now price at
-                  {{ fUSD(S.S.plan.valuation.ppsUSD) }}/share ({{ S.S.plan.valuation.basis }}).
+                  {{ fPps(S.S.plan.valuation.ppsUSD) }}/share ({{ S.S.plan.valuation.basis }}).
                 </p>
               </div>
             </div>

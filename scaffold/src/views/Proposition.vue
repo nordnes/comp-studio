@@ -8,6 +8,7 @@ import { Avatar, Badge, Button, Divider } from "frappe-ui";
 import { useStudio } from "../store";
 import {
   fUSD,
+  fPps,
   fPct,
   fNum,
   fMult,
@@ -53,7 +54,7 @@ function propText(): string {
     a.sector,
     "",
     `BASE (guaranteed): ${fUSD(cc.baseCaseBase)} net at base case`,
-    `  Equity: ${fPct(cc.baseEq, 3)} — ${fNum(cc.baseEq * b.grantN)} options at $${cc.strikePps.toFixed(2)} (net of strike), granted at the bridge, ${plan.equityVestYears}yr/${plan.equityCliff}mo.`,
+    `  Equity: ${fPct(cc.baseEq, 3)} — ${fNum(cc.baseEq * b.grantN)} options at ${fPps(cc.strikePps)} (net of strike), granted at the bridge, ${plan.equityVestYears}yr/${plan.equityCliff}mo.`,
     `  Tokens: ${fPct(cc.baseTk, 3)} of supply (RTA), valued at TGE FDV (${fMult(plan.scenarios[baseScenKey(plan)].tgeMult)}× ${roundLabel(plan, plan.tgeAnchor)} = ${fUSD(b.fdv)} base).`,
     a.hasCash ? `  Cash: ${fUSD(a.cashAnnual)}/yr post-Series A.` : "",
     "",
@@ -384,7 +385,7 @@ const targetLine = computed(
           {{ residencyLine }}
           <template v-if="S.plan.valuation"
             >Strike per the agreed {{ S.plan.valuation.basis }} valuation of
-            {{ fDate(S.plan.valuation.dateISO) }} ({{ fUSD(S.plan.valuation.ppsUSD) }}/share).
+            {{ fDate(S.plan.valuation.dateISO) }} ({{ fPps(S.plan.valuation.ppsUSD) }}/share).
           </template>
           <template v-else
             >Strike subject to an agreed HMRC SAV / 409A valuation before first grant.

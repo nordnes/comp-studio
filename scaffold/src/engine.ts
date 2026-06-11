@@ -218,6 +218,12 @@ export const fUSD = (n: number, c = true): string => {
   return `$${Math.round(n).toLocaleString('en-US')}`;
 };
 export const fPct = (n: number, d = 2) => (ok(n) ? `${(n * 100).toFixed(d)}%` : '—');
+// panel 008 (R3.17): the PER-SHARE formatter — fUSD's K-band rounding misprints share prices
+// ('$2K/share' for $1,650; the runbook equated $1,572.95 and $1,650 as '$2K / $2K'). Every
+// per-share figure renders through THIS: full dollars + cents, thousands-separated, one form
+// everywhere ('one valuation, everywhere consistent' includes the rendering).
+export const fPps = (n: number | null | undefined): string =>
+  ok(n) ? `$${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '—';
 export const fNum = (n: number) => (ok(n) ? Math.round(n).toLocaleString('en-US') : '—');
 export const fMult = (n: number) => (ok(n) ? `${(Math.round(n * 100) / 100).toString()}×` : '—');
 export const fTok = (n: number) => { if (!ok(n)) return '—'; const a = Math.abs(n); if (a >= 1e9) return `${(n / 1e9).toFixed(2)}B`; if (a >= 1e6) return `${(n / 1e6).toFixed(1)}M`; if (a >= 1e3) return `${(n / 1e3).toFixed(0)}K`; return `${Math.round(n)}`; };

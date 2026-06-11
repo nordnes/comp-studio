@@ -12,5 +12,7 @@ const label = computed(() => (props.mode === "value" ? "$value" : props.tierName
 </script>
 
 <template>
-  <Badge :label="label" theme="orange" variant="subtle" size="sm" />
+  <!-- panel 008 (R4.2): gray, not orange — the pill states tier CLASSIFICATION, which is
+       neither current/active-case nor status; amber stays reserved (DESIGN_SYSTEM §3) -->
+  <Badge :label="label" theme="gray" variant="subtle" size="sm" />
 </template>

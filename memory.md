@@ -3027,3 +3027,81 @@ fork-clone Linear filing (already done as COM-200…224); real XLSX generation/C
 static prototype); Forgd narrative/essay pages + manual mark-as-complete + 13-color stacks (do-NOT-copy
 list); per-viewer access analytics (needs COM-34 auth). Next: feed v3 surfaces into the M14 wave issues
 (tokens.html ≈ COM-C1 view sliver, portal ≈ COM-221/G2, auth ≈ COM-34 design ref).
+
+## 2026-06-11 (later) — gap sweep DONE, filing handed off → research/GAP_FILING_HANDOFF.md
+- Full-corpus sweep (all 12 service reports + 543-line synthesis, subagent-verified vs COM-156/
+  172–199/200–224 + core): 9 fileable uncovered patterns + 2 CLAUDE_DESIGN_PROMPT §9 gaps
+  (board-pack print v2, 404/error/engine-mismatch states) + 4 parked + 1 rejected.
+- NOTHING FILED YET (session budget exhausted). `research/GAP_FILING_HANDOFF.md` carries the
+  drafted issues H1–H12, conventions, paste-ready prompt, and the verification baseline
+  (research-uplift label = 26 pre-filing). Next step: run the handoff prompt in a fresh session.
+
+## 2026-06-11 (gap filing) — H1–H12 FILED as COM-225…236 (M14)
+- Executed `research/GAP_FILING_HANDOFF.md` in a fresh session. Baseline verified pre-filing:
+  `research-uplift` label = 26 (COM-177 + COM-200…224), M14 milestone id matched the handoff.
+- Filed 12 issues, in order H1→H12 = **COM-225…COM-236**: H1 board-pack print v2 (G/2/P2/M,
+  rel COM-15+134) · H2 404/error/engine-mismatch states (G/2/P2/S, rel COM-133) · H3 package-mix
+  presets (D/2/P2/M, rel COM-148) · H4 assumption-change impact flags (B/2/P2/M, rel COM-174+182) ·
+  H5 FAST matrix tier picker (A/2/P2/M, rel COM-200) · H6 evidence in consent rows (E/2/P2/S,
+  extends COM-207) · H7 guardrail severity tiers (A/2/P2/S, rel COM-156) · H8 cost-to-floor KPI
+  (A/3/P3/S, extends COM-210) · H9 annualized framing (D/3/P3/S) · H10 personal note + philosophy
+  preamble (D/3/P3/S, rel COM-177+206) · H11 internal precedent panel (A/3/P3/S, rel COM-200) ·
+  H12 Comprehensive Exec-Comp-Survey evaluation, data task (B/3/P3/S, rel COM-182+212).
+- **Robin's call (AskUserQuestion):** file ALL of H10–H12 (P3) — none skipped.
+- All per the handoff conventions: M14, Backlog, unassigned, `research-uplift`+epic+wave labels,
+  full Why/What/Where/Design-notes/AC/Dependencies template, relations set in Linear.
+- Parked (recorded in EXECUTION_PLAN, not filed): milestone-conditioned tranches · acknowledgement
+  ledger (→COM-34/35) · as-of roster scrubber (→COM-35) · outcome feedback loop. Rejected: grant
+  segmenting (hedgey.md #6).
+- EXECUTION_PLAN.md gained the "Gap filing" section with the COM-225…236 table.
+- Verification: re-listed `research-uplift` post-filing = 38 issues, zero duplicates.
+
+## 2026-06-11 (evening) — prototype critique vs prod → prototype/CRITIQUE.md
+- Robin judged the HTML prototype "a worse version of what we have today"; ran a page-by-page +
+  flow-by-flow live comparison (prod comp-studio-one.vercel.app vs 127.0.0.1:5174, browser MCP,
+  27 evidence screenshots in `prototype/screenshots/critique/`). **Analysis only — no rewrite.**
+- Verdict: the shell is Espresso-faithful but the prototype *narrates* quality instead of having it.
+  Three root causes: (1) fake interactivity — `data-money` recompute is opt-in and missing on
+  compare/governance/configure/proposition; the stage switcher is wired to NOTHING; every Undo is
+  `remove toast; toast('Reverted.')`; row-⋯/justify/export/publish actions toast claims that never
+  happened; "Save as sent version" + "Add" + "Pin set" + "Import CSV" have no handlers at all.
+  (2) hollowness — Governance renders 4/14 register rows + a literal "… 10 more items" line; advisor
+  tabs are 192–637 chars (Vesting = four ascending rects for equal 25% tranches); runbook dialog
+  dropped. (3) meta-leak — "Patterns applied: IMPROVEMENT_PLAN A1 …" footer on every page, finding
+  numbers in UI copy, a "Simulate a commit (toast + undo)" button, fake URL chip. Self-incriminating:
+  Compare's header brags about case-bound labels while its A/B row hardcodes "Net · active case: Base"
+  under Aggressive.
+- P0/P1 per page: Overview 1/1 · Board 2/4 · Compare 1/2 · Governance 1/2 · Advisors 2/4 ·
+  Proposition 1/2 · Configure 2/2 · cross-cutting flows 3 P0 (case/stage/undo).
+- Top fixes (full ranked 10 in CRITIQUE.md): one mock-engine render pass over a case×stage table ·
+  honest toasts + real undo · no dead primaries · strip the meta-layer (hours, highest taste/hour) ·
+  full register + real tab content · wire Edit-package radios · fix the NumIn ($ outside the
+  editable, Enter commits, undo restores) · popovers not title= · chart fidelity floor · print/a11y
+  cleanup (§6 slider leak, aria-readonly, scroll-margin).
+- Keepers found: health strip, band-strip filter, RAG why-note, sealed-version model, tokens unlock
+  grid, portal narrative, auth-state gallery, formula popover, AppDialog sizing/scrim.
+- Next step: fix pass on the prototype in CRITIQUE.md order (#1–#4 first), then re-show Robin.
+
+## 2026-06-11 (cleanup) — Robin's directives executed: the M15 hardening set filed + the full branch cleanup
+- **Gap-analysis filing (mine, ops-side — complements the parallel session's COM-225…236 product
+  set):** milestone **M15 · Hardening & ops** created; filed **COM-237…244**: security headers
+  (prod verified MISSING everything but HSTS — frameable, no CSP/referrer-policy; P1) · the
+  committed e2e suite from the probe corpus (P1) · CI for the QA gate (none exists; vp stays
+  local-only; P1) · global error boundary (P2) · localStorage last-known-good (P2) · #s= hash
+  size guard (P3) · the frappe-ui 0.1.278 five-workaround tracker (P3) · scrubbed client
+  telemetry (P3, blockedBy COM-34).
+- **All-work-on-default PROOF before deleting anything:** GitHub default branch =
+  claude/frosty-pasteur-8cf1db; latest Production deployment ref == tip 63ec81c, status
+  success; prod bundles carry the FIX-9 (25x4), FIX-10 (Configure aria-label, in its route
+  chunk) and no-headlessui markers.
+- **Branch cleanup DONE:** 131 remote + 131 local merged robinandre/* deleted (batch pushes);
+  4 historical claude/* remote branches deleted; the one UNMERGED orphan (relaxed-faraday's
+  d9f5e03, an M8-era memory handoff) preserved as the annotated tag
+  **archive/m8-handoff-relaxed-faraday** (pushed) before deletion; locals main-merge /
+  m9-uxui-frappeui-review / com-174 (memory-only tips, content on origin/main or superseded)
+  deleted; the stale suspicious-swartz worktree (only a .claude/launch.json, June 8) removed.
+  **End state: local = default + main; remote = default + main; one worktree (the checkout).**
+- Traps distilled: `cmd | tail && next` — the && guards TAIL's status, not cmd's (the tag-push
+  failure slipped through; always check push output, not pipe status). Robin's gitconfig forces
+  annotated tags (bare `git tag name sha` dies "no tag message?" — use -m).
+- STILL PENDING: the R5.3 waiver (Robin) — panel 011 holds; Wave 6 invoices.

@@ -83,3 +83,31 @@ popover→COM-208, audit tab/filter→COM-216, version chip row→COM-215).
 - Relations set in Linear: COM-201 blockedBy COM-200 · COM-213/221/223 blockedBy COM-34 ·
   relatedTo links to COM-141/147/149/157/166/170/172/174/176/179/182/195/198/199/209.
 - Verification: see the dated memory.md entry — re-listed from Linear and diffed against this table.
+
+## Gap filing (2026-06-11, second pass — from `research/GAP_FILING_HANDOFF.md`)
+
+Corpus-sweep + design-prompt §9 gaps, filed per the handoff conventions (M14, Backlog, unassigned,
+`research-uplift` + epic + wave labels). H10–H12 confirmed by Robin via AskUserQuestion (file all three, P3).
+
+| # | Title | Epic | Wave | Pri | Eff | Relations | Linear |
+|---|-------|------|------|-----|-----|-----------|--------|
+| H1 | Board-pack print template v2 (multi-page) | G | 2 | P2 | M | relatedTo COM-15, COM-134 | **COM-225** |
+| H2 | Designed 404 / route-error / engine-mismatch states | G | 2 | P2 | S | relatedTo COM-133 | **COM-226** |
+| H3 | Package-mix presets (equity-heavy ↔ token-heavy side by side) | D | 2 | P2 | M | relatedTo COM-148 | **COM-227** |
+| H4 | Assumption-change downstream impact flags on saved offers/drafts | B | 2 | P2 | M | relatedTo COM-174, COM-182 | **COM-228** |
+| H5 | FAST stage×engagement matrix as the tier picker | A | 2 | P2 | M | relatedTo COM-200 (band data) | **COM-229** |
+| H6 | Evidence embedded inside consent rows (extends COM-207) | E | 2 | P2 | S | relatedTo COM-207 | **COM-230** |
+| H7 | Guardrail severity tiers (warn vs block) + aggregate scoping | A | 2 | P2 | S | relatedTo COM-156 | **COM-231** |
+| H8 | "Cost to floor" KPI (extends COM-210) | A | 3 | P3 | S | relatedTo COM-210 | **COM-232** |
+| H9 | Annualized value framing toggle on Proposition/Trajectory | D | 3 | P3 | S | — | **COM-233** |
+| H10 | Personal note + comp-philosophy preamble on the Proposition | D | 3 | P3 | S | relatedTo COM-177, COM-206 | **COM-234** |
+| H11 | Internal precedent panel in the package editor | A | 3 | P3 | S | relatedTo COM-200 | **COM-235** |
+| H12 | Data task: evaluate Comprehensive's Exec Comp Survey (Part 17 #2 anchor) | B | 3 | P3 | S | relatedTo COM-182, COM-212 | **COM-236** |
+
+**Parked in this pass (do not file):** milestone-conditioned grant tranches (Vestd Agile Partnerships —
+engine-gated + Part 17 product call) · acknowledgement ledger (needs advisor action → COM-34/35) ·
+as-of roster scrubber (needs COM-35 history) · outcome feedback loop (meaningless at n≈5).
+**Rejected:** grant segmenting with split preview (hedgey.md #6 — no product need).
+
+**Verification (2026-06-11):** `research-uplift` label re-listed after filing = 38 issues
+(26 baseline: COM-177 + COM-200…224, plus COM-225…236), zero duplicates.

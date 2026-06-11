@@ -2768,3 +2768,33 @@ findings (workflow still verifying).
   OB-7 (precond chip separator), OB-8 (cost panel dup column), AP-5 (NumIn Escape closes dialog),
   OB-9 (stage chip no legend), OB-10 (success toast on validation failure), OB-11 (dangling 'Live:').
 - Next: triage the full verified set → fix-PRs + M13 issues; remaining M13 queue COM-175/176/177/178/180.
+
+## 2026-06-11 (later) — UXS final-sweep triage: 69 verified findings → batch PRs
+- **ux-sweep verification COMPLETE** after two spend-limit deaths + two `resumeFromRunId` resumes
+  (wf_c4802215-4e4): 71 raw → **69 CONFIRMED / 2 refuted** by adversarial verifiers with live repro
+  evidence. Full set: /tmp/claude/ux-final.json; batch plan (13 thematic issues): /tmp/claude/uxs-batches.md.
+- **COM-176 (rationale capture) → merged PR #117** (Linear flip pending MCP reconnect — debt file).
+  flagItems kind-keys (band-breach/day-rate/totality), explain-or-close on the Board panel, AuditEvent.why,
+  version pencil-annotation.
+- **UXS batches shipped (Linear issues pending reconnect):**
+  - UXS-A PR #119 — by-value top-ups derive at the BASE-CASE EXIT path (AP-2: $75K landed count-0/$0;
+    intrinsic spread is zero at the pricing round by definition). T29. (#118 closed: stale base + wholesale fmt.)
+  - UXS-D PR #120 — per-toast undo TIMELINE (CGC-1: one slot restored the wrong delete) + Save-as =
+    frozen checkpoint copy (OB-6: write-through alias never checkpointed).
+  - UXS-F2 PR #121 — PackageEditor dismissal REVERTS by default (AP-1: Escape/X silently kept money
+    edits; Save is the one keeping path), NumIn Escape .stop (AP-5), internal scroll (DR-4 2040px),
+    375 select overflow 80px→0 (DR-5).
+  - UXS-C PR #122 — recorded departures MOVE MONEY (C2/AP-14): applyDeparture materialises the modeled
+    outcome (retained freezes Grant.fullyVested at vested-to-date with TRUE dates kept for 3.6 windows;
+    lapsed lapses; cash accrues-only; upside dies via the fold). T30. Hero $28.1M→$20.4M live.
+  - UXS-B PR #123 — "base" labels stop following the case lenses (C1/AP-3/OB-4): the LETTER always
+    speaks the board plan + viewing note; /advisors labels name the override; hero eyebrow follows the lens.
+- **Recurring gotchas (RULES):** the fUSD-import bug recurred in recordDeparture (COM-182's
+  formatter-consumer rule — grep EVERY consumer incl. store.ts before shipping a formatter use).
+  Always `git pull --ff-only` on the deploy branch BEFORE cutting a batch branch (PR #118's conflict).
+  Only `vp fmt <file> --write` the SPECIFIC failing file — wholesale fmt reflows engine.ts/v2-suite
+  into unreviewable diffs. Probes: grant `permissions:['clipboard-read']` on the context; scope
+  innerText slices card-to-card (adjacent cards bleed); localStorage is EMPTY pre-first-mutation.
+- v2 suite now **283 vectors**; engine edits under §7 throughout (anchors green every PR).
+- Queue: UXS-E (Fork B), F1 (z-stack+aria), G (focus+contrast), H (feedback truth), I (render),
+  J (inputs), K (charts), L (IA copy) → then Wave-7 panel 009.

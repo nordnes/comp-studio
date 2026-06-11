@@ -6,51 +6,88 @@
 <script src="https://cdn.tailwindcss.com?v=3.4"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,350;9..144,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/tokens.css">
-<style>body{font-family:Inter,system-ui,sans-serif}</style>
+<style>
+body{font-family:Inter,system-ui,sans-serif}
+.pin{font-size:15px;color:var(--ink-gray-5);padding:2px 6px;border-radius:6px}
+.pin[aria-pressed=true]{color:var(--ink-amber-strong)}
+.pin:hover{background:var(--surface-gray-2)}
+</style>
 <script>window.PAGE_ACTIONS=[["Pin set",false]];</script>
 </head>
 <body>
-<div id="page" data-patterns="3.3 scenario deltas live ONCE in the column headers · 3.1 case-bound labels (no stale 'Base case') · 3.6 A/B named columns + Δ column (Runway variance grammar) · 3.4 tier words, no unexplained colors · Runway lock/compare lifecycle on the scenario set switcher.">
+<div id="page" data-patterns="3.3 scenario deltas live ONCE in the column headers · 3.1 case-bound labels (no stale 'Base case') · 3.6 A/B named columns + Δ column (Runway variance grammar) · 3.4 tier words, no unexplained colors · Runway lock/compare lifecycle on the scenario set switcher · CLAUDE_DESIGN_PROMPT §5.3 full column set (Earned/Ceiling/Spread/Cash/Pin) + grouped-bar 'Net value across scenarios' + designed fork chip/warning/undo · pinned rows float to the top.">
   <div class="mx-auto w-full px-5 py-8 max-w-7xl">
     <h1 class="font-display text-3xl mb-1">The board, side by side.</h1>
     <p class="text-sm mb-6" style="color:var(--ink-gray-6)">Net of strike &amp; scenario dilution. Click a row to open a package.</p>
 
-    <div class="flex items-center gap-2 mb-5">
+    <div class="flex flex-wrap items-center gap-2 mb-3">
       <span class="eyebrow">Scenario set</span>
       <button class="preset-chip on">Main · locked 🔒</button>
-      <button class="preset-chip" onclick="toast('Forked Main → draft set “$90m floor”. Compare & merge when ready.','Undo')">+ fork a draft set</button>
+      <button class="preset-chip" id="fork-chip" onclick="forkSet()">+ fork a draft set</button>
       <span class="eyebrow ml-3">Locked sets are the governed record — edits happen on forks (Runway pattern).</span>
     </div>
+    <!-- designed fork treatment: chip + warning + undo (§5.3) -->
+    <div class="frame p-3 mb-5 hidden text-sm flex-wrap items-center gap-3" id="fork-banner" style="background:var(--surface-amber-1);border-color:#ecd9b8">
+      <span style="color:var(--ink-amber-strong)"><strong>Comparing fork "B · $90m floor"</strong> against the working draft — fork figures are unfunded modeling, not the governed record.</span>
+      <button class="btn ml-auto" onclick="unfork()">Discard fork (undo)</button>
+    </div>
 
-    <table class="data mb-10">
+    <div class="overflow-x-auto mb-10">
+    <table class="data" style="min-width:1060px" id="cmp-table">
       <thead>
         <tr>
+          <th aria-label="Pin"></th>
           <th>Advisor</th><th>Tier</th><th class="num">Base eq</th>
+          <th class="num">Earned</th><th class="num">Ceiling</th><th class="num">Spread</th>
           <th class="num">Net · Conservative<br><span class="text-xs font-normal delta-down tnum">scenario −76% vs base</span></th>
           <th class="num">Net · Base</th>
           <th class="num">Net · Aggressive<br><span class="text-xs font-normal delta-up tnum">scenario +180% vs base</span></th>
+          <th class="num">Cash/yr</th>
         </tr>
       </thead>
       <tbody>
-        <tr><td><a class="underline" href="advisor.html">Iraj Ispahani</a></td><td>Anchor</td><td class="num">1.50%</td><td class="num">$1.87M</td><td class="num font-medium">$7.67M</td><td class="num">$21.4M</td></tr>
-        <tr><td>Robert Reoch</td><td>Strategic</td><td class="num">1.00%</td><td class="num">$1.25M</td><td class="num font-medium">$5.11M</td><td class="num">$14.3M</td></tr>
-        <tr><td>Martin Keller</td><td>Strategic</td><td class="num">1.00%</td><td class="num">$1.25M</td><td class="num font-medium">$5.11M</td><td class="num">$14.3M</td></tr>
-        <tr><td>Kerim Derhalli</td><td>Strategic</td><td class="num">1.00%</td><td class="num">$1.25M</td><td class="num font-medium">$5.11M</td><td class="num">$14.3M</td></tr>
-        <tr><td>Carl Bang</td><td>Base</td><td class="num">0.50%</td><td class="num">$624K</td><td class="num font-medium">$2.56M</td><td class="num">$7.14M</td></tr>
-        <tr><td>Rajesh Mehta</td><td>Base</td><td class="num">0.50%</td><td class="num">$624K</td><td class="num font-medium">$2.56M</td><td class="num">$7.14M</td></tr>
-        <tr class="font-medium" style="background:var(--surface-gray-1)"><td>Board · 6</td><td></td><td class="num">5.50%</td><td class="num">$6.87M</td><td class="num">$28.1M</td><td class="num">$78.6M</td></tr>
+        <tr><td><button class="pin" aria-pressed="false" aria-label="Pin Iraj Ispahani" onclick="pinRow(this)">☆</button></td><td><a class="underline" href="advisor.html">Iraj Ispahani</a></td><td>Anchor</td><td class="num">1.50%</td><td class="num">+0%</td><td class="num">+70%</td><td class="num tnum">$5.33M</td><td class="num">$1.87M</td><td class="num font-medium">$7.67M</td><td class="num">$21.4M</td><td class="num">$0</td></tr>
+        <tr><td><button class="pin" aria-pressed="false" aria-label="Pin Robert Reoch" onclick="pinRow(this)">☆</button></td><td>Robert Reoch</td><td>Strategic</td><td class="num">1.00%</td><td class="num">+0%</td><td class="num">+30%</td><td class="num tnum">$1.53M</td><td class="num">$1.25M</td><td class="num font-medium">$5.11M</td><td class="num">$14.3M</td><td class="num">$0</td></tr>
+        <tr><td><button class="pin" aria-pressed="false" aria-label="Pin Martin Keller" onclick="pinRow(this)">☆</button></td><td>Martin Keller</td><td>Strategic</td><td class="num">1.00%</td><td class="num">+0%</td><td class="num">+40%</td><td class="num tnum">$2.04M</td><td class="num">$1.25M</td><td class="num font-medium">$5.11M</td><td class="num">$14.3M</td><td class="num">$0</td></tr>
+        <tr><td><button class="pin" aria-pressed="false" aria-label="Pin Kerim Derhalli" onclick="pinRow(this)">☆</button></td><td>Kerim Derhalli</td><td>Strategic</td><td class="num">1.00%</td><td class="num">+0%</td><td class="num">+80%</td><td class="num tnum">$4.09M</td><td class="num">$1.25M</td><td class="num font-medium">$5.11M</td><td class="num">$14.3M</td><td class="num">$0</td></tr>
+        <tr><td><button class="pin" aria-pressed="false" aria-label="Pin Carl Bang" onclick="pinRow(this)">☆</button></td><td>Carl Bang</td><td>Base</td><td class="num">0.50%</td><td class="num">+0%</td><td class="num">+20%</td><td class="num tnum">$512K</td><td class="num">$624K</td><td class="num font-medium">$2.56M</td><td class="num">$7.14M</td><td class="num">$0</td></tr>
+        <tr><td><button class="pin" aria-pressed="false" aria-label="Pin Rajesh Mehta" onclick="pinRow(this)">☆</button></td><td>Rajesh Mehta</td><td>Base</td><td class="num">0.50%</td><td class="num">+0%</td><td class="num">+20%</td><td class="num tnum">$512K</td><td class="num">$624K</td><td class="num font-medium">$2.56M</td><td class="num">$7.14M</td><td class="num">$0</td></tr>
+        <tr class="font-medium" id="totals-row" style="background:var(--surface-gray-1)"><td></td><td>Board · 6</td><td></td><td class="num">5.50%</td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num">$6.87M</td><td class="num">$28.1M</td><td class="num">$78.6M</td><td class="num">$0</td></tr>
       </tbody>
     </table>
+    </div>
+
+    <div class="section-label mb-2">Net value across scenarios · $M <span class="eyebrow">· grouped bars per advisor — position is the non-color channel (Conservative always left)</span></div>
+    <div class="frame p-5 mb-10 overflow-x-auto">
+      <svg viewBox="0 0 760 230" class="w-full" style="min-width:600px" role="img" aria-label="Grouped bar chart: net value per advisor for Conservative, Base, Aggressive scenarios in millions of dollars">
+        <line x1="46" y1="14" x2="46" y2="190" stroke="var(--outline-gray-2)"/>
+        <line x1="46" y1="190" x2="744" y2="190" stroke="var(--outline-gray-2)"/>
+        <g font-size="11" fill="var(--ink-gray-5)" text-anchor="end">
+          <text x="40" y="26">$21M</text><text x="40" y="108">$10M</text><text x="40" y="192">$0</text>
+        </g>
+        <!-- Iraj 1.87/7.67/21.4 → h = v*8.2 -->
+        <g><rect x="66" y="174.7" width="16" height="15.3" fill="var(--chart-tint)"/><rect x="84" y="127.1" width="16" height="62.9" fill="var(--chart-customer)"/><rect x="102" y="14.5" width="16" height="175.5" fill="var(--chart-capital)"/><text x="92" y="206" font-size="11" fill="var(--ink-gray-7)" text-anchor="middle">Iraj</text></g>
+        <g><rect x="178" y="179.8" width="16" height="10.2" fill="var(--chart-tint)"/><rect x="196" y="148.1" width="16" height="41.9" fill="var(--chart-customer)"/><rect x="214" y="72.7" width="16" height="117.3" fill="var(--chart-capital)"/><text x="204" y="206" font-size="11" fill="var(--ink-gray-7)" text-anchor="middle">Robert</text></g>
+        <g><rect x="290" y="179.8" width="16" height="10.2" fill="var(--chart-tint)"/><rect x="308" y="148.1" width="16" height="41.9" fill="var(--chart-customer)"/><rect x="326" y="72.7" width="16" height="117.3" fill="var(--chart-capital)"/><text x="316" y="206" font-size="11" fill="var(--ink-gray-7)" text-anchor="middle">Martin</text></g>
+        <g><rect x="402" y="179.8" width="16" height="10.2" fill="var(--chart-tint)"/><rect x="420" y="148.1" width="16" height="41.9" fill="var(--chart-customer)"/><rect x="438" y="72.7" width="16" height="117.3" fill="var(--chart-capital)"/><text x="428" y="206" font-size="11" fill="var(--ink-gray-7)" text-anchor="middle">Kerim</text></g>
+        <g><rect x="514" y="184.9" width="16" height="5.1" fill="var(--chart-tint)"/><rect x="532" y="169" width="16" height="21" fill="var(--chart-customer)"/><rect x="550" y="131.5" width="16" height="58.5" fill="var(--chart-capital)"/><text x="540" y="206" font-size="11" fill="var(--ink-gray-7)" text-anchor="middle">Carl</text></g>
+        <g><rect x="626" y="184.9" width="16" height="5.1" fill="var(--chart-tint)"/><rect x="644" y="169" width="16" height="21" fill="var(--chart-customer)"/><rect x="662" y="131.5" width="16" height="58.5" fill="var(--chart-capital)"/><text x="654" y="206" font-size="11" fill="var(--ink-gray-7)" text-anchor="middle">Rajesh</text></g>
+        <g font-size="11" fill="var(--ink-gray-6)">
+          <text x="66" y="226">■ Conservative (left)</text><text x="240" y="226">■ Base (middle)</text><text x="380" y="226">■ Aggressive (right)</text>
+        </g>
+      </svg>
+    </div>
 
     <div class="section-label mb-2">A/B · two packages <span class="eyebrow">— named columns, Δ column, labels bound to the ACTIVE case</span></div>
     <div class="frame p-5" style="max-width:760px">
-      <div class="flex items-center gap-2 mb-4 text-sm">
+      <div class="flex flex-wrap items-center gap-2 mb-4 text-sm">
         <select class="border rounded px-2 py-1" style="border-color:var(--outline-gray-2)" aria-label="Package A"><option>Iraj Ispahani</option></select>
         <span class="eyebrow">vs</span>
         <select class="border rounded px-2 py-1" style="border-color:var(--outline-gray-2)" aria-label="Package B"><option>Robert Reoch</option></select>
         <button class="btn ml-auto" onclick="toast('Forked Robert → “Robert v2” for same-person A/B','Undo')">Fork B</button>
       </div>
-      <table class="data">
+      <div class="overflow-x-auto">
+      <table class="data" style="min-width:520px">
         <thead><tr><th></th><th class="num">Iraj Ispahani</th><th class="num">Robert Reoch</th><th class="num">Δ (A − B)</th></tr></thead>
         <tbody>
           <tr><td>Net · <strong>active case: Base</strong></td><td class="num">$7.67M</td><td class="num">$5.11M</td><td class="num delta-up">+$2.56M</td></tr>
@@ -60,10 +97,34 @@
           <tr><td>Cash (engagement)</td><td class="num">$0</td><td class="num">$0</td><td class="num">—</td></tr>
         </tbody>
       </table>
+      </div>
       <p class="eyebrow mt-3">Row labels follow the global case selector — switching to Aggressive relabels the row, never silently swaps the number under a stale label.</p>
     </div>
   </div>
 </div>
 <script src="assets/proto.js"></script>
+<script>
+function pinRow(btn){
+  const on = btn.getAttribute('aria-pressed') !== 'true';
+  btn.setAttribute('aria-pressed', on); btn.textContent = on ? '★' : '☆';
+  const tr = btn.closest('tr'), tbody = tr.parentElement;
+  if (on) { tbody.insertBefore(tr, tbody.firstElementChild); toast('Pinned — stays on top across case switches','Undo'); }
+  else { tbody.insertBefore(tr, document.getElementById('totals-row')); }
+}
+function forkSet(){
+  document.getElementById('fork-banner').classList.remove('hidden');
+  document.getElementById('fork-banner').classList.add('flex');
+  document.getElementById('fork-chip').textContent = 'B · $90m floor · draft';
+  document.getElementById('fork-chip').classList.add('on');
+  toast('Forked Main → draft set "B · $90m floor". Compare & merge when ready.','Undo');
+}
+function unfork(){
+  document.getElementById('fork-banner').classList.add('hidden');
+  document.getElementById('fork-banner').classList.remove('flex');
+  const c = document.getElementById('fork-chip');
+  c.textContent = '+ fork a draft set'; c.classList.remove('on');
+  toast('Fork discarded — back on the working draft.');
+}
+</script>
 </body>
 </html>

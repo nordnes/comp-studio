@@ -10,7 +10,7 @@
 <script>window.PAGE_ACTIONS=[["Configure",false]];</script>
 </head>
 <body>
-<div id="page" data-patterns="1.4 banner→status chip (OpenComp health strip) · 1.1 deep-linkable advisor cards · 9.1 skip link · 9a provenance chips on the benchmark (Carta TC) · 9d formula popover on the hero figure · WS-G health strip on pool allocation.">
+<div id="page" data-patterns="1.4 banner→status chip (OpenComp health strip) · 1.1 deep-linkable advisor cards · 9.1 skip link · 9a provenance chips on the benchmark (Carta TC) · 9d formula popover on the hero figure · WS-G health strip on pool allocation · IMPROVEMENT_PLAN E4 next-blocking-item card (FORGD_DEEP_DIVE 'Next recommended task', derived not manual) · F3 percentile ramp on the hero range (Levels.fyi) · F2 benchmark provenance · CLAUDE_DESIGN_PROMPT §5.1 key dates 90/180d + to-confirm list + shared 'About these figures' disclosure (§8.8).">
   <div class="mx-auto w-full px-5 py-8" style="max-width:60rem">
     <h1 class="font-display text-3xl mb-1">The advisory board, at a glance.</h1>
     <p class="text-sm mb-6" style="color:var(--ink-gray-6)">A live snapshot against the company plan. Open an advisor to model their package.</p>
@@ -22,7 +22,12 @@
 = Σ [options × (exit PPS − strike $1,572.95), floor 0] × % kept
 + Σ [token % × TGE FDV]
 base: $28.1M">$28.1M</div>
-        <div class="eyebrow mt-1 tnum">Conservative → Aggressive · $6.87M – $78.6M</div>
+        <!-- F3 · percentile-style sequential ramp (Levels.fyi), single hue, position-labeled -->
+        <div class="mt-2 space-y-1" style="max-width:300px" role="img" aria-label="Scenario range: Conservative 6.87, Base 28.1, Aggressive 78.6 million dollars">
+          <div class="flex items-center gap-2 text-xs tnum"><div class="h-2 rounded-full" style="width:9%;background:var(--chart-tint)"></div><span style="color:var(--ink-gray-6)">Conservative · $6.87M</span></div>
+          <div class="flex items-center gap-2 text-xs tnum"><div class="h-2 rounded-full" style="width:36%;background:var(--chart-customer)"></div><span class="font-medium">Base · $28.1M</span></div>
+          <div class="flex items-center gap-2 text-xs tnum"><div class="h-2 rounded-full" style="width:100%;background:var(--chart-capital)"></div><span style="color:var(--ink-gray-6)">Aggressive · $78.6M</span></div>
+        </div>
       </div>
       <dl class="flex gap-8 text-sm">
         <div><dt class="eyebrow">Equity of company</dt><dd class="tnum font-medium">5.50% <span style="color:var(--ink-gray-5)">base, pre-uplift</span></dd></div>
@@ -76,9 +81,25 @@ base: $28.1M">$28.1M</div>
       </div>
 
       <aside class="space-y-7">
+        <!-- E4 · next blocking item — derived from state, never manually marked (Forgd anti-pattern avoided) -->
+        <div class="frame p-4" style="border-color:var(--outline-gray-2)">
+          <div class="section-label mb-1">Next blocking item</div>
+          <p class="text-sm mb-2"><strong>A-2 · Pool count / % decision</strong> — red on the register; blocks the resolution, every grant, and watermark lift.</p>
+          <a class="btn w-full justify-center" href="governance.html">Open on Governance →</a>
+          <p class="eyebrow mt-2">Derived: highest-priority red item → unconfirmed term → breached guardrail.</p>
+        </div>
         <div>
-          <div class="section-label mb-2">Key dates · next 90 days</div>
-          <p class="text-sm" style="color:var(--ink-gray-6)">Nothing lands in the next 90 days — no gates, tranches, reviews or backstops across the roster.</p>
+          <div class="section-label mb-2 flex items-center gap-2">Key dates
+            <span role="group" aria-label="Key dates window" class="flex gap-1">
+              <button class="preset-chip on" id="kd-b90" onclick="kdWindow(true)">90d</button>
+              <button class="preset-chip" id="kd-b180" onclick="kdWindow(false)">180d</button>
+            </span>
+          </div>
+          <p class="text-sm" id="kd-90" style="color:var(--ink-gray-6)">Nothing lands in the next 90 days — no gates, tranches, reviews or backstops across the roster.</p>
+          <div class="hidden divide-y text-sm" id="kd-180" style="border-color:var(--outline-gray-1)">
+            <div class="py-2 flex justify-between gap-2"><span>First review checkpoint · semi-annual cadence</span><span class="eyebrow tnum">1 Dec 2026</span></div>
+            <div class="py-2 flex justify-between gap-2"><span>Robert · references backstop expires</span><span class="eyebrow tnum">15 Nov 2026</span></div>
+          </div>
         </div>
         <div>
           <div class="section-label mb-2">Pool allocation · health</div>
@@ -104,8 +125,24 @@ base: $28.1M">$28.1M</div>
           </div>
           <button class="text-xs underline mt-2" style="color:var(--ink-gray-6)" onclick="toast('Benchmark refresh preview: 2026 Carta data moves the pool norm ~5%→4.6%. Accept on Configure.','')">Update available — preview impact</button>
         </div>
+        <div>
+          <div class="section-label mb-2">To confirm · alerts</div>
+          <ul class="text-sm space-y-2" style="color:var(--ink-gray-7)">
+            <li class="flex gap-2"><span aria-hidden="true" style="color:var(--ink-red-3)">●</span>Token bucket breached at ceiling (4.83% / 4.50%) — <a class="underline" href="tokens.html">token schedule</a></li>
+            <li class="flex gap-2"><span aria-hidden="true" style="color:var(--ink-amber-3)">●</span>Iraj band breach justification awaiting board minute</li>
+            <li class="flex gap-2"><span aria-hidden="true" style="color:var(--ink-amber-3)">●</span>Review cadence unconfirmed (semi-annual proposed) — Part 17</li>
+          </ul>
+        </div>
       </aside>
     </div>
+
+    <!-- §8.8 · ONE shared collapsible methodology disclosure, replacing the repeated footer paragraph -->
+    <details class="frame mt-10" style="background:var(--surface-gray-1)">
+      <summary class="px-4 py-3 text-sm font-medium cursor-pointer" style="color:var(--ink-gray-7)">About these figures — methodology, shared by every view</summary>
+      <div class="px-4 pb-4 text-sm leading-relaxed" style="color:var(--ink-gray-7)">
+        Every equity figure is <strong>net of strike</strong> ($1,572.95, the Bridge price) and scenario dilution (base path keeps 48%); tokens are valued at the scenario's TGE FDV (base $600.0M) — never gross, never undiluted. Figures are pre-tax. Scenario paths are named, saved sets (Conservative / Base / Aggressive), not forecasts. Internal &amp; confidential · a discussion draft, not a binding offer or legal/financial advice.
+      </div>
+    </details>
   </div>
 
   <!-- budget detail dialog (the chip's popover) -->
@@ -121,5 +158,13 @@ base: $28.1M">$28.1M</div>
   </div>
 </div>
 <script src="assets/proto.js"></script>
+<script>
+function kdWindow(is90){
+  document.getElementById('kd-90').classList.toggle('hidden', !is90);
+  document.getElementById('kd-180').classList.toggle('hidden', is90);
+  document.getElementById('kd-b90').classList.toggle('on', is90);
+  document.getElementById('kd-b180').classList.toggle('on', !is90);
+}
+</script>
 </body>
 </html>

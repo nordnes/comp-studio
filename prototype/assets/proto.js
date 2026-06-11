@@ -1,9 +1,9 @@
 /* Comp Studio prototype shell + interaction helpers (vanilla JS, no build) — v2 */
 (function () {
   const NAV = [
-    { group: 'Board', items: [['overview.html', 'Overview'], ['board.html', 'Board'], ['compare.html', 'Compare'], ['governance.html', 'Governance']] },
-    { group: 'Advisor', items: [['advisor.html', 'Advisors'], ['proposition.html', 'Proposition']] },
-    { group: 'System', items: [['configure.html', 'Configure'], ['dialogs.html', 'Dialog system'], ['board-pack.html', 'Board pack'], ['index.html', 'Prototype map']] },
+    { group: 'Board', items: [['overview.html', 'Overview'], ['board.html', 'Board'], ['compare.html', 'Compare'], ['tokens.html', 'Tokens'], ['governance.html', 'Governance']] },
+    { group: 'Advisor', items: [['advisor.html', 'Advisors'], ['proposition.html', 'Proposition'], ['portal.html', 'Advisor portal']] },
+    { group: 'System', items: [['configure.html', 'Configure'], ['dialogs.html', 'Dialog system'], ['board-pack.html', 'Board pack'], ['auth.html', 'Auth & states'], ['index.html', 'Prototype map']] },
   ];
   const ADVISORS = ['Iraj Ispahani', 'Robert Reoch', 'Martin Keller', 'Kerim Derhalli', 'Carl Bang', 'Rajesh Mehta'];
   const here = location.pathname.split('/').pop() || 'index.html';

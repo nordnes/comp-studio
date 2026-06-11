@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Advisor portal · Comp Studio prototype</title>
+<script src="https://cdn.tailwindcss.com?v=3.4"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,350;9..144,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<style>body{font-family:Inter,system-ui,sans-serif}</style>
+<script>window.PAGE_ACTIONS=[["Print",false,"window.print()"],["Open the full proposition",true,"location.href='proposition.html'"]];</script>
+</head>
+<body>
+<div id="page" data-patterns="NEW VIEW · IMPROVEMENT_PLAN G2 persona fork — advisor link lands here, operator gets the full app (hedgey.md Token Manager/Recipient fork · capboard.md stakeholder portal) · Pulley per-holder portal + Magna grant anatomy (summary → twin tracks → dates → prose terms) · Coinbase TM twin Vested/Unlocked progress bars · Ledgy admin-bounded recipient what-if · de-crypto'd: email identity, fiat-first, plain language · D4 watermark + recipient fingerprint carry through.">
+  <div class="mx-auto w-full px-5 py-8" style="max-width:60rem">
+    <!-- persona-fork explainer (internal-only framing for the prototype) -->
+    <div class="frame p-3 mb-6 text-sm flex flex-wrap items-center gap-3" style="background:var(--surface-gray-1)">
+      <span><strong>Recipient view.</strong> This is the page an advisor lands on from their published link — the operator app never leaks through it.</span>
+      <span class="prov-chip ml-auto"><span class="prov-dot prov-good"></span>signed in · iraj@ispahani-advisory.com</span>
+      <span class="text-xs px-2 py-0.5 rounded-full" style="background:var(--surface-green-1);color:var(--ink-green-3)">link · Published</span>
+    </div>
+
+    <h1 class="font-display text-3xl mb-1">Your advisory package.</h1>
+    <p class="text-sm mb-8" style="color:var(--ink-gray-6)">Prepared for Iraj Ispahani · Raiku Labs · Internal &amp; confidential · net of strike, pre-tax · discussion draft, not a binding offer.</p>
+
+    <div class="grid lg:grid-cols-[minmax(0,1fr),280px] gap-8 mb-10">
+      <div class="min-w-0">
+        <div class="eyebrow mb-1">Modeled value today · <span data-case-label>Base</span> path · net of strike &amp; dilution</div>
+        <div class="font-display text-5xl tnum mb-2" data-money='{"con":"$1.87M","base":"$7.67M","agg":"$21.4M"}'>$7.67M</div>
+        <div class="flex items-center gap-2 mb-8 flex-wrap" role="group" aria-label="Scenario presets (set by the company)">
+          <button class="preset-chip" onclick="setCase('con')">Conservative</button>
+          <button class="preset-chip on" onclick="setCase('base')">Base</button>
+          <button class="preset-chip" onclick="setCase('agg')">Aggressive</button>
+          <span class="eyebrow">three company-approved paths — bounded on purpose, not a price promise</span>
+        </div>
+
+        <!-- twin progress tracks (Coinbase TM grammar) -->
+        <div class="section-label mb-3">Where you are today <span class="eyebrow">· vested is what you've earned; unlocked is what could be sold</span></div>
+        <div class="space-y-5 mb-8">
+          <div>
+            <div class="flex justify-between text-sm mb-1"><span>Options · 858 at $1,572.95 strike</span><span class="tnum" style="color:var(--ink-gray-6)">vested 0 of 858 · pre-cliff</span></div>
+            <div class="h-2.5 rounded-full" style="background:var(--surface-gray-2)"><div class="h-2.5 rounded-full" style="width:0%;background:var(--chart-capital)"></div></div>
+          </div>
+          <div>
+            <div class="flex justify-between text-sm mb-1"><span>Tokens · <span class="tnum" data-money='{"con":"$1.80M","base":"$5.40M","agg":"$16.2M"}'>$5.40M</span> <span class="eyebrow">(9.0M RKU)</span></span><span class="tnum" style="color:var(--ink-gray-6)">vested 0% · unlocked 0% (pre-TGE)</span></div>
+            <div class="h-2.5 rounded-full" style="background:var(--surface-gray-2)"><div class="h-2.5 rounded-full" style="width:0%;background:var(--chart-uplift)"></div></div>
+          </div>
+        </div>
+
+        <div class="section-label mb-2">What your package could be worth <span class="eyebrow">· at each company-approved path</span></div>
+        <div class="overflow-x-auto mb-8">
+        <table class="data" style="min-width:480px">
+          <thead><tr><th>Path</th><th class="num">Options · net of strike</th><th class="num">Tokens</th><th class="num">Total</th></tr></thead>
+          <tbody>
+            <tr><td>Conservative</td><td class="num">$73K</td><td class="num">$1.80M</td><td class="num">$1.87M</td></tr>
+            <tr style="background:var(--surface-amber-1)"><td><strong>Base</strong></td><td class="num">$2.27M</td><td class="num">$5.40M</td><td class="num font-medium">$7.67M</td></tr>
+            <tr><td>Aggressive</td><td class="num">$5.23M</td><td class="num">$16.2M</td><td class="num">$21.4M</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <details class="frame mb-2" style="background:var(--surface-gray-1)">
+          <summary class="px-4 py-2.5 text-sm font-medium cursor-pointer" style="color:var(--ink-gray-7)">Why we show "net of strike" — and most offers don't</summary>
+          <div class="px-4 pb-3 text-sm" style="color:var(--ink-gray-7)">Exercising 858 options costs $1,572.95 each. We subtract that cost — and future-round dilution — from every figure before showing it to you. The headline is what you could actually take home pre-tax, not the optimistic gross.</div>
+        </details>
+        <details class="frame" style="background:var(--surface-gray-1)">
+          <summary class="px-4 py-2.5 text-sm font-medium cursor-pointer" style="color:var(--ink-gray-7)">When tokens become real</summary>
+          <div class="px-4 pb-3 text-sm" style="color:var(--ink-gray-7)">Tokens vest with your service (4 years, 12-month cliff) but stay locked until 12 months after the token generation event, then unlock monthly over 24 months. Vested and locked can both be true at once — the <a class="underline" href="tokens.html">schedule</a> plots both.</div>
+        </details>
+      </div>
+
+      <aside class="space-y-7 min-w-0">
+        <div class="frame p-4" style="border-color:var(--outline-gray-2)">
+          <div class="section-label mb-1">The next date that matters</div>
+          <div class="font-display text-2xl tnum">1 Jun 2027</div>
+          <p class="text-sm mt-1" style="color:var(--ink-gray-6)">Your cliff — the first 25% of options and tokens vests, worth <strong class="tnum" data-money='{"con":"$468K","base":"$1.92M","agg":"$5.35M"}'>$1.92M</strong> on the <span data-case-label>Base</span> path.</p>
+        </div>
+        <div>
+          <div class="section-label mb-2">Key dates</div>
+          <div class="divide-y text-sm" style="border-color:var(--outline-gray-1)">
+            <div class="py-2 flex justify-between gap-2"><span>Engagement starts</span><span class="eyebrow tnum">1 Jun 2026</span></div>
+            <div class="py-2 flex justify-between gap-2"><span>Cliff · 25% vests</span><span class="eyebrow tnum">1 Jun 2027</span></div>
+            <div class="py-2 flex justify-between gap-2"><span>First review</span><span class="eyebrow tnum">Dec 2026</span></div>
+            <div class="py-2 flex justify-between gap-2"><span>Token lockup ends</span><span class="eyebrow tnum">TGE + 12 mo</span></div>
+            <div class="py-2 flex justify-between gap-2"><span>Fully earned</span><span class="eyebrow tnum">1 Jun 2030</span></div>
+          </div>
+        </div>
+        <div>
+          <div class="section-label mb-2">Your engagement</div>
+          <div class="divide-y text-sm" style="border-color:var(--outline-gray-1)">
+            <div class="py-2 flex justify-between gap-2"><span>Tier</span><span class="tnum">Anchor · 3×</span></div>
+            <div class="py-2 flex justify-between gap-2"><span>Term</span><span class="tnum">4 years</span></div>
+            <div class="py-2 flex justify-between gap-2"><span>Performance ceiling</span><span class="tnum">up to +70%</span></div>
+            <div class="py-2 flex justify-between gap-2"><span>Annual cash</span><span class="tnum">$0 · equity+token engagement</span></div>
+          </div>
+        </div>
+        <p class="text-sm" style="color:var(--ink-gray-6)">Questions about any figure? Reply to Robin directly — this page updates as the discussion moves.</p>
+      </aside>
+    </div>
+
+    <p class="text-xs leading-relaxed" style="color:var(--ink-gray-6)">Figures are modeled on company-approved scenario paths, net of strike and dilution, pre-tax; token values use each path's TGE FDV and are illustrative. No automatic or discretionary change-of-control acceleration under the plan (Plan rules v9); on a change of control the acquirer may roll over awards, and vested options remain exercisable per the plan rules. This page is a discussion draft, not a binding offer or legal/financial advice. Link fingerprint: iraj@ispahani-advisory.com.</p>
+  </div>
+  <div class="print-footer"><span>Raiku Labs — Confidential · Discussion draft, not a binding offer</span><span>Advisor portal · Iraj Ispahani · 11 Jun 2026</span></div>
+</div>
+<script src="assets/proto.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  // keep the preset chips in sync with the global case
+  const sync=()=>{const k=localStorage.getItem('proto-case')||'base';
+    document.querySelectorAll('[aria-label="Scenario presets (set by the company)"] .preset-chip').forEach(c=>{
+      const map={Conservative:'con',Base:'base',Aggressive:'agg'};
+      c.classList.toggle('on', map[c.textContent.trim()]===k);
+    });};
+  sync();
+  document.querySelectorAll('.case-select').forEach(s=>s.addEventListener('change',sync));
+  document.querySelectorAll('[aria-label="Scenario presets (set by the company)"] .preset-chip').forEach(c=>c.addEventListener('click',()=>setTimeout(sync,0)));
+});
+</script>
+</body>
+</html>

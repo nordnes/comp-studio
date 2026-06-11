@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Auth & system states · Comp Studio prototype</title>
+<script src="https://cdn.tailwindcss.com?v=3.4"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,350;9..144,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<style>
+body{font-family:Inter,system-ui,sans-serif}
+.skel{background:linear-gradient(90deg,var(--surface-gray-2) 25%,var(--surface-gray-1) 37%,var(--surface-gray-2) 63%);background-size:400% 100%;animation:skel 1.4s ease infinite;border-radius:6px}
+@keyframes skel{0%{background-position:100% 0}100%{background-position:0 0}}
+</style>
+<script>window.PAGE_ACTIONS=[];</script>
+</head>
+<body>
+<div id="page" data-patterns="NEW SURFACES · CLAUDE_DESIGN_PROMPT §9: auth screen w/ confidentiality posture front and center (Supabase wave, COM-34 BLOCKED-EXTERNAL) · signed-out state for every deep link · session-expired interrupt · 404 / engine-mismatch error states · §6 route-level loading skeletons (fixes the 1–2s blank white page) · prod currently serves figures pre-auth (COM-33) — this is the designed remedy.">
+  <div class="mx-auto w-full px-5 py-8" style="max-width:60rem">
+    <h1 class="font-display text-3xl mb-1">Who gets in, and what failure looks like.</h1>
+    <p class="text-sm mb-8" style="color:var(--ink-gray-6)">The auth screen and every system state, designed once. Auth ships with the Supabase wave (COM-34, blocked on billing) — production today serves confidential figures pre-auth (COM-33); this surface is the remedy.</p>
+
+    <div class="grid md:grid-cols-2 gap-6 mb-10">
+      <!-- auth screen -->
+      <div>
+        <div class="section-label mb-2">Sign in · privacy posture is the headline</div>
+        <div class="frame p-8" style="background:var(--surface-gray-1)">
+          <div class="mx-auto" style="max-width:320px">
+            <div class="flex items-baseline gap-2 mb-1"><span class="font-display text-xl">Raiku Labs</span><span class="text-[11px] font-semibold tracking-wide" style="color:var(--ink-amber-strong)">INTERNAL</span></div>
+            <p class="text-sm mb-5" style="color:var(--ink-gray-6)">Advisor Comp Studio holds confidential compensation figures. Access is by invitation only and every view is logged.</p>
+            <label class="block mb-3"><span class="eyebrow block mb-1">Work email</span><input class="w-full border rounded px-3 py-2 text-sm" style="border-color:var(--outline-gray-2)" placeholder="robin@raiku.com"></label>
+            <button class="btn btn-solid w-full justify-center" onclick="toast('Magic link sent — check your inbox. Sessions expire after 12h idle.')">Email me a sign-in link</button>
+            <p class="text-xs mt-4" style="color:var(--ink-gray-5)">No passwords. Advisors never sign in here — they receive a scoped, watermarked link to their own page.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- signed-out deep link + session expired -->
+      <div class="space-y-6">
+        <div>
+          <div class="section-label mb-2">Signed-out deep link · state preserved</div>
+          <div class="frame p-5 text-sm">
+            <p class="mb-3">You followed <span class="tnum" style="color:var(--ink-gray-6)">/advisors/iraj-ispahani?case=agg</span> but aren't signed in. Nothing confidential renders until you are.</p>
+            <button class="btn btn-solid" onclick="toast('After sign-in you land exactly where the link pointed — case and stage intact (deep-link contract 1.1).')">Sign in to continue</button>
+          </div>
+        </div>
+        <div>
+          <div class="section-label mb-2">Session expired · interrupt, not data loss</div>
+          <div class="frame p-5 text-sm" style="border-color:#ecd9b8;background:var(--surface-amber-1)">
+            <p class="mb-3" style="color:var(--ink-amber-strong)"><strong>Your session expired</strong> after 12h idle. The figures beneath are masked; your unsaved draft edits are intact locally.</p>
+            <div class="flex gap-2"><button class="btn btn-solid" onclick="toast('Re-authenticated — masked figures restored, draft intact.')">Sign in again</button><button class="btn" onclick="toast('Draft discarded.','Undo')">Discard draft</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6 mb-10">
+      <div>
+        <div class="section-label mb-2">404 · wrong turn</div>
+        <div class="frame p-6 text-center">
+          <div class="font-display text-4xl mb-2">Nothing here.</div>
+          <p class="text-sm mb-4" style="color:var(--ink-gray-6)">/advisors/jane-doe isn't on this board. Six advisors are.</p>
+          <a class="btn justify-center" href="overview.html">Back to the overview</a>
+        </div>
+      </div>
+      <div>
+        <div class="section-label mb-2">Engine mismatch · refuse loudly</div>
+        <div class="frame p-6" style="border-color:#f0c9c4">
+          <p class="text-sm mb-3" style="color:var(--ink-red-3)"><strong>Figures withheld.</strong> The view bundle expects engine v2.3 but the loaded engine reports v2.2 — rather than risk a wrong number, nothing money-shaped renders.</p>
+          <button class="btn w-full justify-center" onclick="toast('Reload requested — both suites must be green before figures return.')">Reload the app</button>
+        </div>
+      </div>
+      <div>
+        <div class="section-label mb-2">Route loading · skeleton</div>
+        <div class="frame p-6" aria-label="Loading preview" role="img">
+          <div class="skel h-7 w-2/3 mb-3"></div>
+          <div class="skel h-4 w-full mb-2"></div>
+          <div class="skel h-4 w-5/6 mb-5"></div>
+          <div class="grid grid-cols-2 gap-3">
+            <div class="skel h-20"></div><div class="skel h-20"></div>
+          </div>
+          <p class="eyebrow mt-4">Header + content blocks — cold navigation never shows a blank white page (§8.2 fix).</p>
+        </div>
+      </div>
+    </div>
+
+    <p class="eyebrow">Every state keeps the confidentiality grammar: figures are masked, never partially leaked; the wordmark + INTERNAL badge persist; errors say what is withheld and why.</p>
+  </div>
+</div>
+<script src="assets/proto.js"></script>
+</body>
+</html>

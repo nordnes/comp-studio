@@ -11,10 +11,10 @@ body{font-family:Inter,system-ui,sans-serif}
 .wm { position:absolute; inset:0; overflow:hidden; pointer-events:none; }
 .wm span { position:absolute; font-size:42px; letter-spacing:.2em; font-weight:600; color:rgba(180,35,24,.07); transform:rotate(-28deg); white-space:nowrap; }
 </style>
-<script>window.PAGE_ACTIONS=[["Print",false],["Copy",false],["Save as sent version",true]];</script>
+<script>window.PAGE_ACTIONS=[["Share",false,"openDialog('share-dlg')"],["Print",false],["Copy",false],["Save as sent version",true]];</script>
 </head>
 <body>
-<div id="page" data-patterns="6.5/9c version chip row + sealed-render model (PandaDoc/Ledgy: one immutable artifact per issued version; edits demote to draft) · 6.2 'Save as sent version' in user language · 6.3 watermark masked behind the hero (no glyph collision) · Complete: education inline next to each figure + view-as-advisor toggle · exit exploration lives INSIDE the letter flow.">
+<div id="page" data-patterns="6.5/9c version chip row + sealed-render model (PandaDoc/Ledgy) · 6.2 'Save as sent version' in user language · 6.3 watermark masked behind the hero · IMPROVEMENT_PLAN D1 education blocks inside the document (Complete) · D2 caveats as per-figure numbered footnotes (Carta schema) · D3 view-as-advisor · D4 Share dialog w/ confidentiality dial + link state chip (Ledgy hide-shares / Carta PPS-only / Forgd Not-Published) · D5 at-signing vs at-milestones twin panel (FORGD_DEEP_DIVE Perceived-vs-Actual, honest version) · B1 labeled detents on the scenario slider (Pave/Ledgy) · CLAUDE_DESIGN_PROMPT §5.6 vesting + key dates + signature block.">
   <div class="mx-auto w-full px-5 py-8" style="max-width:60rem">
     <div class="flex flex-wrap items-center gap-3 mb-6 no-print">
       <h1 class="font-display text-3xl mr-auto">The proposition.</h1>
@@ -55,28 +55,154 @@ body{font-family:Inter,system-ui,sans-serif}
 
         <div class="grid sm:grid-cols-[1fr,220px] gap-6 mb-8 items-start">
           <div>
-            <div class="eyebrow mb-1">The package across outcomes · net of strike &amp; dilution · not a forecast</div>
-            <div class="font-display text-4xl tnum mb-3">$7.67M</div>
+            <div class="eyebrow mb-1">The package across outcomes · net of strike &amp; dilution<sup class="tnum">1,2</sup> · not a forecast</div>
+            <div class="font-display text-4xl tnum mb-3">$7.67M<sup class="text-base" style="color:var(--ink-gray-5)">1</sup></div>
             <table class="data">
               <tbody>
-                <tr><td>Conservative · $300.0M exit · 32% kept</td><td class="num">$1.87M</td></tr>
-                <tr style="background:var(--surface-amber-1)"><td><strong>Base · $500.0M exit · 48% kept</strong></td><td class="num font-medium">$7.67M</td></tr>
-                <tr><td>Aggressive · $750.0M exit · 58% kept</td><td class="num">$21.4M</td></tr>
+                <tr><td>Conservative · $300.0M exit · 32% kept</td><td class="num">$1.87M<sup style="color:var(--ink-gray-5)">2</sup></td></tr>
+                <tr style="background:var(--surface-amber-1)"><td><strong>Base · $500.0M exit · 48% kept</strong></td><td class="num font-medium">$7.67M<sup style="color:var(--ink-gray-5)">2</sup></td></tr>
+                <tr><td>Aggressive · $750.0M exit · 58% kept</td><td class="num">$21.4M<sup style="color:var(--ink-gray-5)">2</sup></td></tr>
               </tbody>
             </table>
+            <div class="text-sm tnum mt-2" style="color:var(--ink-gray-7)">eq $2.27M<sup style="color:var(--ink-gray-5)">1,4</sup> · tok $5.40M<sup style="color:var(--ink-gray-5)">3</sup> <span class="eyebrow">(9.0M RKU — value first, count second)</span></div>
           </div>
           <aside class="text-xs p-3 rounded" style="background:var(--surface-gray-1);color:var(--ink-gray-7)">
             <strong>What "% kept" means.</strong> Future funding rounds dilute everyone; "kept" is the share of today's percentage you retain on that path. It is applied to every figure on this page — education inline, where the number is.
           </aside>
         </div>
 
+        <!-- B1 · detented slider: named anchors + valuation events -->
         <div class="mb-8">
-          <div class="eyebrow mb-2">Explore the outcome (you can drag this)</div>
-          <input type="range" id="exit" class="exit" min="100" max="1000" step="10" value="500" aria-label="Exit valuation in millions">
-          <div class="flex justify-between text-xs mt-1 tnum" style="color:var(--ink-gray-5)"><span>$100M</span><span id="exit-out" class="font-medium" style="color:var(--ink-gray-9)">$7.67M net at $500M</span><span>$1.0B</span></div>
+          <div class="eyebrow mb-2">Explore the outcome (drag — it snaps to the named anchors)</div>
+          <input type="range" id="exit" class="exit" min="100" max="1000" step="10" value="500" list="exit-detents" aria-label="Exit valuation in millions; snaps to Conservative 300, Base 500, TGE FDV 600, Aggressive 750">
+          <datalist id="exit-detents"><option value="300"></option><option value="500"></option><option value="600"></option><option value="750"></option></datalist>
+          <div class="relative h-9 text-[11px] tnum" style="color:var(--ink-gray-5)" aria-hidden="true">
+            <span class="absolute" style="left:0">$100M</span>
+            <span class="absolute -translate-x-1/2 text-center" style="left:22%">▲<br>Conservative $300M</span>
+            <span class="absolute -translate-x-1/2 text-center font-medium" style="left:44.5%;color:var(--ink-amber-strong)">▲<br>Base $500M</span>
+            <span class="absolute -translate-x-1/2 text-center" style="left:55.5%">▲<br>TGE FDV $600M</span>
+            <span class="absolute -translate-x-1/2 text-center" style="left:72%">▲<br>Aggressive $750M</span>
+            <span class="absolute right-0">$1.0B</span>
+          </div>
+          <div class="text-sm tnum font-medium" id="exit-out" style="color:var(--ink-gray-9)">$7.67M net at $500M</div>
         </div>
 
-        <p class="text-xs leading-relaxed legal-fineprint" style="color:var(--ink-gray-6)">Ackermann Systems Engineering Ltd (t/a Raiku), Cayman Islands. Options over ordinary non-voting shares (ESOP), strike at the Bridge price; net exercise permitted. Tokens via Restricted Token Award. Equity vests 4yr/12mo annually with a 1-year cliff. No automatic or discretionary change-of-control acceleration under the plan (Plan rules v9); on a change of control the acquirer may roll over awards, and vested options remain exercisable per the plan rules. As a UK grantee, a s431 election is required within 14 days of exercise. Strike subject to an agreed HMRC SAV / 409A valuation before first grant. Subject to required investor consents. Not a binding offer or legal/financial advice.</p>
+        <!-- D5 · at signing vs at milestones (the honest Perceived-vs-Actual) -->
+        <div class="mb-8">
+          <div class="eyebrow mb-2">What this is worth at signing — and at each milestone<sup class="tnum">2,5</sup></div>
+          <div class="grid sm:grid-cols-2 gap-px rounded-lg overflow-hidden border" style="border-color:var(--outline-gray-1);background:var(--outline-gray-1)">
+            <div class="p-4" style="background:var(--surface-white)">
+              <div class="eyebrow">At signing · today</div>
+              <div class="font-display text-2xl tnum">$0 vested</div>
+              <div class="text-xs mt-1" style="color:var(--ink-gray-6)">Everything is earned over 4 years. Nothing accrues before the 12-month cliff.</div>
+            </div>
+            <div class="p-4" style="background:var(--surface-white)">
+              <div class="eyebrow">At the milestones · base path</div>
+              <table class="data text-xs">
+                <tbody>
+                  <tr><td>Cliff · Jun 2027</td><td class="num tnum">$1.92M vested</td></tr>
+                  <tr><td>TGE + lockup · 2029</td><td class="num tnum">tokens unlock monthly</td></tr>
+                  <tr><td>Year 4 · fully earned</td><td class="num tnum">$7.67M · ceiling $13.0M</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <p class="eyebrow mt-2">Same engine, two vantages — the floor you sign for and the path it grows on. Nothing here is a promise of price.</p>
+        </div>
+
+        <!-- D1 · education blocks, written around the locked corpus -->
+        <div class="mb-8 space-y-2">
+          <details class="frame" style="background:var(--surface-gray-1)">
+            <summary class="px-4 py-2.5 text-sm font-medium cursor-pointer" style="color:var(--ink-gray-7)">How options net-of-strike work</summary>
+            <div class="px-4 pb-3 text-sm" style="color:var(--ink-gray-7)">You hold 858 options at a strike of $1,572.95 each. Value = (price per share at exit − strike) × options held — never the headline share price alone. Below a $186.7M exit the options are underwater and we show $0, not a hopeful number.</div>
+          </details>
+          <details class="frame" style="background:var(--surface-gray-1)">
+            <summary class="px-4 py-2.5 text-sm font-medium cursor-pointer" style="color:var(--ink-gray-7)">What dilution did to these numbers</summary>
+            <div class="px-4 pb-3 text-sm" style="color:var(--ink-gray-7)">Every funding round issues new shares. On the base path (Bridge → Series A → B → C) you keep 48% of today's 1.50% — the figures above already include that. Most offer letters don't; this one does.</div>
+          </details>
+          <details class="frame" style="background:var(--surface-gray-1)">
+            <summary class="px-4 py-2.5 text-sm font-medium cursor-pointer" style="color:var(--ink-gray-7)">Options vs tokens here</summary>
+            <div class="px-4 pb-3 text-sm" style="color:var(--ink-gray-7)">Equity is the leveraged leg — worth most in big exits, $0 below the strike threshold. Tokens (0.90% of supply, via Restricted Token Award) carry value in every scenario but unlock late: they vest over 4 years and stay locked until 12 months after TGE, then release monthly over 24 months.</div>
+          </details>
+        </div>
+
+        <!-- §5.6 vesting & key dates -->
+        <div class="grid sm:grid-cols-2 gap-6 mb-8">
+          <div>
+            <div class="eyebrow mb-2">Vesting<sup class="tnum">5</sup></div>
+            <table class="data text-sm">
+              <tbody>
+                <tr><td>Equity</td><td class="num">4 yrs · annual tranches · 12-mo cliff</td></tr>
+                <tr><td>Tokens</td><td class="num">vest 4 yrs · locked to TGE+12mo · 24-mo monthly unlock</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div>
+            <div class="eyebrow mb-2">Key dates</div>
+            <table class="data text-sm">
+              <tbody>
+                <tr><td>Engagement starts</td><td class="num tnum">1 Jun 2026</td></tr>
+                <tr><td>Cliff</td><td class="num tnum">1 Jun 2027</td></tr>
+                <tr><td>First review</td><td class="num tnum">Dec 2026 · semi-annual</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- D2 · the corpus as numbered, per-figure footnotes (screen AND print) -->
+        <div class="mb-8">
+          <div class="eyebrow mb-2">Notes — each note is bound to the figures it qualifies</div>
+          <ol class="text-xs leading-relaxed space-y-1.5 list-decimal pl-4 legal-fineprint" style="color:var(--ink-gray-6)">
+            <li>Every equity figure is net of strike ($1,572.95, the Bridge price) and pre-tax. Options over ordinary non-voting shares (ESOP); net exercise permitted. Strike subject to an agreed HMRC SAV / 409A valuation before first grant.</li>
+            <li>Scenario figures apply that path's dilution ("% kept") and are a discussion draft, not a forecast, a binding offer, or legal/financial advice. Subject to required investor consents.</li>
+            <li>Tokens via Restricted Token Award, valued at the scenario's TGE FDV. Token values are illustrative; no token price is promised.</li>
+            <li>No automatic or discretionary change-of-control acceleration under the plan (Plan rules v9); on a change of control the acquirer may roll over awards, and vested options remain exercisable per the plan rules.</li>
+            <li>Equity vests 4yr/12mo annually with a 1-year cliff. As a UK grantee, a s431 election is required within 14 days of exercise.</li>
+          </ol>
+          <p class="text-xs mt-2" style="color:var(--ink-gray-5)">Ackermann Systems Engineering Ltd (t/a Raiku), Cayman Islands.</p>
+        </div>
+
+        <!-- §5.6 signature / next steps -->
+        <div class="pt-5 border-t" style="border-color:var(--outline-gray-1)">
+          <div class="eyebrow mb-3">Next steps — nothing here is signed today</div>
+          <ol class="text-sm space-y-1 list-decimal pl-4 mb-5" style="color:var(--ink-gray-8)">
+            <li>We iterate this draft together — every figure recomputes as terms move.</li>
+            <li>Pre-conditions clear (governance register green) and the watermark lifts.</li>
+            <li>Formal grant paperwork follows under the plan rules; this document is never the contract.</li>
+          </ol>
+          <div class="grid sm:grid-cols-2 gap-8 text-sm tnum" style="color:var(--ink-gray-6)">
+            <div><div class="border-b mb-1" style="border-color:var(--outline-gray-2);height:30px"></div>Robin · Raiku Labs — date</div>
+            <div><div class="border-b mb-1" style="border-color:var(--outline-gray-2);height:30px"></div>Iraj Ispahani · acknowledgment of discussion draft — date</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- D4 · Share dialog with confidentiality dial -->
+  <div class="dlg-backdrop" id="share-dlg" role="dialog" aria-modal="true" aria-label="Share this proposition">
+    <div class="dlg" style="max-width:560px">
+      <div class="dlg-head"><span class="font-medium">Share · Iraj's proposition</span><button class="btn" onclick="closeDialog('share-dlg')" aria-label="Close">&#10005;</button></div>
+      <div class="dlg-body text-sm space-y-5">
+        <div class="flex items-center gap-2">
+          <span class="eyebrow">Link state</span>
+          <span class="text-xs px-2 py-0.5 rounded-full" style="background:var(--surface-gray-2);color:var(--ink-gray-7)">Not published</span>
+          <span class="eyebrow">→ Published → Revoked (explicit publish step — Forgd public-page grammar)</span>
+        </div>
+        <label class="block"><span class="eyebrow block mb-1">Recipient</span><input class="w-full border rounded px-3 py-2" style="border-color:var(--outline-gray-2)" value="iraj@ispahani-advisory.com"><span class="text-xs" style="color:var(--ink-gray-5)">Email verification gates the link (Levels.fyi). The watermark carries this recipient fingerprint.</span></label>
+        <fieldset>
+          <legend class="section-label mb-2">Display scope — the confidentiality dial</legend>
+          <div class="space-y-2" role="radiogroup" aria-label="Display scope">
+            <button class="frame p-3 text-left w-full" role="radio" aria-checked="true" style="border-color:var(--ink-amber-3);background:var(--surface-amber-1)"><div class="font-medium">Full detail</div><div class="text-xs" style="color:var(--ink-gray-6)">Scenario table, % kept, FDV math — what you see on this page</div></button>
+            <button class="frame p-3 text-left w-full" role="radio" aria-checked="false"><div class="font-medium">Net values only</div><div class="text-xs" style="color:var(--ink-gray-6)">Hides share counts and FDV math (Ledgy hide-total-shares · Carta PPS-only)</div></button>
+          </div>
+        </fieldset>
+        <p class="eyebrow">Auth itself ships with the Supabase wave (COM-34) — this dialog defines the grammar. Watermark + fingerprint stay on in every scope.</p>
+      </div>
+      <div class="dlg-foot">
+        <button class="btn" onclick="closeDialog('share-dlg')">Cancel</button>
+        <button class="btn" onclick="toast('Preview as recipient — exactly what Iraj sees (D3)')">Preview</button>
+        <button class="btn btn-solid" onclick="closeDialog('share-dlg');toast('Published to iraj@… · watermarked, net-values scope · revoke anytime','Undo')">Publish link</button>
       </div>
     </div>
   </div>
@@ -85,6 +211,12 @@ body{font-family:Inter,system-ui,sans-serif}
 <script src="assets/proto.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded',()=>{
+  const DETENTS=[300,500,600,750];
+  const s=document.getElementById('exit');
+  s.addEventListener('change',()=>{ // snap on release (B1 labeled detents)
+    const v=parseFloat(s.value); const near=DETENTS.find(d=>Math.abs(d-v)<=30);
+    if(near!==undefined && v!==near){ s.value=near; s.dispatchEvent(new Event('input')); }
+  });
   wireSlider('exit','exit-out',v=>{const n=v==500?7.67:Math.max(0,(v-186.7))*0.00723+5.4;return '$'+n.toFixed(2).replace(/\.00$/,'.0')+'M net at $'+v+'M'});
   document.getElementById('as-advisor').addEventListener('change',e=>{
     document.querySelectorAll('.internal-only').forEach(el=>el.style.display=e.target.checked?'none':'');

@@ -2933,3 +2933,97 @@ terminal — intentional, NOT stuck). Plan file rewritten prototype-only (Linear
   the Wave-8.5 closing grader.
 - New plugin noise: a semgrep PostToolUse hook (unauthenticated) intermittently flags Writes —
   advisory only, files land; ignore unless Robin logs semgrep in.
+
+## 2026-06-11 — M14 research-uplift backlog FILED → COM-200…224 (research/EXECUTION_PLAN.md)
+- **Robin's cowork-plan run executed end-to-end:** research bundle copied into `research/`
+  (IMPROVEMENT_PLAN, COMP_STUDIO_COMPETITIVE_RESEARCH, FORGD_DEEP_DIVE, CLAUDE_DESIGN_PROMPT,
+  competitors/ 13 reports + HANDS-ON-NOTES) · all 199 existing COM issues read + reconciled ·
+  feasibility verified against scaffold/src (key: engine exposes vestedFrac/vestedFracRTA/
+  distributableFrac but NO market lockup/unlock schedule).
+- **Robin's calls:** file all three waves · B5 folded into COM-180 as a design-note comment ·
+  D1 merged into COM-177 (description edited, labels added) · F2 DROPPED (already shipped as
+  COM-182) · C1 split: view issue filed, engine lockup sliver PARKED until real TGE lockup terms ·
+  D6 filed narrowed to render-side immutability (extends COM-174).
+- **Filed:** 25 issues **COM-200…224**, milestone **M14 · Research uplift — competitor patterns**
+  (new), labels research-uplift + epic:A–G + wave:1–3 (11 new team labels), priorities P1→High/
+  P2→Medium/P3→Low, estimates S=1/M=2/L=3, all Backlog/unassigned. Relations: COM-201
+  blockedBy COM-200; COM-213/221/223 blockedBy COM-34 (still BLOCKED-EXTERNAL on Supabase
+  invoices); Extends links via relatedTo. COM-199 got an absorption comment (slider→203,
+  methodology popover→208, audit tab→216, version chips→215).
+- **Verified by a re-list diff (subagent):** 26 issues carry research-uplift (25 new + COM-177),
+  25/25 field-exact, relations present, zero duplicates vs the pre-existing backlog. Full table
+  with IDs: `research/EXECUTION_PLAN.md` (+ parked list: B5, D1, F2, C1b).
+- **Surprises worth keeping:** COM-175/177/178/180 (the M13 competitive-uplift backlog) already
+  covered four research items — the reconciliation prevented five double-filings; repo research/
+  had a stale partial copy (INDEX.md, levelsfyi.md, complete-leveling.md vs the canonical
+  00-INDEX.md, levels-fyi.md, complete.md) — dedupe candidate, not touched.
+- **Next step:** start Wave 1 in order (COM-200 → 201, then 202/203/204/205/206/207/208) under
+  the per-issue DoD; B4/COM-212 surfaces Part 17 #1/#2/#5 to Robin — decisions stay open.
+
+## 2026-06-11 — Prototype plan EXECUTED TO DONE: polish pass + 44-combination sweep clean [final]
+
+Closed the remaining plan gaps: **Dilution tab founder-retention line added** (dashed slate,
+non-color channel) · **full 4-breakpoint sweep via iframe harness — all 11 pages × 1440/1024/768/375
+CLEAN** after fixing 3 overflows found (advisor tablist → overflow-x-auto; compare matrix + A/B
+tables + board-pack roster → scroll wrappers w/ min-width; compare A/B picker row → flex-wrap;
+the Fork B btn was the +6px offender, found w/ a no-scroller-ancestor probe) · **full screenshot
+set** in prototype/screenshots/ (11 captures: 8 page shots + dialog-validation + palette + mobile-
+drawer + aggressive-case). Sweep harness gotcha: `if` is reserved — can't name an iframe var `if`.
+All plan todos complete; Linear todos remain cancelled per Robin. Prototype live at 127.0.0.1:5174
+(server terminal intentional). The prototype is now the full visual spec: 11 pages, working palette/
+drawer/case-engine/dialogs/toasts/print, every page footer citing finding numbers + research sources.
+
+## 2026-06-11 — Prototype v3: outputs-copy doc pass — 3 NEW pages + 7 deepened, 14×4 sweep clean
+
+**Input:** ~/Desktop/"outputs copy"/ — CLAUDE_DESIGN_PROMPT.md (full design spec: §5 per-view content
+inventory, §8 defect list, §9 NEW surfaces incl. auth/share/board-pack/error states), IMPROVEMENT_PLAN.md
+(epics A–G, 24 items w/ evidence + do-NOT-copy list), FORGD_DEEP_DIVE.md (NEW service: Token Designer
+emission grid % TGE/lockup/unlock/frequency · explainer-chart card slots w/ Quick-Adjust · Perceived-vs-
+Actual panel · validation banners w/ KPI totals · advisors 2.5–3% supply, 12mo lock + 24mo monthly unlock
+template norm), COMP_STUDIO_COMPETITIVE_RESEARCH.md (41k synthesis; Pulley = "wins on UX" benchmark:
+spreadsheet-clean tables, real-time recalc, drafts staging, equity+token side-by-side, per-holder portals),
+13 competitor reports + HANDS-ON-NOTES + cowork prompt.
+
+**Built (prototype/ now 14 pages + sweep.html harness):**
+- **NEW tokens.html** — "Tokens — vested is not unlocked.": Forgd-style KPI strip + red validation banner
+  (4.83% vs 4.50% bucket), per-advisor unlock/emission grid (Forgd idiom, units labeled), twin
+  vested≠unlocked SVG w/ Today-cursor decomposition (C1, Coinbase TM), TGE-relative unlock calendar
+  ($825K/mo board, case-reactive), provenance chips (Forgd/Dragonfly/Liquifi), F1 about-this-figure card.
+- **NEW portal.html** — recipient persona fork (G2, Hedgey/Pulley/Magna): published-link identity bar,
+  bounded scenario chips, twin Vested/Unlocked progress bars, next-date-that-matters card, education
+  blocks, fiat-first, watermark fingerprint.
+- **NEW auth.html** — §9 surfaces: magic-link sign-in w/ confidentiality posture, signed-out deep link,
+  session-expired interrupt, 404, engine-mismatch refusal, route skeletons.
+- **Board** — Pulley-grade roster TABLE w/ equity+token side-by-side ($ primary, opts/RKU secondary),
+  A5 pool/budget KPI strip + validation line, A3 band-position chip filter (works), A4 ✓/⚠ flags w/
+  travelling justification, capital-intro column, grant-decision history, XLSX export action.
+- **Overview** — E4 next-blocking-item card (derived), key dates 90/180d toggle, F3 percentile ramp on
+  hero, To-confirm list, shared "About these figures" disclosure (§8.8).
+- **Compare** — full §5.3 column set (Pin★/Earned/Ceiling/Spread/Cash) w/ pin-to-top, grouped-bar
+  net-across-scenarios chart, designed fork chip/warning/undo.
+- **Governance** — E1 n-of-m approval counts + evidence embedded INSIDE items (A-2 pool table inline),
+  G-1 guardrail-exception item receiving the Board justification, RAG summary chips as filters.
+- **Advisor** — across-scenarios table (Net/Eq/Tok × cases), full-width A1 band placement, A2
+  before/after twin markers inside Edit package, football-field tab, Reviews tab/panel, tax-residency +
+  capital-intro fields.
+- **Proposition** — D2 numbered per-figure footnotes (corpus as schema, 5 notes), D1 education blocks,
+  B1 detented slider (snaps to Con/Base/TGE/Agg anchors), D5 at-signing-vs-milestones twin panel,
+  vesting+key dates, signature/next-steps, D4 Share dialog (confidentiality dial full/net-only,
+  Not-Published chip, preview-as-recipient).
+- **Configure** — rounds cards (mark-closed/delete/add + grant-timing prose), B3 Ledgy 3-value scenario
+  rows, B4 comparable-anchored chips feeding Part 17 blanks (FAST v2 · Carta '24 · Forgd template ·
+  Liquifi), value bands, cash-floor, review cadence confirm, import/export (G1 XLSX), destructive confirm.
+- proto.js NAV (3 new entries) + index cards/spine table updated.
+
+**Verification:** Cursor-browser pass on every page (filters, tabs, case-switch recompute checked —
+tokens page repaints $0.60→$1.80 price, $19.8M→$59.4M on Aggressive) + iframe sweep harness
+(sweep.html): **14 pages × 1440/1024/768/375 ALL scrollWidth == viewport** after fixing 4 overflow
+classes — root cause: grid items' min-width:auto propagating intrinsic widths (fix: minmax(0,1fr) +
+min-w-0 on tokens/portal/configure grids; index spine table → overflow-x-auto wrapper). 10 screenshots
+→ prototype/screenshots/proto-v3-*.png.
+
+**Deliberately NOT built:** Direction B (exploratory visual language — prompt says Espresso primary);
+fork-clone Linear filing (already done as COM-200…224); real XLSX generation/CSV parsing (toast stubs —
+static prototype); Forgd narrative/essay pages + manual mark-as-complete + 13-color stacks (do-NOT-copy
+list); per-viewer access analytics (needs COM-34 auth). Next: feed v3 surfaces into the M14 wave issues
+(tokens.html ≈ COM-C1 view sliver, portal ≈ COM-221/G2, auth ≈ COM-34 design ref).

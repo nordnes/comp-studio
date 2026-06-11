@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Responsive sweep harness</title></head>
+<body>
+<pre id="out">running…</pre>
+<div id="stage"></div>
+<script>
+const stage = document.getElementById('stage');
+async function loadFrame(page, w) {
+  const frameEl = document.createElement('iframe');
+  frameEl.style.cssText = 'width:' + w + 'px;height:900px;border:0;position:absolute;left:-99999px;top:0';
+  stage.appendChild(frameEl);
+  await new Promise((resolve) => {
+    frameEl.onload = () => setTimeout(resolve, 350);
+    frameEl.src = page + '?sweep=1&t=' + Date.now();
+  });
+  return frameEl;
+}
+async function sweep() {
+  const PAGES = ['index.html','overview.html','board.html','compare.html','tokens.html','governance.html','advisor.html','proposition.html','proposition-v1.html','portal.html','configure.html','dialogs.html','board-pack.html','auth.html'];
+  const WIDTHS = [1440, 1024, 768, 375];
+  const results = [];
+  for (const page of PAGES) {
+    const row = { page };
+    for (const w of WIDTHS) {
+      const frameEl = await loadFrame(page, w);
+      try { row['w' + w] = frameEl.contentDocument.documentElement.scrollWidth; }
+      catch (e) { row['w' + w] = 'ERR'; }
+      frameEl.remove();
+    }
+    results.push(row);
+  }
+  return results;
+}
+async function diag(page, w) {
+  const frameEl = await loadFrame(page, w);
+  const doc = frameEl.contentDocument;
+  const bad = [];
+  doc.querySelectorAll('body *').forEach((el) => {
+    const r = el.getBoundingClientRect();
+    if (r.right <= w + 1) return;
+    if (el.closest('.overflow-x-auto') && el !== el.closest('.overflow-x-auto')) return; // scrolls internally
+    if (el.children.length > 0) return; // leaves only
+    const cls = (typeof el.className === 'string' ? el.className : 'svg').slice(0, 70);
+    bad.push({ t: el.tagName + ' .' + cls, right: Math.round(r.right), wMin: Math.round(r.width), txt: (el.textContent || '').trim().slice(0, 60) });
+  });
+  bad.sort((a, b) => b.right - a.right);
+  frameEl.remove();
+  return bad.slice(0, 10);
+}
+window.runSweep = async () => { window.SWEEP_RESULTS = await sweep(); return window.SWEEP_RESULTS; };
+window.runDiag = async (combos) => {
+  const out = {};
+  for (const [p, w] of combos) out[p + '@' + w] = await diag(p, w);
+  window.DIAG_RESULTS = out; return out;
+};
+(async () => {
+  await window.runSweep();
+  const failing = [];
+  for (const row of window.SWEEP_RESULTS) {
+    for (const w of [1440, 1024, 768, 375]) {
+      if (row['w' + w] > w) failing.push([row.page, w]);
+    }
+  }
+  await window.runDiag(failing);
+  document.getElementById('out').textContent = JSON.stringify({ sweep: window.SWEEP_RESULTS, diag: window.DIAG_RESULTS }, null, 1);
+  window.ALL_DONE = true;
+})();
+</script>
+</body>
+</html>

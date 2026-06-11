@@ -107,7 +107,8 @@ table.data th.num, table.data td.num { text-align: right; font-variant-numeric: 
 .delta-up { color: var(--ink-green-3); } .delta-down { color: var(--ink-red-3); }
 
 /* Tabs (advisor detail) */
-[role=tablist] { display: flex; gap: 18px; border-bottom: 1px solid var(--outline-gray-1); }
+[role=tablist] { display: flex; gap: 18px; border-bottom: 1px solid var(--outline-gray-1); overflow-x: auto; }
+[role=tablist] [role=tab] { white-space: nowrap; flex: 0 0 auto; }
 [role=tab] { font-size: 0.875rem; padding: 6px 2px; border-bottom: 2px solid transparent; color: var(--ink-gray-6); }
 [role=tab][aria-selected=true] { border-color: var(--ink-gray-9); color: var(--ink-gray-9); font-weight: 500; }
 

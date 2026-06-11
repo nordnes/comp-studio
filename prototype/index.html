@@ -27,11 +27,15 @@
       <a href="dialogs.html" class="frame p-4 hover:shadow-sm"><div class="font-medium mb-1">Dialog system</div><div class="text-sm" style="color:var(--ink-gray-6)">AppDialog grammar: max-height, sticky chrome, dim, inline validation · “show the formula” popover</div></a>
       <a href="board-pack.html" class="frame p-4 hover:shadow-sm"><div class="font-medium mb-1">Board pack</div><div class="text-sm" style="color:var(--ink-gray-6)">Print-ready pack: cost conclusion, roster, guardrails, decisions requested · confidential footer</div></a>
       <a href="proposition-v1.html" class="frame p-4 hover:shadow-sm"><div class="font-medium mb-1">Sealed proposition v1</div><div class="text-sm" style="color:var(--ink-gray-6)">The immutable issued render with a verifiable fingerprint — edits demote to draft</div></a>
+      <a href="tokens.html" class="frame p-4 hover:shadow-sm"><div class="font-medium mb-1">Tokens <span class="text-xs px-1.5 py-0.5 rounded-full align-middle" style="background:var(--surface-amber-1);color:var(--ink-amber-strong)">new</span></div><div class="text-sm" style="color:var(--ink-gray-6)">Vested ≠ unlocked twin tracks · Forgd-style unlock grid + validation banner · unlock calendar</div></a>
+      <a href="portal.html" class="frame p-4 hover:shadow-sm"><div class="font-medium mb-1">Advisor portal <span class="text-xs px-1.5 py-0.5 rounded-full align-middle" style="background:var(--surface-amber-1);color:var(--ink-amber-strong)">new</span></div><div class="text-sm" style="color:var(--ink-gray-6)">The recipient view: persona fork, twin progress tracks, next date that matters, bounded scenarios</div></a>
+      <a href="auth.html" class="frame p-4 hover:shadow-sm"><div class="font-medium mb-1">Auth &amp; states <span class="text-xs px-1.5 py-0.5 rounded-full align-middle" style="background:var(--surface-amber-1);color:var(--ink-amber-strong)">new</span></div><div class="text-sm" style="color:var(--ink-gray-6)">Sign-in, signed-out deep links, session expiry, 404, engine mismatch, loading skeletons</div></a>
     </div>
     <p class="text-sm mb-10" style="color:var(--ink-gray-6)">Try it live: <strong>⌘K</strong> opens the palette anywhere · the sidebar <strong>Case</strong> selector recomputes every figure on every page · all dialogs close on Escape/backdrop · advisor tabs, Edit package, Schedule review and Model departure are on the Advisor page.</p>
 
     <div class="section-label mb-3">What changed vs production (the spine)</div>
-    <table class="data mb-10">
+    <div class="overflow-x-auto mb-10">
+    <table class="data" style="min-width:560px">
       <thead><tr><th>Change</th><th>Replaces (finding)</th><th>Pattern source</th></tr></thead>
       <tbody>
         <tr><td>Compact status chip + popover dialog</td><td>~70px permanent banner (1.4)</td><td>OpenComp health strip</td></tr>
@@ -43,8 +47,13 @@
         <tr><td>3-axis provenance chips + accept-with-preview</td><td>“12mo old — re-verify” text flag (COM-182)</td><td>Carta Total Comp · Pave consistency labels</td></tr>
         <tr><td>“Show the formula” popover on computed figures</td><td>opaque numbers</td><td>The field-wide gap (Carta’s #1 complaint) — our differentiator</td></tr>
         <tr><td>Sealed version chips on the letter</td><td>cryptic “Save v1” (6.2/6.5)</td><td>PandaDoc sealed renders · Ledgy locked reports</td></tr>
+        <tr><td>Tokens view: vested ≠ unlocked + unlock calendar</td><td>token state collapsed into one curve</td><td>Coinbase TM twin tracks · Forgd emission grid + validation banner (FORGD_DEEP_DIVE)</td></tr>
+        <tr><td>Advisor portal (recipient persona fork)</td><td>no per-recipient surface</td><td>Hedgey recipient fork · Pulley per-holder portal · Magna grant anatomy</td></tr>
+        <tr><td>Auth + error/empty/loading states</td><td>public prod (COM-33) · blank cold loads</td><td>CLAUDE_DESIGN_PROMPT §9 new surfaces</td></tr>
+        <tr><td>Per-figure numbered footnotes + education blocks in the letter</td><td>one legal blob at the foot</td><td>Carta caveats-as-schema · Complete education blocks (IMPROVEMENT_PLAN D1/D2)</td></tr>
       </tbody>
     </table>
+    </div>
     <p class="eyebrow">Sources: UX_IMPROVEMENT_PLAN.md · research/COMPETITIVE_LANDSCAPE.md · research/UI_LIBRARY_LANDSCAPE.md · research/competitors/INDEX.md</p>
   </div>
 </div>

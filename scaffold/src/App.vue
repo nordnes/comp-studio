@@ -61,13 +61,30 @@ watch(navOpen, (open) => {
     );
   else nextTick(() => navToggleRef.value?.focus());
 });
+// UXS-M (UXP 2.1/3.2 — P0): reka's modal layers lock body pointer-events while open, and
+// MenuRootContentModal flips disable-outside-pointer-events REACTIVELY on close — the
+// DismissableLayer cleanup re-reads the now-false prop and SKIPS the restore, wedging the lock
+// with no overlay left ("the app randomly stops responding": every click dies, full opacity,
+// no cue; observed up to ~30s on /board load and after Escape-closing the board switcher).
+// The watchdog clears a body lock that no living dismissable layer justifies. Poll-based by
+// design — the wedge IS a missed cleanup, so there is no event to hook.
+let pointerWatchdog: number | undefined;
 onMounted(() => {
   drawerMq = window.matchMedia("(max-width: 1023.98px)"); // below Tailwind lg
   onDrawerMq();
   drawerMq.addEventListener("change", onDrawerMq);
   window.addEventListener("keydown", onDrawerKeydown);
+  pointerWatchdog = window.setInterval(() => {
+    if (
+      document.body.style.pointerEvents === "none" &&
+      !document.querySelector("[data-dismissable-layer]")
+    ) {
+      document.body.style.pointerEvents = "";
+    }
+  }, 500);
 });
 onUnmounted(() => {
+  window.clearInterval(pointerWatchdog);
   drawerMq?.removeEventListener("change", onDrawerMq);
   window.removeEventListener("keydown", onDrawerKeydown);
 });

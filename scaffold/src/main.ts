@@ -12,5 +12,12 @@ import { installDialogA11y } from "./a11y"; // R4.4: name + size the Dialog chro
 
 const app = createApp(App);
 app.use(router);
+// UXS-G (ux-sweep OB-2/AP-13 — axe CRITICAL): frappe-ui Alert's dismiss button is svg-only
+// with no accessible name and no attr passthrough. The directive names it at mount.
+app.directive("alertDismissLabel", {
+  mounted(el: HTMLElement) {
+    el.querySelector(":scope > button:not([aria-label])")?.setAttribute("aria-label", "Dismiss");
+  },
+});
 app.mount("#app");
 installDialogA11y();

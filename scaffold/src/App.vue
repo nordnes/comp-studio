@@ -319,13 +319,19 @@ const openCmdK = () => window.dispatchEvent(new Event("open-command-palette"));
             <!-- board-switcher + scenario case -->
             <div class="px-1 pb-3 space-y-2 border-b border-outline-gray-1">
               <!-- COM-63: command-palette trigger (⌘K) -->
+              <!-- UXS-G (UXP 1.13): a stable AX name + machine-readable shortcut; the visual
+                   kbd hint is decoration (it read 'Search K'/'Search + K' inconsistently). -->
               <button
-                class="flex w-full items-center gap-2 rounded border border-outline-gray-2 bg-surface-white px-2.5 py-1.5 text-sm text-ink-gray-5 hover:bg-surface-gray-2"
+                class="flex w-full items-center gap-2 rounded border border-outline-gray-2 bg-surface-white px-2.5 py-1.5 text-sm text-ink-gray-6 hover:bg-surface-gray-2"
+                aria-label="Search"
+                aria-keyshortcuts="Meta+K Control+K"
                 @click="openCmdK"
               >
                 <!-- COM-105: platform-correct shortcut (mod resolves to Ctrl off-Mac) -->
-                <span>Search</span>
-                <KeyboardShortcut combo="Mod+K" class="ml-auto text-ink-gray-4" />
+                <span aria-hidden="true">Search</span>
+                <span aria-hidden="true" class="ml-auto">
+                  <KeyboardShortcut combo="Mod+K" class="text-ink-gray-4" />
+                </span>
               </button>
               <!-- COM-102: the active board's NAME is the switcher trigger -->
               <Dropdown class="w-full" :options="boardSwitcherOptions">
@@ -471,7 +477,7 @@ const openCmdK = () => window.dispatchEvent(new Event("open-command-palette"));
           <!-- COM-137: SIBLING alerts — independent failure states must not mask each other
                (storage-blocked AND over budget can both be true; show both, storage first) -->
           <div v-if="!store.storageOk" class="px-3 sm:px-5 pb-2">
-            <Alert theme="yellow" title="Browser storage is unavailable">
+            <Alert v-alert-dismiss-label theme="yellow" title="Browser storage is unavailable">
               <template #description>Use <b>Export JSON</b> to keep your work.</template>
             </Alert>
           </div>
@@ -479,6 +485,7 @@ const openCmdK = () => window.dispatchEvent(new Event("open-command-palette"));
                "+N more") + a next step to where the breach is visible -->
           <div v-if="board.warnings.length" class="px-3 sm:px-5 pb-2">
             <Alert
+              v-alert-dismiss-label
               theme="red"
               :title="board.warnings.length > 1 ? 'Budget warnings' : 'Budget warning'"
             >

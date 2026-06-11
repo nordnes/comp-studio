@@ -284,7 +284,11 @@ const hasBudget = computed(() => flags.value.some((f) => f.t === "budget"));
             >.
           </p>
         </Panel>
-        <Alert :theme="hasBudget ? 'red' : 'yellow'" title="To confirm / alerts">
+        <Alert
+          v-alert-dismiss-label
+          :theme="hasBudget ? 'red' : 'yellow'"
+          title="To confirm / alerts"
+        >
           <template #description>
             <div class="space-y-1.5">
               <div

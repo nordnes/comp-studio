@@ -394,7 +394,13 @@ const backstop = computed(() => {
     <!-- full-width decision projection (COM-88: space-y-8 gives the de-boxed groups their rhythm) -->
     <div class="space-y-8 print-area">
       <!-- COM-83: one across-cases tabulation (replaces the PotentialStrip restatements) -->
-      <ScenarioTable :c="c" />
+      <ScenarioTable
+        :c="c"
+        :override-label="
+          overrideDiverged ? S.plan.scenarios[sel.caseOverride!]?.label || sel.caseOverride : null
+        "
+        :board-base-key="baseScenKey(S.plan)"
+      />
       <!-- COM-83: FootballField promoted out of the detail expander — the range belongs beside the table.
            COM-88: static read-out, de-boxed (the label carries it). -->
       <div>
@@ -402,7 +408,8 @@ const backstop = computed(() => {
         <FootballField :lo="ff.lo" :base="ff.base" :hi="ff.hi" :max="ff.hi" />
         <div class="flex justify-between text-xs mt-2 tabular-nums text-ink-gray-6">
           <span>Low {{ fUSD(ff.lo) }}</span
-          ><span class="text-ink-amber-strong">Base {{ fUSD(ff.base) }}</span
+          ><span class="text-ink-amber-strong"
+            >{{ overrideDiverged ? "Case" : "Base" }} {{ fUSD(ff.base) }}</span
           ><span>High {{ fUSD(ff.hi) }}</span>
         </div>
       </div>
@@ -584,7 +591,8 @@ const backstop = computed(() => {
               </div>
               <div class="divide-y divide-outline-gray-1 text-sm">
                 <div class="flex justify-between py-2">
-                  <span class="text-ink-gray-6">Options (base case net)</span
+                  <span class="text-ink-gray-6"
+                    >Options ({{ overrideDiverged ? "override case" : "base case" }} net)</span
                   ><span class="tabular-nums text-ink-gray-9">{{ fUSD(c.baseEqNet) }}</span>
                 </div>
                 <div class="flex justify-between py-2">
@@ -611,7 +619,7 @@ const backstop = computed(() => {
                   <span class="text-ink-gray-6">{{
                     c.base.tokenAsEquity
                       ? "Token value (as equity — pre-TGE fallback)"
-                      : "Token value (base FDV)"
+                      : `Token value (${overrideDiverged ? "override case" : "base"} FDV)`
                   }}</span
                   ><span class="tabular-nums text-ink-gray-9">{{ fUSD(c.base.token) }}</span>
                 </div>

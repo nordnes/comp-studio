@@ -7,11 +7,23 @@ import { computed } from "vue";
 import { Badge } from "frappe-ui";
 import { fUSD } from "../engine";
 import Panel from "./Panel.vue";
-const props = defineProps<{ c: any }>();
+// UXS-B (ux-sweep C1): under a per-advisor case override the projection re-bases, and every
+// "base" word here used to follow it silently — the amber badge marked the OVERRIDE row "base"
+// and the floor read "guaranteed base" with a non-guaranteed number. The props name the truth:
+// overrideLabel set → the badge reads "this advisor's case", the floor sublabel says whose
+// floor it is, and the true board base row keeps a quiet marker.
+const props = defineProps<{ c: any; overrideLabel?: string | null; boardBaseKey?: string }>();
 const prog = computed(() => {
   const c = props.c;
   return [
-    { k: "Floor", v: c.baseCaseBase, s: "guaranteed base", accent: false },
+    {
+      k: "Floor",
+      v: c.baseCaseBase,
+      s: props.overrideLabel
+        ? `floor under this advisor's case (${props.overrideLabel})`
+        : "guaranteed base",
+      accent: false,
+    },
     {
       k: "Current",
       v: c.baseCaseTotal,
@@ -75,7 +87,15 @@ const prog = computed(() => {
               theme="orange"
               variant="outline"
               size="sm"
-              label="base"
+              :label="overrideLabel ? 'this advisor\'s case' : 'base'"
+            />
+            <Badge
+              v-if="overrideLabel && boardBaseKey && s.key === boardBaseKey && s.key !== c.base.key"
+              class="ml-2"
+              theme="gray"
+              variant="outline"
+              size="sm"
+              label="board base"
             />
             <Badge
               v-if="s.underwater"

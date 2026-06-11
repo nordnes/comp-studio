@@ -167,7 +167,8 @@ const hasBudget = computed(() => flags.value.some((f) => f.t === "budget"));
       <div>
         <!-- COM-129: "Net" here means net of strike — the page's first jargon gets the tooltip -->
         <div class="text-xs mb-1.5 text-ink-amber-strong">
-          <Term k="netOfStrike">Net cost</Term> · base
+          <Term k="netOfStrike">Net cost</Term> ·
+          {{ (S.plan.scenarios[S.plan.baseScenario]?.label || "base").toLowerCase() }}
         </div>
         <div class="figure-lg text-ink-gray-9">{{ heroCost }}</div>
         <!-- COM-125: a one-scenario plan has no range — hide the degenerate "$X – $X" line

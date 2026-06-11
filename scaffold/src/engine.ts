@@ -853,6 +853,36 @@ export function diffSets(advisors: Advisor[], plan: Plan, tiers: Tier[], objecti
   };
 }
 
+// v2 (COM-181): the deterministic diff narrative — the Mosaic variance-commentary pattern with
+// NO AI dependency (internal-and-confidential, local-only). Template sentences over a diffSets
+// result: the headline (which side costs more, by how much) + the ranked drivers (per-advisor
+// deltas by magnitude, with a remainder bucket). Pure strings over already-computed deltas.
+export function diffNarrative(diff: ReturnType<typeof diffSets>, labelA = 'A', labelB = 'B'): string[] {
+  const out: string[] = [];
+  const d = diff.deltas.cost;
+  if (Math.abs(d) < 1) {
+    out.push(`${labelB} and ${labelA} cost the same at the base case (${fUSD(diff.a.cost)}).`);
+  } else {
+    const movers = diff.rows
+      .filter(r => Math.abs(r.delta) >= 1)
+      .sort((x, y) => Math.abs(y.delta) - Math.abs(x.delta));
+    const top = movers.slice(0, 3);
+    const rest = movers.slice(3).reduce((s, r) => s + r.delta, 0);
+    const parts = top.map(r => `${r.name.split(' ')[0]} ${r.delta >= 0 ? '+' : ''}${fUSD(r.delta)}`);
+    if (Math.abs(rest) >= 1) parts.push(`others ${rest >= 0 ? '+' : ''}${fUSD(rest)}`);
+    out.push(`${labelB} costs ${d >= 0 ? '+' : ''}${fUSD(d)} vs ${labelA} at the base case${parts.length ? `, driven by: ${parts.join(', ')}` : ''}.`);
+  }
+  const fp = diff.deltas.founderPct;
+  if (Math.abs(fp) >= 0.0001) {
+    out.push(`Founder at exit moves ${fp >= 0 ? 'up' : 'down'} ${(Math.abs(fp) * 100).toFixed(2)}pp (${fPct(diff.a.founderPct, 2)} \u2192 ${fPct(diff.b.founderPct, 2)}).`);
+  }
+  const eq = diff.deltas.sumEq;
+  if (Math.abs(eq) >= 0.0001) {
+    out.push(`Board equity consumption moves ${fPct(diff.a.sumEq, 2)} \u2192 ${fPct(diff.b.sumEq, 2)} of the pool.`);
+  }
+  return out;
+}
+
 // v2 (COM-147): the workbook's "Headline observations", auto-generated from a plan's own numbers
 // (the founder walk and the bridge dilution decomposition — A.3's two named callouts). Pure
 // engine reads; the UI renders the strings. founder share count = constitution.issued (A.3

@@ -13,6 +13,7 @@ import {
   baseScenKey,
   setList,
   diffSets,
+  diffNarrative,
   planWithSet,
   computeAdvisor,
 } from "../engine";
@@ -130,6 +131,12 @@ const setDiff = computed(() =>
     diffA.value,
     diffB.value,
   ),
+);
+// COM-181: the engine's template narrative over the same diff (labels = the picked sets)
+const setLabel = (id: string) =>
+  id ? setList(S.value.plan).find((x) => x.id === id)?.label || id : "the working scenarios";
+const diffStory = computed(() =>
+  diffNarrative(setDiff.value, setLabel(diffA.value), setLabel(diffB.value)),
 );
 const advisorOpts = computed(() => [
   { label: "Pick a package…", value: "" },
@@ -439,6 +446,12 @@ const abRows = computed(() => {
             @update:model-value="(v) => (diffB = v)"
           />
         </div>
+      </div>
+      <!-- COM-181: the deterministic diff narrative — the 'so what' line, engine-generated -->
+      <div class="space-y-1 mb-3">
+        <p v-for="(line, i) in diffStory" :key="i" class="text-p-sm text-ink-gray-7 tabular-nums">
+          {{ line }}
+        </p>
       </div>
       <div class="divide-y divide-outline-gray-1 text-sm">
         <div class="flex justify-between py-2">

@@ -1099,6 +1099,24 @@ export function computeGrant(grant: Grant, plan: Plan, scenKey: string) {
   return { id: grant.id, instrument: 'option' as Instrument, round: grant.round, roundLabel: roundLabel(plan, grant.round), quantity: qty, derived: derivedOpt != null, strikePps, fmvPps, exitPps, exerciseCost: qty * strikePps, stepUp: fmvPps - strikePps, value: netAtExit, netAtExit, underwater, lapsed };
 }
 
+// v2 (UXS-A / ux-sweep AP-2): a review top-up "by value" converts at the BASE-CASE EXIT path —
+// the app's own value grammar (annualValue mode, the $50K medians, the totality check all read
+// base-case net-at-exit). Intrinsic-spread derivation (valueToQuantity) is degenerate for a
+// grant struck AT the current round (strike == FMV by definition), which is exactly where every
+// top-up lands. Returns the explicit count to record (a review outcome is a decision artefact —
+// the count freezes at approval) or null when the base exit clears no spread (refuse loudly,
+// never a silent $0 row).
+export function topUpQuantityForValue(valueUSD: number, plan: Plan): { qty: number; round: string; strikePps: number } | null {
+  if (!ok(valueUSD) || valueUSD <= 0) return null;
+  const w = walkScenario(plan, baseScenKey(plan));
+  const step = currentRoundStep(plan, w);
+  const vPps = ok(plan.valuation?.ppsUSD) && (plan.valuation as ValuationRecord).ppsUSD > 0 ? (plan.valuation as ValuationRecord).ppsUSD : null;
+  const strikePps = vPps ?? step.price;
+  const exitPps = safeDiv(w.exit.post, w.exit.N);
+  if (!(exitPps > strikePps)) return null;
+  return { qty: Math.round(valueUSD / (exitPps - strikePps)), round: step.id || 'bridge', strikePps };
+}
+
 // v2 (COM-171): the dispatch predicate. EXPLICIT = a grants array that is empty ([] = granted
 // nothing, COM-144's pin) or carries at least one non-derived row. ALL-derived rows are the v6
 // migration's snapshot — the parametric v1 package still computes (that is what makes the

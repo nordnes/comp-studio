@@ -29,6 +29,7 @@ import {
   makeProposition,
   propositionStatus,
   propositionDrift,
+  topUpQuantityForValue,
   type Instrument,
 } from "./engine";
 import { reconcileGovernance, type ComplianceItem, type Governance } from "./governance";
@@ -875,13 +876,28 @@ export function useStudio() {
       flash("Approver required — no one signs off their own comp (B.1 #5)");
       return false;
     }
+    // UXS-A (ux-sweep AP-2): "by value" derives the COUNT at the base-case exit path — at the
+    // pricing round the intrinsic spread is zero by definition, so the old valueUSD-only row
+    // computed count-0/$0 and the approved dollars vanished from every total. Validate BEFORE
+    // any mutation: a refusal leaves the review open and the board untouched.
+    const topUpDeriv =
+      data.outcome === "top-up" && data.topUpValueUSD
+        ? topUpQuantityForValue(data.topUpValueUSD, store.S.plan)
+        : null;
+    if (data.outcome === "top-up" && data.topUpValueUSD && !topUpDeriv) {
+      flash(
+        "Top-up blocked — the base case clears no value over the strike, so a dollar figure derives no options. Record it as a count instead.",
+      );
+      return false;
+    }
+    const topUpQty = topUpDeriv ? topUpDeriv.qty : data.topUpQuantity;
     pushUndo();
     r.outcome = data.outcome;
     r.approver = approver;
     r.completedISO = todayISO();
     if (data.inputs) r.inputs = data.inputs;
     if (data.note) r.note = data.note;
-    if (data.outcome === "top-up" && (data.topUpQuantity || data.topUpValueUSD)) {
+    if (data.outcome === "top-up" && topUpQty) {
       materialiseGrants(a);
       // the then-current round prices the strike — exactly how packages grow with fundraising
       const w = walkScenario(store.S.plan, baseScenKey(store.S.plan));
@@ -890,9 +906,10 @@ export function useStudio() {
         id: uid("g"),
         instrument: "option",
         round,
-        ...(data.topUpValueUSD
-          ? { valueUSD: data.topUpValueUSD }
-          : { quantity: data.topUpQuantity }),
+        quantity: topUpQty,
+        // provenance: the approved dollars ride beside the frozen count (explicit quantity wins
+        // in computeGrant; valueUSD is the record of what the review signed off)
+        ...(data.topUpValueUSD ? { valueUSD: data.topUpValueUSD } : {}),
         curve: "cert-v3",
         vestStartISO: todayISO(),
         lifecycle: "draft",
@@ -909,7 +926,7 @@ export function useStudio() {
     appendAudit(
       "review",
       a.name,
-      `Review completed: ${data.outcome}, signed off by ${approver}${data.outcome === "top-up" && (data.topUpValueUSD || data.topUpQuantity) ? ` · top-up ${data.topUpValueUSD ? `$${data.topUpValueUSD}` : `${data.topUpQuantity} options`} at the current round` : ""}`,
+      `Review completed: ${data.outcome}, signed off by ${approver}${data.outcome === "top-up" && topUpQty ? ` · top-up ${data.topUpValueUSD ? `$${data.topUpValueUSD.toLocaleString("en-US")} → ${(topUpQty ?? 0).toLocaleString("en-US")} options (base-case value)` : `${topUpQty} options`} at the current round` : ""}`,
     );
     persist();
     undoToast(`review (${data.outcome})`);

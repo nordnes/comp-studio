@@ -18,7 +18,21 @@ const views: Record<string, () => Promise<unknown>> = {
 
 const routes: RouteRecordRaw[] = [
   { path: "/", redirect: "/overview" },
-  ...NAV.map((n) => ({ path: n.to, component: views[n.to], meta: { title: n.label } })),
+  ...NAV.map((n) => ({
+    // UXS-N (UXP 1.1): the per-advisor routes take an optional :id — opening Iraj is a URL now
+    // (refresh/share keeps the selection; App.vue syncs the param <-> store.selId both ways).
+    path: n.to === "/advisors" || n.to === "/proposition" ? `${n.to}/:id?` : n.to,
+    component: views[n.to],
+    meta: { title: n.label },
+  })),
 ];
 
-export default createRouter({ history: createWebHistory(), routes });
+export default createRouter({
+  history: createWebHistory(),
+  routes,
+  // UXS-N (UXP 1.3): navigating used to KEEP the scroll position — Advisors → Board landed
+  // mid-page in the guardrails. Back/forward keeps the saved position; everything else tops.
+  scrollBehavior(_to, _from, saved) {
+    return saved || { top: 0 };
+  },
+});

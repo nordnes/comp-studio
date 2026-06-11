@@ -35,6 +35,10 @@ import { navGroups, configureItem } from "./nav";
 const route = useRoute();
 const router = useRouter();
 const navOpen = ref(false);
+// UXS-N (UXP 1.4/8.4): the budget banner ate ~70px on every view (110px at 375) and was only
+// dismissible on Board. Dismissing now collapses it to a compact status chip in the header;
+// the chip re-expands it. Session-scoped — it returns on reload while the warnings stand.
+const bannerCollapsed = ref(false);
 watch(
   () => route.path,
   () => (navOpen.value = false), // close the mobile drawer after navigating
@@ -90,6 +94,7 @@ onUnmounted(() => {
 });
 
 const {
+  select,
   store,
   selected,
   board,
@@ -106,6 +111,28 @@ const {
   setPath,
   activateSet,
 } = useStudio();
+
+// UXS-N (UXP 1.1): the advisor selection IS a URL. Param → store on entry (deep link/refresh);
+// store → param on selection so the address bar always carries the share-able state.
+watch(
+  () => route.params.id,
+  (id) => {
+    if (typeof id === "string" && id && store.S.advisors.some((a) => a.id === id)) select(id);
+  },
+  { immediate: true },
+);
+watch(
+  () => [store.selId, route.path] as const,
+  ([id, path]) => {
+    const base = path.startsWith("/advisors")
+      ? "/advisors"
+      : path.startsWith("/proposition")
+        ? "/proposition"
+        : null;
+    if (base && id && route.params.id !== id)
+      router.replace({ path: `${base}/${id}`, query: route.query });
+  },
+);
 
 const fileRef = ref<HTMLInputElement | null>(null);
 const saveAsName = ref("");
@@ -231,10 +258,10 @@ const breadcrumbItems = computed(() => {
   const items: { label: string; route?: string }[] = [
     { label: store.S.name || "Untitled board", route: "/overview" },
   ];
-  const view = allNav.find((i) => i.to === route.path);
+  const view = allNav.find((i) => i.to === route.path || route.path.startsWith(`${i.to}/`));
   if (view) items.push({ label: view.label, route: view.to });
   const adv = selected.value?.a?.name;
-  if (adv && (route.path === "/advisors" || route.path === "/proposition"))
+  if (adv && (route.path.startsWith("/advisors") || route.path.startsWith("/proposition")))
     items.push({ label: adv });
   return items;
 });
@@ -248,7 +275,7 @@ const printDate = computed(() =>
 const printRecipient = computed(() => {
   const name = selected.value?.a?.name;
   if (route.path === "/board") return `Internal board pack · ${printDate.value}`;
-  if (name && (route.path === "/proposition" || route.path === "/advisors"))
+  if (name && (route.path.startsWith("/proposition") || route.path.startsWith("/advisors")))
     return `Prepared for ${name} · ${printDate.value}`;
   return `Internal · ${printDate.value}`;
 });
@@ -262,7 +289,7 @@ const sidebarSections = computed(() =>
     items: g.items.map((it) => ({
       label: it.label,
       icon: it.icon,
-      isActive: route.path === it.to,
+      isActive: route.path === it.to || route.path.startsWith(`${it.to}/`),
       onClick: () => router.push(it.to),
     })),
   })),
@@ -487,9 +514,11 @@ const openCmdK = () => window.dispatchEvent(new Event("open-command-palette"));
                "+N more") + a next step to where the breach is visible -->
           <div v-if="board.warnings.length" class="px-3 sm:px-5 pb-2">
             <Alert
+              v-if="!bannerCollapsed"
               v-alert-dismiss-label
               theme="red"
               :title="board.warnings.length > 1 ? 'Budget warnings' : 'Budget warning'"
+              @dismiss="bannerCollapsed = true"
             >
               <template #description>
                 <ul :class="board.warnings.length > 1 ? 'list-disc pl-4 space-y-0.5' : 'list-none'">
@@ -508,13 +537,34 @@ const openCmdK = () => window.dispatchEvent(new Event("open-command-palette"));
                 >
               </template>
             </Alert>
+            <!-- UXS-N (UXP 1.4/8.4): the collapsed state — a one-line status chip; click to
+                 re-expand. The warnings still stand; only the real estate shrinks. -->
+            <button
+              v-else
+              class="inline-flex items-center gap-1.5 rounded border border-outline-red-2 bg-surface-red-1 px-2.5 py-1 text-p-xs text-ink-red-3 hover:bg-surface-red-2"
+              :aria-label="`Show ${board.warnings.length} budget warning${board.warnings.length === 1 ? '' : 's'}`"
+              @click="bannerCollapsed = false"
+            >
+              <span aria-hidden="true">⚠</span>
+              {{ board.warnings.length }} budget warning{{ board.warnings.length === 1 ? "" : "s" }}
+              — show
+            </button>
           </div>
         </header>
 
         <!-- COM-89: main is full-bleed; each view sets its own column (max-w-reading for prose
              views, max-w-7xl for the dense Board/Compare tables) so one width stops serving none. -->
         <main class="flex-1 w-full py-6 sm:py-8">
-          <router-view />
+          <!-- UXS-N (UXP 2.2/3.8): a cold route chunk used to render a BLANK main area for
+               1s+ — the skeleton holds the layout until the component arrives -->
+          <router-view v-slot="{ Component }">
+            <component :is="Component" v-if="Component" />
+            <div v-else class="mx-auto w-full max-w-reading px-3 sm:px-5 space-y-6 py-10">
+              <div class="h-8 w-64 rounded bg-surface-gray-2 animate-pulse" />
+              <div class="h-40 rounded bg-surface-gray-2 animate-pulse" />
+              <div class="h-40 rounded bg-surface-gray-2 animate-pulse" />
+            </div>
+          </router-view>
         </main>
 
         <footer class="no-print bg-surface-white border-t border-outline-gray-1">

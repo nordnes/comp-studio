@@ -151,7 +151,7 @@ const eqScenMarks = computed(() =>
           <text
             :x="ex(beClamped) + 4"
             :y="EPAD.t + 9"
-            font-size="10"
+            font-size="11"
             :style="{ fill: 'var(--chart-warning)' }"
           >
             breakeven
@@ -163,7 +163,7 @@ const eqScenMarks = computed(() =>
               :x="m.x"
               :y="m.y + m.dy"
               text-anchor="middle"
-              font-size="9"
+              font-size="11"
               class="fill-current text-ink-gray-6"
             >
               {{ m.label }}
@@ -194,7 +194,7 @@ const eqScenMarks = computed(() =>
             :y="EPAD.t + 8"
             text-anchor="end"
             class="fill-current text-ink-gray-6"
-            font-size="10"
+            font-size="11"
           >
             {{ fUSD(eqYMax) }}
           </text>
@@ -203,7 +203,7 @@ const eqScenMarks = computed(() =>
             :y="EH - EPAD.b"
             text-anchor="end"
             class="fill-current text-ink-gray-6"
-            font-size="10"
+            font-size="11"
           >
             $0
           </text>
@@ -214,7 +214,7 @@ const eqScenMarks = computed(() =>
             :y="EH - 8"
             :text-anchor="i === 0 ? 'start' : i === eqXTicks.length - 1 ? 'end' : 'middle'"
             class="fill-current text-ink-gray-6"
-            font-size="10"
+            font-size="11"
           >
             {{ fUSD(t) }}
           </text>
@@ -258,7 +258,7 @@ const eqScenMarks = computed(() =>
             <text
               :x="tx(BENCH.fdvCaution) + 4"
               :y="EPAD.t + 9"
-              font-size="10"
+              font-size="11"
               :style="{ fill: 'var(--chart-warning)' }"
             >
               $1B caution
@@ -292,7 +292,7 @@ const eqScenMarks = computed(() =>
               :x="m.x"
               :y="m.y + m.dy"
               text-anchor="middle"
-              font-size="9"
+              font-size="11"
               class="fill-current text-ink-gray-6"
             >
               {{ m.label }}
@@ -311,7 +311,7 @@ const eqScenMarks = computed(() =>
             :y="EPAD.t + 8"
             text-anchor="end"
             class="fill-current text-ink-gray-6"
-            font-size="10"
+            font-size="11"
           >
             {{ fUSD(tkYMax) }}
           </text>
@@ -320,7 +320,7 @@ const eqScenMarks = computed(() =>
             :y="EH - EPAD.b"
             text-anchor="end"
             class="fill-current text-ink-gray-6"
-            font-size="10"
+            font-size="11"
           >
             $0
           </text>
@@ -331,7 +331,7 @@ const eqScenMarks = computed(() =>
             :y="EH - 8"
             :text-anchor="i === 0 ? 'start' : i === tkXTicks.length - 1 ? 'end' : 'middle'"
             class="fill-current text-ink-gray-6"
-            font-size="10"
+            font-size="11"
           >
             {{ fUSD(t) }}
           </text>

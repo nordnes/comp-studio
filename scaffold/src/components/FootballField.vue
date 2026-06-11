@@ -27,8 +27,9 @@ const pct = (v: number) => `${Math.max(0, Math.min(1, props.max ? v / props.max 
     >
       <!-- COM-119: weight inverted — the spread is CONTEXT (neutral band), the base case is THE
            SIGNAL (a 3px brand-amber tick). Amber marks the current case, nothing else. -->
+      <!-- UXS-K (UXP 2.6): the band was near-invisible on white — one stop darker -->
       <div
-        class="absolute rounded bg-surface-gray-3"
+        class="absolute rounded bg-surface-gray-4"
         :style="{ left: pct(lo), width: pct(hi - lo), top: '3px', bottom: '3px' }"
       />
       <div

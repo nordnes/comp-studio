@@ -19,6 +19,7 @@ import {
 } from "../engine";
 import { SCEN_TOKENS, chartHex, shortName } from "../constants";
 import PageHeader from "../components/PageHeader.vue";
+import TierBadge from "../components/roster/TierBadge.vue";
 import FrappeChart from "../components/FrappeChart.vue";
 import EmptyState from "../components/EmptyState.vue";
 import Panel from "../components/Panel.vue";
@@ -168,6 +169,17 @@ const abRows = computed(() => {
   ];
   const fa = fmt(ca),
     fb = fmt(cb);
+  // UXS-K (UXP 3.6): the Δ column is the entire job of A/B — raw values where dollars exist
+  const rawOf = (c: any) => [
+    c.baseCaseTotal,
+    c.baseCaseCeil,
+    null,
+    null,
+    c.cashTotal,
+    c.bestCaseTotal,
+  ];
+  const ra = rawOf(ca),
+    rb = rawOf(cb);
   const caseLabel = S.value.plan.scenarios[baseScenKey(S.value.plan)]?.label || "Base";
   const labels = [
     `${caseLabel} case (net)`,
@@ -177,7 +189,15 @@ const abRows = computed(() => {
     "Cash (engagement)",
     "Best case",
   ];
-  return labels.map((label, i) => ({ label: `${label}`, a: fa[i], b: fb[i] }));
+  return {
+    names: { a: a.name, b: b.name },
+    rows: labels.map((label, i) => ({
+      label: `${label}`,
+      a: fa[i],
+      b: fb[i],
+      delta: ra[i] != null && rb[i] != null ? (rb[i] as number) - (ra[i] as number) : null,
+    })),
+  };
 });
 </script>
 
@@ -328,12 +348,9 @@ const abRows = computed(() => {
               <div class="min-w-0 max-w-[12rem] truncate" :title="a.name">{{ a.name }}</div>
             </td>
             <td class="px-4 py-3">
-              <Badge
-                :label="a.mode === 'value' ? '$value' : S.tiers[a.tier]?.name || '—'"
-                theme="orange"
-                variant="subtle"
-                size="sm"
-              />
+              <!-- UXS-K (ux-sweep DR-11): the shared TierBadge — the inline orange pill made
+                   the same tier read differently here vs every roster surface -->
+              <TierBadge :mode="a.mode" :tier-name="S.tiers[a.tier]?.name" />
             </td>
             <td class="px-4 py-3 tabular-nums text-right text-ink-gray-8">
               {{ fPct(c.baseEq, 2) }}
@@ -541,14 +558,35 @@ const abRows = computed(() => {
         </div>
       </div>
       <div v-if="abRows" class="divide-y divide-outline-gray-1 text-sm">
+        <!-- UXS-K (UXP 3.6): named columns + the Δ — with two same-tier advisors the value
+             columns were guess-work, and A/B shipped without the one number it exists for -->
+        <div class="grid grid-cols-[1fr_auto_auto_auto] gap-6 py-2 text-xs text-ink-gray-6">
+          <span />
+          <span class="text-right w-28 truncate" :title="abRows.names.a">{{ abRows.names.a }}</span>
+          <span class="text-right w-28 truncate" :title="abRows.names.b">{{ abRows.names.b }}</span>
+          <span class="text-right w-24">Δ B − A</span>
+        </div>
         <div
-          v-for="row in abRows"
+          v-for="row in abRows.rows"
           :key="row.label"
-          class="grid grid-cols-[1fr_auto_auto] gap-6 py-2"
+          class="grid grid-cols-[1fr_auto_auto_auto] gap-6 py-2"
         >
           <span class="text-ink-gray-6">{{ row.label }}</span>
           <span class="tabular-nums text-ink-gray-9 text-right w-28">{{ row.a }}</span>
           <span class="tabular-nums text-ink-gray-9 text-right w-28">{{ row.b }}</span>
+          <span
+            class="tabular-nums text-right w-24"
+            :class="
+              row.delta == null
+                ? 'text-ink-gray-5'
+                : row.delta > 0
+                  ? 'text-ink-green-3'
+                  : row.delta < 0
+                    ? 'text-ink-red-3'
+                    : 'text-ink-gray-6'
+            "
+            >{{ row.delta == null ? "—" : `${row.delta >= 0 ? "+" : ""}${fUSD(row.delta)}` }}</span
+          >
         </div>
       </div>
       <p v-else class="text-p-xs text-ink-gray-6">

@@ -152,6 +152,29 @@ const sn = (n: string) => shortName(n, rosterNames.value);
 const generosity = computed(() =>
   generosityCheck(S.value.advisors, S.value.plan, S.value.tiers, S.value.objectives),
 );
+// UXS-K (ux-sweep DR-10 / UXP 1.5/2.9): one roster-level callout per flag KIND — the same
+// amber sentence used to repeat verbatim for every advisor (41 amber clusters on this view).
+// The per-row chips keep the ENGINE's full sentence in their title; justification flows are
+// unchanged (COM-176).
+const FLAG_KIND_LABEL: Record<string, string> = {
+  "band-breach": "Band breach",
+  "day-rate": "Day-rate reality",
+  totality: "Totality",
+};
+const flagSummary = computed(() => {
+  const groups: Record<string, string[]> = {};
+  generosity.value.rows.forEach((r: any) =>
+    (r.flagItems || []).forEach((fi: any) => {
+      (groups[fi.kind] ||= []).push(sn(r.name));
+    }),
+  );
+  return Object.entries(groups).map(([kind, names]) => ({
+    kind,
+    label: FLAG_KIND_LABEL[kind] || kind,
+    names,
+  }));
+});
+
 // COM-176: explain-or-close state — which flag is being justified + the draft line
 const justifying = ref("");
 const justifyNote = ref("");
@@ -218,10 +241,35 @@ const scatterPlaced = computed(() => {
   const placed: { x: number; y: number }[] = [];
   const collides = (x: number, y: number) =>
     placed.some((q) => Math.abs(q.x - x) < 36 && Math.abs(q.y - y) < LABEL_H);
-  const pts = scatter.value.map((d) => {
-    const px = sx(d.x),
-      py = sy(d.y),
-      r = sr(d.z);
+  // UXS-K (ux-sweep DR-8 / UXP 2.7): bubbles clamp INSIDE the plot box (the Anchor bubble
+  // rendered half outside the top edge) and coincident points fan out on a small ring so the
+  // seeded identical packages stay individually hoverable instead of stacking into one blob.
+  const pre = scatter.value.map((d) => {
+    const r = sr(d.z);
+    return {
+      ...d,
+      r,
+      px: Math.min(Math.max(sx(d.x), PAD.l + r), VW - PAD.r - r),
+      py: Math.min(Math.max(sy(d.y), PAD.t + r), VH - PAD.b - r),
+    };
+  });
+  const byPos: Record<string, number[]> = {};
+  pre.forEach((d, i) => {
+    const k = `${Math.round(d.px / 6)}:${Math.round(d.py / 6)}`;
+    (byPos[k] ||= []).push(i);
+  });
+  Object.values(byPos).forEach((idxs) => {
+    if (idxs.length < 2) return;
+    idxs.forEach((i, j) => {
+      const ang = (2 * Math.PI * j) / idxs.length;
+      pre[i].px += Math.cos(ang) * pre[i].r * 0.9;
+      pre[i].py += Math.sin(ang) * pre[i].r * 0.9;
+    });
+  });
+  const pts = pre.map((d) => {
+    const px = d.px,
+      py = d.py,
+      r = d.r;
     let ly = py - r - 5; // prefer a label above the bubble
     if (collides(px, ly)) {
       const yb = py + r + 12;
@@ -546,6 +594,13 @@ const caseTotalSum = computed(() =>
             >
           </div>
         </div>
+        <div v-if="flagSummary.length" class="mb-3 space-y-1">
+          <p v-for="g in flagSummary" :key="g.kind" class="text-p-xs text-ink-amber-strong">
+            {{ g.label }} — {{ g.names.length }} advisor{{ g.names.length === 1 ? "" : "s" }} ({{
+              g.names.join(", ")
+            }}); each row's chip carries its own figures.
+          </p>
+        </div>
         <!-- COM-179: the band-placement chart — the roster on ONE bar; outliers in one glance -->
         <BandPlacement :rows="generosity.rows" :anchor-u-s-d="generosity.anchorUSD" class="mb-3" />
         <div class="divide-y divide-outline-gray-1 text-sm">
@@ -568,35 +623,33 @@ const caseTotalSum = computed(() =>
               :title="`Compa-ratio vs the ${fUSD(generosity.anchorUSD)} median`"
             >
               {{ r.status === "above" ? "▲" : r.status === "below" ? "▼" : "◆" }}
-              {{ r.compa.toFixed(2) }}
+              {{ r.compa.toFixed(2) }}× median
             </span>
-            <!-- COM-176: explain-or-close — an unjustified flag is loud and asks for a line;
-                 a justified one stays visible but acknowledged (quiet, with the why beside it). -->
-            <span v-if="r.flagItems.length" class="basis-full space-y-0.5">
-              <span
-                v-for="fi in r.flagItems"
-                :key="fi.kind"
-                class="block text-p-xs"
-                :class="
-                  justifiedOf(r.advisorId, fi.kind) ? 'text-ink-gray-6' : 'text-ink-amber-strong'
-                "
-              >
-                {{ fi.text }}
-                <template v-if="justifiedOf(r.advisorId, fi.kind)">
-                  <span class="text-ink-gray-7">
-                    — justified: “{{ justifiedOf(r.advisorId, fi.kind)!.note }}” ({{
-                      fDate(justifiedOf(r.advisorId, fi.kind)!.atISO)
-                    }})</span
-                  >
-                </template>
-                <button
-                  v-else-if="justifying !== jKey(r.advisorId, fi.kind)"
-                  class="ml-1 underline decoration-dotted text-ink-gray-6 hover:text-ink-gray-8 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-gray-6)] rounded"
-                  @click="justifying = jKey(r.advisorId, fi.kind)"
+            <!-- COM-176 explain-or-close, compacted by UXS-K (DR-10): per-row CHIPS carry the
+                 engine's full sentence in their title; the roster-level callout above names the
+                 pattern once. Unjustified = amber chip + justify; justified = quiet chip + why. -->
+            <span v-if="r.flagItems.length" class="basis-full flex flex-wrap items-center gap-1.5">
+              <template v-for="fi in r.flagItems" :key="fi.kind">
+                <span
+                  v-if="justifiedOf(r.advisorId, fi.kind)"
+                  class="text-p-xs text-ink-gray-6"
+                  :title="fi.text"
                 >
-                  justify
-                </button>
-              </span>
+                  {{ FLAG_KIND_LABEL[fi.kind] || fi.kind }} — justified: “{{
+                    justifiedOf(r.advisorId, fi.kind)!.note
+                  }}” ({{ fDate(justifiedOf(r.advisorId, fi.kind)!.atISO) }})
+                </span>
+                <span v-else class="text-p-xs text-ink-amber-strong" :title="fi.text">
+                  {{ FLAG_KIND_LABEL[fi.kind] || fi.kind }}
+                  <button
+                    v-if="justifying !== jKey(r.advisorId, fi.kind)"
+                    class="ml-0.5 underline decoration-dotted text-ink-gray-6 hover:text-ink-gray-8 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink-gray-6)] rounded"
+                    @click="justifying = jKey(r.advisorId, fi.kind)"
+                  >
+                    justify
+                  </button>
+                </span>
+              </template>
               <span
                 v-if="justifying && justifying.startsWith(r.advisorId + '::')"
                 class="flex items-center gap-2 pt-1"
@@ -708,15 +761,10 @@ const caseTotalSum = computed(() =>
           >
             Current net value
           </text>
-          <text
-            :x="12"
-            :y="(PAD.t + VH - PAD.b) / 2"
-            text-anchor="middle"
-            class="fill-current text-ink-gray-6"
-            font-size="13"
-            :transform="`rotate(-90, 12, ${(PAD.t + VH - PAD.b) / 2})`"
-          >
-            Headroom to ceiling
+          <!-- UXS-K (UXP 2.7): the rotated title clipped ('Headroom to c…') and collided with
+               tick labels — it reads horizontally above the plot now -->
+          <text :x="PAD.l" :y="11" class="fill-current text-ink-gray-6" font-size="11">
+            Headroom to ceiling ($) ↑
           </text>
           <g
             v-for="d in scatterPlaced"

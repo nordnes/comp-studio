@@ -9,6 +9,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AdvisorPicker: typeof import('./src/components/AdvisorPicker.vue')['default']
+    BandPlacement: typeof import('./src/components/BandPlacement.vue')['default']
     CapitalRollupPanel: typeof import('./src/components/CapitalRollupPanel.vue')['default']
     CommandPalette: typeof import('./src/components/CommandPalette.vue')['default']
     ContextStrip: typeof import('./src/components/ContextStrip.vue')['default']
